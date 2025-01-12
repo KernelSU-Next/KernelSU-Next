@@ -1,0 +1,115 @@
+html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Inter', sans-serif;
+    background-color: #ffffff;
+    color: #000000;
+}
+
+footer {
+    margin-top: auto;
+    background-color: #000000;
+    color: #ffffff;
+    padding: 1.5rem 0;
+}
+
+footer a {
+    color: #ffffff;
+}
+
+.navbar {
+    background-color: #000000;
+}
+
+.navbar-brand span {
+    font-weight: bold;
+    font-size: 1.5rem;
+    color: #ffffff;
+}
+
+.navbar-toggler {
+    background-color: #ffffff;
+}
+
+.navbar-nav .nav-link {
+    color: #ffffff;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #cccccc;
+}
+
+header {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 5rem 0;
+}
+
+header h1 {
+    font-size: 2.5rem;
+}
+
+header p {
+    font-size: 1.2rem;
+}
+
+ol {
+    padding-left: 1.5rem;
+}
+
+.highlight {
+    background: #f8f9fa;
+    border-left: 5px solid #000000;
+    font-size: 0.95rem;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+
+.highlight code {
+    color: #000000;
+    font-family: monospace;
+}
+
+.header-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.contact-icons {
+    font-size: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.contact-icons a {
+    color: #000000;
+    text-decoration: none;
+}
+
+.contact-icons a:hover {
+    color: #333333;
+}
+
+.btn-copy {
+    background-color: #000000;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-copy:hover {
+    background-color: rgb(238, 238, 238);
+    color: #000000;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+
+#devices a {
+    color: #000000;
+}
+
