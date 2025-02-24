@@ -5,7 +5,7 @@
     <string name="issue_report_body_2">Zgłoś to najszybciej jak to możliwe!</string>
     <string name="issue_report_github">Zgłoś na GitHubie</string>
     <string name="issue_report_telegram">Skontaktuj się na Telegramie</string>
-    <string name="issue_report_github_link">https://github.com/rifsxd/KernelSU-Next/issues</string>
+    <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
     <string name="issue_report_telegram_link">https://t.me/ksunext</string>
     <string name="confirm">Potwierdź</string>
     <string name="app_name" translatable="false">KernelSU Next</string>
@@ -83,7 +83,7 @@
     <string name="cancel">Anuluj</string>
     <string name="later">Później</string>
     <string name="home_next_kernelsu">🔥 Nowa wersja</string>
-    <string name="home_next_kernelsu_repo">https://github.com/rifsxd/KernelSU-Next</string>
+    <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Nowa wersja eksperymentalna. Sprawdź na GitHubie!</string>
     <string name="home_experimental_kernelsu">⚠️ Uwaga to wersja eksperymentalna!</string>
     <string name="home_experimental_kernelsu_repo">127.0.0.1</string>

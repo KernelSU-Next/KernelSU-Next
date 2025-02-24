@@ -5,7 +5,7 @@
     <string name="issue_report_body_2">請儘快告知我們！</string>
     <string name="issue_report_github">在 GitHub 回報</string>
     <string name="issue_report_telegram">透過 Telegram 聯繫</string>
-    <string name="issue_report_github_link">https://github.com/rifsxd/KernelSU-Next/issues</string>
+    <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
     <string name="issue_report_telegram_link">https://t.me/ksunext</string>
     <string name="confirm">確認</string>
     <string name="app_name" translatable="false">KernelSU Next</string>
@@ -80,7 +80,7 @@
     <string name="cancel">取消</string>
     <string name="later">稍後</string>
     <string name="home_next_kernelsu">🔥 Next 構建</string>
-    <string name="home_next_kernelsu_repo">https://github.com/rifsxd/KernelSU-Next</string>
+    <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Next 實驗性分支。在 GitHub 上查看！</string>
     <string name="home_experimental_kernelsu">⚠️ 實驗性開發警告！</string>
     <string name="home_experimental_kernelsu_repo">127.0.0.1</string>

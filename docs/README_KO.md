@@ -1,4 +1,4 @@
-[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | **한국어** | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | [Русский](README_RU.md) | [ภาษาไทย](README_TH.md)
+[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | **한국어** | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | [Русский](README_RU.md) | [ภาษาไทย](README_TH.md) | [Tiếng Việt](README_VI.md)
 
 # KernelSU Next
 
@@ -6,10 +6,10 @@
 
 안드로이드 기기들을 위한 커널 기반 루팅 솔루션입니다.
 
-[![Latest Release](https://img.shields.io/github/v/release/rifsxd/KernelSU-Next?label=Release&logo=github)](https://github.com/rifsxd/KernelSU-Next/releases/latest)
-[![Nightly Release](https://img.shields.io/badge/Nightly%20Release-gray?logo=hackthebox&logoColor=fff)](https://nightly.link/rifsxd/KernelSU-Next/workflows/build-manager/next/manager)
+[![Latest Release](https://img.shields.io/github/v/release/KernelSU-Next/KernelSU-Next?label=Release&logo=github)](https://github.com/KernelSU-Next/KernelSU-Next/releases/latest)
+[![Nightly Release](https://img.shields.io/badge/Nightly%20Release-gray?logo=hackthebox&logoColor=fff)](https://nightly.link/KernelSU-Next/KernelSU-Next/workflows/build-manager-ci/next/Manager)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-[![GitHub License](https://img.shields.io/github/license/rifsxd/KernelSU-Next?logo=gnu)](/LICENSE)
+[![GitHub License](https://img.shields.io/github/license/KernelSU-Next/KernelSU-Next?logo=gnu)](/LICENSE)
 
 ## 기능
 
@@ -28,7 +28,7 @@ KernelSU Next는 공식적으로 대부분의 4.4부터 6.6의 안드로이드 �
 
 ## 사용 방법
 
-- [설치 방법](https://rifsxd.github.io/KernelSU-Next/)
+- [설치 방법](https://KernelSU-Next.github.io/KernelSU-Next/)
 
 ## 보안
 
@@ -41,9 +41,9 @@ KernelSU의 보안 취약점 보고에 대한 자세한 내용은 [SECURITY.md](
 
 ## 크레딧
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): KernelSU의 아이디어
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): KernelSU의 아이디어
 - [Magisk](https://github.com/topjohnwu/Magisk): 강력한 루팅 도구
-- [genuine](https://github.com/brevent/genuine/): apk v2 서명 검사
+- [genuine](https://github.com/brevent/genuine/): APK v2 서명 검사
 - [Diamorphine](https://github.com/m0nad/Diamorphine): 일부 rootkit 기술
 - [KernelSU](https://github.com/tiann/KernelSU): KernelSU Next가 존재할 수 있게 해 준 tiann에게 감사드립니다.
 - [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs): KernelSU를 구해준 5ec1cff에게 감사드립니다!

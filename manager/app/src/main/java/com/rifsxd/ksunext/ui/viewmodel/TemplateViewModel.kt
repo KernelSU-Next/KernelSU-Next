@@ -11,18 +11,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import com.rifsxd.ksunext.Natives
+import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.profile.Capabilities
 import com.rifsxd.ksunext.profile.Groups
 import com.rifsxd.ksunext.ui.util.getAppProfileTemplate
 import com.rifsxd.ksunext.ui.util.listAppProfileTemplates
 import com.rifsxd.ksunext.ui.util.setAppProfileTemplate
-import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONArray
 import org.json.JSONObject
 import java.text.Collator
 import java.util.Locale
-import java.util.concurrent.TimeUnit
 
 
 /**
@@ -138,13 +137,7 @@ class TemplateViewModel : ViewModel() {
 
 private fun fetchRemoteTemplates() {
     runCatching {
-        val client: OkHttpClient = OkHttpClient.Builder()
-            .connectTimeout(5, TimeUnit.SECONDS)
-            .writeTimeout(5, TimeUnit.SECONDS)
-            .readTimeout(10, TimeUnit.SECONDS)
-            .build()
-
-        client.newCall(
+        ksuApp.okhttpClient.newCall(
             Request.Builder().url(TEMPLATE_INDEX_URL).build()
         ).execute().use { response ->
             if (!response.isSuccessful) {
@@ -155,7 +148,7 @@ private fun fetchRemoteTemplates() {
             0.until(remoteTemplateIds.length()).forEach { i ->
                 val id = remoteTemplateIds.getString(i)
                 Log.i(TAG, "fetch template: $id")
-                val templateJson = client.newCall(
+                val templateJson = ksuApp.okhttpClient.newCall(
                     Request.Builder().url(TEMPLATE_URL.format(id)).build()
                 ).runCatching {
                     execute().use { response ->

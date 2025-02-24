@@ -92,6 +92,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.R
+import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.ui.component.ConfirmResult
 import com.rifsxd.ksunext.ui.component.rememberConfirmDialog
 import com.rifsxd.ksunext.ui.component.rememberLoadingDialog
@@ -107,7 +108,6 @@ import com.rifsxd.ksunext.ui.util.uninstallModule
 import com.rifsxd.ksunext.ui.util.restoreModule
 import com.rifsxd.ksunext.ui.viewmodel.ModuleViewModel
 import com.rifsxd.ksunext.ui.webui.WebUIActivity
-import okhttp3.OkHttpClient
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -213,6 +213,12 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
         floatingActionButton = {
             if (!hideInstallButton) {
                 val moduleInstall = stringResource(id = R.string.module_install)
+                val confirmTitle = stringResource(R.string.module)
+                var zipUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+                val confirmDialog = rememberConfirmDialog(onConfirm = {
+                    navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(zipUris)))
+                    viewModel.markNeedRefresh()
+                })
                 val selectZipLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.StartActivityForResult()
                 ) { result ->
@@ -231,8 +237,16 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         data.data?.let { uris.add(it) }
                     }
 
+                    // Show confirm dialog with selected zip file(s) name(s)
+                    val moduleNames = uris.mapIndexed { index, uri -> "\n${index + 1}. ${uri.getFileName(context)}" }.joinToString("")
+                    val confirmContent = context.getString(R.string.module_install_prompt_with_name, moduleNames)
                     zipUris = uris
-                    showConfirmDialog = uris.isNotEmpty()
+                    confirmDialog.showConfirm(
+                        title = confirmTitle,
+                        content = confirmContent,
+                        markdown = true
+                    )
+                    
                 }
 
                 ExtendedFloatingActionButton(
@@ -252,34 +266,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         snackbarHost = { SnackbarHost(hostState = snackBarHost) }
     ) { innerPadding ->
-        // Confirmation dialog
-        if (showConfirmDialog && zipUris.isNotEmpty()) {
-            val moduleNames = zipUris.joinToString("\n") { getFileName(context, it) }
 
-            AlertDialog(
-                onDismissRequest = { showConfirmDialog = false },
-                confirmButton = {
-                    TextButton(onClick = {
-                        showConfirmDialog = false
-                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(zipUris)))
-                        viewModel.markNeedRefresh()
-                    }) {
-                        Text(stringResource(R.string.confirm))
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showConfirmDialog = false }) {
-                        Text(stringResource(android.R.string.cancel))
-                    }
-                },
-                title = { Text(stringResource(R.string.module)) },
-                text = {
-                    Text(
-                        stringResource(R.string.module_install_prompt_with_name, moduleNames)
-                    )
-                }
-            )
-        }
         when {
             hasMagisk -> {
                 Box(
@@ -301,7 +288,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                     boxModifier = Modifier.padding(innerPadding),
                     onInstallModule = {
-                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModule(it)))
+                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(listOf(it))))
                     },
                     onClickModule = { id, name, hasWebUi ->
                         if (hasWebUi) {
@@ -365,7 +352,7 @@ private fun ModuleList(
         val changelogResult = loadingDialog.withLoading {
             withContext(Dispatchers.IO) {
                 runCatching {
-                    OkHttpClient().newCall(
+                    ksuApp.okhttpClient.newCall(
                         okhttp3.Request.Builder().url(changelogUrl).build()
                     ).execute().body!!.string()
                 }
@@ -623,23 +610,22 @@ fun ModuleItem(
         val interactionSource = remember { MutableInteractionSource() }
         val indication = LocalIndication.current
         val viewModel = viewModel<ModuleViewModel>()
+        
+        val context = LocalContext.current
+        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+
+        var developerOptionsEnabled by rememberSaveable {
+            mutableStateOf(
+                prefs.getBoolean("enable_developer_options", false)
+            )
+        }
+
+        LaunchedEffect(Unit) {
+            developerOptionsEnabled = prefs.getBoolean("enable_developer_options", false)
+        }
 
         Column(
             modifier = Modifier
-                .run {
-                    if (module.hasWebUi) {
-                        toggleable(
-                            value = module.enabled,
-                            enabled = !module.remove && module.enabled,
-                            interactionSource = interactionSource,
-                            role = Role.Button,
-                            indication = indication,
-                            onValueChange = { onClick(module) }
-                        )
-                    } else {
-			this
-		    }
-                }
                 .padding(22.dp, 18.dp, 22.dp, 12.dp)
         ) {
             Row(
@@ -648,6 +634,10 @@ fun ModuleItem(
             ) {
                 val moduleVersion = stringResource(id = R.string.module_version)
                 val moduleAuthor = stringResource(id = R.string.module_author)
+                val moduleId = stringResource(id = R.string.module_id)
+                val moduleVersionCode = stringResource(id = R.string.module_version_code)
+                val moduleUpdateJson = stringResource(id = R.string.module_update_json)
+                val moduleUpdateJsonEmpty = stringResource(id = R.string.module_update_json_empty)
 
                 Column(
                     modifier = Modifier.fillMaxWidth(0.8f)
@@ -676,6 +666,33 @@ fun ModuleItem(
                         fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
                         textDecoration = textDecoration
                     )
+
+                    if (developerOptionsEnabled) {
+
+                        Text(
+                            text = "$moduleId: ${module.id}",
+                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                            fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                            textDecoration = textDecoration
+                        )
+
+                        Text(
+                            text = "$moduleVersionCode: ${module.versionCode}",
+                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                            fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                            textDecoration = textDecoration
+                        )
+
+                        Text(
+                            text = if (module.updateJson.isNotEmpty()) "$moduleUpdateJson: ${module.updateJson}" else "$moduleUpdateJson: $moduleUpdateJsonEmpty",
+                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                            fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                            textDecoration = textDecoration
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.weight(1f))

@@ -1,4 +1,4 @@
-[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | **Русский** | [ภาษาไทย](README_TH.md)
+[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | **Русский** | [ภาษาไทย](README_TH.md) | [Tiếng Việt](README_VI.md)
 
 # KernelSU Next
 
@@ -6,10 +6,10 @@
 
 Root-решение для Android на базе ядра. 
 
-[![Последний релиз](https://img.shields.io/github/v/release/rifsxd/KernelSU-Next?label=Release&logo=github)](https://github.com/rifsxd/KernelSU-Next/releases/latest)  
-[![Ночные сборки](https://img.shields.io/badge/Nightly%20Release-gray?logo=hackthebox&logoColor=fff)](https://nightly.link/rifsxd/KernelSU-Next/workflows/build-manager/next/manager)  
-[![Лицензия: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)  
-[![Лицензия GitHub](https://img.shields.io/github/license/rifsxd/KernelSU-Next?logo=gnu)](/LICENSE)
+[![Latest Release](https://img.shields.io/github/v/release/KernelSU-Next/KernelSU-Next?label=Release&logo=github)](https://github.com/KernelSU-Next/KernelSU-Next/releases/latest)
+[![Nightly Release](https://img.shields.io/badge/Nightly%20Release-gray?logo=hackthebox&logoColor=fff)](https://nightly.link/KernelSU-Next/KernelSU-Next/workflows/build-manager-ci/next/Manager)
+[![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
+[![GitHub License](https://img.shields.io/github/license/KernelSU-Next/KernelSU-Next?logo=gnu)](/LICENSE)
 
 ## Функции
 
@@ -28,7 +28,7 @@ KernelSU Next работает с большинством ядер Android (4.4
 
 ## Использование
 
-- [Инструкция по установке](https://rifsxd.github.io/KernelSU-Next/)
+- [Инструкция по установке](https://KernelSU-Next.github.io/KernelSU-Next/)
 
 ## Безопасность
 
@@ -41,9 +41,9 @@ KernelSU Next работает с большинством ядер Android (4.4
 
 ## Благодарность
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): идея KernelSU.  
-- [Magisk](https://github.com/topjohnwu/Magisk): топовый инструмент для root.  
-- [genuine](https://github.com/brevent/genuine/): валидация подписи APK v2.  
-- [Diamorphine](https://github.com/m0nad/Diamorphine): некоторые навыки rootkit.  
-- [KernelSU](https://github.com/tiann/KernelSU): спасибо tiann, без него KernelSU Next не релизнулся бы.  
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): Идея KernelSU.  
+- [Magisk](https://github.com/topjohnwu/Magisk): Топовый инструмент для root.  
+- [genuine](https://github.com/brevent/genuine/): Валидация подписи APK v2.  
+- [Diamorphine](https://github.com/m0nad/Diamorphine): Некоторые навыки rootkit.  
+- [KernelSU](https://github.com/tiann/KernelSU): Спасибо tiann, без него KernelSU Next не релизнулся бы.  
 - [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs): 💜 5ec1cff за сохранение KernelSU!

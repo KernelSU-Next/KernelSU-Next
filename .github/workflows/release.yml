@@ -27,6 +27,7 @@ jobs:
       - build-a12-kernel
       - build-a13-kernel
       - build-a14-kernel
+      - build-a15-kernel
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts

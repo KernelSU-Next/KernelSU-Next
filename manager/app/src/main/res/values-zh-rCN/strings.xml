@@ -5,7 +5,7 @@
     <string name="issue_report_body_2">快向我们报告吧！</string>
     <string name="issue_report_github">在 GitHub 报告</string>
     <string name="issue_report_telegram">在 Telegram 联系</string>
-    <string name="issue_report_github_link">https://github.com/rifsxd/KernelSU-Next/issues</string>
+    <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
     <string name="issue_report_telegram_link">https://t.me/ksunext</string>
     <string name="confirm">确认</string>
     <string name="app_name" translatable="false">KernelSU Next</string>
@@ -57,6 +57,12 @@
     <string name="module_restore_failed">恢复失败：%s</string>
     <string name="module_version">版本</string>
     <string name="module_author">作者</string>
+    <string name="module_id">模块标识</string>
+    <string name="module_version_code">模块版本</string>
+    <string name="module_update_json">更新配置</string>
+    <string name="module_update_json_empty">无更新配置</string>
+    <string name="enable_developer_options">启用开发者模式</string>
+    <string name="enable_developer_options_summary">显示隐藏的开发者专用设置和调试信息</string>
     <string name="module_overlay_fs_not_available">OverlayFS 被内核禁用，模块不可用。</string>
     <string name="refresh">刷新</string>
     <string name="show_system_apps">显示系统应用</string>
@@ -75,6 +81,11 @@
     <string name="reboot_message">更改将在重启系统后生效。您想现在重启吗？</string>
     <string name="module_restore">恢复模块</string>
     <string name="module_restore_message">从备份中恢复模块。</string>
+    <string name="backup_restore">备份 &amp; 恢复</string>
+    <string name="allowlist_restore">恢复超级用户列表</string>
+    <string name="allowlist_restore_message">从最近的备份中恢复超级用户列表</string>
+    <string name="allowlist_backup">备份超级用户列表</string>
+    <string name="allowlist_backup_message">备份当前的超级用户列表</string>
     <string name="module_backup">备份模块</string>
     <string name="module_backup_message">备份当前已安装的模块。</string>
     <string name="warning">警告</string>
@@ -83,7 +94,7 @@
     <string name="cancel">取消</string>
     <string name="later">稍后</string>
     <string name="home_next_kernelsu">🔥 Next 构建</string>
-    <string name="home_next_kernelsu_repo">https://github.com/rifsxd/KernelSU-Next</string>
+    <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Next 实验性分支。在 GitHub 上查看！</string>
     <string name="home_experimental_kernelsu">⚠️ 实验性开发警告！</string>
     <string name="home_experimental_kernelsu_repo">127.0.0.1</string>
@@ -176,4 +187,6 @@
     <string name="save_log">保存日志</string>
     <string name="log_saved">日志已保存</string>
     <string name="send_log">分享日志</string>
+    <string name="settings_disable_su">关闭 su 兼容</string>
+    <string name="settings_disable_su_summary">临时禁止任何应用通过 su 命令获取 root 权限（已运行的 root 进程不受影响）</string>
 </resources>

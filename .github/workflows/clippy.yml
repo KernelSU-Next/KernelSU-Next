@@ -23,15 +23,26 @@ jobs:
   clippy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: rustup update stable
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - name: Install cross
-        run: cargo install cross --git https://github.com/cross-rs/cross --rev 66845c1
+      - name: Setup Rust
+        run: rustup update stable
 
-      - name: Run clippy
+      - name: Setup Cross
+        run: RUSTFLAGS="" cargo install cross
+
+      - name: Cache ksud_overlayfs
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: userspace/ksud_overlayfs
+
+      - name: Cache ksud_magic
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: userspace/ksud_magic
+
+      - name: Run Clippy
         run: |
           cross clippy --manifest-path userspace/ksud_magic/Cargo.toml --target aarch64-linux-android --release
-          cross clippy --manifest-path userspace/ksud_magic/Cargo.toml --target x86_64-linux-android --release
           cross clippy --manifest-path userspace/ksud_overlayfs/Cargo.toml --target aarch64-linux-android --release
-          cross clippy --manifest-path userspace/ksud_overlayfs/Cargo.toml --target x86_64-linux-android --release

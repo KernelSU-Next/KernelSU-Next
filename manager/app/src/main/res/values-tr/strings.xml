@@ -5,7 +5,7 @@
     <string name="issue_report_body_2">Hemen bildirin!</string>
     <string name="issue_report_github">GitHub\'da Bildir</string>
     <string name="issue_report_telegram">Telegram\'dan İletişime Geçin</string>
-    <string name="issue_report_github_link">https://github.com/rifsxd/KernelSU-Next/issues</string>
+    <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
     <string name="issue_report_telegram_link">https://t.me/ksunext</string>
     <string name="confirm">Onayla</string>
     <string name="app_name" translatable="false">KernelSU Next</string>
@@ -29,11 +29,11 @@
     <string name="selinux_status_enforcing">Zorlanıyor (Enforcing)</string>
     <string name="selinux_status_permissive">Serbest (Permissive)</string>
     <string name="selinux_status_unknown">Bilinmiyor</string>
-    <string name="superuser">Süper kullanıcı</string>
+    <string name="superuser">SüperKullanıcı</string>
     <string name="module_failed_to_enable">Modül etkinleştirilemedi: %s</string>
     <string name="module_failed_to_disable">Modül devre dışı bırakılamadı: %s</string>
     <string name="module_empty">Yüklü modül yok</string>
-    <string name="module">Modül</string>
+    <string name="module">Modüller</string>
     <string name="module_install_prompt_with_name">%1$s modülünü yüklemeye devam etmek istiyor musunuz?</string>
     <string name="module_sort_a_to_z">Sırala (A-Z)</string>
     <string name="module_sort_z_to_a">Sırala (Z-A)</string>
@@ -83,7 +83,7 @@
     <string name="cancel">İptal</string>
     <string name="later">Sonra</string>
     <string name="home_next_kernelsu">🔥 Yeni Sürüm</string>
-    <string name="home_next_kernelsu_repo">https://github.com/rifsxd/KernelSU-Next</string>
+    <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Son deneysel dal. GitHub\'da kontrol edin!</string>
     <string name="home_experimental_kernelsu">⚠️ Deneysel Geliştirme Uyarısı!</string>
     <string name="home_experimental_kernelsu_repo">127.0.0.1</string>

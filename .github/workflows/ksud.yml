@@ -1,0 +1,79 @@
+name: Build ksud
+on:
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+      os:
+        required: false
+        type: string
+        default: ubuntu-latest
+      pack_lkm:
+        required: false
+        type: boolean
+        default: true
+      use_cache:
+        required: false
+        type: boolean
+        default: true
+jobs:
+  build:
+    runs-on: ${{ inputs.os }}
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Download Artifacts
+      uses: actions/download-artifact@v4
+
+    - name: Prepare LKM Files
+      if: ${{ inputs.pack_lkm }}
+      run: |
+        cp android*-lkm/*_kernelsu.ko ./userspace/ksud_overlayfs/bin/aarch64/
+        cp android*-lkm/*_kernelsu.ko ./userspace/ksud_magic/bin/aarch64/
+
+    - name: Import susfsd Libraries
+      run: |
+        cp susfsd-aarch64-linux-android/arm64-v8a/susfsd ./userspace/ksud_overlayfs/bin/aarch64/
+        cp susfsd-aarch64-linux-android/arm64-v8a/susfsd ./userspace/ksud_magic/bin/aarch64/
+
+    - name: Setup Rust
+      run: |
+        rustup update stable
+        rustup target add aarch64-apple-darwin
+
+    - name: Cache ksud_overlayfs
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: userspace/ksud_overlayfs
+        cache-targets: false
+
+    - name: Cache ksud_magic
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: userspace/ksud_magic
+        cache-targets: false
+
+    - name: Setup Cross
+      run: |
+        RUSTFLAGS="" cargo install cross --git https://github.com/cross-rs/cross --rev 66845c1 --force
+
+    - name: Build ksud
+      run: |
+        CROSS_NO_WARNINGS=0 cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud_overlayfs/Cargo.toml
+        CROSS_NO_WARNINGS=0 cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud_magic/Cargo.toml
+
+    - name: Upload ksud_overlayfs artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ksud_overlayfs-${{ inputs.target }}
+        path: userspace/ksud_overlayfs/target/**/release/ksud*
+
+    - name: Upload ksud_magic artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ksud_magic-${{ inputs.target }}
+        path: userspace/ksud_magic/target/**/release/ksud*

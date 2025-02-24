@@ -5,7 +5,7 @@
     <string name="issue_report_body_2">Report it as soon as possible!</string>
     <string name="issue_report_github">Report on GitHub</string>
     <string name="issue_report_telegram">Contact via Telegram</string>
-    <string name="issue_report_github_link">https://github.com/rifsxd/KernelSU-Next/issues</string>
+    <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
     <string name="issue_report_telegram_link">https://t.me/ksunext</string>
     <string name="confirm">Confirm</string>
     <string name="app_name" translatable="false">KernelSU Next</string>
@@ -34,7 +34,7 @@
     <string name="module_failed_to_disable">Failed to disable module: %s</string>
     <string name="module_empty">No module installed</string>
     <string name="module">Module</string>
-    <string name="module_install_prompt_with_name">Do you want to continue installing module %1$s?</string>
+    <string name="module_install_prompt_with_name">The following module(s) will be installed: %1$s</string>
     <string name="module_sort_a_to_z">Sort (A-Z)</string>
     <string name="module_sort_z_to_a">Sort (Z-A)</string>
     <string name="uninstall">Uninstall</string>
@@ -57,6 +57,12 @@
     <string name="module_restore_failed">Failed to restore: %s</string>
     <string name="module_version">Version</string>
     <string name="module_author">Author</string>
+    <string name="module_id">ID</string>
+    <string name="module_version_code">Code</string>
+    <string name="module_update_json">UpdateJson</string>
+    <string name="module_update_json_empty">Empty</string>
+    <string name="enable_developer_options">Enable developer options</string>
+    <string name="enable_developer_options_summary">Show hidden settings and debug info relevant only for developers.</string>
     <string name="module_overlay_fs_not_available">Modules are unavailable as OverlayFS is disabled by the kernel.</string>
     <string name="refresh">Refresh</string>
     <string name="show_system_apps">Show system apps</string>
@@ -75,15 +81,20 @@
     <string name="reboot_message">The changes will take effect after the system restart. Do you want to reboot now?</string>
     <string name="module_restore">Restore module</string>
     <string name="module_restore_message">Restore modules from recent backup.</string>
+    <string name="backup_restore">Backup &amp; Restore</string>
     <string name="module_backup">Backup module</string>
     <string name="module_backup_message">Backup currently installed modules.</string>
+    <string name="allowlist_restore">Restore allowlist</string>
+    <string name="allowlist_restore_message">Restore allowlist from recent backup.</string>
+    <string name="allowlist_backup">Backup allowlist</string>
+    <string name="allowlist_backup_message">Backup currently configured allowlist.</string>
     <string name="warning">Warning</string>
     <string name="warning_message">This feature is still in beta and under development. Please ensure you backup your modules before proceeding. Only use this feature if you understand the potential risks. Proceed with caution.</string>
     <string name="proceed">Proceed</string>
     <string name="cancel">Cancel</string>
     <string name="later">Later</string>
     <string name="home_next_kernelsu">🔥 Next build</string>
-    <string name="home_next_kernelsu_repo">https://github.com/rifsxd/KernelSU-Next</string>
+    <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Next experimental branch. Check it out on GitHub!</string>
     <string name="home_experimental_kernelsu">⚠️ Experimental development warning!</string>
     <string name="home_experimental_kernelsu_repo">127.0.0.1</string>
@@ -107,7 +118,7 @@
     <string name="profile_umount_modules">Umount modules</string>
     <string name="failed_to_update_app_profile">Failed to update App Profile for %s</string>
     <string name="require_kernel_version">The current KernelSU Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
-    <string name="settings_umount_modules_default">Umount modules by default</string>
+    <string name="settings_umount_modules_default">Umount modules</string>
     <string name="settings_umount_modules_default_summary">The global default value for \"Umount modules\" in App Profile. If enabled, it will remove all module modifications to the system for apps that don\'t have a profile set.</string>
     <string name="settings_susfs_toggle">Hide kprobe hooks</string>
     <string name="settings_susfs_toggle_summary">This option disables the kprobe hooks created by ksu and, instead, activates the embedded non-kprobe hooks, implementing the same functionality that would be applied to a non-GKI kernel, which doesn\'t support kprobe.</string>
@@ -123,6 +134,7 @@
     <string name="force_stop_app">Force stop</string>
     <string name="restart_app">Restart</string>
     <string name="failed_to_update_sepolicy">Failed to update SELinux rules for: %s</string>
+    <string name="su_not_allowed">Granting superuser isn\'t allowed for: %s</string>
     <string name="module_changelog">Changelog</string>
     <string name="settings_profile_template">App Profile Template</string>
     <string name="settings_profile_template_summary">Manage local and online template of App Profile</string>
@@ -176,4 +188,6 @@
     <string name="save_log">Save logs</string>
     <string name="log_saved">Logs saved</string>
     <string name="send_log">Share logs</string>
+    <string name="settings_disable_su">Disable su compatibility</string>
+    <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
 </resources>

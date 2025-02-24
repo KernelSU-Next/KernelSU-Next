@@ -1,4 +1,4 @@
-[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | [Русский](README_RU.md) | **ภาษาไทย**
+[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | [Русский](README_RU.md) | **ภาษาไทย** | [Tiếng Việt](README_VI.md)
 
 # KernelSU Next
 
@@ -6,10 +6,10 @@
 
 โซลูชันรูทบนพื้นฐานเคอร์เนลสำหรับอุปกรณ์ Android
 
-[![Latest Release](https://img.shields.io/github/v/release/rifsxd/KernelSU-Next?label=Release&logo=github)](https://github.com/rifsxd/KernelSU-Next/releases/latest)
-[![Nightly Release](https://img.shields.io/badge/Nightly%20Release-gray?logo=hackthebox&logoColor=fff)](https://nightly.link/rifsxd/KernelSU-Next/workflows/build-manager/next/manager)
+[![Latest Release](https://img.shields.io/github/v/release/KernelSU-Next/KernelSU-Next?label=Release&logo=github)](https://github.com/KernelSU-Next/KernelSU-Next/releases/latest)
+[![Nightly Release](https://img.shields.io/badge/Nightly%20Release-gray?logo=hackthebox&logoColor=fff)](https://nightly.link/KernelSU-Next/KernelSU-Next/workflows/build-manager-ci/next/Manager)
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-[![GitHub License](https://img.shields.io/github/license/rifsxd/KernelSU-Next?logo=gnu)](/LICENSE)
+[![GitHub License](https://img.shields.io/github/license/KernelSU-Next/KernelSU-Next?logo=gnu)](/LICENSE)
 
 ## คุณสมบัติ
 
@@ -28,7 +28,7 @@ KernelSU Next รองรับแบบเป็นทางการตั้
 
 ## การใช้งาน
 
-- [คำแนะนำในการติดตั้ง](https://rifsxd.github.io/KernelSU-Next/)
+- [คำแนะนำในการติดตั้ง](https://KernelSU-Next.github.io/KernelSU-Next/)
 
 ## ความปลอดภัย
 
@@ -41,9 +41,9 @@ KernelSU Next รองรับแบบเป็นทางการตั้
 
 ## เครดิต
 
-- [kernel-assisted-superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): ที่เป็นคนริเริ่มไอเดียเกี่ยวกับ KernelSU
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/): ที่เป็นคนริเริ่มไอเดียเกี่ยวกับ KernelSU
 - [Magisk](https://github.com/topjohnwu/Magisk): อุปกรณ์มือเกี่ยวกับรูทที่ทรงพลัง
-- [genuine](https://github.com/brevent/genuine/): การออกลายเซ็นให้กับไฟล์ apk v2
+- [genuine](https://github.com/brevent/genuine/): การออกลายเซ็นให้กับไฟล์ APK v2
 - [Diamorphine](https://github.com/m0nad/Diamorphine): ความรู้ความสามารถเกี่ยวกับ rootkit
 - [KernelSU](https://github.com/tiann/KernelSU): ต้องขอบคุณ tiann ถ้าไม่มีคนนั้นก็ไม่มีสิ่งที่เรียกว่า KernelSU เกิดขึ้น
 - [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs): 💜 5ec1cff ที่ช่วย KernelSU ไว้

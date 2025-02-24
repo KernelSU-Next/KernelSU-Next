@@ -63,6 +63,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AppProfileTemplateScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.BackupRestoreScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import kotlinx.coroutines.Dispatchers
@@ -113,8 +114,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         }
         val loadingDialog = rememberLoadingDialog()
         val shrinkDialog = rememberConfirmDialog()
-        val restoreDialog = rememberConfirmDialog()
-        val backupDialog = rememberConfirmDialog()
 
         Column(
             modifier = Modifier
@@ -159,13 +158,31 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             }
             if (ksuVersion != null) {
                 SwitchItem(
-                    icon = Icons.Filled.RemoveModerator,
+                    icon = Icons.Filled.FolderDelete,
                     title = stringResource(id = R.string.settings_umount_modules_default),
                     summary = stringResource(id = R.string.settings_umount_modules_default_summary),
                     checked = umountChecked
+                    
                 ) {
                     if (Natives.setDefaultUmountModules(it)) {
                         umountChecked = it
+                    }
+                }
+            }
+
+            if (Natives.version >= Natives.MINIMAL_SUPPORTED_SU_COMPAT) {
+                var isSuDisabled by rememberSaveable {
+                    mutableStateOf(!Natives.isSuEnabled())
+                }
+                SwitchItem(
+                    icon = Icons.Filled.RemoveModerator,
+                    title = stringResource(id = R.string.settings_disable_su),
+                    summary = stringResource(id = R.string.settings_disable_su_summary),
+                    checked = isSuDisabled
+                ) { checked ->
+                    val shouldEnable = !checked
+                    if (Natives.setSuEnabled(shouldEnable)) {
+                        isSuDisabled = !shouldEnable
                     }
                 }
             }
@@ -300,13 +317,30 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 )
             }
             SwitchItem(
-                icon = Icons.Filled.DeveloperMode,
+                icon = Icons.Filled.Web,
                 title = stringResource(id = R.string.enable_web_debugging),
                 summary = stringResource(id = R.string.enable_web_debugging_summary),
                 checked = enableWebDebugging
             ) {
                 prefs.edit().putBoolean("enable_web_debugging", it).apply()
                 enableWebDebugging = it
+            }
+
+            var developerOptionsEnabled by rememberSaveable {
+                mutableStateOf(
+                    prefs.getBoolean("enable_developer_options", false)
+                )
+            }
+            if (ksuVersion != null) {
+                SwitchItem(
+                    icon = Icons.Filled.DeveloperMode,
+                    title = stringResource(id = R.string.enable_developer_options),
+                    summary = stringResource(id = R.string.enable_developer_options_summary),
+                    checked = developerOptionsEnabled
+                ) {
+                    prefs.edit().putBoolean("enable_developer_options", it).apply()
+                    developerOptionsEnabled = it
+                }
             }
 
             var showBottomsheet by remember { mutableStateOf(false) }
@@ -340,7 +374,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                         .clickable {
                                             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
                                             val current = LocalDateTime.now().format(formatter)
-                                            exportBugreportLauncher.launch("KernelSU_bugreport_${current}.tar.gz")
+                                            exportBugreportLauncher.launch("KernelSU_Next_bugreport_${current}.tar.gz")
                                             showBottomsheet = false
                                         }
                                 ) {
@@ -419,50 +453,17 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             }
 
             if (ksuVersion != null) {
-                val moduleBackup = stringResource(id = R.string.module_backup)
-                val backupMessage = stringResource(id = R.string.module_backup_message)
+                val backupRestore = stringResource(id = R.string.backup_restore)
                 ListItem(
                     leadingContent = {
                         Icon(
                             Icons.Filled.Backup,
-                            moduleBackup
+                            backupRestore
                         )
                     },
-                    headlineContent = { Text(moduleBackup) },
+                    headlineContent = { Text(backupRestore) },
                     modifier = Modifier.clickable {
-                        scope.launch {
-                            val result = backupDialog.awaitConfirm(title = moduleBackup, content = backupMessage)
-                            if (result == ConfirmResult.Confirmed) {
-                                loadingDialog.withLoading {
-                                    moduleBackup()
-                                }
-                            }
-                        }
-                    }
-                )
-            }
-
-            if (ksuVersion != null) {
-                val moduleRestore = stringResource(id = R.string.module_restore)
-                val restoreMessage = stringResource(id = R.string.module_restore_message)
-                ListItem(
-                    leadingContent = {
-                        Icon(
-                            Icons.Filled.Restore,
-                            moduleRestore
-                        )
-                    },
-                    headlineContent = { Text(moduleRestore) },
-                    modifier = Modifier.clickable {
-                        scope.launch {
-                            val result = restoreDialog.awaitConfirm(title = moduleRestore, content = restoreMessage)
-                            if (result == ConfirmResult.Confirmed) {
-                                loadingDialog.withLoading {
-                                    moduleRestore()
-                                    showRebootDialog = true
-                                }
-                            }
-                        }
+                        navigator.navigate(BackupRestoreScreenDestination)
                     }
                 )
             }

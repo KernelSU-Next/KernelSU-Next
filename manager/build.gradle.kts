@@ -30,7 +30,7 @@ cmaker {
 val androidMinSdkVersion = 26
 val androidTargetSdkVersion = 35
 val androidCompileSdkVersion = 35
-val androidCompileNdkVersion = "27.2.12479018"
+val androidCompileNdkVersion = "28.0.13004108"
 val androidSourceCompatibility = JavaVersion.VERSION_21
 val androidTargetCompatibility = JavaVersion.VERSION_21
 val managerVersionCode by extra(getVersionCode())

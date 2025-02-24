@@ -283,7 +283,7 @@ fn do_magic_mount<P: AsRef<Path>, WP: AsRef<Path>>(
                         Symlink => true,
                         Whiteout => real_path.exists(),
                         _ => {
-                            if let Ok(metadata) = real_path.metadata() {
+                            if let Ok(metadata) = real_path.symlink_metadata() {
                                 let file_type = NodeFileType::from_file_type(metadata.file_type())
                                     .unwrap_or(Whiteout);
                                 file_type != node.file_type || file_type == Symlink

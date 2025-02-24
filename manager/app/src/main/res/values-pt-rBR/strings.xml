@@ -5,7 +5,7 @@
     <string name="issue_report_body_2">Reporte o mais rápido possível!</string>
     <string name="issue_report_github">Reportar no GitHub</string>
     <string name="issue_report_telegram">Contato via Telegram</string>
-    <string name="issue_report_github_link">https://github.com/rifsxd/KernelSU-Next/issues</string>
+    <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
     <string name="issue_report_telegram_link">https://t.me/ksunext</string>
     <string name="confirm">Confirmar</string>
     <string name="app_name" translatable="false">KernelSU Next</string>
@@ -34,7 +34,7 @@
     <string name="module_failed_to_disable">Falha ao desativar o módulo %s</string>
     <string name="module_empty">Nenhum módulo instalado</string>
     <string name="module">Módulo</string>
-    <string name="module_install_prompt_with_name">Deseja continuar instalando o módulo %1$s?</string>
+    <string name="module_install_prompt_with_name">Os seguintes módulos serão instalados: %1$s</string>
     <string name="module_sort_a_to_z">Ordenar (A-Z)</string>
     <string name="module_sort_z_to_a">Ordenar (Z-A)</string>
     <string name="uninstall">Desinstalar</string>
@@ -57,6 +57,12 @@
     <string name="module_restore_failed">Falha ao restaurar %s</string>
     <string name="module_version">Versão</string>
     <string name="module_author">Autor</string>
+    <string name="module_id">ID</string>
+    <string name="module_version_code">Código</string>
+    <string name="module_update_json">UpdateJson</string>
+    <string name="module_update_json_empty">Vazio</string>
+    <string name="enable_developer_options">Ativar opções do desenvolvedor</string>
+    <string name="enable_developer_options_summary">Exibe as configurações ocultas e informações de depuração relevantes apenas para desenvolvedores.</string>
     <string name="module_overlay_fs_not_available">Os módulos estão indisponíveis porque OverlayFS está desabilitado pelo kernel!</string>
     <string name="refresh">Atualizar</string>
     <string name="show_system_apps">Mostrar apps do sistema</string>
@@ -74,16 +80,21 @@
     <string name="reboot_required">Reinicialização necessária</string>
     <string name="reboot_message">As alterações entrarão em vigor após a reinicialização do sistema. Deseja reiniciar agora?</string>
     <string name="module_restore">Restaurar módulo</string>
-    <string name="module_restore_message">Restaure módulos de backup recente.</string>
+    <string name="module_restore_message">Restaure os módulos de um backup recente.</string>
+    <string name="backup_restore">Backup e restauração</string>
     <string name="module_backup">Backup do módulo</string>
-    <string name="module_backup_message">Backup dos módulos atualmente instalados.</string>
+    <string name="module_backup_message">Faça backup dos módulos atualmente instalados.</string>
+    <string name="allowlist_restore">Restaurar lista de permissões</string>
+    <string name="allowlist_restore_message">Restaure a lista de permissões de backup recente.</string>
+    <string name="allowlist_backup">Backup da lista de permissões</string>
+    <string name="allowlist_backup_message">Faça backup da lista de permissões configurada atualmente.</string>
     <string name="warning">Aviso</string>
     <string name="warning_message">Este recurso ainda está em beta e em desenvolvimento. Certifique-se de fazer backup de seus módulos antes de continuar. Use esse recurso somente se você compreender os riscos potenciais. Proceda com cautela.</string>
     <string name="proceed">Prosseguir</string>
     <string name="cancel">Cancelar</string>
     <string name="later">Mais tarde</string>
     <string name="home_next_kernelsu">🔥 Compilação next</string>
-    <string name="home_next_kernelsu_repo">https://github.com/rifsxd/KernelSU-Next</string>
+    <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Branch next experimental. Confira no GitHub!</string>
     <string name="home_experimental_kernelsu">⚠️ Aviso de desenvolvimento experimental!</string>
     <string name="home_experimental_kernelsu_repo">127.0.0.1</string>
@@ -107,7 +118,7 @@
     <string name="profile_umount_modules">Desmontar módulos</string>
     <string name="failed_to_update_app_profile">Falha ao atualizar o Perfil do Aplicativo para %s</string>
     <string name="require_kernel_version">A versão atual do KernelSU Next %1$d é muito baixa para o gerenciador funcionar corretamente. Por favor, atualize para a versão %2$d ou superior!</string>
-    <string name="settings_umount_modules_default">Desmontar módulos por padrão</string>
+    <string name="settings_umount_modules_default">Desmontar módulos</string>
     <string name="settings_umount_modules_default_summary">O valor padrão global para \"Desmontar módulos\" em Perfil do Aplicativo. Se ativado, ele removerá todas as modificações do módulo no sistema para apps que não possuem um perfil definido.</string>
     <string name="settings_susfs_toggle">Ocultar ganchos kprobe</string>
     <string name="settings_susfs_toggle_summary">Esta opção desativa os ganchos kprobe criados pelo ksu e, em vez disso, ativa os ganchos embutidos não-kprobe, implementando a mesma funcionalidade que seria aplicada a um kernel não-GKI, que não oferece suporte para kprobe.</string>
@@ -123,6 +134,7 @@
     <string name="force_stop_app">Forçar parada</string>
     <string name="restart_app">Reiniciar</string>
     <string name="failed_to_update_sepolicy">Falha ao atualizar as regras do SELinux para: %s</string>
+    <string name="su_not_allowed">O acesso de SuperUsuário não é permitido para: %s</string>
     <string name="module_changelog">Registro de alterações</string>
     <string name="settings_profile_template">Modelo do Perfil do Aplicativo</string>
     <string name="settings_profile_template_summary">Gerencie o modelo local e online do Perfil do Aplicativo.</string>
@@ -176,4 +188,6 @@
     <string name="save_log">Salvar registros</string>
     <string name="log_saved">Registros salvos</string>
     <string name="send_log">Compartilhar registros</string>
+    <string name="settings_disable_su">Desativar compatibilidade su</string>
+    <string name="settings_disable_su_summary">Desative temporariamente a capacidade de qualquer app obter privilégios root por meio do comando ⁠su (processos root existentes não serão afetados).</string>
 </resources>

@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.Collator
 import java.util.Locale
+import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.ui.util.HanziToPinyin
 import com.rifsxd.ksunext.ui.util.listModules
 import com.rifsxd.ksunext.ui.util.overlayFsAvailable
@@ -144,11 +145,8 @@ class ModuleViewModel : ViewModel() {
         val result = kotlin.runCatching {
             val url = m.updateJson
             Log.i(TAG, "checkUpdate url: $url")
-            val response = okhttp3.OkHttpClient()
-                .newCall(
-                    okhttp3.Request.Builder()
-                        .url(url)
-                        .build()
+            val response = ksuApp.okhttpClient.newCall(
+                    okhttp3.Request.Builder().url(url).build()
                 ).execute()
             Log.d(TAG, "checkUpdate code: ${response.code}")
             if (response.isSuccessful) {

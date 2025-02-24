@@ -49,6 +49,11 @@ fun getKsuDaemonPath(): String {
     }
 }
 
+data class FlashResult(val code: Int, val err: String, val showReboot: Boolean) {
+    constructor(result: Shell.Result, showReboot: Boolean) : this(result.code, result.err.joinToString("\n"), showReboot)
+    constructor(result: Shell.Result) : this(result, result.isSuccess)
+}
+
 object KsuCli {
     val SHELL: Shell = createRootShell()
     val GLOBAL_MNT_SHELL: Shell = createRootShell(true)
@@ -190,10 +195,9 @@ private fun flashWithIO(
 
 fun flashModule(
     uri: Uri,
-    onFinish: (Boolean, Int) -> Unit,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit
-): Boolean {
+): FlashResult {
     val resolver = ksuApp.contentResolver
     with(resolver.openInputStream(uri)) {
         val file = File(ksuApp.cacheDir, "module.zip")
@@ -206,15 +210,14 @@ fun flashModule(
 
         file.delete()
 
-        onFinish(result.isSuccess, result.code)
-        return result.isSuccess
+        return FlashResult(result)
     }
 }
 
 fun runModuleAction(
     moduleId: String, onStdout: (String) -> Unit, onStderr: (String) -> Unit
 ): Boolean {
-    val shell = getRootShell()
+    val shell = createRootShell(true)
 
     val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
         override fun onAddElement(s: String?) {
@@ -236,21 +239,19 @@ fun runModuleAction(
 }
 
 fun restoreBoot(
-    onFinish: (Boolean, Int) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
-): Boolean {
+    onStdout: (String) -> Unit, onStderr: (String) -> Unit
+): FlashResult {
     val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
     val result = flashWithIO("${getKsuDaemonPath()} boot-restore -f --magiskboot $magiskboot", onStdout, onStderr)
-    onFinish(result.isSuccess, result.code)
-    return result.isSuccess
+    return FlashResult(result)
 }
 
 fun uninstallPermanently(
-    onFinish: (Boolean, Int) -> Unit, onStdout: (String) -> Unit, onStderr: (String) -> Unit
-): Boolean {
+    onStdout: (String) -> Unit, onStderr: (String) -> Unit
+): FlashResult {
     val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
     val result = flashWithIO("${getKsuDaemonPath()} uninstall --magiskboot $magiskboot", onStdout, onStderr)
-    onFinish(result.isSuccess, result.code)
-    return result.isSuccess
+    return FlashResult(result)
 }
 
 suspend fun shrinkModules(): Boolean = withContext(Dispatchers.IO) {
@@ -268,10 +269,9 @@ fun installBoot(
     bootUri: Uri?,
     lkm: LkmSelection,
     ota: Boolean,
-    onFinish: (Boolean, Int) -> Unit,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit,
-): Boolean {
+): FlashResult {
     val resolver = ksuApp.contentResolver
 
     val bootFile = bootUri?.let { uri ->
@@ -334,15 +334,14 @@ fun installBoot(
     lkmFile?.delete()
 
     // if boot uri is empty, it is direct install, when success, we should show reboot button
-    onFinish(bootUri == null && result.isSuccess, result.code)
-    return result.isSuccess
+    return FlashResult(result, bootUri == null && result.isSuccess)
 }
 
 fun reboot(reason: String = "") {
     val shell = getRootShell()
     if (reason == "recovery") {
         // KEYCODE_POWER = 26, hide incorrect "Factory data reset" message
-        ShellUtils.fastCmd(shell, "/system/bin/input keyevent 26")
+        ShellUtils.fastCmd(shell, "/system/bin/reboot $reason")
     }
     ShellUtils.fastCmd(shell, "/system/bin/svc power reboot $reason || /system/bin/reboot $reason")
 }
@@ -498,6 +497,59 @@ fun moduleRestore(): Boolean {
     ShellUtils.fastCmd(shell, createDestDirCommand)
 
     val moveCommand = "cp -rp $sourceDir/* $destinationDir"
+    val result = ShellUtils.fastCmd(shell, moveCommand).trim()
+
+    return result.isEmpty()
+}
+
+fun allowlistBackupDir(): String? {
+    val shell = getRootShell()
+    val baseBackupDir = "/data/adb/allowlist_bak"
+    val resultBase = ShellUtils.fastCmd(shell, "mkdir -p $baseBackupDir").trim()
+    if (resultBase.isNotEmpty()) return null
+
+    val timestamp = ShellUtils.fastCmd(shell, "date +%Y%m%d_%H%M%S").trim()
+    if (timestamp.isEmpty()) return null
+
+    val newBackupDir = "$baseBackupDir/$timestamp"
+    val resultNewDir = ShellUtils.fastCmd(shell, "mkdir -p $newBackupDir").trim()
+
+    if (resultNewDir.isEmpty()) return newBackupDir
+    return null
+}
+
+fun allowlistBackup(): Boolean {
+    val shell = getRootShell()
+
+    val checkEmptyCommand = "if [ -z \"$(ls -A /data/adb/ksu/.allowlist)\" ]; then echo 'empty'; fi"
+    val resultCheckEmpty = ShellUtils.fastCmd(shell, checkEmptyCommand).trim()
+
+    if (resultCheckEmpty == "empty") {
+        return false
+    }
+
+    val backupDir = allowlistBackupDir() ?: return false
+    val command = "cp -rp /data/adb/ksu/.allowlist $backupDir"
+    val result = ShellUtils.fastCmd(shell, command).trim()
+
+    return result.isEmpty()
+}
+
+fun allowlistRestore(): Boolean {
+    val shell = getRootShell()
+
+    val command = "ls -t /data/adb/allowlist_bak | head -n 1"
+    val latestBackupDir = ShellUtils.fastCmd(shell, command).trim()
+
+    if (latestBackupDir.isEmpty()) return false
+
+    val sourceDir = "/data/adb/allowlist_bak/$latestBackupDir"
+    val destinationDir = "/data/adb/ksu/"
+
+    val createDestDirCommand = "mkdir -p $destinationDir"
+    ShellUtils.fastCmd(shell, createDestDirCommand)
+
+    val moveCommand = "cp -rp $sourceDir/.allowlist $destinationDir"
     val result = ShellUtils.fastCmd(shell, moveCommand).trim()
 
     return result.isEmpty()
