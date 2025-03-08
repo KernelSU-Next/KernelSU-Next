@@ -26,8 +26,8 @@
     <string name="home_manager_version">Wersja Managera</string>
     <string name="home_selinux_status">Status SELinux</string>
     <string name="selinux_status_disabled">Wyłączony</string>
-    <string name="selinux_status_enforcing">Wymuszony</string>
-    <string name="selinux_status_permissive">Dozwolony</string>
+    <string name="selinux_status_enforcing">Enforcing</string>
+    <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Nieznany</string>
     <string name="superuser">Superużytkownik</string>
     <string name="module_failed_to_enable">Nie udało się włączyć modułu: %s</string>
