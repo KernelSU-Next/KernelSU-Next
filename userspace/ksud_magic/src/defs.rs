@@ -24,14 +24,12 @@ pub const MODULE_UPDATE_DIR: &str = concatcp!(ADB_DIR, "modules_update/");
 
 pub const KSUD_VERBOSE_LOG_FILE: &str = concatcp!(ADB_DIR, "verbose");
 
-pub const TEMP_DIR: &str = "/debug_ramdisk";
 pub const MODULE_WEB_DIR: &str = "webroot";
 pub const MODULE_ACTION_SH: &str = "action.sh";
 pub const DISABLE_FILE_NAME: &str = "disable";
 pub const UPDATE_FILE_NAME: &str = "update";
 pub const REMOVE_FILE_NAME: &str = "remove";
 pub const SKIP_MOUNT_FILE_NAME: &str = "skip_mount";
-pub const MAGIC_MOUNT_WORK_DIR: &str = concatcp!(TEMP_DIR, "/workdir");
 
 pub const VERSION_CODE: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_CODE"));
 pub const VERSION_NAME: &str = include_str!(concat!(env!("OUT_DIR"), "/VERSION_NAME"));

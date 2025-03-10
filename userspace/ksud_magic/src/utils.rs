@@ -1,6 +1,6 @@
 use anyhow::{Context, Error, Ok, Result, bail};
 use std::{
-    fs::{create_dir_all, remove_file, write, File, OpenOptions},
+    fs::{self, create_dir_all, remove_file, write, File, OpenOptions},
     io::{
         ErrorKind::{AlreadyExists, NotFound},
         Write,
@@ -175,6 +175,38 @@ pub fn umask(_mask: u32) {
 
 pub fn has_magisk() -> bool {
     which::which("magisk").is_ok()
+}
+
+fn is_ok_empty(dir: &str) -> bool {
+    use std::result::Result::Ok;
+
+    match fs::read_dir(dir) {
+        Ok(mut entries) => entries.next().is_none(),
+        Err(_) => false,
+    }
+}
+
+pub fn get_tmp_path() -> String {
+    let dirs = [
+        "/debug_ramdisk",
+        "/patch_hw",
+        "/oem",
+        "/root",
+        "/sbin",
+    ];
+
+    // find empty directory
+    for dir in dirs {
+        if is_ok_empty(dir) {
+            return dir.to_string();
+        }
+    }
+    "".to_string()
+}
+
+pub fn get_work_dir() -> String {
+     let tmp_path = get_tmp_path();
+     format!("{}/workdir/", tmp_path)
 }
 
 #[cfg(target_os = "android")]
