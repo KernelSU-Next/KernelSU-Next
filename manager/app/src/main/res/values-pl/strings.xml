@@ -59,8 +59,8 @@
     <string name="module_author">Autor</string>
     <string name="module_id">ID</string>
     <string name="module_version_code">Kod</string>
-    <string name="module_update_json">Aktualizuj Json</string>
-    <string name="module_update_json_empty">Pusty</string>
+    <string name="module_update_json">UpdateJson</string>
+    <string name="module_update_json_empty">Brak</string>
     <string name="enable_developer_options">Włącz opcje programistyczne</string>
     <string name="enable_developer_options_summary">Pokaż ukryte ustawienia i informacje debugowe istotne tylko dla programistów.</string>
     <string name="module_overlay_fs_not_available">Moduły są niedostępne, ponieważ OverlayFS jest wyłączony przez jądro.</string>
