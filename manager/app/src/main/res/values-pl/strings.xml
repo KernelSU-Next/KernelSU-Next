@@ -67,7 +67,7 @@
     <string name="refresh">Odśwież</string>
     <string name="show_system_apps">Pokaż aplikacje systemowe</string>
     <string name="hide_system_apps">Ukryj aplikacje systemowe</string>
-    <string name="export_log">Eksport logów</string>
+    <string name="export_log">Eksportowanie logów</string>
     <string name="safe_mode">Tryb awaryjny</string>
     <string name="reboot_to_apply">Uruchom ponownie, aby zastosować zmiany</string>
     <string name="module_magisk_conflict">Moduły są niedostępne z powodu konfliku z Magisk!</string>
