@@ -20,6 +20,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -161,7 +163,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         LocaleList(locale).apply {
                             Locale.current = locale
                         }
-                        // 更新界面语言
+
                         context.resources.updateConfiguration(
                             context.resources.configuration.apply {
                                 setLocale(locale)
@@ -169,11 +171,11 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             context.resources.displayMetrics
                         )
                     }) {
-                        Text(text = language.toUpperCase())
+                        Text(text = language.uppercase())
                     }
                 }
             }
-            
+
             val profileTemplate = stringResource(id = R.string.settings_profile_template)
             if (ksuVersion != null) {
                 ListItem(
