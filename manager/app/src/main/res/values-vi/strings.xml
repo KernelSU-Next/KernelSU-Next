@@ -75,7 +75,7 @@
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">Không có sẵn</string>
-    <string name="use_overlay_fs">Sử dụng OverlayFS (Beta)</string>
+    <string name="use_overlay_fs">Sử dụng OverlayFS</string>
     <string name="use_overlay_fs_summary">Gạt bật tắt chuyển giữa phương thức OverlayFS và Magic Mount cho các tập mount hệ thống.</string>
     <string name="reboot_required">Yêu cầu khởi động lại</string>
     <string name="reboot_message">Một/Nhiều thay đổi cần được khởi động lại hệ thống, khởi động luôn?</string>

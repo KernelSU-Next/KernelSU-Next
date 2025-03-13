@@ -29,7 +29,7 @@
     <string name="selinux_status_enforcing">Appliqué</string>
     <string name="selinux_status_permissive">Permissif</string>
     <string name="selinux_status_unknown">Inconnu</string>
-    <string name="superuser">SuperUtilisateur</string>
+    <string name="superuser">Super Utilisateur</string>
     <string name="module_failed_to_enable">Échec de l\'activation du module: %s</string>
     <string name="module_failed_to_disable">Échec de la désactivation du module: %s</string>
     <string name="module_empty">Aucun module installé</string>
@@ -46,7 +46,7 @@
     <string name="reboot_userspace">Redémarrage logiciel</string>
     <string name="reboot_recovery">Redémarrer en mode Recovery</string>
     <string name="reboot_bootloader">Redémarrer en mode Bootloader</string>
-    <string name="reboot_download">Redémarrer sur les Téléchargements</string>
+    <string name="reboot_download">Redémarrer en mode téléchargement</string>
     <string name="reboot_edl">Redémarrer en mode EDL</string>
     <string name="about">À propos</string>
     <string name="module_uninstall_confirm">Êtes-vous sûr de vouloir désinstaller le module %s?</string>
@@ -54,9 +54,11 @@
     <string name="module_uninstall_failed">Échec de la désinstallation: %s</string>
     <string name="module_restore_confirm">Êtes-vous sûr de vouloir restaurer le module %s?</string>
     <string name="module_restore_success">%s a été restauré</string>
-    <string name="module_restore_failed">Échec de la restauration: %s</string>
+    <string name="module_restore_failed">Échec de la restoration: %s</string>
     <string name="module_version">Version</string>
     <string name="module_author">Auteur</string>
+    <string name="enable_developer_options">Activer les options pour les développeurs</string>
+    <string name="enable_developer_options_summary">Afficher des paramètres cachés et des information de débogage seulement utiles pour les développeurs.</string>
     <string name="module_overlay_fs_not_available">Les modules sont indisponibles car OverlayFS est désactivé par le kernel.</string>
     <string name="refresh">Rafraîchir</string>
     <string name="show_system_apps">Montrer les apps système</string>
@@ -69,14 +71,19 @@
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">Indisponible</string>
-    <string name="use_overlay_fs">Utiliser OverlayFS (Beta)</string>
+    <string name="use_overlay_fs">Utiliser OverlayFS</string>
     <string name="use_overlay_fs_summary">Alterner entre l\’utilisation d’OverlayFS et de Magic Mount pour le système de montage de KernelSU Next.</string>
     <string name="reboot_required">Redémarrage requis</string>
     <string name="reboot_message">Les changements ne seront effectifs qu\'après un redémarrage. Voulez-vous redémarrer maintenant?</string>
     <string name="module_restore">Restaurer des modules</string>
     <string name="module_restore_message">Restaurer des modules depuis une sauvegarde récente</string>
+    <string name="backup_restore">Sauvegarde et restoration</string>
     <string name="module_backup">Sauvegarder les modules</string>
     <string name="module_backup_message">Sauvegarder les modules installés</string>
+    <string name="allowlist_restore">Restorer la liste d\'autorisation</string>
+    <string name="allowlist_restore_message">Restorer la liste d\'autorisation depuis une sauvegarde récente ?</string>
+    <string name="allowlist_backup">Sauvegarder la liste d\'autorisation</string>
+    <string name="allowlist_backup_message">Sauvegarder la liste d\'autorisation actuelle ?</string>
     <string name="warning">Avertissement</string>
     <string name="warning_message">Cette fonctionnalité est encore en version bêta et en cours de développement. Veuillez sauvegarder vos modules avant de continuer. Utilisez cette fonctionnalité uniquement si vous comprenez les risques potentiels. Procédez avec prudence.</string>
     <string name="proceed">Continuer</string>
@@ -91,7 +98,7 @@
     <string name="home_experimental_kernelsu_body_point_1"> • Soyez donc en connaissance des risques : vous pourriez faire face à des crashs, des réactions inattendues ou encore des erreurs système.</string>
     <string name="home_experimental_kernelsu_body_point_2"> • Aucune garantie : Les développeurs ne seront tenus responsables d\'aucune perte de données, de dégâts au système ou d\'autres conséquences résultant de l\'utilisation de KernelSU Next.</string>
     <string name="home_experimental_kernelsu_body_point_3"> • Uniquement à but de tests : KernelSU Next est prévue pour des utilisateurs avertis, qui comprennent les risques et qui sont à l\'aise avec le fait de localiser un problème.</string>
-    <string name="about_source_code"><![CDATA[View source code at %1$s]]></string>
+    <string name="about_source_code"><![CDATA[Voir le code source sur %1$s]]></string>
     <string name="profile" translatable="false">Profil d\'application</string>
     <string name="profile_default">Par défaut</string>
     <string name="profile_template">Modèle</string>
@@ -176,4 +183,6 @@
     <string name="save_log">Enregistrer les logs</string>
     <string name="log_saved">Logs Enregistrés</string>
     <string name="send_log">Partager les logs</string>
+    <string name="settings_disable_su">Désactiver la compatibilité su</string>
+    <string name="settings_disable_su_summary">Désactive temporairement la possibilité d\'obtenir les permissions root en utilisant la commande su pour toutes les application (les processus root actifs ne seront pas affectés).</string>
 </resources>

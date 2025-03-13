@@ -6,7 +6,7 @@ use crate::{
     sepolicy, utils,
 };
 
-use anyhow::{anyhow, bail, ensure, Context, Result};
+use anyhow::{Context, Result, anyhow, bail, ensure};
 use const_format::concatcp;
 use is_executable::is_executable;
 use java_properties::PropertiesIter;
@@ -16,7 +16,7 @@ use std::fs::OpenOptions;
 use std::{
     collections::HashMap,
     env::var as env_var,
-    fs::{remove_dir_all, remove_file, set_permissions, File, Permissions},
+    fs::{File, Permissions, remove_dir_all, remove_file, set_permissions},
     io::Cursor,
     path::{Path, PathBuf},
     process::{Command, Stdio},

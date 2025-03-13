@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+
+    <string name="issue_report_title">Имате проблеми?</string>
+
+    <string name="issue_report_body">Срещнахте грешка или имате обратна връзка?</string>
+
+    <string name="issue_report_body_2">Докладвайте я възможно най-скоро!</string>
+
+    <string name="issue_report_github">Докладвайте в GitHub</string>
+
+    <string name="issue_report_telegram">Свържете се чрез Telegram</string>
+
+    <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
+
+    <string name="issue_report_telegram_link">https://t.me/ksunext</string>
+
+    <string name="confirm">Потвърди</string>
+
+    <string name="app_name" translatable="false">KernelSU Next</string>
+
+    <string name="home">Начало</string>
+
+    <string name="home_not_installed">Не е инсталиран</string>
+
+    <string name="home_click_to_install">Кликнете за инсталация</string>
+
+    <string name="home_working">Работи</string>
+
+    <string name="home_working_version">Версия: %d</string>
+
+    <string name="home_superuser_count">Суперпотребители: %d</string>
+
+    <string name="home_module_count">Модули: %d</string>
+
+    <string name="home_failure">KernelSU Next v2 подписът не е намерен в ядрото! [ !KSU_NEXT || != size/hash ]</string>
+
+    <string name="home_failure_tip">Помолете разработчика на ядрото да интегрира KernelSU Next!</string>
+
+    <string name="home_kernel">Версия на ядрото</string>
+
+    <string name="home_susfs">SuSFS: %s</string>
+
+    <string name="home_susfs_version">Версия на SuSFS</string>
+
+    <string name="home_susfs_sus_su">SuS SU</string>
+
+    <string name="home_android">Версия на Android</string>
+
+    <string name="home_manager_version">Версия на мениджъра</string>
+
+    <string name="home_selinux_status">Статус на SELinux</string>
+
+    <string name="selinux_status_disabled">Деактивиран</string>
+
+    <string name="selinux_status_enforcing">Enforcing</string>
+
+    <string name="selinux_status_permissive">Permissive</string>
+
+    <string name="selinux_status_unknown">Неизвестен</string>
+
+    <string name="superuser">Суперпотребител</string>
+
+    <string name="module_failed_to_enable">Неуспешно активиране на модула: %s</string>
+
+    <string name="module_failed_to_disable">Неуспешно деактивиране на модула: %s</string>
+
+    <string name="module_empty">Няма инсталирани модули</string>
+
+    <string name="module">Модул</string>
+
+    <string name="module_install_prompt_with_name">Следните модули ще бъдат инсталирани: %1$s</string>
+
+    <string name="module_sort_a_to_z">Сортиране (A-Я)</string>
+
+    <string name="module_sort_z_to_a">Сортиране (Я-A)</string>
+
+    <string name="uninstall">Деинсталиране</string>
+
+    <string name="restore">Възстановяване</string>
+
+    <string name="module_install">Инсталиране</string>
+
+    <string name="install">Инсталиране</string>
+
+    <string name="reboot">Рестартиране</string>
+
+    <string name="settings">Настройки</string>
+
+    <string name="reboot_userspace">Мек рестарт</string>
+
+    <string name="reboot_recovery">Рестарт в Recovery</string>
+
+    <string name="reboot_bootloader">Рестарт в Bootloader</string>
+
+    <string name="reboot_download">Рестарт в Download</string>
+
+    <string name="reboot_edl">Рестарт в EDL</string>
+
+    <string name="about">Относно</string>
+
+    <string name="module_uninstall_confirm">Сигурни ли сте, че искате да деинсталирате модула? %s?</string>
+
+    <string name="module_uninstall_success">%s деинсталиран</string>
+
+    <string name="module_uninstall_failed">Грешка при деинсталиране на %s</string>
+
+    <string name="module_restore_confirm">Сигурни ли сте, че искате да възстановите модула? %s?</string>
+
+    <string name="module_restore_success">%s възстановен</string>
+
+    <string name="module_restore_failed">Грешка при възстановяване на %s</string>
+
+    <string name="module_version">Версия</string>
+
+    <string name="module_author">Автор</string>
+
+    <string name="module_id">ID</string>
+
+    <string name="module_version_code">Код</string>
+
+    <string name="module_update_json">UpdateJson</string>
+
+    <string name="module_update_json_empty">празен</string>
+
+    <string name="enable_developer_options">Активиране на опциите за разработчици</string>
+
+    <string name="enable_developer_options_summary">Показване на скрити настройки и отстраняване на грешки, предназначени само за разработчици.</string>
+
+    <string name="module_overlay_fs_not_available">Модулите не са налични, защото OverlayFS е деактивиран в ядрото.</string>
+
+    <string name="refresh">Обновяване</string>
+
+    <string name="show_system_apps">Показване на системни приложения</string>
+
+    <string name="hide_system_apps">Скриване на системни приложения</string>
+
+    <string name="export_log">Експорт на логове</string>
+
+    <string name="safe_mode">Безопасен режим</string>
+
+    <string name="reboot_to_apply">Рестартиране за прилагане</string>
+
+    <string name="module_magisk_conflict">Модулите не са налични поради конфликт с Magisk!</string>
+
+    <string name="home_module_mount">Модулна система</string>
+
+    <string name="home_magic_mount">Magic Mount</string>
+
+    <string name="home_overlayfs_mount">OverlayFS</string>
+
+    <string name="unavailable">Недостъпен</string>
+
+</resources>
+

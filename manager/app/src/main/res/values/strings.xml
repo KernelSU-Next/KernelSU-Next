@@ -75,7 +75,7 @@
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">Unavailable</string>
-    <string name="use_overlay_fs">Use OverlayFS (Beta)</string>
+    <string name="use_overlay_fs">Use OverlayFS</string>
     <string name="use_overlay_fs_summary">Toggle between using OverlayFS over Magic Mount for KernelSU Next\'s mount system.</string>
     <string name="reboot_required">Reboot required</string>
     <string name="reboot_message">The changes will take effect after the system restart. Do you want to reboot now?</string>

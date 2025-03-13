@@ -205,19 +205,21 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 }
             }
 
-            if (Natives.version >= Natives.MINIMAL_SUPPORTED_SU_COMPAT) {
-                var isSuDisabled by rememberSaveable {
-                    mutableStateOf(!Natives.isSuEnabled())
-                }
-                SwitchItem(
-                    icon = Icons.Filled.RemoveModerator,
-                    title = stringResource(id = R.string.settings_disable_su),
-                    summary = stringResource(id = R.string.settings_disable_su_summary),
-                    checked = isSuDisabled
-                ) { checked ->
-                    val shouldEnable = !checked
-                    if (Natives.setSuEnabled(shouldEnable)) {
-                        isSuDisabled = !shouldEnable
+            if (ksuVersion != null) {
+                if (Natives.version >= Natives.MINIMAL_SUPPORTED_SU_COMPAT) {
+                    var isSuDisabled by rememberSaveable {
+                        mutableStateOf(!Natives.isSuEnabled())
+                    }
+                    SwitchItem(
+                        icon = Icons.Filled.RemoveModerator,
+                        title = stringResource(id = R.string.settings_disable_su),
+                        summary = stringResource(id = R.string.settings_disable_su_summary),
+                        checked = isSuDisabled
+                    ) { checked ->
+                        val shouldEnable = !checked
+                        if (Natives.setSuEnabled(shouldEnable)) {
+                            isSuDisabled = !shouldEnable
+                        }
                     }
                 }
             }
@@ -260,8 +262,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     prefs.getBoolean("use_overlay_fs", false)
                 )
             }
-
-            val isManager = Natives.becomeManager(ksuApp.packageName)
 
             var showRebootDialog by remember { mutableStateOf(false) }
 
@@ -351,14 +351,17 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     prefs.getBoolean("enable_web_debugging", false)
                 )
             }
-            SwitchItem(
-                icon = Icons.Filled.Web,
-                title = stringResource(id = R.string.enable_web_debugging),
-                summary = stringResource(id = R.string.enable_web_debugging_summary),
-                checked = enableWebDebugging
-            ) {
-                prefs.edit().putBoolean("enable_web_debugging", it).apply()
-                enableWebDebugging = it
+
+            if (ksuVersion != null) {
+                SwitchItem(
+                    icon = Icons.Filled.Web,
+                    title = stringResource(id = R.string.enable_web_debugging),
+                    summary = stringResource(id = R.string.enable_web_debugging_summary),
+                    checked = enableWebDebugging
+                ) {
+                    prefs.edit().putBoolean("enable_web_debugging", it).apply()
+                    enableWebDebugging = it
+                }
             }
 
             var developerOptionsEnabled by rememberSaveable {

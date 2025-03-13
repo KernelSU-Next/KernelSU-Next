@@ -340,6 +340,16 @@ private fun ModuleList(
     val startDownloadingText = stringResource(R.string.module_start_downloading)
     val fetchChangeLogFailed = stringResource(R.string.module_changelog_failed)
 
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+
+    val hasShownWarning = rememberSaveable { mutableStateOf(prefs.getBoolean("has_shown_warning", false)) }
+
+    var useOverlayFs by rememberSaveable {
+        mutableStateOf(
+            prefs.getBoolean("use_overlay_fs", false)
+        )
+    }
+
     val loadingDialog = rememberLoadingDialog()
     val confirmDialog = rememberConfirmDialog()
 
@@ -494,14 +504,14 @@ private fun ModuleList(
             },
         ) {
             when {
-                !viewModel.isOverlayAvailable -> {
+                useOverlayFs && !viewModel.isOverlayAvailable -> {
                     item {
                         Box(
                             modifier = Modifier.fillParentMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                stringResource(R.string.module_overlay_fs_not_available),
+                                text = stringResource(R.string.module_overlay_fs_not_available),
                                 textAlign = TextAlign.Center
                             )
                         }
