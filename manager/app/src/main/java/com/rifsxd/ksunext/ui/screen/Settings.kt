@@ -34,6 +34,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
@@ -50,6 +51,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.intl.LocaleList
+import androidx.compose.ui.text.toLowerCase
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -141,6 +146,34 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 }
             }
 
+            var selectedLanguage by remember { mutableStateOf(Locale.current.language) }
+            val languages = listOf("en", "zh", "fr", "pt-BR", "ru", "id", "ko", "th", "tr", "tw", "vi")
+        
+            Text(text = stringResource(id = R.string.select_language))
+            DropdownMenu(
+                expanded = true,
+                onDismissRequest = { /* Handle dismiss */ }
+            ) {
+                languages.forEach { language ->
+                    DropdownMenuItem(onClick = {
+                        selectedLanguage = language
+                        val locale = Locale(language)
+                        LocaleList(locale).apply {
+                            Locale.current = locale
+                        }
+                        // 更新界面语言
+                        context.resources.updateConfiguration(
+                            context.resources.configuration.apply {
+                                setLocale(locale)
+                            },
+                            context.resources.displayMetrics
+                        )
+                    }) {
+                        Text(text = language.toUpperCase())
+                    }
+                }
+            }
+            
             val profileTemplate = stringResource(id = R.string.settings_profile_template)
             if (ksuVersion != null) {
                 ListItem(
