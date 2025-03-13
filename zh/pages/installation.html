@@ -61,7 +61,7 @@
         <div class="container">
             <h2 class="text-center mb-4">安装</h2>
             <p class="text-center">在内核源代码目录的根目录下运行以下命令以获取不同的安装选项。</p>
-            <h3 class="mt-4">最新发行版本</h3>
+            <h3 class="mt-4">最新发行版本（稳定的）</h3>
             <div class="highlight mt-3">
                 <code>curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -</code>
                 <button class="btn btn-copy mt-2" onclick="copyToClipboard(this)">复制</button>
@@ -76,9 +76,14 @@
                 <code>curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s v1.0.3</code>
                 <button class="btn btn-copy mt-2" onclick="copyToClipboard(this)">复制</button>
             </div>
-	     <h3 class="mt-4">Next-SuSFS 分支（开发版本）</h3>
+            <h3 class="mt-4">Next-SuSFS 分支（稳定的）</h3>
             <div class="highlight mt-3">
-                <code>curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next-susfs</code>
+                <code>curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs</code>
+                <button class="btn btn-copy mt-2" onclick="copyToClipboard(this)">Copy</button>
+            </div>
+	        <h3 class="mt-4">Next-SuSFS 分支（开发版本）</h3>
+            <div class="highlight mt-3">
+                <code>curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next-susfs-dev</code>
                 <button class="btn btn-copy mt-2" onclick="copyToClipboard(this)">复制</button>
             </div>
         </div>
