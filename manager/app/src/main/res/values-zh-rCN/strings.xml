@@ -134,6 +134,7 @@
     <string name="force_stop_app">强制停止</string>
     <string name="restart_app">重新启动</string>
     <string name="failed_to_update_sepolicy">为 %s 更新 SELinux 规则失败</string>
+    <string name="su_not_allowed">拒绝授予%s超级用户权限</string>
     <string name="module_changelog">更新日志</string>
     <string name="settings_profile_template">App Profile 模板</string>
     <string name="settings_profile_template_summary">管理本地和在线的 App Profile 模版</string>
@@ -187,6 +188,6 @@
     <string name="save_log">保存日志</string>
     <string name="log_saved">日志已保存</string>
     <string name="send_log">分享日志</string>
-    <string name="settings_disable_su">关闭 su 兼容</string>
+    <string name="settings_disable_su">禁用超级用户指令</string>
     <string name="settings_disable_su_summary">临时禁止任何应用通过 su 命令获取 root 权限（已运行的 root 进程不受影响）</string>
 </resources>
