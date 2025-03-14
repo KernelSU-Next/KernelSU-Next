@@ -3,7 +3,7 @@ use crate::module::{handle_updated_modules, prune_modules};
 use crate::{assets, defs, ksucalls, restorecon, utils};
 use anyhow::{Context, Result};
 use log::{info, warn};
-use rustix::fs::{mount, MountFlags};
+use rustix::fs::{MountFlags, mount};
 use std::path::Path;
 
 pub fn on_post_data_fs() -> Result<()> {
