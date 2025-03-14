@@ -190,4 +190,5 @@
     <string name="send_log">發送日誌</string>
     <string name="settings_disable_su">關閉 SU 相容</string>
     <string name="settings_disable_su_summary">暫時禁止任何應用通過 su 命令獲取 root 權限（已運行的 root 進程不受影響）</string>
+    <string name="settings_language">語言</string>
 </resources>

@@ -20,8 +20,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,7 +34,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
@@ -53,10 +50,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.intl.Locale
-import androidx.compose.ui.text.intl.LocaleList
-import androidx.compose.ui.text.toLowerCase
-import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -92,6 +85,27 @@ import com.rifsxd.ksunext.ui.util.getBugreportFile
 import com.rifsxd.ksunext.ui.util.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+
+private val LANGUAGE_ICON = Icons.Filled.Translate
+
+private val SUPPORTED_LANGUAGES by lazy {
+    val pattern = Regex("values-([a-z]{2})")
+    ksuApp.resources.assets.list("")
+        .orEmpty()
+        .asSequence()
+        .filter { it.startsWith("values-") || it == "values" }
+        .mapNotNull { folder ->
+            when {
+                folder == "values" -> Pair(Locale.ENGLISH, "en")
+                else -> pattern.find(folder)?.groupValues?.get(1)?.let { code ->
+                    Pair(Locale(code), code)
+                }
+            }
+        }
+        .distinctBy { it.second }
+        .sortedBy { (locale, _) -> locale.getDisplayName(locale) }
+        .toList()
+}
 
 /**
  * @author weishu
@@ -130,7 +144,50 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         ) {
 
             val context = LocalContext.current
-            val scope = rememberCoroutineScope()
+            var showLanguageDialog by remember { mutableStateOf(false) }
+            val currentLanguageCode by remember { 
+                derivedStateOf {
+                    context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                        .getString("app_language", "en") ?: "en"
+                }       
+            }
+            
+            ListItem(
+                leadingContent = { Icon(Icons.Filled.Translate, null) },
+                headlineContent = { Text(stringResource(R.string.settings_language)) },
+                modifier = Modifier.clickable { showLanguageDialog = true }
+            )
+            
+            if (showLanguageDialog) {
+                val dialogState = rememberUseCaseState(visible = true) { showLanguageDialog = false }
+                ListDialog(
+                    state = dialogState,
+                    header = Header.Default(
+                        title = stringResource(R.string.settings_language),
+                        icon = IconSource(Icons.Filled.Translate)
+                    ),
+                    selection = ListSelection.Single(
+                        showRadioButtons = true,
+                        options = SUPPORTED_LANGUAGES.map { (locale, code) ->
+                            ListOption(
+                                titleText = locale.getDisplayName(locale),
+                                selected = code == currentLanguageCode
+                            )
+                        }
+                    ) { index, _ ->
+                        val (selectedLocale, code) = SUPPORTED_LANGUAGES[index]
+                        context.getSharedPreferences("settings", Context.MODE_PRIVATE).edit {
+                            putString("app_language", code)
+                        }
+                        val config = Configuration(context.resources.configuration).apply {
+                            setLocale(selectedLocale)
+                        }
+                        context.resources.updateConfiguration(config, context.resources.displayMetrics)
+                        (context as? Activity)?.recreate()
+                        showLanguageDialog = false
+                    }
+                )
+            }
 
             val exportBugreportLauncher = rememberLauncherForActivityResult(
                 ActivityResultContracts.CreateDocument("application/gzip")
@@ -145,34 +202,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     }
                     loadingDialog.hide()
                     snackBarHost.showSnackbar(context.getString(R.string.log_saved))
-                }
-            }
-
-            var selectedLanguage by remember { mutableStateOf(Locale.current.language) }
-            val languages = listOf("en", "zh", "fr", "pt-BR", "ru", "id", "ko", "th", "tr", "tw", "vi")
-        
-            Text(text = stringResource(id = R.string.select_language))
-            DropdownMenu(
-                expanded = true,
-                onDismissRequest = { /* Handle dismiss */ }
-            ) {
-                languages.forEach { language ->
-                    DropdownMenuItem(onClick = {
-                        selectedLanguage = language
-                        val locale = Locale(language)
-                        LocaleList(locale).apply {
-                            Locale.current = locale
-                        }
-
-                        context.resources.updateConfiguration(
-                            context.resources.configuration.apply {
-                                setLocale(locale)
-                            },
-                            context.resources.displayMetrics
-                        )
-                    }) {
-                        Text(text = language.uppercase())
-                    }
                 }
             }
 

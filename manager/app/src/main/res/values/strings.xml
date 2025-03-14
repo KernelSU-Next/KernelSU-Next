@@ -190,5 +190,5 @@
     <string name="send_log">Share logs</string>
     <string name="settings_disable_su">Disable su compatibility</string>
     <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
-    <string name="select_language">Select Language</string>
+    <string name="settings_language">Language</string>
 </resources>
