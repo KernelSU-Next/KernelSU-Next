@@ -1,5 +1,6 @@
 package com.rifsxd.ksunext.ui.screen
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -86,6 +87,10 @@ import com.rifsxd.ksunext.ui.util.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+/**
+ * @author weishu
+ * @date 2023/1/1.
+ */
 private val LANGUAGE_ICON = Icons.Filled.Translate
 
 private val SUPPORTED_LANGUAGES by lazy {
@@ -107,14 +112,11 @@ private val SUPPORTED_LANGUAGES by lazy {
         .toList()
 }
 
-/**
- * @author weishu
- * @date 2023/1/1.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
 @Composable
 fun SettingScreen(navigator: DestinationsNavigator) {
+    val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val snackBarHost = LocalSnackbarHost.current
 
