@@ -61,7 +61,7 @@
     <string name="module_version_code">Код версии</string>
     <string name="module_update_json">UpdateJson</string>
     <string name="module_update_json_empty">Пусто</string>
-    <string name="enable_developer_options">Включить разработческие настройки</string>
+    <string name="enable_developer_options">Включить настройки разработчика</string>
     <string name="enable_developer_options_summary">Показывать скрытые настройки и отладочную информацию, актуальную только для разработчиков.</string>
     <string name="module_overlay_fs_not_available">Модули недоступны, так как OverlayFS отключен ядром.</string>
     <string name="refresh">Обновить</string>
@@ -134,6 +134,7 @@
     <string name="force_stop_app">Принудительно остановить</string>
     <string name="restart_app">Перезапустить</string>
     <string name="failed_to_update_sepolicy">Не удалось обновить правила SELinux для: %s</string>
+    <string name="su_not_allowed">Предоставление прав суперпользователя запрещено для: %s</string>
     <string name="module_changelog">Журнал изменений</string>
     <string name="settings_profile_template">Шаблон Профиля Приложения</string>
     <string name="settings_profile_template_summary">Управление локальными и онлайн-шаблонами профилей приложений</string>
@@ -187,4 +188,6 @@
     <string name="save_log">Сохранить логи</string>
     <string name="log_saved">Логи сохранены</string>
     <string name="send_log">Поделиться логами</string>
+    <string name="settings_disable_su">Отключить совместимость с su</string>
+    <string name="settings_disable_su_summary">Временно отключить возможность приложениям получать права root через команду su (существующие процессы с правами root не будут затронуты).</string>
 </resources>
