@@ -3,7 +3,9 @@ package com.rifsxd.ksunext.ui.screen
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -182,7 +184,12 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                             putString("app_language", code)
                         }
                         val config = Configuration(context.resources.configuration).apply {
-                            setLocale(selectedLocale)
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                setLocale(selectedLocale)
+                            } else {
+                                @Suppress("DEPRECATION")
+                                locale = selectedLocale
+                            }
                         }
                         context.resources.updateConfiguration(config, context.resources.displayMetrics)
                         (context as? Activity)?.recreate()
