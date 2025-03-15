@@ -19,6 +19,9 @@
     <string name="home_failure">Assinatura KernelSU Next v2 não encontrada no kernel! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Peça ao seu desenvolvedor de kernel para integrar o KernelSU Next!</string>
     <string name="home_kernel">Versão do kernel</string>
+    <string name="enabled">Ativado</string>
+    <string name="disabled">Desativado</string>
+    <string name="susfs_supported">Suportado</string>
     <string name="home_susfs">SuSFS: %s</string>
     <string name="home_susfs_version">Versão do SuSFS</string>
     <string name="home_susfs_sus_su">SuS SU</string>
