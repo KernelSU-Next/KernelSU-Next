@@ -1,11 +1,8 @@
 package com.rifsxd.ksunext.ui.screen
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.res.Configuration
 import android.net.Uri
-import android.os.Build
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -93,32 +90,10 @@ import java.time.format.DateTimeFormatter
  * @author weishu
  * @date 2023/1/1.
  */
-private val LANGUAGE_ICON = Icons.Filled.Translate
-
-private val SUPPORTED_LANGUAGES by lazy {
-    val pattern = Regex("values-([a-z]{2})")
-    ksuApp.resources.assets.list("")
-        .orEmpty()
-        .asSequence()
-        .filter { it.startsWith("values-") || it == "values" }
-        .mapNotNull { folder ->
-            when {
-                folder == "values" -> Pair(Locale.ENGLISH, "en")
-                else -> pattern.find(folder)?.groupValues?.get(1)?.let { code ->
-                    Pair(Locale(code), code)
-                }
-            }
-        }
-        .distinctBy { it.second }
-        .sortedBy { (locale, _) -> locale.getDisplayName(locale) }
-        .toList()
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
 @Composable
 fun SettingScreen(navigator: DestinationsNavigator) {
-    val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val snackBarHost = LocalSnackbarHost.current
 
@@ -148,55 +123,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         ) {
 
             val context = LocalContext.current
-            var showLanguageDialog by remember { mutableStateOf(false) }
-            val currentLanguageCode by remember { 
-                derivedStateOf {
-                    context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-                        .getString("app_language", "en") ?: "en"
-                }       
-            }
-            
-            ListItem(
-                leadingContent = { Icon(Icons.Filled.Translate, null) },
-                headlineContent = { Text(stringResource(R.string.settings_language)) },
-                modifier = Modifier.clickable { showLanguageDialog = true }
-            )
-            
-            if (showLanguageDialog) {
-                val dialogState = rememberUseCaseState(visible = true) { showLanguageDialog = false }
-                ListDialog(
-                    state = dialogState,
-                    header = Header.Default(
-                        title = stringResource(R.string.settings_language),
-                        icon = IconSource(Icons.Filled.Translate)
-                    ),
-                    selection = ListSelection.Single(
-                        showRadioButtons = true,
-                        options = SUPPORTED_LANGUAGES.map { (locale, code) ->
-                            ListOption(
-                                titleText = locale.getDisplayName(locale),
-                                selected = code == currentLanguageCode
-                            )
-                        }
-                    ) { index, _ ->
-                        val (selectedLocale, code) = SUPPORTED_LANGUAGES[index]
-                        context.getSharedPreferences("settings", Context.MODE_PRIVATE).edit {
-                            putString("app_language", code)
-                        }
-                        val config = Configuration(context.resources.configuration).apply {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                setLocale(selectedLocale)
-                            } else {
-                                @Suppress("DEPRECATION")
-                                locale = selectedLocale
-                            }
-                        }
-                        context.resources.updateConfiguration(config, context.resources.displayMetrics)
-                        (context as? Activity)?.recreate()
-                        showLanguageDialog = false
-                    }
-                )
-            }
+            val scope = rememberCoroutineScope()
 
             val exportBugreportLauncher = rememberLauncherForActivityResult(
                 ActivityResultContracts.CreateDocument("application/gzip")
