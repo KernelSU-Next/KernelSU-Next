@@ -60,13 +60,16 @@
     <section id="installation" class="py-5">
         <div class="container">
             <h2 class="text-center mb-4">安装</h2>
-            <p class="text-center">在内核源代码目录的根目录下运行以下命令以获取不同的安装选项。</p>
-            <h3 class="mt-4">最新发行版本（稳定的）</h3>
+            <div class="text-center">
+                在内核源代码目录的根目录下运行以下命令以获取不同的安装选项。
+                <p><strong>Beta 分支未经充分测试，可能不适用大多数设备环境，发现 bug 有能力请向开发者提交 issue。</strong></p>
+            </div>
+            <h3 class="mt-4">最新发行版本（稳定版）</h3>
             <div class="highlight mt-3">
                 <code>curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -</code>
                 <button class="btn btn-copy mt-2" onclick="copyToClipboard(this)">复制</button>
             </div>
-            <h3 class="mt-4">Next 分支（开发版本）</h3>
+            <h3 class="mt-4">Next 分支（Beta）</h3>
             <div class="highlight mt-3">
                 <code>curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next</code>
                 <button class="btn btn-copy mt-2" onclick="copyToClipboard(this)">复制</button>
@@ -76,12 +79,12 @@
                 <code>curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s v1.0.3</code>
                 <button class="btn btn-copy mt-2" onclick="copyToClipboard(this)">复制</button>
             </div>
-            <h3 class="mt-4">Next-SuSFS 分支（稳定的）</h3>
+            <h3 class="mt-4">Next-SuSFS 分支（稳定版）</h3>
             <div class="highlight mt-3">
                 <code>curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs</code>
                 <button class="btn btn-copy mt-2" onclick="copyToClipboard(this)">Copy</button>
             </div>
-	        <h3 class="mt-4">Next-SuSFS 分支（开发版本）</h3>
+	        <h3 class="mt-4">Next-SuSFS 分支（Beta）</h3>
             <div class="highlight mt-3">
                 <code>curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -s next-susfs-dev</code>
                 <button class="btn btn-copy mt-2" onclick="copyToClipboard(this)">复制</button>
@@ -92,7 +95,7 @@
     <!-- Footer -->
     <footer class="text-center">
         <div class="container">
-            <p>&copy; 2025 KernelSU Next 团队。保留所有权利。在 <a href="https://github.com/rifsxd/KernelSU-Next" target="_blank">GitHub</a>上查看源代码</p>
+            <p>&copy; 2025 KernelSU Next 团队，保留所有权利。在 <a href="https://github.com/rifsxd/KernelSU-Next" target="_blank">GitHub</a>上查看源代码。</p>
         </div>
     </footer>
 
