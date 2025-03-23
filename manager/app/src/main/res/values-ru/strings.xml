@@ -19,6 +19,9 @@
     <string name="home_failure">Подпись KernelSU Next v2 не найдена в ядре! [!KSU_NEXT || != size/hash]</string>
     <string name="home_failure_tip">Попросите вашего разработчика ядра интегрировать KernelSU Next!</string>
     <string name="home_kernel">Версия ядра</string>
+    <string name="disabled">Отключено</string>
+    <string name="enabled">Включено</string>
+    <string name="susfs_supported">Поддерживается</string>
     <string name="home_susfs">SuSFS: %s</string>
     <string name="home_susfs_version">Версия SuSFS</string>
     <string name="susfs_supported">Поддерживается</string>
