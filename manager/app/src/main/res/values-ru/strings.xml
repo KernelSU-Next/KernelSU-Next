@@ -103,7 +103,7 @@
     <string name="home_experimental_kernelsu_repo">127.0.0.1</string>
     <string name="home_experimental_kernelsu_body">KernelSU Next — это неофициальная версия, которая всегда находится в стадии активной экспериментальной разработки. Она предоставляется как есть, без гарантий стабильности, производительности или надёжности.</string>
     <string name="home_experimental_kernelsu_body_point_1"> • Используйте на свой страх и риск: могут возникнуть сбои, непредвиденное поведение или проблемы с системой.</string>
-    <string name="home_experimental_kernelsu_body_point_2"> • Нет гарантии: разработчики не несут ответственности за потерю данных, повреждение системы или другие последствия, вызванные использованием.</string>
+    <string name="home_experimental_kernelsu_body_point_2"> • Предупреждение: разработчики не несут ответственности за потерю данных, повреждение системы или другие последствия, вызванные использованием.</string>
     <string name="home_experimental_kernelsu_body_point_3"> • Только для тестирования: предназначено для пользователей, которые понимают риски и готовы решать возникающие проблемы.</string>
     <string name="about_source_code"><![CDATA[Посмотреть исходный код на %1$s]]></string>
     <string name="profile" translatable="false">Профиль приложения</string>
