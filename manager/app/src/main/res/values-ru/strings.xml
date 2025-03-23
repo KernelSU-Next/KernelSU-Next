@@ -19,6 +19,9 @@
     <string name="home_failure">Подпись KernelSU Next v2 не найдена в ядре! [!KSU_NEXT || != size/hash]</string>
     <string name="home_failure_tip">Попросите вашего разработчика ядра интегрировать KernelSU Next!</string>
     <string name="home_kernel">Версия ядра</string>
+    <string name="disabled">Отключено</string>
+    <string name="enabled">Включено</string>
+    <string name="susfs_supported">Поддерживается</string>
     <string name="home_susfs">SuSFS: %s</string>
     <string name="home_susfs_version">Версия SuSFS</string>
     <string name="home_susfs_sus_su">SuS SU</string>
@@ -27,9 +30,9 @@
     <string name="home_selinux_status">Статус SELinux</string>
     <string name="selinux_status_disabled">Отключен</string>
     <string name="selinux_status_enforcing">Принудительный</string>
-    <string name="selinux_status_permissive">Разрешен</string>
+    <string name="selinux_status_permissive">Разрешающий</string>
     <string name="selinux_status_unknown">Неизвестно</string>
-    <string name="superuser">Superuser</string>
+    <string name="superuser">SuperUser</string>
     <string name="module_failed_to_enable">Не удалось включить модуль: %s</string>
     <string name="module_failed_to_disable">Не удалось отключить модуль: %s</string>
     <string name="module_empty">Нет установленных модулей</string>
@@ -57,7 +60,7 @@
     <string name="module_restore_failed">Не удалось восстановить: %s</string>
     <string name="module_version">Версия</string>
     <string name="module_author">Автор</string>
-    <string name="module_id">ID</string>
+    <string name="module_id">Идентификатор</string>
     <string name="module_version_code">Код версии</string>
     <string name="module_update_json">UpdateJson</string>
     <string name="module_update_json_empty">Пусто</string>
@@ -71,7 +74,7 @@
     <string name="safe_mode">Безопасный режим</string>
     <string name="reboot_to_apply">Перезагрузите для применения</string>
     <string name="module_magisk_conflict">Модули недоступны из-за конфликта с Magisk!</string>
-    <string name="home_module_mount">Система модулей</string>
+    <string name="home_module_mount">Система монтирования модулей</string>
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">Недоступно</string>
@@ -100,7 +103,7 @@
     <string name="home_experimental_kernelsu_repo">127.0.0.1</string>
     <string name="home_experimental_kernelsu_body">KernelSU Next — это неофициальная версия, которая всегда находится в стадии активной экспериментальной разработки. Она предоставляется как есть, без гарантий стабильности, производительности или надёжности.</string>
     <string name="home_experimental_kernelsu_body_point_1"> • Используйте на свой страх и риск: могут возникнуть сбои, непредвиденное поведение или проблемы с системой.</string>
-    <string name="home_experimental_kernelsu_body_point_2"> • Нет гарантии: разработчики не несут ответственности за потерю данных, повреждение системы или другие последствия, вызванные использованием.</string>
+    <string name="home_experimental_kernelsu_body_point_2"> • Предупреждение: разработчики не несут ответственности за потерю данных, повреждение системы или другие последствия, вызванные использованием.</string>
     <string name="home_experimental_kernelsu_body_point_3"> • Только для тестирования: предназначено для пользователей, которые понимают риски и готовы решать возникающие проблемы.</string>
     <string name="about_source_code"><![CDATA[Посмотреть исходный код на %1$s]]></string>
     <string name="profile" translatable="false">Профиль приложения</string>
@@ -116,12 +119,12 @@
     <string name="profile_capabilities">Возможности</string>
     <string name="profile_selinux_context">Контекст SELinux</string>
     <string name="profile_umount_modules">Отключить модули</string>
-    <string name="failed_to_update_app_profile">Не удалось обновить Профиль Приложения для %s</string>
+    <string name="failed_to_update_app_profile">Не удалось обновить профиль приложения для %s</string>
     <string name="require_kernel_version">Текущая версия KernelSU Next %1$d слишком низкая для корректной работы менеджера. Пожалуйста, обновитесь до версии %2$d или выше!</string>
     <string name="settings_umount_modules_default">Отмонтировать модули</string>
     <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Отключить модули\" в профиле приложения. Если включено, это удалит все модификации системы модулями для приложений без установленного профиля.</string>
     <string name="settings_susfs_toggle">Скрыть хуки kprobe</string>
-    <string name="settings_susfs_toggle_summary">Отключает хуки kprobe, созданные ksu, и вместо этого активирует встроенные некрючковые функции, реализующие ту же функциональность для неконечных ядер, которые не поддерживают kprobe.</string>
+    <string name="settings_susfs_toggle_summary">Отключает хуки kprobe, созданные ksu, и вместо этого активирует встроенные функции, реализующие ту же функциональность для ядер, которые не поддерживают kprobe.</string>
     <string name="profile_umount_modules_summary">Включение этой опции позволит KernelSU Next восстанавливать любые изменённые модулями файлы для этого приложения.</string>
     <string name="profile_selinux_domain">Домен</string>
     <string name="profile_selinux_rules">Правила</string>
@@ -136,7 +139,7 @@
     <string name="failed_to_update_sepolicy">Не удалось обновить правила SELinux для: %s</string>
     <string name="su_not_allowed">Предоставление прав суперпользователя запрещено для: %s</string>
     <string name="module_changelog">Журнал изменений</string>
-    <string name="settings_profile_template">Шаблон Профиля Приложения</string>
+    <string name="settings_profile_template">Шаблон профиля приложений</string>
     <string name="settings_profile_template_summary">Управление локальными и онлайн-шаблонами профилей приложений</string>
     <string name="app_profile_template_create">Создать шаблон</string>
     <string name="app_profile_template_edit">Редактировать шаблон</string>
@@ -189,5 +192,5 @@
     <string name="log_saved">Логи сохранены</string>
     <string name="send_log">Поделиться логами</string>
     <string name="settings_disable_su">Отключить совместимость с su</string>
-    <string name="settings_disable_su_summary">Временно отключить возможность приложениям получать права root через команду su (существующие процессы с правами root не будут затронуты).</string>
+    <string name="settings_disable_su_summary">Временно отключить возможность приложениям получать права root через команду su (существующие сеансы с правами root не будут затронуты).</string>
 </resources>
