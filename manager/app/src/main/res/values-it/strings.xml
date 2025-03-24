@@ -84,7 +84,7 @@
 	<string name="reboot_message">Le modifiche avranno effetto dopo il riavvio del sistema. Vuoi riavviare ora?</string>
 	<string name="module_restore">Ripristina modulo</string>
 	<string name="module_restore_message">Ripristina i moduli dal backup recente.</string>
-	<string name="backup_restore">Backup &amp; Ripristinato</string>
+	<string name="backup_restore">Backup &amp; Ripristino</string>
 	<string name="module_backup">Backup modulo</string>
 	<string name="module_backup_message">Esegui il backup dei moduli attualmente installati.</string>
 	<string name="allowlist_restore">Ripristina la lista consentita</string>
@@ -193,4 +193,5 @@
 	<string name="send_log">Invia log</string>
 	<string name="settings_disable_su">Disabilita la compatibilità su</string>
 	<string name="settings_disable_su_summary">Disattiva temporaneamente la possibilità per qualsiasi app di ottenere privilegi di root tramite il comando su (i processi di root esistenti non saranno interessati).</string>
+	<string name="settings_language">Lingua</string>
 </resources>
