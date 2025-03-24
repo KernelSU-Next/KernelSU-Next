@@ -193,4 +193,5 @@
     <string name="send_log">Compartilhar registros</string>
     <string name="settings_disable_su">Desativar compatibilidade su</string>
     <string name="settings_disable_su_summary">Desative temporariamente a capacidade de qualquer app obter privilégios root por meio do comando ⁠su (processos root existentes não serão afetados).</string>
+    <string name="settings_language">Idioma</string>
 </resources>
