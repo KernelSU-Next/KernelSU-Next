@@ -193,4 +193,5 @@
     <string name="send_log">Udostępnij logi</string>
     <string name="settings_disable_su">Wyłącz funkcjonalność su</string>
     <string name="settings_disable_su_summary">Tymczasowo wyłącz możliwość uzyskania uprawnień roota przez dowolną aplikację za pomocą polecenia ⁠su (nie będzie to miało wpływu na istniejące procesy roota).</string>
+    <string name="settings_language">Język</string>
 </resources>
