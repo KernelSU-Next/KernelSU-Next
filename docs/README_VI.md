@@ -20,7 +20,7 @@ Một giải pháp root từ nhân linux dành cho các thiết bị chạy Andr
 ## Danh sách tương thích
 
 KernelSU Next hỗ trợ chính thức các kernel Android từ phiên bản 4.4 đến 6.6
- - GKI 2.0 (5.10+) kernels có thể cài đặt qua những .img/.zip đã được build sẵn và LKM/KMI hoặc tự vá qua manager (nếu được)
+ - GKI 2.0 (5.10+) kernels có thể được cài đặt qua những .img/.zip được build sẵn hoặc tự vá
  - GKI 1.0 (4.19 - 5.4) kernels cần dược build lại với các nhân KernelSU Next
  - EOL (<4.14) kernels cần dược build lại với các nhân KernelSU Next (các kernels 3.18+ đang dược thử nghiệm và có thể cần backports 1 vài thứ ).
 
@@ -28,7 +28,7 @@ Hiện tại kernelSU Next chỉ hỗ trợ những cpu có `arm64-v8a`
 
 ## Sử dụng
 
-- [Hướng dẫn vá KernelSU Next vào Kernel của bạn (yêu cầu kernel source)](https://KernelSU-Next.github.io/KernelSU-Next/)
+- [Hướng dẫn vá KernelSU Next vào Kernel của bạn (yêu cầu kernel source)](https://ksunext.org/pages/installation.html)
 
 ## Bảo mật
 
