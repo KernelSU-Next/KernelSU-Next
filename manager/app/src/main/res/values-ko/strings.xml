@@ -19,6 +19,9 @@
     <string name="home_failure">KernelSU Next v2 서명이 커널에서 발견되지 않았습니다! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">커널 개발자에게 KernelSU Next 지원을 문의해주십시오!</string>
     <string name="home_kernel">커널 버전</string>
+    <string name="enabled">활성화됨</string>
+    <string name="disabled">비활성화됨</string>
+    <string name="susfs_supported">지원됨</string>
     <string name="home_susfs">SuSFS: %s</string>
     <string name="home_susfs_version">SuSFS 버전</string>
     <string name="home_susfs_sus_su">SuS SU</string>
@@ -75,7 +78,7 @@
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">이용할 수 없음</string>
-    <string name="use_overlay_fs">OverlayFS 사용하기 (베타)</string>
+    <string name="use_overlay_fs">OverlayFS 사용하기</string>
     <string name="use_overlay_fs_summary">토글 하여 KernelSU Next의 모듈 마운트 시스템을 Magic Mount와 OverlayFS 간에 전환합니다.</string>
     <string name="reboot_required">다시 시작 필요</string>
     <string name="reboot_message">시스템을 다시 시작한 후에 변경 사항들이 적용됩니다. 지금 다시 시작하시겠습니까?</string>
@@ -190,4 +193,5 @@
     <string name="send_log">로그 보내기</string>
     <string name="settings_disable_su">su 호환성 비활성화</string>
     <string name="settings_disable_su_summary">su 명령어를 통한 투르 권한 획득을 일시적으로 비활성화 (이미 존재하는 루트 프로세스는 영향을 받지 않음)</string>
+    <string name="settings_language">언어</string>
 </resources>
