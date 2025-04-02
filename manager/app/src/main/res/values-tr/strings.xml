@@ -19,6 +19,9 @@
     <string name="home_failure">Kernel\'de KernelSU Next v2 imzası bulunamadı! [ !KSU_NEXT || != boyut/hash ]</string>
     <string name="home_failure_tip">Kernel geliştiricinizden KernelSU Next\'i entegre etmesini isteyin!</string>
     <string name="home_kernel">Kernel sürümü</string>
+    <string name="enabled">Etkin</string>
+    <string name="disabled">Devre dışı</string>
+    <string name="susfs_supported">Destekleniyor</string>
     <string name="home_susfs">SuSFS: %s</string>
     <string name="home_susfs_version">SuSFS sürümü</string>
     <string name="home_susfs_sus_su">SuS SU</string>
@@ -57,6 +60,12 @@
     <string name="module_restore_failed">Geri yüklenemedi: %s</string>
     <string name="module_version">Sürüm</string>
     <string name="module_author">Yazar</string>
+    <string name="module_id">ID</string>
+    <string name="module_version_code">Kod</string>
+    <string name="module_update_json">GüncellemeJson</string>
+    <string name="module_update_json_empty">Boş</string>
+    <string name="enable_developer_options">Geliştirici seçeneklerini etkinleştir</string>
+    <string name="enable_developer_options_summary">Yalnızca geliştiriciler için geçerli olan gizli ayarları ve hata ayıklama bilgilerini göster.</string>
     <string name="module_overlay_fs_not_available">OverlayFS kernel tarafından devre dışı bırakıldığı için modüller kullanılamaz.</string>
     <string name="refresh">Yenile</string>
     <string name="show_system_apps">Sistem uygulamalarını göster</string>
@@ -75,8 +84,13 @@
     <string name="reboot_message">Değişiklikler, sistemin yeniden başlatılmasından sonra etkili olacak. Şimdi yeniden başlatmak ister misiniz?</string>
     <string name="module_restore">Modülleri Geri Yükle</string>
     <string name="module_restore_message">Modülleri son yedekten geri yükler.</string>
+    <string name="backup_restore">Yedekle &amp; Geri Yükle</string>
     <string name="module_backup">Modülleri Yedekle</string>
     <string name="module_backup_message">Şu anda yüklü olan modülleri yedekler.</string>
+    <string name="allowlist_restore">İzin verilenleri geri yükle</string>
+    <string name="allowlist_restore_message">İzin verilenler listesini son yedekten geri yükle.</string>
+    <string name="allowlist_backup">İzin verilenleri yedekle</string>
+    <string name="allowlist_backup_message">Mevcut yapılandırılmış izin verilen listesini yedekle.</string>
     <string name="warning">Uyarı</string>
     <string name="warning_message">Bu özellik hala beta aşamasında ve geliştirme sürecindedir. Lütfen devam etmeden önce modüllerinizi yedekleyin. Bu özelliği yalnızca potansiyel riskleri anladığınızda kullanın. Dikkatli olun.</string>
     <string name="proceed">Devam Et</string>
@@ -123,6 +137,7 @@
     <string name="force_stop_app">Zorla durdur</string>
     <string name="restart_app">Yeniden Başlat</string>
     <string name="failed_to_update_sepolicy">%s için SELinux kuralları güncellenemedi.</string>
+    <string name="su_not_allowed">SüperKullanıcı yetkisi verilemez: %s</string>
     <string name="module_changelog">Değişiklik Günlüğü</string>
     <string name="settings_profile_template">Uygulama Profili Şablonu</string>
     <string name="settings_profile_template_summary">Yerel ve çevrimiçi Uygulama Profili Şablonlarını yönetin</string>
@@ -176,4 +191,7 @@
     <string name="save_log">Logları kaydet</string>
     <string name="log_saved">Loglar kaydedildi</string>
     <string name="send_log">Logları paylaş</string>
+    <string name="settings_disable_su">Su uyumluluğunu devre dışı bırak</string>
+    <string name="settings_disable_su_summary">Geçici olarak herhangi bir uygulamanın su komutu aracılığıyla kök ayrıcalıkları elde etme yeteneğini devre dışı bırakır (mevcut kök süreçleri etkilenmez).</string>
+    <string name="settings_language">Dil</string>
 </resources>
