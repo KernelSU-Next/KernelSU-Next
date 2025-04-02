@@ -319,6 +319,54 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 }
             }
 
+            if (ksuVersion != null) {
+                val backupRestore = stringResource(id = R.string.backup_restore)
+                ListItem(
+                    leadingContent = {
+                        Icon(
+                            Icons.Filled.Backup,
+                            backupRestore
+                        )
+                    },
+                    headlineContent = { Text(backupRestore) },
+                    modifier = Modifier.clickable {
+                        navigator.navigate(BackupRestoreScreenDestination)
+                    }
+                )
+            }
+
+            if (useOverlayFs) {
+                val shrink = stringResource(id = R.string.shrink_sparse_image)
+                val shrinkMessage = stringResource(id = R.string.shrink_sparse_image_message)
+                ListItem(
+                    leadingContent = {
+                        Icon(
+                            Icons.Filled.Compress,
+                            shrink
+                        )
+                    },
+                    headlineContent = { Text(shrink) },
+                    modifier = Modifier.clickable {
+                        scope.launch {
+                            val result = shrinkDialog.awaitConfirm(title = shrink, content = shrinkMessage)
+                            if (result == ConfirmResult.Confirmed) {
+                                loadingDialog.withLoading {
+                                    shrinkModules()
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+
+
+            val lkmMode = Natives.version >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && Natives.isLkmMode
+            if (lkmMode) {
+                UninstallItem(navigator) {
+                    loadingDialog.withLoading(it)
+                }
+            }
+
             var showBottomsheet by remember { mutableStateOf(false) }
 
             ListItem(
@@ -426,54 +474,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         }
                     }
                 )
-            }
-
-            if (ksuVersion != null) {
-                val backupRestore = stringResource(id = R.string.backup_restore)
-                ListItem(
-                    leadingContent = {
-                        Icon(
-                            Icons.Filled.Backup,
-                            backupRestore
-                        )
-                    },
-                    headlineContent = { Text(backupRestore) },
-                    modifier = Modifier.clickable {
-                        navigator.navigate(BackupRestoreScreenDestination)
-                    }
-                )
-            }
-
-            if (useOverlayFs) {
-                val shrink = stringResource(id = R.string.shrink_sparse_image)
-                val shrinkMessage = stringResource(id = R.string.shrink_sparse_image_message)
-                ListItem(
-                    leadingContent = {
-                        Icon(
-                            Icons.Filled.Compress,
-                            shrink
-                        )
-                    },
-                    headlineContent = { Text(shrink) },
-                    modifier = Modifier.clickable {
-                        scope.launch {
-                            val result = shrinkDialog.awaitConfirm(title = shrink, content = shrinkMessage)
-                            if (result == ConfirmResult.Confirmed) {
-                                loadingDialog.withLoading {
-                                    shrinkModules()
-                                }
-                            }
-                        }
-                    }
-                )
-            }
-
-
-            val lkmMode = Natives.version >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && Natives.isLkmMode
-            if (lkmMode) {
-                UninstallItem(navigator) {
-                    loadingDialog.withLoading(it)
-                }
             }
 
             val about = stringResource(id = R.string.about)

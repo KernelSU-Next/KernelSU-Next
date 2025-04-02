@@ -446,15 +446,11 @@ private fun InfoCard() {
 
             Spacer(Modifier.height(16.dp))
             InfoCardItem(
-                label = stringResource(R.string.home_module_mount),
-                content = when {
-                    ksuVersion == null -> stringResource(R.string.unavailable)
-                    useOverlayFs -> stringResource(R.string.home_overlayfs_mount)
-                    else -> stringResource(R.string.home_magic_mount)
-                },
+                label = stringResource(R.string.home_mount_system),
+                content = currentMountSystem().ifEmpty { stringResource(R.string.unavailable) },
                 icon = Icons.Filled.SettingsSuggest,
             )
-            Spacer(Modifier.height(16.dp))
+
             val suSFS = getSuSFS()
             if (suSFS == "Supported") {
                 val isSUS_SU = getSuSFSFeatures() == "CONFIG_KSU_SUSFS_SUS_SU"
@@ -463,6 +459,7 @@ private fun InfoCard() {
                     val modeString = if (mode == "2") stringResource(R.string.enabled) else stringResource(R.string.disabled)
                     "| SuS SU: $modeString"
                 } else ""
+                Spacer(Modifier.height(16.dp))
                 InfoCardItem(
                     label = stringResource(R.string.home_susfs_version),
                     content = "${getSuSFSVersion()} (${getSuSFSVariant()}) $susSUMode",

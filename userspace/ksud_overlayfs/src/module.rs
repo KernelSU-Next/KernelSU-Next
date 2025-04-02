@@ -61,6 +61,7 @@ fn exec_install_script(module_file: &str) -> Result<()> {
         .env("KSU_VER_CODE", defs::VERSION_CODE)
         .env("OUTFD", "1")
         .env("ZIPFILE", realpath)
+        .env("KSU_OVERLAYFS", "true")
         .status()?;
     ensure!(result.success(), "Failed to install module script");
     Ok(())
@@ -185,6 +186,7 @@ fn exec_script<T: AsRef<Path>>(path: T, wait: bool) -> Result<()> {
         .env("KSU_KERNEL_VER_CODE", ksucalls::get_version().to_string())
         .env("KSU_VER_CODE", defs::VERSION_CODE)
         .env("KSU_VER", defs::VERSION_NAME)
+        .env("KSU_OVERLAYFS", "true")
         .env(
             "PATH",
             format!(
@@ -787,6 +789,12 @@ fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
     }
 
     modules
+}
+
+pub fn mount_system() -> Result<()> {
+    println!("Current mount system: {}", defs::MOUNT_SYSTEM);
+
+    Ok(())
 }
 
 pub fn list_modules() -> Result<()> {
