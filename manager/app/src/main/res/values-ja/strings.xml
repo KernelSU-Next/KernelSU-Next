@@ -65,7 +65,7 @@
     <string name="safe_mode">セーフモード</string>
     <string name="reboot_to_apply">再起動して適用</string>
     <string name="module_magisk_conflict">Magiskとの競合により、モジュールは使用できません。</string>
-    <string name="home_module_mount">モジュールシステム</string>
+    <string name="home_mount_system">モジュールシステム</string>
     <string name="home_magic_mount">Magicマウント</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">利用不可</string>

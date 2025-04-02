@@ -74,7 +74,7 @@
     <string name="safe_mode">Tryb awaryjny</string>
     <string name="reboot_to_apply">Uruchom ponownie, aby zastosować zmiany</string>
     <string name="module_magisk_conflict">Moduły są niedostępne z powodu konfliku z Magisk!</string>
-    <string name="home_module_mount">System montowania</string>
+    <string name="home_mount_system">System montowania</string>
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">Niedostępny</string>

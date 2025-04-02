@@ -74,7 +74,7 @@
 	<string name="safe_mode">Modalità provvisoria</string>
 	<string name="reboot_to_apply">Riavvia per applicare la modifica</string>
 	<string name="module_magisk_conflict">I moduli sono disabilitati perché in conflitto con Magisk!</string>
-	<string name="home_module_mount">Modulo system</string>
+	<string name="home_mount_system">Modulo system</string>
 	<string name="home_magic_mount">Magic Mount</string>
 	<string name="home_overlayfs_mount">OverlayFS</string>
 	<string name="unavailable">Non disponibile</string>

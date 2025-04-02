@@ -493,6 +493,12 @@ fn _list_modules(path: &str) -> Vec<HashMap<String, String>> {
     modules
 }
 
+pub fn mount_system() -> Result<()> {
+    println!("Current mount system: {}", defs::MOUNT_SYSTEM);
+
+    Ok(())
+}
+
 pub fn list_modules() -> Result<()> {
     let modules = _list_modules(defs::MODULE_DIR);
     println!("{}", serde_json::to_string_pretty(&modules)?);

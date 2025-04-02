@@ -65,7 +65,7 @@
     <string name="safe_mode">โหมดปลอดภัย</string>
     <string name="reboot_to_apply">รีบูตเพื่อให้มีผล</string>
     <string name="module_magisk_conflict">โมดูลไม่สามารถใช้งานได้ เนื่องจากขัดแย้งกับ Magisk!</string>
-    <string name="home_module_mount">โมดูลระบบ</string>
+    <string name="home_mount_system">โมดูลระบบ</string>
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">ไม่สามารถใช้งานได้</string>

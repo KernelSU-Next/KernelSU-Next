@@ -71,7 +71,7 @@
     <string name="safe_mode">CHẾ ĐỘ AN TOÀN!?!?</string>
     <string name="reboot_to_apply">Khởi động lại để có hiệu lực</string>
     <string name="module_magisk_conflict">Vui lòng gỡ magisk để sử dụng module</string>
-    <string name="home_module_mount">Module hệ thống</string>
+    <string name="home_mount_system">Module hệ thống</string>
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">Không có sẵn</string>

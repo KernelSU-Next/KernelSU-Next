@@ -74,7 +74,7 @@
     <string name="safe_mode">وضع الأمان</string>
     <string name="reboot_to_apply">إعادة التشغيل لتطبيق التغييرات</string>
     <string name="module_magisk_conflict">الإضافات غير متاحة بسبب تعارض مع Magisk!</string>
-    <string name="home_module_mount">نظام الإضافات</string>
+    <string name="home_mount_system">نظام الإضافات</string>
     <string name="home_magic_mount">Mount السحري</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">غير متاح</string>

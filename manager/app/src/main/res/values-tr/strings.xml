@@ -65,7 +65,7 @@
     <string name="safe_mode">Güvenli Mod</string>
     <string name="reboot_to_apply">Değişikliklerin etkili olması için yeniden başlatın</string>
     <string name="module_magisk_conflict">Magisk ile çakışma nedeniyle modüller kullanılamıyor!</string>
-    <string name="home_module_mount">Modül Sistemi</string>
+    <string name="home_mount_system">Modül Sistemi</string>
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">Kullanılamaz</string>

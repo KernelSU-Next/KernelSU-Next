@@ -74,7 +74,7 @@
     <string name="safe_mode">Безопасный режим</string>
     <string name="reboot_to_apply">Перезагрузите для применения</string>
     <string name="module_magisk_conflict">Модули недоступны из-за конфликта с Magisk!</string>
-    <string name="home_module_mount">Система монтирования модулей</string>
+    <string name="home_mount_system">Система монтирования модулей</string>
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">Недоступно</string>
