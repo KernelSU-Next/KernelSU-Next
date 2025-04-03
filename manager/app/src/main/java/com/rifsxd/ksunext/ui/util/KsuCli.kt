@@ -604,7 +604,7 @@ fun currentMountSystem(): String {
     val shell = getRootShell()
     val cmd = "module mount"
     val result = ShellUtils.fastCmd(shell, "${getKsuDaemonPath()} $cmd").trim()
-    return if (result.isEmpty()) "Unavailable" else result.substringAfter(":").substringAfter(" ").trim()
+    return result.substringAfter(":").substringAfter(" ").trim()
 }
 
 fun setAppProfileTemplate(id: String, template: String): Boolean {

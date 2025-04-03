@@ -10,7 +10,7 @@
     <string name="confirm">Xác nhận</string>
     <string name="app_name" translatable="false">KernelSU Next</string>
     <string name="home">Màn hình chính</string>
-    <string name="home_not_installed">Chưa cài đặt</string>
+    <string name="home_not_installed">Hỗ trợ nhưng chưa cài đặt</string>
     <string name="home_click_to_install">Bấm để cái đặt</string>
     <string name="home_working">Đã cài đặt và hoạt động</string>
     <string name="home_working_version">Phiên bản: %d</string>
@@ -19,6 +19,9 @@
     <string name="home_failure">Chữ kí KernelSU Next v2 Không dược tìm thấy (chưa cài đặt,nhúng sai cách hoặc nhầm trình quản lý?) [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Hỏi hoặc tự nhúng nhân KernelSU Next vào Kernel của bạn!</string>
     <string name="home_kernel">Phiên bản kernel</string>
+    <string name="enabled">Kích hoạt</string>
+    <string name="disabled">Vô hiệu hoá</string>
+    <string name="susfs_supported">hỗ trợ</string>
     <string name="home_susfs">SuSFS: %s</string>
     <string name="home_susfs_version">Phiên bản SuSFS</string>
     <string name="home_susfs_sus_su">SuS SU</string>
@@ -71,7 +74,7 @@
     <string name="safe_mode">CHẾ ĐỘ AN TOÀN!?!?</string>
     <string name="reboot_to_apply">Khởi động lại để có hiệu lực</string>
     <string name="module_magisk_conflict">Vui lòng gỡ magisk để sử dụng module</string>
-    <string name="home_mount_system">Module hệ thống</string>
+    <string name="home_mount_system">Cơ chế mount</string>
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">Không có sẵn</string>
@@ -99,8 +102,8 @@
     <string name="home_experimental_kernelsu">⚠️ Cảnh báo nhánh thử nghiệm cho nhà phát triển!</string>
     <string name="home_experimental_kernelsu_repo">127.0.0.1</string>
     <string name="home_experimental_kernelsu_body">KernelSU Next là 1 nhánh của KernelSU luôn có những nhánh thử nghiệm và cập nhật hàng ngày, nó có thể không ổn định</string>
-    <string name="home_experimental_kernelsu_body_point_1"> • Tự chịu trách nghiệm: crashes, những thứ kì lạ, không vào được 1 vài ứng dụng,... có thể diễn ra.</string>
-    <string name="home_experimental_kernelsu_body_point_2"> • Không bảo hành: Những nhà phát triển trong KernelSU (Next) và bên ngoài sẽ không chịu trách nghiệm khi hardbrick,bootloop,mất dữ liệu,... .</string>
+    <string name="home_experimental_kernelsu_body_point_1"> • Tự chịu trách nghiệm: crashes, những thứ kì lạ, không vào được 1 vài ứng dụng(ngân hàng),... có thể diễn ra.</string>
+    <string name="home_experimental_kernelsu_body_point_2"> • Không bảo hành: Những nhà phát triển trong KernelSU (Next) và bên thứ 3 sẽ không chịu trách nghiệm khi hardbrick,bootloop,mất dữ liệu,... .</string>
     <string name="home_experimental_kernelsu_body_point_3"> • Đùng để thử nghiệm là chính: Chỉ dành cho những người có kĩ năng, kinh nghiệm, trải nghiệm .</string>
     <string name="about_source_code"><![CDATA[Xem mã nguồn tại %1$s]]></string>
     <string name="profile" translatable="false">Hồ sơ ứng dụng</string>
@@ -124,16 +127,17 @@
     <string name="settings_susfs_toggle_summary">Tính năng này sẽ vô hiệu hoá những kprobe hooks đã tạo bởi kernelsu và sẽ kích hoạt và nhúng những non-kprobe hooks,đảm bảo những kernel non-GKI(EOL) hoạt động ổn định.</string>
     <string name="profile_umount_modules_summary">Kích hoạt tính năng này sẽ tách các ứng dụng chưa cấp hồ sơ riêng và root.</string>
     <string name="profile_selinux_domain">Tên miền</string>
-    <string name="profile_selinux_rules">Luật</string>
+    <string name="profile_selinux_rules">Quyền</string>
     <string name="module_update">Có cập nhật!</string>
     <string name="module_downloading">Tải xuống module: %s</string>
     <string name="module_start_downloading">Đang tải xuống module: %s</string>
     <string name="new_version_available">Phiên bản %s đã ra mắt, bấm để cập nhật.</string>
     <string name="launch_app">Mở</string>
     <string name="close">Đóng</string>
-    <string name="force_stop_app">Buốc tắt</string>
+    <string name="force_stop_app">Buộc tắt</string>
     <string name="restart_app">Khởi động lại</string>
-    <string name="failed_to_update_sepolicy">Cập nhất luật SELinux thất bại cho: %s</string>
+    <string name="failed_to_update_sepolicy">Cập nhật phân quyền SELinux thất bại cho: %s</string>
+    <string name="su_not_allowed">Cấp quyền SU không được phép cho: %s</string>
     <string name="module_changelog">Nhật kí thay đổi</string>
     <string name="settings_profile_template">Mẫu hồ sơ ứng dụng</string>
     <string name="settings_profile_template_summary">Quản lý/Tải xuống trực tuyến hồ sơ ứng dụng</string>
@@ -187,4 +191,7 @@
     <string name="save_log">Lưu logs</string>
     <string name="log_saved">Logs đã được lưu</string>
     <string name="send_log">Chia sẻ logs</string>
+    <string name="settings_disable_su">Vô hiệu hoá khả năng của lệnh SU</string>
+    <string name="settings_disable_su_summary">Vô hiệu hoá khả năng thực thi lệnh SU để lấy quyền root (những app đã cấp trước đó không bị ảnh hưởng).</string>
+    <string name="settings_language">Ngôn ngữ</string>
 </resources>
