@@ -36,8 +36,8 @@ Jelenleg csak az `arm64-v8a` architektúra támogatott.
 A KernelSU biztonsági réseinek jelentésével kapcsolatos információkat lásd: [SECURITY.md](/SECURITY.md).
 
 ## Licensz
-- A "kernel" könyvtárban található fájlok [csak GPL-2.0-ásak](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
-- A "kernel" könyvtár kivételével minden más rész [GPL-3.0-vagy újabb](https://www.gnu.org/licenses/gpl-3.0.html).
+- A `kernel` könyvtárban található fájlok [csak GPL-2.0-ásak](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+- A `kernel` könyvtár kivételével minden más rész [GPL-3.0-vagy újabb](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## Projekt támogatás
 
