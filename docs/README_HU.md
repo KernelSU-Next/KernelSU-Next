@@ -13,7 +13,7 @@ Kernel alapú root megoldás Android eszközökhöz.
 
 ## Funkciók
 
-1. Kernel alapú "su" és root hozzáférés-kezelés.
+1. Kernel alapú `su` és root hozzáférés-kezelés.
 2. Dinamikus csatolási rendszeren alapuló modulrendszer [Magic Mount](https://topjohnwu.github.io/Magisk/details.html#magic-mount) / [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
 3. [App Profilok](https://kernelsu.org/guide/app-profile.html): Zárd el a rootot egy ketrecbe.
 
