@@ -6,7 +6,7 @@
 
 Kernel alapú root megoldás Android eszközökhöz.
 
-[![Legutóbbi kiadás](https://img.shields.io/github/v/release/KernelSU-Next/KernelSU-Next?label=Release&logo=github)](https://github.com/KernelSU-Next/KernelSU-Next/releases/latest)
+[![Legutóbbi kiadás](https://img.shields.io/github/v/release/KernelSU-Next/KernelSU-Next?label=Kiadás&logo=github)](https://github.com/KernelSU-Next/KernelSU-Next/releases/latest)
 [![Nightly kiadás](https://img.shields.io/badge/Nightly%20Release-gray?logo=hackthebox&logoColor=fff)](https://nightly.link/KernelSU-Next/KernelSU-Next/workflows/build-manager-ci/next/Manager)
 [![Licensz: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![GitHub Licensz](https://img.shields.io/github/license/KernelSU-Next/KernelSU-Next?logo=gnu)](/LICENSE)
