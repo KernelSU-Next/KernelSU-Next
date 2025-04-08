@@ -172,8 +172,8 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
             )
         },
         floatingActionButton = {
-            if (showFloatAction) {
-                // Reboot button (bottom left)
+            if (flashIt is FlashIt.FlashModules && (flashing == FlashingStatus.SUCCESS)) {
+                // Reboot button for modules flashing
                 ExtendedFloatingActionButton(
                     onClick = {
                         scope.launch {
@@ -184,6 +184,28 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                     },
                     icon = { Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.reboot)) },
                     text = { Text(text = stringResource(R.string.reboot)) }
+                )
+            }
+
+            if (flashIt is FlashIt.FlashModules && (flashing == FlashingStatus.FAILED)) {
+                // Close button for modules flashing
+                ExtendedFloatingActionButton(
+                    text = { Text(text = stringResource(R.string.close)) },
+                    icon = { Icon(Icons.Filled.Close, contentDescription = null) },
+                    onClick = {
+                        navigator.popBackStack()
+                    }
+                )
+            }
+
+            if (flashIt is FlashIt.FlashBoot && (flashing == FlashingStatus.SUCCESS || flashing == FlashingStatus.FAILED)) {
+                // Close button for LKM flashing
+                ExtendedFloatingActionButton(
+                    text = { Text(text = stringResource(R.string.close)) },
+                    icon = { Icon(Icons.Filled.Close, contentDescription = null) },
+                    onClick = {
+                        navigator.popBackStack()
+                    }
                 )
             }
         },

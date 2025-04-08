@@ -19,6 +19,9 @@
     <string name="home_failure">Assinatura KernelSU Next v2 não encontrada no kernel! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Peça ao seu desenvolvedor de kernel para integrar o KernelSU Next!</string>
     <string name="home_kernel">Versão do kernel</string>
+    <string name="enabled">Ativado</string>
+    <string name="disabled">Desativado</string>
+    <string name="susfs_supported">Suportado</string>
     <string name="home_susfs">SuSFS: %s</string>
     <string name="home_susfs_version">Versão do SuSFS</string>
     <string name="home_susfs_sus_su">SuS SU</string>
@@ -71,7 +74,7 @@
     <string name="safe_mode">Modo de segurança</string>
     <string name="reboot_to_apply">Reinicie para entrar em vigor</string>
     <string name="module_magisk_conflict">Os módulos estão indisponíveis devido a um conflito com Magisk!</string>
-    <string name="home_module_mount">Sistema de módulos</string>
+    <string name="home_mount_system">Sistema de montagem</string>
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">Indisponível</string>
@@ -190,4 +193,5 @@
     <string name="send_log">Compartilhar registros</string>
     <string name="settings_disable_su">Desativar compatibilidade su</string>
     <string name="settings_disable_su_summary">Desative temporariamente a capacidade de qualquer app obter privilégios root por meio do comando ⁠su (processos root existentes não serão afetados).</string>
+    <string name="settings_language">Idioma</string>
 </resources>

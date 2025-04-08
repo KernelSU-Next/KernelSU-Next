@@ -71,7 +71,7 @@
     <string name="safe_mode">Abgesicherter Modus</string>
     <string name="reboot_to_apply">Neustart, um wirksam zu werden</string>
     <string name="module_magisk_conflict">Die Module sind aufgrund eines Konflikts mit Magisk nicht verfügbar!</string>
-    <string name="home_module_mount">Modul system</string>
+    <string name="home_mount_system">Modul system</string>
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">Nicht verfügbar</string>

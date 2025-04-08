@@ -1,4 +1,4 @@
-[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | **Русский** | [ภาษาไทย](README_TH.md) | [Tiếng Việt](README_VI.md)
+[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | **Русский** | [ภาษาไทย](README_TH.md) | [Tiếng Việt](README_VI.md) | [Italiano](README_IT.md) | [Polski](README_PL.md) | [Български](README_BG.md)
 
 # KernelSU Next
 
@@ -38,6 +38,20 @@ KernelSU Next работает с большинством ядер Android (4.4
 
 - Всё, что в директории `kernel`, — [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).  
 - Остальной код, кроме директории `kernel`, под [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
+
+## Донаты
+
+- 0x12b5224b7aca0121c2f003240a901e1d064371c1 [ USDT BEP20 ]
+
+- TYUVMWGTcnR5svnDoX85DWHyqUAeyQcdjh [ USDT TRC20 ]
+
+- 0x12b5224b7aca0121c2f003240a901e1d064371c1 [ USDT ERC20 ]
+
+- 0x12b5224b7aca0121c2f003240a901e1d064371c1 [ ETH ERC20 ]
+
+- Ld238uYBuRQdZB5YwdbkuU6ektBAAUByoL [ LTC ]
+
+- 19QgifcjMjSr1wB2DJcea5cxitvWVcXMT6 [ BTC ]
 
 ## Благодарность
 
