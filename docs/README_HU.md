@@ -25,6 +25,8 @@ A KernelSU Next hivatalosan támogatja a legtöbb Android kernelt 4.4-től 6.6-i
  - A GKI 1.0 (4.19 - 5.4) kerneleleket a KernelSU driverrel újra kell fordítani.
  - Az elavultnak számító (<4.14) kerneleket szintén újra kell fordítani a KernelSU driverrel (a 3.18+ kísérleti, és előfordulhat, hogy bizonyos funkciókat vissza kell állítani).
 
+Jelenleg csak az `arm64-v8a` architektúra támogatott.
+
 ## Felhasználás
 
 - [Telepítési útmutató](https://ksunext.org/pages/installation.html)
