@@ -19,6 +19,9 @@
     <string name="home_failure">内核中未找到 KernelSU Next V2 签名！ [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">请让你的内核开发人员集成 KernelSU Next！</string>
     <string name="home_kernel">内核版本</string>
+    <string name="enabled">已启用</string>
+    <string name="disabled">已禁用</string>
+    <string name="susfs_supported">支持</string>
     <string name="home_susfs">SuSFS：%s</string>
     <string name="home_susfs_version">SuSFS 版本</string>
     <string name="home_susfs_sus_su">SuS SU</string>
@@ -70,13 +73,13 @@
     <string name="export_log">导出日志</string>
     <string name="safe_mode">安全模式</string>
     <string name="reboot_to_apply">重启生效</string>
-    <string name="module_magisk_conflict">由于与 Magisk 冲突，模块不可用。</string>
-    <string name="home_mount_system">模块系统</string>
+    <string name="module_magisk_conflict">由于与 Magisk 冲突，模块不可用！</string>
+    <string name="home_mount_system">模块挂载模式</string>
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">不可用</string>
-    <string name="use_overlay_fs">使用 OverlayFS（实验性）</string>
-    <string name="use_overlay_fs_summary">在 OverlayFS 和 Magic Mount 两种挂载系统之间进行切换。</string>
+    <string name="use_overlay_fs">使用 OverlayFS</string>
+    <string name="use_overlay_fs_summary">在 OverlayFS 和 Magic Mount 两种挂载模式之间进行切换。</string>
     <string name="reboot_required">需要重启</string>
     <string name="reboot_message">更改将在重启系统后生效。您想现在重启吗？</string>
     <string name="module_restore">恢复模块</string>
