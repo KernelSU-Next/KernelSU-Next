@@ -22,7 +22,7 @@
     <string name="home_susfs">SuSFS：%s</string>
     <string name="home_susfs_version">SuSFS 版本</string>
     <string name="home_susfs_sus_su">SuS SU</string>
-    <string name="home_android">安卓版本</string>
+    <string name="home_android">Android 版本</string>
     <string name="home_manager_version">管理器版本</string>
     <string name="home_selinux_status">SELinux 状态</string>
     <string name="selinux_status_disabled">被禁用</string>
