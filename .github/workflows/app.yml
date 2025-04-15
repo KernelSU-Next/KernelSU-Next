@@ -1,0 +1,63 @@
+name: Build app only
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  build-manager:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./manager
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Write Key
+        run: |
+          if [ ! -z "${{ secrets.KEYSTORE }}" ]; then
+            {
+              echo KEYSTORE_PASSWORD='${{ secrets.KEYSTORE_PASSWORD }}'
+              echo KEY_ALIAS='${{ secrets.KEY_ALIAS }}'
+              echo KEY_PASSWORD='${{ secrets.KEY_PASSWORD }}'
+              echo KEYSTORE_FILE='key.jks'
+            } >> gradle.properties
+            echo ${{ secrets.KEYSTORE }} | base64 -d > key.jks
+          fi
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build with Gradle
+        run: |
+          {
+            echo 'org.gradle.parallel=true'
+            echo 'org.gradle.vfs.watch=true'
+            echo 'org.gradle.jvmargs=-Xmx2048m'
+            echo 'android.native.buildOutput=verbose'
+          } >> gradle.properties
+          sed -i 's/org.gradle.configuration-cache=true//g' gradle.properties
+          chmod +x gradlew
+          ./gradlew clean assembleRelease
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Manager
+          path: manager/app/build/outputs/apk/release/*.apk
+
+      - name: Upload Mappings
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mappings
+          path: manager/app/build/outputs/mapping/release/
