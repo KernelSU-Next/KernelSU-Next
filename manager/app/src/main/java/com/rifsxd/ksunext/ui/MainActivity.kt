@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val isManager = Natives.becomeManager(ksuApp.packageName)
-	    if (isManager) install()
+        if (isManager) install()
 
         setContent {
             KernelSUTheme {
