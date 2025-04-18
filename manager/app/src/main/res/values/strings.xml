@@ -194,4 +194,6 @@
     <string name="settings_disable_su">Disable su compatibility</string>
     <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
     <string name="settings_language">Language</string>
+    <string name="use_webuix">Use WebUI X</string>
+    <string name="use_webuix_summary">Use WebUI X instead of WebUI which supports more API\'s</string>
 </resources>

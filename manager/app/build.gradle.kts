@@ -133,4 +133,8 @@ dependencies {
     implementation(libs.androidx.webkit)
 
     implementation(libs.lsposed.cxx)
+
+    implementation(libs.mmrl.platform)
+    implementation(libs.mmrl.hidden.api)
+    implementation(libs.mmrl.webui)
 }

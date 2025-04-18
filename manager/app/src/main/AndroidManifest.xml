@@ -33,6 +33,13 @@
             android:exported="false"
             android:theme="@style/Theme.KernelSU.WebUI" />
 
+        <activity
+            android:name=".ui.webui.WebUIXActivity"
+            android:autoRemoveFromRecents="true"
+            android:documentLaunchMode="intoExisting"
+            android:exported="false"
+            android:theme="@style/Theme.KernelSU.WebUI" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

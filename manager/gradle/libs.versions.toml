@@ -17,6 +17,7 @@ parcelablelist = "2.0.1"
 libsu = "6.0.0"
 apksign = "1.4"
 cmaker = "1.2"
+mmrl = "48d05f5bc2"
 
 [plugins]
 agp-app = { id = "com.android.application", version.ref = "agp" }
@@ -72,3 +73,7 @@ sheet-compose-dialogs-input = { group = "com.maxkeppeler.sheets-compose-dialogs"
 markdown = { group = "io.noties.markwon", name = "core", version.ref = "markdown" }
 
 lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version = "27.0.12077973" }
+
+mmrl-webui = { group = "com.github.MMRLApp.MMRL", name = "webui", version.ref = "mmrl" }
+mmrl-platform = { group = "com.github.MMRLApp.MMRL", name = "platform", version.ref = "mmrl" }
+mmrl-hidden-api = { group = "com.github.MMRLApp.MMRL", name = "hidden-api", version.ref = "mmrl" }
