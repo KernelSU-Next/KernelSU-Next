@@ -34,7 +34,7 @@ class WebUIXActivity : ComponentActivity() {
         webView = WebView(this)
 
         lifecycleScope.launch {
-            KsuLibSuProvider.initPlatform()
+            baseContext.initPlatform()
         }
 
         val moduleId = intent.getStringExtra("id")!!

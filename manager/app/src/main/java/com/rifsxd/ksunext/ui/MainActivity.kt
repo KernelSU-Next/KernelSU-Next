@@ -53,7 +53,7 @@ import com.rifsxd.ksunext.ui.theme.KernelSUTheme
 import com.rifsxd.ksunext.ui.util.LocalSnackbarHost
 import com.rifsxd.ksunext.ui.util.rootAvailable
 import com.rifsxd.ksunext.ui.util.install
-import com.rifsxd.ksunext.ui.webui.KsuLibSuProvider
+import com.rifsxd.ksunext.ui.webui.initPlatform
 
 class MainActivity : ComponentActivity() {
 
@@ -84,7 +84,7 @@ class MainActivity : ComponentActivity() {
 
                 // pre-init platform to faster start WebUI X activities
                 LaunchedEffect(Unit) {
-                    KsuLibSuProvider.initPlatform()
+                    baseContext.initPlatform()
                 }
 
                 Scaffold(
