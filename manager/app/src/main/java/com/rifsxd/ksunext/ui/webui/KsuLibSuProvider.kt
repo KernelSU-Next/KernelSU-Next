@@ -8,6 +8,7 @@ import com.dergoogler.mmrl.platform.service.IProvider
 import com.dergoogler.mmrl.platform.service.ServiceManagerCompat
 import com.dergoogler.mmrl.platform.service.ServiceManagerCompat.getPlatformIntent
 import com.rifsxd.ksunext.Natives
+import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.ui.util.rootAvailable
 import com.topjohnwu.superuser.ipc.RootService
 
@@ -28,21 +29,22 @@ class KsuLibSuProvider(
     override fun unbind(connection: ServiceConnection) {
         RootService.stop(getPlatformIntent(context, platform))
     }
-}
 
-suspend fun Context.initPlatform() =
-    if (Natives.becomeManager(packageName) && !Natives.requireNewKernel() && rootAvailable()) Platform.init {
-        context = this@initPlatform
-        platform = Platform.KsuNext
+    companion object {
+        suspend fun initPlatform() = Platform.init {
+            this.context = ksuApp
+            platform = Platform.KsuNext
 
-        try {
-            fromProvider = ServiceManagerCompat.from(
-                KsuLibSuProvider(
-                    context = this@initPlatform,
-                    platform = Platform.KsuNext
+            try {
+                fromProvider = ServiceManagerCompat.from(
+                    KsuLibSuProvider(
+                        context = ksuApp,
+                        platform = Platform.KsuNext
+                    )
                 )
-            )
-        } catch (e: Exception) {
-            Log.e("initPlatform", "Error initializing platform", e)
+            } catch (e: Exception) {
+                Log.e("initPlatform", "Error initializing platform", e)
+            }
         }
-    } else false
+    }
+}
