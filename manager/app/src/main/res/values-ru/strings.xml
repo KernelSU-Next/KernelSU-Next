@@ -29,8 +29,8 @@
     <string name="home_manager_version">Версия менеджера</string>
     <string name="home_selinux_status">Статус SELinux</string>
     <string name="selinux_status_disabled">Отключен</string>
-    <string name="selinux_status_enforcing">Принудительный</string>
-    <string name="selinux_status_permissive">Разрешающий</string>
+    <string name="selinux_status_enforcing">Enforcing</string>
+    <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Неизвестно</string>
     <string name="superuser">SuperUser</string>
     <string name="module_failed_to_enable">Не удалось включить модуль: %s</string>
@@ -74,11 +74,11 @@
     <string name="safe_mode">Безопасный режим</string>
     <string name="reboot_to_apply">Перезагрузите для применения</string>
     <string name="module_magisk_conflict">Модули недоступны из-за конфликта с Magisk!</string>
-    <string name="home_mount_system">Система монтирования модулей</string>
+    <string name="home_mount_system">Система монтирования</string>
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">Недоступно</string>
-    <string name="use_overlay_fs">Использовать OverlayFS (Бета)</string>
+    <string name="use_overlay_fs">Использовать OverlayFS</string>
     <string name="use_overlay_fs_summary">Переключение между использованием OverlayFS и Magic Mount для системы монтирования KernelSU Next.</string>
     <string name="reboot_required">Требуется перезагрузка</string>
     <string name="reboot_message">Изменения вступят в силу после перезагрузки системы. Перезагрузить сейчас?</string>
@@ -109,7 +109,7 @@
     <string name="profile" translatable="false">Профиль приложения</string>
     <string name="profile_default">По умолчанию</string>
     <string name="profile_template">Шаблон</string>
-    <string name="profile_custom">Пользовательский</string>
+    <string name="profile_custom">Настроить</string>
     <string name="profile_name">Имя профиля</string>
     <string name="profile_namespace">Пространство монтирования</string>
     <string name="profile_namespace_inherited">Унаследовано</string>
@@ -121,7 +121,7 @@
     <string name="profile_umount_modules">Отключить модули</string>
     <string name="failed_to_update_app_profile">Не удалось обновить профиль приложения для %s</string>
     <string name="require_kernel_version">Текущая версия KernelSU Next %1$d слишком низкая для корректной работы менеджера. Пожалуйста, обновитесь до версии %2$d или выше!</string>
-    <string name="settings_umount_modules_default">Отмонтировать модули</string>
+    <string name="settings_umount_modules_default">Отключить модули</string>
     <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Отключить модули\" в профиле приложения. Если включено, это удалит все модификации системы модулями для приложений без установленного профиля.</string>
     <string name="settings_susfs_toggle">Скрыть хуки kprobe</string>
     <string name="settings_susfs_toggle_summary">Отключает хуки kprobe, созданные ksu, и вместо этого активирует встроенные функции, реализующие ту же функциональность для ядер, которые не поддерживают kprobe.</string>
@@ -164,13 +164,13 @@
     <string name="settings_check_update">Проверить обновления</string>
     <string name="settings_check_update_summary">Автоматически проверять обновления при открытии приложения.</string>
     <string name="grant_root_failed">Не удалось предоставить root-доступ!</string>
-    <string name="action">Действие</string>
+    <string name="action">Запустить</string>
     <string name="open">Открыть</string>
     <string name="enable_web_debugging">Включить отладку WebView</string>
     <string name="enable_web_debugging_summary">Можно использовать для отладки WebUI. Включайте только при необходимости.</string>
     <string name="direct_install">Прямая установка (Рекомендуется)</string>
     <string name="select_file">Выберите файл</string>
-    <string name="install_inactive_slot">Установить в неактивный слот (После OTA)</string>
+    <string name="install_inactive_slot">В неактивный слот (После OTA)</string>
     <string name="install_inactive_slot_warning">Ваше устройство будет **ПРИНУДИТЕЛЬНО** загружено в текущий неактивный слот после перезагрузки!\nИспользуйте эту опцию только после завершения OTA.\nПродолжить?</string>
     <string name="install_next">Далее</string>
     <string name="select_file_tip">Рекомендуется образ раздела %1$s</string>
@@ -191,6 +191,6 @@
     <string name="save_log">Сохранить логи</string>
     <string name="log_saved">Логи сохранены</string>
     <string name="send_log">Поделиться логами</string>
-    <string name="settings_disable_su">Отключить совместимость с su</string>
+    <string name="settings_disable_su">Откл. совместимость с su</string>
     <string name="settings_disable_su_summary">Временно отключить возможность приложениям получать права root через команду su (существующие сеансы с правами root не будут затронуты).</string>
 </resources>
