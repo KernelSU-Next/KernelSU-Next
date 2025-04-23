@@ -1,6 +1,6 @@
 use anyhow::{Context, Error, Ok, Result, bail};
 use std::{
-    fs::{create_dir_all, remove_file, write, File, OpenOptions},
+    fs::{File, OpenOptions, create_dir_all, remove_file, write},
     io::{
         ErrorKind::{AlreadyExists, NotFound},
         Write,

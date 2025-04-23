@@ -19,6 +19,9 @@
     <string name="home_failure">內核中未找到 KernelSU Next v2 簽名！ [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">請讓你的內核開發人員整合 KernelSU Next！</string>
     <string name="home_kernel">內核版本</string>
+    <string name="home_susfs">SuSFS：%s</string>
+    <string name="home_susfs_version">SuSFS 版本</string>
+    <string name="home_susfs_sus_su">SuS SU</string>
     <string name="home_android">Android 版本</string>
     <string name="home_manager_version">管理器版本</string>
     <string name="home_selinux_status">SELinux 狀態</string>
@@ -54,6 +57,12 @@
     <string name="module_restore_failed">恢復失敗: %s</string>
     <string name="module_version">版本</string>
     <string name="module_author">作者</string>
+    <string name="module_id">模組標識</string>
+    <string name="module_version_code">模組版本</string>
+    <string name="module_update_json">更新配置</string>
+    <string name="module_update_json_empty">無更新配置</string>
+    <string name="enable_developer_options">啟用開發人員模式</string>
+    <string name="enable_developer_options_summary">顯示隱藏的開發人員專用設置和調試信息</string>
     <string name="module_overlay_fs_not_available">OverlayFS 被內核禁用，模組不可用。</string>
     <string name="refresh">刷新</string>
     <string name="show_system_apps">顯示系統應用</string>
@@ -62,7 +71,7 @@
     <string name="safe_mode">安全模式</string>
     <string name="reboot_to_apply">重啟生效</string>
     <string name="module_magisk_conflict">由於與 Magisk 有衝突，所有模組不可用！</string>
-    <string name="home_module_mount">模組系統</string>
+    <string name="home_mount_system">模組系統</string>
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">不可用</string>
@@ -72,6 +81,11 @@
     <string name="reboot_message">更改將在重啟系統後生效。您想現在重啟嗎？</string>
     <string name="module_restore">恢復模組</string>
     <string name="module_restore_message">從備份中恢復模組。</string>
+    <string name="backup_restore">備份 &amp; 恢復</string>
+    <string name="allowlist_restore">恢復超級使用者列表</string>
+    <string name="allowlist_restore_message">從最近的備份中恢復超級使用者列表</string>
+    <string name="allowlist_backup">備份超級使用者列表</string>
+    <string name="allowlist_backup_message">備份當前的超級使用者列表</string>
     <string name="module_backup">備份模組</string>
     <string name="module_backup_message">備份當前已安裝的模組。</string>
     <string name="warning">警告</string>
@@ -106,8 +120,8 @@
     <string name="require_kernel_version">當前 KernelSU-Next 版本 %1$d 過低，管理器無法正常工作，請升級內核 KernelSU-Next 版本至 %2$d 或以上！</string>
     <string name="settings_umount_modules_default">預設卸載模組</string>
     <string name="settings_umount_modules_default_summary">App Profile 中"卸載模組"的全域預設值，如果啟用，將會為沒有設定 Profile 的應用移除所有模組針對系統的修改。</string>
-    <string name="settings_susfs_toggle">隱藏kprobe鉤子</string>
-    <string name="settings_susfs_toggle_summary">它禁用由ksu所建立的kprobe鉤子，並啟用非kprobe內聯鉤子，就如同無法支援kprobe的non-gki核心的實現方式。</string>
+    <string name="settings_susfs_toggle">隱藏 Kprobe 鉤子</string>
+    <string name="settings_susfs_toggle_summary">它禁用由 KSU 所建立的 kprobe 鉤子，並啟用非 kprobe 內聯鉤子，就如同無法支援 kprobe 的 non-gki 核心的實現方式。</string>
     <string name="profile_umount_modules_summary">啟用後將允許 KernelSU-Next 為本應用還原被模組修改過的檔案。</string>
     <string name="profile_selinux_domain">域</string>
     <string name="profile_selinux_rules">規則</string>
@@ -120,6 +134,7 @@
     <string name="force_stop_app">強制停止</string>
     <string name="restart_app">重新啟動</string>
     <string name="failed_to_update_sepolicy">為：%s 更新 SELinux 規則失敗</string>
+    <string name="su_not_allowed">拒絕授予%s超級使用者權限</string>
     <string name="module_changelog">更新日誌</string>
     <string name="settings_profile_template">App Profile 模板</string>
     <string name="settings_profile_template_summary">管理本地和線上的 App Profile 模板</string>
@@ -173,4 +188,7 @@
     <string name="save_log">保存日誌</string>
     <string name="log_saved">日誌已保存</string>
     <string name="send_log">發送日誌</string>
+    <string name="settings_disable_su">關閉 SU 相容</string>
+    <string name="settings_disable_su_summary">暫時禁止任何應用通過 su 命令獲取 root 權限（已運行的 root 進程不受影響）</string>
+    <string name="settings_language">語言</string>
 </resources>

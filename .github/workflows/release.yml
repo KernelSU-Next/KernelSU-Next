@@ -48,10 +48,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            manager/*.apk
+            Manager/*.apk
             android*-lkm/*_kernelsu.ko
             AnyKernel3-*.zip
             boot-images-*/Image-*/*.img.gz
-            ksud_magic-*
-            ksud_overlayfs-*
-            susfsd-*
+            ksud_magic/ksud_magic-*
+            ksud_overlayfs/ksud_overlayfs-*
+            susfsd/susfsd-*
