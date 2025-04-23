@@ -60,7 +60,7 @@
     <string name="module_restore_failed">Не удалось восстановить: %s</string>
     <string name="module_version">Версия</string>
     <string name="module_author">Автор</string>
-    <string name="module_id">Идентификатор</string>
+    <string name="module_id">ID</string>
     <string name="module_version_code">Код версии</string>
     <string name="module_update_json">UpdateJson</string>
     <string name="module_update_json_empty">Пусто</string>
@@ -192,5 +192,5 @@
     <string name="log_saved">Логи сохранены</string>
     <string name="send_log">Поделиться логами</string>
     <string name="settings_disable_su">Откл. совместимость с su</string>
-    <string name="settings_disable_su_summary">Временно отключить возможность приложениям получать права root через команду su (существующие сеансы с правами root не будут затронуты).</string>
+    <string name="settings_disable_su_summary">Временно отключить возможность приложениям получать права root через команду su (существующие процессы с правами root не будут затронуты).</string>
 </resources>
