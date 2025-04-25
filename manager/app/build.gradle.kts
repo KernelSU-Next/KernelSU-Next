@@ -136,5 +136,6 @@ dependencies {
 
     implementation(libs.mmrl.platform)
     implementation(libs.mmrl.hidden.api)
+    implementation(libs.mmrl.ui)
     implementation(libs.mmrl.webui)
 }

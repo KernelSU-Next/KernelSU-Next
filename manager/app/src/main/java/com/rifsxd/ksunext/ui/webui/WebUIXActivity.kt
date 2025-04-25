@@ -15,8 +15,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import com.dergoogler.mmrl.platform.Platform
-import com.dergoogler.mmrl.webui.component.Loading
-import com.dergoogler.mmrl.webui.model.JavaScriptInterface
+import com.dergoogler.mmrl.ui.component.Loading
+import com.dergoogler.mmrl.webui.interfaces.WXOptions
+import com.dergoogler.mmrl.webui.model.ModId
 import com.dergoogler.mmrl.webui.screen.WebUIScreen
 import com.dergoogler.mmrl.webui.util.rememberWebUIOptions
 import com.rifsxd.ksunext.BuildConfig
@@ -72,7 +73,7 @@ class WebUIXActivity : ComponentActivity() {
                 val dark = isSystemInDarkTheme()
 
                 val options = rememberWebUIOptions(
-                    modId = moduleId,
+                    modId = ModId(moduleId),
                     debug = webDebugging,
                     appVersionCode = BuildConfig.VERSION_CODE,
                     isDarkMode = dark,
@@ -82,14 +83,7 @@ class WebUIXActivity : ComponentActivity() {
                     webView = webView,
                     options = options,
                     interfaces = listOf(
-                        JavaScriptInterface(
-                            name = "ksu",
-                            instance = WebViewInterface(
-                                context = this@WebUIXActivity,
-                                webView = webView,
-                                modDir = "/data/adb/modules/$moduleId"
-                            ),
-                        )
+                        WebViewInterface.factory()
                     )
                 )
             }

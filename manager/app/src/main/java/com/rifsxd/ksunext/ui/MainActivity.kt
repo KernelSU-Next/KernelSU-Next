@@ -83,9 +83,9 @@ class MainActivity : ComponentActivity() {
                 }
 
                 // pre-init platform to faster start WebUI X activities
-                LaunchedEffect(Unit) {
-                    baseContext.initPlatform()
-                }
+//                LaunchedEffect(Unit) {
+//                    baseContext.initPlatform()
+//                }
 
                 Scaffold(
                     bottomBar = {
