@@ -39,6 +39,7 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.dergoogler.mmrl.platform.Platform
 import com.ramcosta.composedestinations.DestinationsNavHost
 import com.ramcosta.composedestinations.animations.NavHostAnimatedDestinationStyle
 import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
@@ -83,9 +84,9 @@ class MainActivity : ComponentActivity() {
                 }
 
                 // pre-init platform to faster start WebUI X activities
-//                LaunchedEffect(Unit) {
-//                    baseContext.initPlatform()
-//                }
+                LaunchedEffect(Unit) {
+                    baseContext.initPlatform()
+                }
 
                 Scaffold(
                     bottomBar = {
@@ -132,6 +133,8 @@ private fun BottomBar(navController: NavHostController) {
         )
     ) {
         BottomBarDestination.entries.forEach { destination ->
+            // protect the user against crashes
+            if (!Platform.isAlive && destination == BottomBarDestination.SuperUser) return@forEach
             if (!fullFeatured && destination.rootRequired) return@forEach
             val isCurrentDestOnBackStack by navController.isRouteOnBackStackAsState(destination.direction)
             NavigationBarItem(
