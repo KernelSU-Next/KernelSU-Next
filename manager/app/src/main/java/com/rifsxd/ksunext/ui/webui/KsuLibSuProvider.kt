@@ -10,6 +10,7 @@ import com.dergoogler.mmrl.platform.model.IProvider
 import com.dergoogler.mmrl.platform.model.PlatformIntent
 import com.rifsxd.ksunext.IKsuInterface
 import com.rifsxd.ksunext.Natives
+import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.ui.KsuService
 import com.topjohnwu.superuser.ipc.RootService
 import kotlinx.coroutines.Dispatchers
@@ -17,20 +18,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import rikka.parcelablelist.ParcelableListSlice
 
-class KsuLibSuProvider(
-    private val context: Context,
-    private val platform: Platform,
-) : IProvider {
+class KsuLibSuProvider : IProvider {
     override val name = "KsuLibSu"
 
     override fun isAvailable() = true
 
-    override suspend fun isAuthorized() = Natives.becomeManager(context.packageName)
+    override suspend fun isAuthorized() = Natives.becomeManager(ksuApp.packageName)
 
     private val serviceIntent
         get() = PlatformIntent(
-            context,
-            platform,
+            ksuApp,
+            Platform.KsuNext,
             SuService::class.java
         )
 
@@ -43,17 +41,12 @@ class KsuLibSuProvider(
     }
 }
 
-suspend fun Context.initPlatform() = withContext(Dispatchers.IO) {
+suspend fun initPlatform() = withContext(Dispatchers.IO) {
     try {
         val active = Platform.init {
-            this.context = this@initPlatform
+            this.context = ksuApp
             this.platform = Platform.KsuNext
-            this.provider = from(
-                KsuLibSuProvider(
-                    context = this@initPlatform,
-                    platform = Platform.KsuNext
-                )
-            )
+            this.provider = from(KsuLibSuProvider())
         }
 
         while (!active) {

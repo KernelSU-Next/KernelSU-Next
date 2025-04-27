@@ -44,4 +44,4 @@
 -keep class com.dergoogler.mmrl.webui.interfaces.** { *; }
 -keep class com.rifsxd.ksunext.ui.webui.WebViewInterface { *; }
 
--keep class  com.topjohnwu.superuser.** { *; }
+-keep,allowobfuscation class * extends com.dergoogler.mmrl.platform.content.IService { *; }

@@ -135,7 +135,7 @@ dependencies {
     implementation(libs.lsposed.cxx)
 
     implementation(libs.mmrl.platform)
-    implementation(libs.mmrl.hidden.api)
+    compileOnly(libs.mmrl.hidden.api)
     implementation(libs.mmrl.ui)
     implementation(libs.mmrl.webui)
 }

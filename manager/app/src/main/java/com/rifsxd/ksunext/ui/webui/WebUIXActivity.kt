@@ -35,7 +35,7 @@ class WebUIXActivity : ComponentActivity() {
         webView = WebView(this)
 
         lifecycleScope.launch {
-            baseContext.initPlatform()
+            initPlatform()
         }
 
         val moduleId = intent.getStringExtra("id")!!
