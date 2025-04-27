@@ -1,11 +1,7 @@
 package com.rifsxd.ksunext.ui.viewmodel
 
-import android.content.ComponentName
-import android.content.Intent
-import android.content.ServiceConnection
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
-import android.os.IBinder
 import android.os.Parcelable
 import android.os.SystemClock
 import android.util.Log
@@ -15,21 +11,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.dergoogler.mmrl.platform.Platform
-import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
-import com.rifsxd.ksunext.IKsuInterface
 import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.ksuApp
-import com.rifsxd.ksunext.ui.KsuService
 import com.rifsxd.ksunext.ui.util.HanziToPinyin
-import com.rifsxd.ksunext.ui.util.KsuCli
 import com.rifsxd.ksunext.ui.webui.getPackages
 import java.text.Collator
 import java.util.*
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 class SuperUserViewModel : ViewModel() {
 
@@ -101,20 +91,11 @@ class SuperUserViewModel : ViewModel() {
 
 
     suspend fun fetchAppList() {
-
         isRefreshing = true
-
 
         withContext(Dispatchers.IO) {
             val pm = ksuApp.packageManager
             val start = SystemClock.elapsedRealtime()
-
-//            val binder = result.first
-           // val allPackages = IKsuInterface.Stub.asInterface(binder).getPackages(0)
-
-//            withContext(Dispatchers.Main) {
-//                stopKsuService()
-//            }
 
             val packages = Platform.getPackages(0).list
 

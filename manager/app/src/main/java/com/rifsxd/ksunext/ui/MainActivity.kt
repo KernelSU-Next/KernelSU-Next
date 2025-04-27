@@ -125,7 +125,7 @@ class MainActivity : ComponentActivity() {
 private fun BottomBar(navController: NavHostController) {
     val navigator = navController.rememberDestinationsNavigator()
     val isManager = Natives.becomeManager(ksuApp.packageName)
-    val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
+    val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable() && Platform.isAlive
     NavigationBar(
         tonalElevation = 8.dp,
         windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout).only(
@@ -133,8 +133,6 @@ private fun BottomBar(navController: NavHostController) {
         )
     ) {
         BottomBarDestination.entries.forEach { destination ->
-            // protect the user against crashes
-            if (!Platform.isAlive && destination == BottomBarDestination.SuperUser) return@forEach
             if (!fullFeatured && destination.rootRequired) return@forEach
             val isCurrentDestOnBackStack by navController.isRouteOnBackStackAsState(destination.direction)
             NavigationBarItem(
