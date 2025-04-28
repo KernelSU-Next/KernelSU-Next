@@ -194,4 +194,6 @@
     <string name="settings_disable_su">Su uyumluluğunu devre dışı bırak</string>
     <string name="settings_disable_su_summary">Geçici olarak herhangi bir uygulamanın su komutu aracılığıyla kök ayrıcalıkları elde etme yeteneğini devre dışı bırakır (mevcut kök süreçleri etkilenmez).</string>
     <string name="settings_language">Dil</string>
+    <string name="use_webuix">WebUI X\'i kullanın</string>
+    <string name="use_webuix_summary">Daha fazla API\'yi destekleyen WebUI yerine WebUI X kullanın</string>
 </resources>
