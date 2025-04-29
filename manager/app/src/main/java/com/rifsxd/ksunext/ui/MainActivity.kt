@@ -125,7 +125,7 @@ class MainActivity : ComponentActivity() {
 private fun BottomBar(navController: NavHostController) {
     val navigator = navController.rememberDestinationsNavigator()
     val isManager = Natives.becomeManager(ksuApp.packageName)
-    val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable() && Platform.isAlive
+    val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
     NavigationBar(
         tonalElevation = 8.dp,
         windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout).only(

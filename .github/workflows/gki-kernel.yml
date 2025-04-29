@@ -195,14 +195,14 @@ jobs:
             sed -i 's/needs unknown symbol/Dont abort when unknown symbol/g' build/kernel/*.sh || echo "No unknown symbol scripts found"
           fi
 
-      - name: Make working directory clean to avoid dirty
-        working-directory: android-kernel
-        run: |
-          rm common/android/abi_gki_protected_exports_* || echo "No protected exports!"
-          git config --global user.email "bot@kernelsu.org"
-          git config --global user.name "KernelSU-NextBot"
-          cd common/ && git add -A && git commit -a -m "Add KernelSU-Next"
-          repo status
+      # - name: Make working directory clean to avoid dirty
+      #   working-directory: android-kernel
+      #   run: |
+      #     rm common/android/abi_gki_protected_exports_* || echo "No protected exports!"
+      #     git config --global user.email "bot@kernelsu.org"
+      #     git config --global user.name "KernelSU-NextBot"
+      #     cd common/ && git add -A && git commit -a -m "Add KernelSU-Next"
+      #     repo status
 
       - name: Build Kernel/LKM
         working-directory: android-kernel

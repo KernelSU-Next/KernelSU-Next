@@ -85,7 +85,6 @@ import com.rifsxd.ksunext.ui.util.getBugreportFile
 import com.rifsxd.ksunext.ui.util.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import androidx.core.content.edit
 
 /**
  * @author weishu
