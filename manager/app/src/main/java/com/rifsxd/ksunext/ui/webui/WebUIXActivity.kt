@@ -77,6 +77,7 @@ class WebUIXActivity : ComponentActivity() {
                     debug = webDebugging,
                     appVersionCode = BuildConfig.VERSION_CODE,
                     isDarkMode = dark,
+                    cls = WebUIXActivity::class.java
                 )
 
                 WebUIScreen(
