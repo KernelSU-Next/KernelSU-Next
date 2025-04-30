@@ -162,7 +162,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     title = stringResource(id = R.string.settings_umount_modules_default),
                     summary = stringResource(id = R.string.settings_umount_modules_default_summary),
                     checked = umountChecked
-                    
+
                 ) {
                     if (Natives.setDefaultUmountModules(it)) {
                         umountChecked = it
@@ -319,6 +319,71 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 }
             }
 
+            var useWebUIX by rememberSaveable {
+                mutableStateOf(
+                    prefs.getBoolean("use_webuix", false)
+                )
+            }
+            if (ksuVersion != null) {
+                SwitchItem(
+                    icon = Icons.Filled.WebAsset,
+                    title = stringResource(id = R.string.use_webuix),
+                    summary = stringResource(id = R.string.use_webuix_summary),
+                    checked = useWebUIX
+                ) {
+                    prefs.edit().putBoolean("use_webuix", it).apply()
+                    useWebUIX = it
+                }
+            }
+
+            if (ksuVersion != null) {
+                val backupRestore = stringResource(id = R.string.backup_restore)
+                ListItem(
+                    leadingContent = {
+                        Icon(
+                            Icons.Filled.Backup,
+                            backupRestore
+                        )
+                    },
+                    headlineContent = { Text(backupRestore) },
+                    modifier = Modifier.clickable {
+                        navigator.navigate(BackupRestoreScreenDestination)
+                    }
+                )
+            }
+
+            if (useOverlayFs) {
+                val shrink = stringResource(id = R.string.shrink_sparse_image)
+                val shrinkMessage = stringResource(id = R.string.shrink_sparse_image_message)
+                ListItem(
+                    leadingContent = {
+                        Icon(
+                            Icons.Filled.Compress,
+                            shrink
+                        )
+                    },
+                    headlineContent = { Text(shrink) },
+                    modifier = Modifier.clickable {
+                        scope.launch {
+                            val result = shrinkDialog.awaitConfirm(title = shrink, content = shrinkMessage)
+                            if (result == ConfirmResult.Confirmed) {
+                                loadingDialog.withLoading {
+                                    shrinkModules()
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+
+
+            val lkmMode = Natives.version >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && Natives.isLkmMode
+            if (lkmMode) {
+                UninstallItem(navigator) {
+                    loadingDialog.withLoading(it)
+                }
+            }
+
             var showBottomsheet by remember { mutableStateOf(false) }
 
             ListItem(
@@ -428,54 +493,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 )
             }
 
-            if (ksuVersion != null) {
-                val backupRestore = stringResource(id = R.string.backup_restore)
-                ListItem(
-                    leadingContent = {
-                        Icon(
-                            Icons.Filled.Backup,
-                            backupRestore
-                        )
-                    },
-                    headlineContent = { Text(backupRestore) },
-                    modifier = Modifier.clickable {
-                        navigator.navigate(BackupRestoreScreenDestination)
-                    }
-                )
-            }
-
-            if (useOverlayFs) {
-                val shrink = stringResource(id = R.string.shrink_sparse_image)
-                val shrinkMessage = stringResource(id = R.string.shrink_sparse_image_message)
-                ListItem(
-                    leadingContent = {
-                        Icon(
-                            Icons.Filled.Compress,
-                            shrink
-                        )
-                    },
-                    headlineContent = { Text(shrink) },
-                    modifier = Modifier.clickable {
-                        scope.launch {
-                            val result = shrinkDialog.awaitConfirm(title = shrink, content = shrinkMessage)
-                            if (result == ConfirmResult.Confirmed) {
-                                loadingDialog.withLoading {
-                                    shrinkModules()
-                                }
-                            }
-                        }
-                    }
-                )
-            }
-
-
-            val lkmMode = Natives.version >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && Natives.isLkmMode
-            if (lkmMode) {
-                UninstallItem(navigator) {
-                    loadingDialog.withLoading(it)
-                }
-            }
-
             val about = stringResource(id = R.string.about)
             ListItem(
                 leadingContent = {
@@ -496,7 +513,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 @Composable
 fun UninstallItem(
     navigator: DestinationsNavigator,
-    withLoading: suspend (suspend () -> Unit) -> Unit
+    withLoading: suspend (suspend () -> Unit) -> Unit,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -598,7 +615,7 @@ fun rememberUninstallDialog(onSelected: (UninstallType) -> Unit): DialogHandle {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TopBar(
-    scrollBehavior: TopAppBarScrollBehavior? = null
+    scrollBehavior: TopAppBarScrollBehavior? = null,
 ) {
     TopAppBar(
         title = { Text(stringResource(R.string.settings)) },

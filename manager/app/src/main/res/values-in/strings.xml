@@ -69,7 +69,7 @@
     <string name="safe_mode">Mode aman</string>
     <string name="reboot_to_apply">Reboot agar berfungsi</string>
     <string name="module_magisk_conflict">Konflik dengan Magisk, fungsi modul ditiadakan!</string>
-    <string name="home_module_mount">Modul Sistem</string>
+    <string name="home_mount_system">Modul Sistem</string>
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">Tidak Tersedia</string>

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="issue_report_title">تواجه مشكلة؟</string>
+    <string name="issue_report_body">حصل خطأ ما او لديك تعليقات؟</string>
+    <string name="issue_report_body_2">بلغنا بها على الفور!</string>
+    <string name="issue_report_github">ابلغنا عن طريق Github</string>
+    <string name="issue_report_telegram">تواصل من خلال التليجرام</string>
+    <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
+    <string name="issue_report_telegram_link">https://t.me/ksunext</string>
+    <string name="confirm">تأكيد</string>
+    <string name="app_name" translatable="false">KernelSU Next</string>
+    <string name="home">الصفحة الرئيسية</string>
+    <string name="home_not_installed">غير مثبت</string>
+    <string name="home_click_to_install">انقر للتثبيت</string>
+    <string name="home_working">يعمل</string>
+    <string name="home_working_version">الإصدار: %d</string>
+    <string name="home_superuser_count">عدد التطبيقات ذات صلاحيات الروت: %d</string>
+    <string name="home_module_count">عدد الإضافات: %d</string>
+    <string name="home_failure">توقيع KSU Next v2 غير موجود [ !KSU_NEXT || != size/hash ]</string>
+    <string name="home_failure_tip">اطلب من مطور بتهيئة KSU Next لجهازك</string>
+    <string name="home_kernel">اصدار Kernel</string>
+    <string name="enabled">مفعل</string>
+    <string name="disabled">معطل</string>
+    <string name="susfs_supported">مدعوم</string>
+    <string name="home_susfs">SuSFS: %s</string>
+    <string name="home_susfs_version">اصدار SuSFS</string>
+    <string name="home_susfs_sus_su">SuS SU</string>
+    <string name="home_android">إصدار الأندرويد</string>
+    <string name="home_manager_version">اصدار مدير الروت</string>
+    <string name="home_selinux_status">حالة SELinux</string>
+    <string name="selinux_status_disabled">معطل</string>
+    <string name="selinux_status_enforcing">مفعل</string>
+    <string name="selinux_status_permissive">مرن</string>
+    <string name="selinux_status_unknown">غير معروف</string>
+    <string name="superuser">المستخدم خارق</string>
+    <string name="module_failed_to_enable">فشل في تشغيل إضافة: %s</string>
+    <string name="module_failed_to_disable">فشل في إيقاف إضافة: %s</string>
+    <string name="module_empty">لا توجد إضافات مثبته</string>
+    <string name="module">الإضافات</string>
+    <string name="module_install_prompt_with_name">الإضافة/ات التالية سيتم تثبيتها: %1$s</string>
+    <string name="module_sort_a_to_z">تصنيف (أ-ي)</string>
+    <string name="module_sort_z_to_a">تصنيف (ي-أ)</string>
+    <string name="uninstall">إلغاء التثبيت</string>
+    <string name="restore">إستعادة</string>
+    <string name="module_install">تثبيت</string>
+    <string name="install">تثبيت</string>
+    <string name="reboot">إعادة تشغيل</string>
+    <string name="settings">الإعدادات</string>
+    <string name="reboot_userspace">إعادة تشغيل سريعة</string>
+    <string name="reboot_recovery">إعادة التشغيل إلى وضع الريكفري</string>
+    <string name="reboot_bootloader">إعادة التشغيل إلى وضع bootloader</string>
+    <string name="reboot_download">إعادة التشغيل إلى وضع التنزيل</string>
+    <string name="reboot_edl">إعادة التشغيل إلى وضع EDL</string>
+    <string name="about">حول</string>
+    <string name="module_uninstall_confirm">هل انت متأكد من حذف تلك الإضافة %s؟</string>
+    <string name="module_uninstall_success">%s تم إلغاء تثبيت</string>
+    <string name="module_uninstall_failed">فشل في إلغاء تثبيت: %s</string>
+    <string name="module_restore_confirm">هل انت متأكد من استرجاع الإضافة؟ %s؟</string>
+    <string name="module_restore_success">%s تم استعادة</string>
+    <string name="module_restore_failed">فشل استعادة: %s</string>
+    <string name="module_version">الإصدار</string>
+    <string name="module_author">المطور</string>
+    <string name="module_id">ID</string>
+    <string name="module_version_code">كود الإصدار</string>
+    <string name="module_update_json">UpdateJson</string>
+    <string name="module_update_json_empty">فارغ</string>
+    <string name="enable_developer_options">تفعيل خيارات المطور</string>
+    <string name="enable_developer_options_summary">عرض الإعدادات المخفية ومعلومات التصحيح ذات الصلة فقط للمطورين.</string>
+    <string name="module_overlay_fs_not_available">الإضافات غير متاحة حيث أن OverlayFS معطلة بواسطة النواة.</string>
+    <string name="refresh">تحديث</string>
+    <string name="show_system_apps">عرض تطبيقات النظام</string>
+    <string name="hide_system_apps">إخفاء تطبيقات النظام</string>
+    <string name="export_log">تصدير السجلات</string>
+    <string name="safe_mode">وضع الأمان</string>
+    <string name="reboot_to_apply">إعادة التشغيل لتطبيق التغييرات</string>
+    <string name="module_magisk_conflict">الإضافات غير متاحة بسبب تعارض مع Magisk!</string>
+    <string name="home_mount_system">نظام الإضافات</string>
+    <string name="home_magic_mount">Magic Mount</string>
+    <string name="home_overlayfs_mount">OverlayFS</string>
+    <string name="unavailable">غير متاح</string>
+    <string name="use_overlay_fs">استخدام OverlayFS</string>
+    <string name="use_overlay_fs_summary">التبديل بين استخدام OverlayFS أو Magic Mount لنظام Mount الخاص بـKernelSU Next.</string>
+    <string name="reboot_required">إعادة التشغيل مطلوبة</string>
+    <string name="reboot_message">ستدخل التغييرات حيز التنفيذ بعد إعادة تشغيل النظام. هل تريد إعادة التشغيل الآن؟</string>
+    <string name="module_restore">استعادة الإضافة</string>
+    <string name="module_restore_message">استعادة الإضافات من النسخة الاحتياطية الأخيرة.</string>
+    <string name="backup_restore">نسخ احتياطي واستعادة</string>
+    <string name="module_backup">نسخ احتياطي للإضافة</string>
+    <string name="module_backup_message">نسخ احتياطي للإضافات المثبتة حاليًا.</string>
+    <string name="allowlist_restore">استعادة القائمة المسموح بها</string>
+    <string name="allowlist_restore_message">استعادة القائمة المسموح بها من النسخة الاحتياطية الأخيرة.</string>
+    <string name="allowlist_backup">نسخ احتياطي للقائمة المسموح بها</string>
+    <string name="allowlist_backup_message">نسخ احتياطي للقائمة المسموح بها المكونة حاليًا.</string>
+    <string name="warning">تحذير</string>
+    <string name="warning_message">هذه الميزة لا تزال في مرحلة البيتا وتحت التطوير. يرجى التأكد من عمل نسخة احتياطية من الإضافات الخاصة بك قبل المتابعة. استخدم هذه الميزة فقط إذا كنت تفهم المخاطر المحتملة. أكمل بحذر.</string>
+    <string name="proceed">تابع</string>
+    <string name="cancel">إلغاء</string>
+    <string name="later">لاحقًا</string>
+    <string name="home_next_kernelsu">🔥 الإصدار التالي</string>
+    <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
+    <string name="home_next_kernelsu_body">فرع تجريبي قادم. تحقق منه على GitHub!</string>
+    <string name="home_experimental_kernelsu">⚠️ تجريبي!</string>
+    <string name="home_experimental_kernelsu_repo">127.0.0.1</string>
+    <string name="home_experimental_kernelsu_body">KernelSU Next هو إصدار غير رسمي دائمًا تحت التطوير التجريبي النشط. يتم تقديمه كما هو، دون ضمانات للاستقرار أو الأداء أو الموثوقية.</string>
+    <string name="home_experimental_kernelsu_body_point_1"> • استخدم على مسؤوليتك: قد تحدث أعطال أو سلوك غير متوقع أو مشاكل في النظام.</string>
+    <string name="home_experimental_kernelsu_body_point_2"> • لا ضمان: المطورون غير مسؤولين عن أي فقدان للبيانات أو تلف النظام أو عواقب أخرى ناتجة عن استخدامه.</string>
+    <string name="home_experimental_kernelsu_body_point_3"> • لأغراض الاختبار فقط: مخصص للمستخدمين الذين يفهمون المخاطر ويشعرون بالراحة في حل المشكلات.</string>
+    <string name="about_source_code"><![CDATA[عرض رمز المصدر في %1$s]]></string>
+    <string name="profile" translatable="false">ملف التطبيق</string>
+    <string name="profile_default">افتراضي</string>
+    <string name="profile_template">قالب</string>
+    <string name="profile_custom">مخصص</string>
+    <string name="profile_name">اسم الملف الشخصي</string>
+    <string name="profile_namespace">مساحة التثبيت</string>
+    <string name="profile_namespace_inherited">موروث</string>
+    <string name="profile_namespace_global">عالمي</string>
+    <string name="profile_namespace_individual">فردي</string>
+    <string name="profile_groups">المجموعات</string>
+    <string name="profile_capabilities">القدرات</string>
+    <string name="profile_selinux_context">سياق SELinux</string>
+    <string name="profile_umount_modules">إلغاء تثبيت الإضافات</string>
+    <string name="failed_to_update_app_profile">فشل في تحديث ملف التطبيق لـ %s</string>
+    <string name="require_kernel_version">إصدار KernelSU Next الحالي %1$d منخفض جدًا لكي يعمل المدير بشكل صحيح. يرجى الترقية إلى الإصدار %2$d أو أعلى!</string>
+    <string name="settings_umount_modules_default">إلغاء تثبيت الإضافات</string>
+    <string name="settings_umount_modules_default_summary">القيمة الافتراضية العالمية لـ "إلغاء تثبيت الإضافات" في ملف التطبيق. إذا تم تفعيلها، ستقوم بإزالة جميع التعديلات التي أجرتها الإضافات على النظام للتطبيقات التي لا تحتوي على ملف شخصي محدد.</string>
+    <string name="settings_susfs_toggle">إخفاء خطافات kprobe</string>
+    <string name="settings_susfs_toggle_summary">تعطيل خطافات kprobe التي أنشأها ksu، وبدلاً من ذلك، تفعيل الخطافات غير الكروب المدمجة، مما ينفذ نفس الوظائف التي ستطبق على نواة غير GKI، والتي لا تدعم kprobe.</string>
+    <string name="profile_umount_modules_summary">تفعيل هذا الخيار سيسمح لـ KernelSU Next باستعادة أي ملفات معدلة بواسطة الإضافات لهذا التطبيق.</string>
+    <string name="profile_selinux_domain">النطاق</string>
+    <string name="profile_selinux_rules">القواعد</string>
+    <string name="module_update">تحديث</string>
+    <string name="module_downloading">جارٍ تنزيل الإضافة: %s</string>
+    <string name="module_start_downloading">بدء التنزيل: %s</string>
+    <string name="new_version_available">إصدار جديد %s متاح، انقر للتحديث.</string>
+    <string name="launch_app">تشغيل</string>
+    <string name="close">إغلاق</string>
+    <string name="force_stop_app">إيقاف إجباري</string>
+    <string name="restart_app">إعادة تشغيل</string>
+    <string name="failed_to_update_sepolicy">فشل في تحديث قواعد SELinux لـ: %s</string>
+    <string name="su_not_allowed">لا يُسمح بمنح صلاحيات المستخدم الخارق لـ: %s</string>
+    <string name="module_changelog">سجل التغييرات</string>
+    <string name="settings_profile_template">قالب ملف التطبيق</string>
+    <string name="settings_profile_template_summary">إدارة القالب المحلي وعبر الإنترنت لملف التطبيق</string>
+    <string name="app_profile_template_create">إنشاء قالب</string>
+    <string name="app_profile_template_edit">تحرير القالب</string>
+    <string name="app_profile_template_id">ID</string>
+    <string name="app_profile_template_id_invalid">معرف القالب غير صالح</string>
+    <string name="app_profile_template_name">الاسم</string>
+    <string name="app_profile_template_description">الوصف</string>
+    <string name="app_profile_template_save">حفظ</string>
+    <string name="app_profile_template_delete">حذف</string>
+    <string name="app_profile_template_view">عرض القالب</string>
+    <string name="app_profile_template_readonly">للقراءة فقط</string>
+    <string name="app_profile_template_id_exist">معرف القالب موجود بالفعل!</string>
+    <string name="app_profile_import_export">استيراد/تصدير</string>
+    <string name="app_profile_import_from_clipboard">استيراد من الحافظة</string>
+    <string name="app_profile_export_to_clipboard">تصدير إلى الحافظة</string>
+    <string name="app_profile_template_export_empty">لا يمكن العثور على قالب محلي للتصدير!</string>
+    <string name="app_profile_template_import_success">تم الاستيراد بنجاح</string>
+    <string name="app_profile_template_sync">مزامنة القوالب عبر الإنترنت</string>
+    <string name="app_profile_template_save_failed">فشل في حفظ القالب</string>
+    <string name="app_profile_template_import_empty">الحافظة فارغة!</string>
+    <string name="module_changelog_failed">فشل في جلب سجل التغييرات: %s</string>
+    <string name="settings_check_update">التحقق من التحديث</string>
+    <string name="settings_check_update_summary">التحقق تلقائيًا من التحديثات عند فتح التطبيق.</string>
+    <string name="grant_root_failed">فشل في منح صلاحيات الجذر!</string>
+    <string name="action">إجراء</string>
+    <string name="open">فتح</string>
+    <string name="enable_web_debugging">تفعيل تصحيح WebView</string>
+    <string name="enable_web_debugging_summary">يمكن استخدامه لتصحيح WebUI. يرجى التفعيل فقط عند الحاجة.</string>
+    <string name="direct_install">التثبيت المباشر (موصى به)</string>
+    <string name="select_file">اختر ملفًا</string>
+    <string name="install_inactive_slot">التثبيت في الفتحة غير النشطة (بعد OTA)</string>
+    <string name="install_inactive_slot_warning">سيتم إجبار جهازك على الإقلاع إلى الفتحة غير النشطة الحالية بعد إعادة التشغيل!\nاستخدم هذا الخيار فقط بعد الانتهاء من OTA.\nهل تريد المتابعة؟</string>
+    <string name="install_next">التالي</string>
+    <string name="select_file_tip">%1$s Partition موصى به</string>
+    <string name="select_kmi">اختر KMI</string>
+    <string name="shrink_sparse_image">تقليل حجم partition المتناثرة</string>
+    <string name="shrink_sparse_image_message">إعادة حجم partition حيث توجد الإضافة إلى حجمها الفعلي. لاحظ أن هذا قد يتسبب في عمل الإضافة بشكل غير طبيعي، لذا يرجى استخدامه فقط عند الضرورة (مثل النسخ الاحتياطي).</string>
+    <string name="settings_uninstall">إلغاء التثبيت</string>
+    <string name="settings_uninstall_temporary">إلغاء التثبيت مؤقتًا</string>
+    <string name="settings_uninstall_permanent">إلغاء التثبيت نهائيًا</string>
+    <string name="settings_restore_stock_image">استعادة الصورة الأصلية</string>
+    <string name="settings_uninstall_temporary_message">إلغاء تثبيت KernelSU Next مؤقتًا، استعادة الحالة الأصلية بعد إعادة التشغيل التالية.</string>
+    <string name="settings_uninstall_permanent_message">إلغاء تثبيت KernelSU Next (الجذر وجميع الإضافات) بالكامل ودائمًا.</string>
+    <string name="settings_restore_stock_image_message">استعادة الصورة الأصلية (إذا كانت النسخة الاحتياطية موجودة)، عادة ما تستخدم قبل OTA؛ إذا كنت بحاجة إلى إلغاء تثبيت KernelSU Next، يرجى استخدام "إلغاء التثبيت نهائيًا".</string>
+    <string name="flashing">تثبيت</string>
+    <string name="flash_success">نجح التثبيت</string>
+    <string name="flash_failed">فشل التثبيت</string>
+    <string name="selected_lkm">LKM المحدد: %s</string>
+    <string name="save_log">حفظ السجلات</string>
+    <string name="log_saved">تم حفظ السجلات</string>
+    <string name="send_log">مشاركة السجلات</string>
+    <string name="settings_disable_su">تعطيل توافق su</string>
+    <string name="settings_disable_su_summary">تعطيل مؤقت لقدرة أي تطبيق على الحصول على صلاحيات الجذر عبر أمر ⁠su (لن تتأثر العمليات الجذرية الحالية).</string>
+    <string name="settings_language">اللغة</string>
+</resources>

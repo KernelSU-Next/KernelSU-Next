@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="issue_report_title">مشکلی دارید؟</string>
+    <string name="issue_report_body">با خطا مواجه شده‌اید یا نظری دارید؟</string>
+    <string name="issue_report_body_2">هرچه زودتر گزارش دهید!</string>
+    <string name="issue_report_github">گزارش در گیت‌هاب</string>
+    <string name="issue_report_telegram">تماس از طریق تلگرام</string>
+    <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
+    <string name="issue_report_telegram_link">https://t.me/ksunext</string>
+    <string name="confirm">تأیید</string>
+    <string name="app_name" translatable="false">KernelSU Next</string>
+    <string name="home">خانه</string>
+    <string name="home_not_installed">نصب نشده</string>
+    <string name="home_click_to_install">برای نصب کلیک کنید</string>
+    <string name="home_working">در حال کار</string>
+    <string name="home_working_version">نسخه: %d</string>
+    <string name="home_superuser_count">کاربران ویژه: %d</string>
+    <string name="home_module_count">ماژول‌ها: %d</string>
+    <string name="home_failure">امضای KernelSU Next v2 در هسته یافت نشد! [ !KSU_NEXT || != size/hash ]</string>
+    <string name="home_failure_tip">از توسعه‌دهنده هسته خود بخواهید KernelSU Next را یکپارچه کند!</string>
+    <string name="home_kernel">نسخه هسته</string>
+    <string name="enabled">فعال</string>
+    <string name="disabled">غیرفعال</string>
+    <string name="susfs_supported">پشتیبانی‌شده</string>
+    <string name="home_susfs">SuSFS: %s</string>
+    <string name="home_susfs_version">نسخه SuSFS</string>
+    <string name="home_susfs_sus_su">SuS SU</string>
+    <string name="home_android">نسخه اندروید</string>
+    <string name="home_manager_version">نسخه مدیر</string>
+    <string name="home_selinux_status">وضعیت SELinux</string>
+    <string name="selinux_status_disabled">غیرفعال</string>
+    <string name="selinux_status_enforcing">اجباری</string>
+    <string name="selinux_status_permissive">مجاز</string>
+    <string name="selinux_status_unknown">ناشناخته</string>
+    <string name="superuser">کاربر ویژه</string>
+    <string name="module_failed_to_enable">فعال‌سازی ماژول شکست خورد: %s</string>
+    <string name="module_failed_to_disable">غیرفعال‌سازی ماژول شکست خورد: %s</string>
+    <string name="module_empty">هیچ ماژولی نصب نشده</string>
+    <string name="module">ماژول</string>
+    <string name="module_install_prompt_with_name">ماژول(های) زیر نصب خواهد شد: %1$s</string>
+    <string name="module_sort_a_to_z">مرتب‌سازی (الف-ی)</string>
+    <string name="module_sort_z_to_a">مرتب‌سازی (ی-الف)</string>
+    <string name="uninstall">حذف نصب</string>
+    <string name="restore">بازیابی</string>
+    <string name="module_install">نصب</string>
+    <string name="install">نصب</string>
+    <string name="reboot">راه‌اندازی مجدد</string>
+    <string name="settings">تنظیمات</string>
+    <string name="reboot_userspace">راه‌اندازی نرم</string>
+    <string name="reboot_recovery">راه‌اندازی به حالت ریکاوری</string>
+    <string name="reboot_bootloader">راه‌اندازی به حالت بوت‌لودر</string>
+    <string name="reboot_download">راه‌اندازی به حالت دانلود</string>
+    <string name="reboot_edl">راه‌اندازی به حالت EDL</string>
+    <string name="about">درباره</string>
+    <string name="module_uninstall_confirm">آیا مطمئن هستید که می‌خواهید ماژول %s را حذف کنید؟</string>
+    <string name="module_uninstall_success">ماژول %s حذف شد</string>
+    <string name="module_uninstall_failed">حذف ماژول شکست خورد: %s</string>
+    <string name="module_restore_confirm">آیا مطمئن هستید که می‌خواهید ماژول %s را بازیابی کنید؟</string>
+    <string name="module_restore_success">ماژول %s بازیابی شد</string>
+    <string name="module_restore_failed">بازیابی ماژول شکست خورد: %s</string>
+    <string name="module_version">نسخه</string>
+    <string name="module_author">سازنده</string>
+    <string name="module_id">شناسه</string>
+    <string name="module_version_code">کد نسخه</string>
+    <string name="module_update_json">به‌روزرسانی JSON</string>
+    <string name="module_update_json_empty">خالی</string>
+    <string name="enable_developer_options">فعال‌سازی گزینه‌های توسعه‌دهنده</string>
+    <string name="enable_developer_options_summary">نمایش تنظیمات مخفی و اطلاعات اشکال‌زدایی که فقط برای توسعه‌دهندگان مفید است.</string>
+    <string name="module_overlay_fs_not_available">ماژول‌ها به دلیل غیرفعال بودن OverlayFS توسط هسته در دسترس نیستند.</string>
+    <string name="refresh">تازه‌سازی</string>
+    <string name="show_system_apps">نمایش برنامه‌های سیستمی</string>
+    <string name="hide_system_apps">پنهان کردن برنامه‌های سیستمی</string>
+    <string name="export_log">صدور گزارش‌ها</string>
+    <string name="safe_mode">حالت ایمن</string>
+    <string name="reboot_to_apply">برای اعمال تغییرات راه‌اندازی مجدد کنید</string>
+    <string name="module_magisk_conflict">ماژول‌ها به دلیل تداخل با Magisk در دسترس نیستند!</string>
+    <string name="home_mount_system">نصب سیستم</string>
+    <string name="home_magic_mount">نصب جادویی</string>
+    <string name="home_overlayfs_mount">OverlayFS</string>
+    <string name="unavailable">در دسترس نیست</string>
+    <string name="use_overlay_fs">استفاده از OverlayFS</string>
+    <string name="use_overlay_fs_summary">تغییر بین استفاده از OverlayFS و نصب جادویی برای سیستم نصب KernelSU Next.</string>
+    <string name="reboot_required">نیاز به راه‌اندازی مجدد</string>
+    <string name="reboot_message">تغییرات پس از راه‌اندازی مجدد سیستم اعمال می‌شوند. آیا می‌خواهید اکنون راه‌اندازی کنید؟</string>
+    <string name="module_restore">بازیابی ماژول</string>
+    <string name="module_restore_message">بازیابی ماژول‌ها از آخرین نسخه پشتیبان.</string>
+    <string name="backup_restore">پشتیبان‌گیری و بازیابی</string>
+    <string name="module_backup">پشتیبان‌گیری از ماژول</string>
+    <string name="module_backup_message">پشتیبان‌گیری از ماژول‌های نصب‌شده کنونی.</string>
+    <string name="allowlist_restore">بازیابی لیست مجاز</string>
+    <string name="allowlist_restore_message">بازیابی لیست مجاز از آخرین نسخه پشتیبان.</string>
+    <string name="allowlist_backup">پشتیبان‌گیری از لیست مجاز</string>
+    <string name="allowlist_backup_message">پشتیبان‌گیری از لیست مجاز کنونی.</string>
+    <string name="warning">هشدار</string>
+    <string name="warning_message">این ویژگی هنوز در مرحله آزمایشی و در حال توسعه است. لطفاً پیش از ادامه، از ماژول‌های خود نسخه پشتیبان تهیه کنید. این ویژگی را تنها در صورتی استفاده کنید که خطرات احتمالی را درک کرده باشید. با احتیاط ادامه دهید.</string>
+    <string name="proceed">ادامه</string>
+    <string name="cancel">لغو</string>
+    <string name="later">بعداً</string>
+    <string name="home_next_kernelsu">🔥 ساخت بعدی</string>
+    <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
+    <string name="home_next_kernelsu_body">شاخه آزمایشی بعدی. آن را در گیت‌هاب بررسی کنید!</string>
+    <string name="home_experimental_kernelsu">⚠️ هشدار توسعه آزمایشی!</string>
+    <string name="home_experimental_kernelsu_repo">127.0.0.1</string>
+    <string name="home_experimental_kernelsu_body">KernelSU Next نسخه‌ای غیررسمی است که همیشه در حال توسعه آزمایشی فعال است. این نسخه همان‌گونه که هست ارائه می‌شود، بدون تضمین پایداری، عملکرد یا قابلیت اطمینان.</string>
+    <string name="home_experimental_kernelsu_body_point_1"> • استفاده با مسئولیت خودتان: ممکن است با خرابی، رفتار غیرمنتظره یا مشکلات سیستمی مواجه شوید.</string>
+    <string name="home_experimental_kernelsu_body_point_2"> • بدون گارانتی: توسعه‌دهندگان مسئول هیچ‌گونه از دست دادن داده، آسیب به سیستم یا سایر پیامدها نیستند.</string>
+    <string name="home_experimental_kernelsu_body_point_3"> • فقط برای آزمایش: برای کاربرانی که خطرات را درک کرده و با عیب‌یابی راحت هستند.</string>
+    <string name="about_source_code"><![CDATA[مشاهده کد منبع در %1$s]]></string>
+    <string name="profile" translatable="false">پروفایل برنامه</string>
+    <string name="profile_default">پیش‌فرض</string>
+    <string name="profile_template">الگو</string>
+    <string name="profile_custom">سفارشی</string>
+    <string name="profile_name">نام پروفایل</string>
+    <string name="profile_namespace">فضای نصب</string>
+    <string name="profile_namespace_inherited">ارثی</string>
+    <string name="profile_namespace_global">جهانی</string>
+    <string name="profile_namespace_individual">فردی</string>
+    <string name="profile_groups">گروه‌ها</string>
+    <string name="profile_capabilities">قابلیت‌ها</string>
+    <string name="profile_selinux_context">زمینه SELinux</string>
+    <string name="profile_umount_modules">حذف ماژول‌ها</string>
+    <string name="failed_to_update_app_profile">به‌روزرسانی پروفایل برنامه برای %s شکست خورد</string>
+    <string name="require_kernel_version">نسخه کنونی KernelSU Next %1$d برای عملکرد صحیح مدیر بسیار پایین است. لطفاً به نسخه %2$d یا بالاتر ارتقا دهید!</string>
+    <string name="settings_umount_modules_default">حذف پیش‌فرض ماژول‌ها</string>
+    <string name="settings_umount_modules_default_summary">مقدار پیش‌فرض جهانی برای «حذف ماژول‌ها» در پروفایل برنامه. اگر فعال باشد، تمام تغییرات سیستمی ماژول‌ها برای برنامه‌هایی که پروفایل ندارند حذف می‌شود.</string>
+    <string name="settings_susfs_toggle">مخفی کردن قلاب‌های kprobe</string>
+    <string name="settings_susfs_toggle_summary">این گزینه قلاب‌های kprobe ایجادشده توسط ksu را غیرفعال کرده و به‌جای آن، قلاب‌های غیر kprobe داخلی را فعال می‌کند که همان عملکرد را برای هسته‌های غیر GKI که از kprobe پشتیبانی نمی‌کنند، پیاده‌سازی می‌کند.</string>
+    <string name="profile_umount_modules_summary">فعال کردن این گزینه به KernelSU Next اجازه می‌دهد فایل‌های تغییر یافته توسط ماژول‌ها را برای این برنامه بازیابی کند.</string>
+    <string name="profile_selinux_domain">دامنه</string>
+    <string name="profile_selinux_rules">قوانین</string>
+    <string name="module_update">به‌روزرسانی</string>
+    <string name="module_downloading">در حال دانلود ماژول: %s</string>
+    <string name="module_start_downloading">شروع دانلود: %s</string>
+    <string name="new_version_available">نسخه جدید %s در دسترس است، برای ارتقا کلیک کنید.</string>
+    <string name="launch_app">اجرا</string>
+    <string name="close">بستن</string>
+    <string name="force_stop_app">توقف اجباری</string>
+    <string name="restart_app">راه‌اندازی مجدد</string>
+    <string name="failed_to_update_sepolicy">به‌روزرسانی قوانین SELinux برای %s شکست خورد</string>
+    <string name="su_not_allowed">اعطای دسترسی ویژه برای %s مجاز نیست</string>
+    <string name="module_changelog">تغییرات</string>
+    <string name="settings_profile_template">الگوی پروفایل برنامه</string>
+    <string name="settings_profile_template_summary">مدیریت الگوهای محلی و آنلاین پروفایل برنامه</string>
+    <string name="app_profile_template_create">ایجاد الگو</string>
+    <string name="app_profile_template_edit">ویرایش الگو</string>
+    <string name="app_profile_template_id">شناسه</string>
+    <string name="app_profile_template_id_invalid">شناسه الگو نامعتبر است</string>
+    <string name="app_profile_template_name">نام</string>
+    <string name="app_profile_template_description">توضیحات</string>
+    <string name="app_profile_template_save">ذخیره</string>
+    <string name="app_profile_template_delete">حذف</string>
+    <string name="app_profile_template_view">مشاهده الگو</string>
+    <string name="app_profile_template_readonly">فقط خواندنی</string>
+    <string name="app_profile_template_id_exist">شناسه الگو قبلاً وجود دارد!</string>
+    <string name="app_profile_import_export">واردات/صادرات</string>
+    <string name="app_profile_import_from_clipboard">واردات از کلیپ‌بورد</string>
+    <string name="app_profile_export_to_clipboard">صادرات به کلیپ‌بورد</string>
+    <string name="app_profile_template_export_empty">هیچ الگوی محلی برای صادرات یافت نشد!</string>
+    <string name="app_profile_template_import_success">با موفقیت وارد شد</string>
+    <string name="app_profile_template_sync">همگام‌سازی الگوهای آنلاین</string>
+    <string name="app_profile_template_save_failed">ذخیره الگو شکست خورد</string>
+    <string name="app_profile_template_import_empty">کلیپ‌بورد خالی است!</string>
+    <string name="module_changelog_failed">دریافت تغییرات شکست خورد: %s</string>
+    <string name="settings_check_update">بررسی به‌روزرسانی</string>
+    <string name="settings_check_update_summary">بررسی خودکار به‌روزرسانی‌ها هنگام باز کردن برنامه.</string>
+    <string name="grant_root_failed">اعطای دسترسی ریشه شکست خورد!</string>
+    <string name="action">اقدام</string>
+    <string name="open">باز کردن</string>
+    <string name="enable_web_debugging">فعال‌سازی اشکال‌زدایی وب‌ویو</string>
+    <string name="enable_web_debugging_summary">می‌تواند برای اشکال‌زدایی رابط وب استفاده شود. لطفاً فقط در صورت نیاز فعال کنید.</string>
+    <string name="direct_install">نصب مستقیم (توصیه‌شده)</string>
+    <string name="select_file">انتخاب فایل</string>
+    <string name="install_inactive_slot">نصب در اسلات غیرفعال (پس از OTA)</string>
+    <string name="install_inactive_slot_warning">دستگاه شما پس از راه‌اندازی مجدد **اجباراً** به اسلات غیرفعال کنونی بوت خواهد شد!\nفقط پس از انجام OTA از این گزینه استفاده کنید.\nادامه می‌دهید؟</string>
+    <string name="install_next">بعدی</string>
+    <string name="select_file_tip">تصویر پارتیشن %1$s توصیه می‌شود</string>
+    <string name="select_kmi">انتخاب KMI</string>
+    <string name="shrink_sparse_image">کاهش اندازه تصویر پراکنده</string>
+    <string name="shrink_sparse_image_message">تغییر اندازه تصویر پراکنده‌ای که ماژول در آن قرار دارد به اندازه واقعی آن. توجه داشته باشید که این ممکن است باعث عملکرد غیرعادی ماژول شود، بنابراین فقط در صورت نیاز (مانند پشتیبان‌گیری) استفاده کنید.</string>
+    <string name="settings_uninstall">حذف نصب</string>
+    <string name="settings_uninstall_temporary">حذف نصب موقت</string>
+    <string name="settings_uninstall_permanent">حذف نصب دائمی</string>
+    <string name="settings_restore_stock_image">بازیابی تصویر اصلی</string>
+    <string name="settings_uninstall_temporary_message">حذف موقت KernelSU Next، بازگشت به حالت اولیه پس از راه‌اندازی بعدی.</string>
+    <string name="settings_uninstall_permanent_message">حذف کامل و دائمی KernelSU Next (ریشه و همه ماژول‌ها).</string>
+    <string name="settings_restore_stock_image_message">بازیابی تصویر کارخانه‌ای (در صورت وجود نسخه پشتیبان)، معمولاً قبل از OTA استفاده می‌شود؛ اگر نیاز به حذف KernelSU Next دارید، لطفاً از «حذف نصب دائمی» استفاده کنید.</string>
+    <string name="flashing">در حال فلش</string>
+    <string name="flash_success">فلش موفق</string>
+    <string name="flash_failed">فلش ناموفق</string>
+    <string name="selected_lkm">LKM انتخاب‌شده: %s</string>
+    <string name="save_log">ذخیره گزارش‌ها</string>
+    <string name="log_saved">گزارش‌ها ذخیره شدند</string>
+    <string name="send_log">اشتراک گزارش‌ها</string>
+    <string name="settings_disable_su">غیرفعال کردن سازگاری su</string>
+    <string name="settings_disable_su_summary">غیرفعال کردن موقت توانایی هر برنامه برای کسب دسترسی ریشه از طریق دستور su (فرآیندهای ریشه موجود تحت تأثیر قرار نمی‌گیرند).</string>
+    <string name="settings_language">زبان</string>
+</resources>
