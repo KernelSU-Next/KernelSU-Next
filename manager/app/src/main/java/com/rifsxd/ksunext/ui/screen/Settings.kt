@@ -53,6 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import com.dergoogler.mmrl.platform.Platform
 import com.maxkeppeker.sheets.core.models.base.Header
 import com.maxkeppeker.sheets.core.models.base.IconSource
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
@@ -328,6 +329,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             }
             if (ksuVersion != null) {
                 SwitchItem(
+                    enabled = Platform.isAlive,
                     icon = Icons.Filled.WebAsset,
                     title = stringResource(id = R.string.use_webuix),
                     summary = stringResource(id = R.string.use_webuix_summary),
