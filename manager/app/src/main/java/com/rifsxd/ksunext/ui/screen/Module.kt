@@ -81,6 +81,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.dergoogler.mmrl.platform.Platform
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
@@ -298,7 +299,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     onClickModule = { id, name, hasWebUi ->
                         if (hasWebUi) {
                             webUILauncher.launch(
-                                if (prefs.getBoolean("use_webuix", false)) {
+                                if (prefs.getBoolean("use_webuix", false) && Platform.isAlive) {
                                     Intent(context, WebUIXActivity::class.java)
                                         .setData(Uri.parse("kernelsu://webuix/$id"))
                                         .putExtra("id", id)
