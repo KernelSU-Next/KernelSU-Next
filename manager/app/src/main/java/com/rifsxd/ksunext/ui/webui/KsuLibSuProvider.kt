@@ -1,22 +1,18 @@
 package com.rifsxd.ksunext.ui.webui
 
-import android.content.Context
 import android.content.ServiceConnection
-import android.content.pm.PackageInfo
 import android.util.Log
 import com.dergoogler.mmrl.platform.Platform
-import com.dergoogler.mmrl.platform.content.Service
+import com.dergoogler.mmrl.platform.hiddenApi.HiddenPackageManager
+import com.dergoogler.mmrl.platform.hiddenApi.HiddenUserManager
 import com.dergoogler.mmrl.platform.model.IProvider
 import com.dergoogler.mmrl.platform.model.PlatformIntent
-import com.rifsxd.ksunext.IKsuInterface
 import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.ksuApp
-import com.rifsxd.ksunext.ui.KsuService
 import com.topjohnwu.superuser.ipc.RootService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import rikka.parcelablelist.ParcelableListSlice
 
 class KsuLibSuProvider : IProvider {
     override val name = "KsuLibSu"
@@ -53,10 +49,6 @@ suspend fun initPlatform() = withContext(Dispatchers.IO) {
             delay(1000)
         }
 
-        Platform.mService.addService(
-            Service(KsuService::class.java)
-        )
-
         return@withContext active
     } catch (e: Exception) {
         Log.e("KsuLibSu", "Failed to initialize platform", e)
@@ -64,12 +56,5 @@ suspend fun initPlatform() = withContext(Dispatchers.IO) {
     }
 }
 
-fun Platform.Companion.getPackages(flags: Int): ParcelableListSlice<PackageInfo> {
-    val ksuService: IKsuInterface by lazy {
-        IKsuInterface.Stub.asInterface(
-            this.mService.getService("ksuService")
-        )
-    }
-
-    return ksuService.getPackages(flags)
-}
+val Platform.Companion.packageManager get(): HiddenPackageManager = HiddenPackageManager(this.mService)
+val Platform.Companion.userManager get(): HiddenUserManager = HiddenUserManager(this.mService)
