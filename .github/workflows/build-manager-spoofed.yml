@@ -1,0 +1,181 @@
+name: Build Manager
+
+on:
+  push:
+    branches: [ "next" ]
+    paths:
+      - '.github/workflows/build-manager-ci.yml'
+      - 'manager/**'
+      - 'kernel/**'
+      - 'userspace/ksud_overlayfs**'
+      - 'userspace/ksud_magic/**'
+      - 'userspace/susfsd/**'
+  pull_request:
+    branches: [ "next" ]
+    paths:
+      - '.github/workflows/build-manager-ci.yml'
+      - 'manager/**'
+  workflow_call:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 12 * * *" # 6 PM UTC+6 | 12 PM UTC
+
+jobs:
+  # build-lkm:
+  #   uses: ./.github/workflows/build-lkm.yml
+  #   secrets: inherit
+
+  build-susfsd:
+    # needs: build-lkm // DISBAND LKM MODE
+    strategy:
+      matrix:
+        include:
+          - target: aarch64-linux-android
+            os: ubuntu-latest
+    uses: ./.github/workflows/susfsd.yml
+    with:
+      target: ${{ matrix.target }}
+      os: ${{ matrix.os }}
+
+  build-ksud:
+    needs: build-susfsd
+    strategy:
+      matrix:
+        include:
+          - target: aarch64-linux-android
+            os: ubuntu-latest
+    uses: ./.github/workflows/ksud.yml
+    with:
+      target: ${{ matrix.target }}
+      os: ${{ matrix.os }}
+
+  build-manager:
+    needs: build-ksud
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./manager
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Spoof Package ID
+        run: |
+          chmod +x spoof
+          ./spoof
+
+      - name: Setup need_upload
+        id: need_upload
+        run: |
+          if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+            echo "UPLOAD=true" >> $GITHUB_OUTPUT
+          else
+            echo "UPLOAD=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Write Key
+        run: |
+          if [ ! -z "${{ secrets.KEYSTORE }}" ]; then
+            {
+              echo KEYSTORE_PASSWORD='${{ secrets.KEYSTORE_PASSWORD }}'
+              echo KEY_ALIAS='${{ secrets.KEY_ALIAS }}'
+              echo KEY_PASSWORD='${{ secrets.KEY_PASSWORD }}'
+              echo KEYSTORE_FILE='key.jks'
+            } >> gradle.properties
+            echo ${{ secrets.KEYSTORE }} | base64 -d > key.jks
+          fi
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Download arm64 susfsd
+        uses: actions/download-artifact@v4
+        with:
+          name: susfsd-aarch64-linux-android
+          path: .
+
+      - name: Copy susfsd to app jniLibs
+        run: |
+          mkdir -p app/src/main/jniLibs/arm64-v8a
+          cp -f ../arm64-v8a/susfsd ../manager/app/src/main/jniLibs/arm64-v8a/libsusfsd.so
+
+      - name: Download arm64 ksud_overlayfs
+        uses: actions/download-artifact@v4
+        with:
+          name: ksud_overlayfs-aarch64-linux-android
+          path: ksud_overlayfs
+
+      - name: Copy ksud_overlayfs to app jniLibs
+        run: |
+          cp -f ../ksud_overlayfs/aarch64-linux-android/release/ksud ../manager/app/src/main/jniLibs/arm64-v8a/libksud_overlayfs.so
+
+      - name: Download arm64 ksud_magic
+        uses: actions/download-artifact@v4
+        with:
+          name: ksud_magic-aarch64-linux-android
+          path: ksud_magic
+
+      - name: Copy ksud_magic to app jniLibs
+        run: |
+          cp -f ../ksud_magic/aarch64-linux-android/release/ksud ../manager/app/src/main/jniLibs/arm64-v8a/libksud_magic.so
+
+      - name: Build with Gradle
+        run: |
+          {
+            echo 'org.gradle.parallel=true'
+            echo 'org.gradle.vfs.watch=true'
+            echo 'org.gradle.jvmargs=-Xmx2048m'
+            echo 'android.native.buildOutput=verbose'
+          } >> gradle.properties
+          sed -i 's/org.gradle.configuration-cache=true//g' gradle.properties
+          chmod +x gradlew
+          ./gradlew clean assembleRelease
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Manager
+          path: manager/app/build/outputs/apk/release/*.apk
+
+      - name: Upload Mappings
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mappings
+          path: manager/app/build/outputs/mapping/release/
+
+      - name: Bot Session Cache
+        if: steps.need_upload.outputs.UPLOAD == 'true'
+        id: bot_session_cache
+        uses: actions/cache@v4
+        with:
+          path: scripts/ksunextbot.session
+          key: ${{ runner.os }}-bot-session
+
+      - name: Upload to Telegram
+        if: steps.need_upload.outputs.UPLOAD == 'true'
+        env:
+          API_ID: ${{ secrets.API_ID }}
+          API_HASH: ${{ secrets.API_HASH }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          MESSAGE_THREAD_ID: ${{ secrets.MESSAGE_THREAD_ID }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          TITLE: CI Manager (SPOOFED BUILD)
+        run: |
+          if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
+            export VERSION=$(git rev-list --count HEAD)
+            APK=$(find ./app/build/outputs/apk/release -name "*.apk")
+            pip3 install telethon
+            python3 $GITHUB_WORKSPACE/scripts/ksunextbot.py $APK
+          fi
