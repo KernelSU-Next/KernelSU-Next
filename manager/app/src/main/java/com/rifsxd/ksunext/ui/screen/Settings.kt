@@ -85,7 +85,6 @@ import com.rifsxd.ksunext.ui.util.getBugreportFile
 import com.rifsxd.ksunext.ui.util.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import androidx.core.content.edit
 
 /**
  * @author weishu
@@ -229,7 +228,9 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
             var showRebootDialog by remember { mutableStateOf(false) }
 
-            if (ksuVersion != null) {
+            val isOverlayAvailable = overlayFsAvailable()
+
+            if (ksuVersion != null && isOverlayAvailable) {
                 SwitchItem(
                     icon = Icons.Filled.Build,
                     title = stringResource(id = R.string.use_overlay_fs),
@@ -337,23 +338,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 }
             }
 
-            if (ksuVersion != null) {
-                val backupRestore = stringResource(id = R.string.backup_restore)
-                ListItem(
-                    leadingContent = {
-                        Icon(
-                            Icons.Filled.Backup,
-                            backupRestore
-                        )
-                    },
-                    headlineContent = { Text(backupRestore) },
-                    modifier = Modifier.clickable {
-                        navigator.navigate(BackupRestoreScreenDestination)
-                    }
-                )
-            }
-
-            if (useOverlayFs) {
+            if (isOverlayAvailable && useOverlayFs) {
                 val shrink = stringResource(id = R.string.shrink_sparse_image)
                 val shrinkMessage = stringResource(id = R.string.shrink_sparse_image_message)
                 ListItem(
@@ -377,6 +362,21 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 )
             }
 
+            if (ksuVersion != null) {
+                val backupRestore = stringResource(id = R.string.backup_restore)
+                ListItem(
+                    leadingContent = {
+                        Icon(
+                            Icons.Filled.Backup,
+                            backupRestore
+                        )
+                    },
+                    headlineContent = { Text(backupRestore) },
+                    modifier = Modifier.clickable {
+                        navigator.navigate(BackupRestoreScreenDestination)
+                    }
+                )
+            }
 
             val lkmMode = Natives.version >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && Natives.isLkmMode
             if (lkmMode) {

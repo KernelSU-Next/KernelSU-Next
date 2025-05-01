@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.dergoogler.mmrl.platform.Platform
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AppProfileScreenDestination
@@ -42,93 +44,116 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
     val scope = rememberCoroutineScope()
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val listState = rememberLazyListState()
+    var isPlatformAlive by remember { mutableStateOf(false) }
 
-    LaunchedEffect(key1 = navigator) {
-        viewModel.search = ""
-        if (viewModel.appList.isEmpty()) {
-            viewModel.fetchAppList()
-        }
-    }
-
-    LaunchedEffect(viewModel.search) {
-        if (viewModel.search.isEmpty()) {
-            listState.scrollToItem(0)
-        }
-    }
-
+    // Continuously check if Platform.isAlive
     LaunchedEffect(Unit) {
-        if (viewModel.refreshOnReturn) {
-            viewModel.fetchAppList()
-            viewModel.refreshOnReturn = false
+        while (!isPlatformAlive) {
+            isPlatformAlive = Platform.isAlive
+            if (!isPlatformAlive) {
+                kotlinx.coroutines.delay(500) // Check every 500ms
+            }
         }
     }
 
-    Scaffold(
-        topBar = {
-            SearchAppBar(
-                title = { Text(stringResource(R.string.superuser)) },
-                searchText = viewModel.search,
-                onSearchTextChange = { viewModel.search = it },
-                onClearClick = { viewModel.search = "" },
-                dropdownContent = {
-                    var showDropdown by remember { mutableStateOf(false) }
-
-                    IconButton(
-                        onClick = { showDropdown = true },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = stringResource(id = R.string.settings)
-                        )
-
-                        DropdownMenu(expanded = showDropdown, onDismissRequest = {
-                            showDropdown = false
-                        }) {
-                            DropdownMenuItem(text = {
-                                Text(stringResource(R.string.refresh))
-                            }, onClick = {
-                                scope.launch {
-                                    viewModel.fetchAppList()
-                                }
-                                showDropdown = false
-                            })
-                            DropdownMenuItem(text = {
-                                Text(
-                                    if (viewModel.showSystemApps) {
-                                        stringResource(R.string.hide_system_apps)
-                                    } else {
-                                        stringResource(R.string.show_system_apps)
-                                    }
-                                )
-                            }, onClick = {
-                                viewModel.showSystemApps = !viewModel.showSystemApps
-                                showDropdown = false
-                            })
-                        }
-                    }
-                },
-                scrollBehavior = scrollBehavior
-            )
-        },
-        contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
-    ) { innerPadding ->
-        PullToRefreshBox(
-            modifier = Modifier.padding(innerPadding),
-            onRefresh = {
-                scope.launch { viewModel.fetchAppList() }
-            },
-            isRefreshing = viewModel.isRefreshing
+    if (!isPlatformAlive) {
+        // Show loading screen while Platform.isAlive is false
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            contentAlignment = Alignment.Center
         ) {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .nestedScroll(scrollBehavior.nestedScrollConnection)
+            CircularProgressIndicator()
+        }
+    } else {
+        LaunchedEffect(key1 = navigator) {
+            viewModel.search = ""
+            if (viewModel.appList.isEmpty()) {
+                viewModel.fetchAppList()
+            }
+        }
+
+        LaunchedEffect(viewModel.search) {
+            if (viewModel.search.isEmpty()) {
+                listState.scrollToItem(0)
+            }
+        }
+
+        LaunchedEffect(Unit) {
+            if (viewModel.refreshOnReturn) {
+                viewModel.fetchAppList()
+                viewModel.refreshOnReturn = false
+            }
+        }
+
+        Scaffold(
+            topBar = {
+                SearchAppBar(
+                    title = { Text(stringResource(R.string.superuser)) },
+                    searchText = viewModel.search,
+                    onSearchTextChange = { viewModel.search = it },
+                    onClearClick = { viewModel.search = "" },
+                    dropdownContent = {
+                        var showDropdown by remember { mutableStateOf(false) }
+
+                        IconButton(
+                            onClick = { showDropdown = true },
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = stringResource(id = R.string.settings)
+                            )
+
+                            DropdownMenu(expanded = showDropdown, onDismissRequest = {
+                                showDropdown = false
+                            }) {
+                                DropdownMenuItem(text = {
+                                    Text(stringResource(R.string.refresh))
+                                }, onClick = {
+                                    scope.launch {
+                                        viewModel.fetchAppList()
+                                    }
+                                    showDropdown = false
+                                })
+                                DropdownMenuItem(text = {
+                                    Text(
+                                        if (viewModel.showSystemApps) {
+                                            stringResource(R.string.hide_system_apps)
+                                        } else {
+                                            stringResource(R.string.show_system_apps)
+                                        }
+                                    )
+                                }, onClick = {
+                                    viewModel.showSystemApps = !viewModel.showSystemApps
+                                    showDropdown = false
+                                })
+                            }
+                        }
+                    },
+                    scrollBehavior = scrollBehavior
+                )
+            },
+            contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+        ) { innerPadding ->
+            PullToRefreshBox(
+                modifier = Modifier.padding(innerPadding),
+                onRefresh = {
+                    scope.launch { viewModel.fetchAppList() }
+                },
+                isRefreshing = viewModel.isRefreshing
             ) {
-                items(viewModel.appList, key = { it.packageName + it.uid }) { app ->
-                    AppItem(app) {
-                        viewModel.refreshOnReturn = true
-                        navigator.navigate(AppProfileScreenDestination(app))
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .nestedScroll(scrollBehavior.nestedScrollConnection)
+                ) {
+                    items(viewModel.appList, key = { it.packageName + it.uid }) { app ->
+                        AppItem(app) {
+                            viewModel.refreshOnReturn = true
+                            navigator.navigate(AppProfileScreenDestination(app))
+                        }
                     }
                 }
             }

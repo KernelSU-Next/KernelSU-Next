@@ -34,11 +34,11 @@ enum Commands {
     /// Trigger `boot-complete` event
     BootCompleted,
 
-    /// Install KernelSU Next userspace component to system
-    Install {
-        #[arg(long, default_value = None)]
-        magiskboot: Option<PathBuf>,
-    },
+    // /// Install KernelSU Next userspace component to system
+    // Install {
+    //     #[arg(long, default_value = None)]
+    //     magiskboot: Option<PathBuf>,
+    // }, // DISBAND LKM MODE
 
     /// Uninstall KernelSU Next modules and itself(LKM Only)
     Uninstall {
@@ -59,44 +59,44 @@ enum Commands {
         command: Profile,
     },
 
-    /// Patch boot or init_boot images to apply KernelSU Next
-    BootPatch {
-        /// boot image path, if not specified, will try to find the boot image automatically
-        #[arg(short, long)]
-        boot: Option<PathBuf>,
+    // /// Patch boot or init_boot images to apply KernelSU Next
+    // BootPatch {
+    //     /// boot image path, if not specified, will try to find the boot image automatically
+    //     #[arg(short, long)]
+    //     boot: Option<PathBuf>,
 
-        /// kernel image path to replace
-        #[arg(short, long)]
-        kernel: Option<PathBuf>,
+    //     /// kernel image path to replace
+    //     #[arg(short, long)]
+    //     kernel: Option<PathBuf>,
 
-        /// LKM module path to replace, if not specified, will use the builtin one
-        #[arg(short, long)]
-        module: Option<PathBuf>,
+    //     /// LKM module path to replace, if not specified, will use the builtin one
+    //     #[arg(short, long)]
+    //     module: Option<PathBuf>,
 
-        /// init to be replaced
-        #[arg(short, long, requires("module"))]
-        init: Option<PathBuf>,
+    //     /// init to be replaced
+    //     #[arg(short, long, requires("module"))]
+    //     init: Option<PathBuf>,
 
-        /// will use another slot when boot image is not specified
-        #[arg(short = 'u', long, default_value = "false")]
-        ota: bool,
+    //     /// will use another slot when boot image is not specified
+    //     #[arg(short = 'u', long, default_value = "false")]
+    //     ota: bool,
 
-        /// Flash it to boot partition after patch
-        #[arg(short, long, default_value = "false")]
-        flash: bool,
+    //     /// Flash it to boot partition after patch
+    //     #[arg(short, long, default_value = "false")]
+    //     flash: bool,
 
-        /// output path, if not specified, will use current directory
-        #[arg(short, long, default_value = None)]
-        out: Option<PathBuf>,
+    //     /// output path, if not specified, will use current directory
+    //     #[arg(short, long, default_value = None)]
+    //     out: Option<PathBuf>,
 
-        /// magiskboot path, if not specified, will search from $PATH
-        #[arg(long, default_value = None)]
-        magiskboot: Option<PathBuf>,
+    //     /// magiskboot path, if not specified, will search from $PATH
+    //     #[arg(long, default_value = None)]
+    //     magiskboot: Option<PathBuf>,
 
-        /// KMI version, if specified, will use the specified KMI
-        #[arg(long, default_value = None)]
-        kmi: Option<String>,
-    },
+    //     /// KMI version, if specified, will use the specified KMI
+    //     #[arg(long, default_value = None)]
+    //     kmi: Option<String>,
+    // }, // DISBAND LKM MODE
 
     /// Restore boot or init_boot images patched by KernelSU Next
     BootRestore {
@@ -327,7 +327,7 @@ pub fn run() -> Result<()> {
                 Module::Shrink => module::shrink_ksu_images(),
             }
         }
-        Commands::Install { magiskboot } => utils::install(magiskboot),
+        // Commands::Install { magiskboot } => utils::install(magiskboot), // DISBAND LKM MODE
         Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
@@ -370,17 +370,17 @@ pub fn run() -> Result<()> {
             Debug::Test => assets::ensure_binaries(false),
         },
 
-        Commands::BootPatch {
-            boot,
-            init,
-            kernel,
-            module,
-            ota,
-            flash,
-            out,
-            magiskboot,
-            kmi,
-        } => crate::boot_patch::patch(boot, kernel, module, init, ota, flash, out, magiskboot, kmi),
+        // Commands::BootPatch {
+        //     boot,
+        //     init,
+        //     kernel,
+        //     module,
+        //     ota,
+        //     flash,
+        //     out,
+        //     magiskboot,
+        //     kmi,
+        // } => crate::boot_patch::patch(boot, kernel, module, init, ota, flash, out, magiskboot, kmi), // DISBAND LKM MODE
 
         Commands::BootInfo { command } => match command {
             BootInfo::CurrentKmi => {

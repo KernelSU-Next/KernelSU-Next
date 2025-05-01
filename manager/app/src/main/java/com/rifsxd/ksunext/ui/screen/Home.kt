@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.pm.PackageInfoCompat
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination
+// import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination // DISBAND LKM MODE
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -60,9 +60,9 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             TopBar(
                 kernelVersion,
                 ksuVersion,
-                onInstallClick = {
-                    navigator.navigate(InstallScreenDestination)
-                },
+                // onInstallClick = {
+                //     navigator.navigate(InstallScreenDestination)
+                // }, // DISBAND LKM MODE
                 scrollBehavior = scrollBehavior
             )
         },
@@ -81,7 +81,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             }
 
             StatusCard(kernelVersion, ksuVersion, lkmMode) {
-                navigator.navigate(InstallScreenDestination)
+                // navigator.navigate(InstallScreenDestination) // DISBAND LKM MODE
             }
             if (isManager && Natives.requireNewKernel()) {
                 WarningCard(
@@ -167,20 +167,20 @@ fun RebootDropdownItem(@StringRes id: Int, reason: String = "") {
 private fun TopBar(
     kernelVersion: KernelVersion,
     ksuVersion: Int?,
-    onInstallClick: () -> Unit,
+    // onInstallClick: () -> Unit, // DISBAND LKM MODE
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     TopAppBar(
         title = { Text(stringResource(R.string.app_name)) },
         actions = {
-            if (kernelVersion.isGKI()) {
-                IconButton(onClick = onInstallClick) {
-                    Icon(
-                        imageVector = Icons.Filled.Archive,
-                        contentDescription = stringResource(id = R.string.install)
-                    )
-                }
-            }
+            // if (kernelVersion.isGKI()) {
+            //     IconButton(onClick = onInstallClick) {
+            //         Icon(
+            //             imageVector = Icons.Filled.Archive,
+            //             contentDescription = stringResource(id = R.string.install)
+            //         )
+            //     }
+            // } // DISBAND LKM MODE
 
             if (ksuVersion != null) {
                 var showDropdown by remember { mutableStateOf(false) }
