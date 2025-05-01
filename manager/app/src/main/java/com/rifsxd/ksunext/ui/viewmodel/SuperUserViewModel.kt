@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.dergoogler.mmrl.platform.Platform
+import com.dergoogler.mmrl.platform.TIMEOUT_MILLIS
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
@@ -18,10 +19,13 @@ import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.ui.util.HanziToPinyin
 import com.rifsxd.ksunext.ui.webui.getPackages
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeoutOrNull
 import java.text.Collator
 import java.util.*
 
 class SuperUserViewModel : ViewModel() {
+    val isPlatformAlive get() = Platform.isAlive
 
     var refreshOnReturn by mutableStateOf(false)
         public set
@@ -94,6 +98,12 @@ class SuperUserViewModel : ViewModel() {
         isRefreshing = true
 
         withContext(Dispatchers.IO) {
+            withTimeoutOrNull(TIMEOUT_MILLIS) {
+                while (!isPlatformAlive) {
+                    delay(500)
+                }
+            } ?: return@withContext // Exit early if timeout
+
             val pm = ksuApp.packageManager
             val start = SystemClock.elapsedRealtime()
 
