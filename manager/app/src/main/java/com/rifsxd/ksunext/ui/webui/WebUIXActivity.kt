@@ -27,6 +27,24 @@ import kotlinx.coroutines.launch
 class WebUIXActivity : ComponentActivity() {
     private lateinit var webView: WebView
 
+    private val userAgent
+        get(): String {
+            val ksuVersion = BuildConfig.VERSION_CODE
+
+            val platform = Platform.get("Unknown") {
+                platform.name
+            }
+
+            val platformVersion = Platform.get(-1) {
+                moduleManager.versionCode
+            }
+
+            val osVersion = Build.VERSION.RELEASE
+            val deviceModel = Build.MODEL
+
+            return "KernelSU Next/$ksuVersion (Linux; Android $osVersion; $deviceModel; $platform/$platformVersion)"
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -78,7 +96,8 @@ class WebUIXActivity : ComponentActivity() {
                     appVersionCode = BuildConfig.VERSION_CODE,
                     isDarkMode = dark,
                     enableEruda = erudaInject,
-                    cls = WebUIXActivity::class.java
+                    cls = WebUIXActivity::class.java,
+                    userAgentString = userAgent
                 )
 
                 WebUIScreen(
