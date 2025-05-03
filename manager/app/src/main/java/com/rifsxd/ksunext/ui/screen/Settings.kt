@@ -329,6 +329,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             }
             if (ksuVersion != null) {
                 SwitchItem(
+                    beta = true,
                     enabled = Platform.isAlive,
                     icon = Icons.Filled.WebAsset,
                     title = stringResource(id = R.string.use_webuix),
@@ -337,6 +338,24 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 ) {
                     prefs.edit().putBoolean("use_webuix", it).apply()
                     useWebUIX = it
+                }
+            }
+            var useWebUIXEruda by rememberSaveable {
+                mutableStateOf(
+                    prefs.getBoolean("use_webuix_eruda", false)
+                )
+            }
+            if (ksuVersion != null) {
+                SwitchItem(
+                    beta = true,
+                    enabled = Platform.isAlive && useWebUIX && enableWebDebugging,
+                    icon = Icons.Filled.FormatListNumbered,
+                    title = stringResource(id = R.string.use_webuix_eruda),
+                    summary = stringResource(id = R.string.use_webuix_eruda_summary),
+                    checked = useWebUIXEruda
+                ) {
+                    prefs.edit().putBoolean("use_webuix_eruda", it).apply()
+                    useWebUIXEruda = it
                 }
             }
 

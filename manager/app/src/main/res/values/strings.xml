@@ -196,4 +196,6 @@
     <string name="settings_language">Language</string>
     <string name="use_webuix">Use WebUI X</string>
     <string name="use_webuix_summary">Use WebUI X instead of WebUI, which supports more APIs.</string>
+    <string name="use_webuix_eruda">Inject Eruda into WebUI X</string>
+    <string name="use_webuix_eruda_summary">Inject a debug console into WebUI X to make debugging easier. Requires web debugging to be on.</string>
 </resources>

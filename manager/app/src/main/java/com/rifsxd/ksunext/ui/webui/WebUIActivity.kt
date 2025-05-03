@@ -15,8 +15,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.webkit.WebViewAssetLoader
+import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
-import com.dergoogler.mmrl.webui.model.ModId
 import com.topjohnwu.superuser.Shell
 import com.rifsxd.ksunext.ui.util.createRootShell
 import java.io.File

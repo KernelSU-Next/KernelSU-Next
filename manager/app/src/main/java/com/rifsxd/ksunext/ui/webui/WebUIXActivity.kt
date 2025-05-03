@@ -15,9 +15,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.lifecycleScope
 import com.dergoogler.mmrl.platform.Platform
+import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.ui.component.Loading
-import com.dergoogler.mmrl.webui.interfaces.WXOptions
-import com.dergoogler.mmrl.webui.model.ModId
 import com.dergoogler.mmrl.webui.screen.WebUIScreen
 import com.dergoogler.mmrl.webui.util.rememberWebUIOptions
 import com.rifsxd.ksunext.BuildConfig
@@ -70,6 +69,7 @@ class WebUIXActivity : ComponentActivity() {
                 }
 
                 val webDebugging = prefs.getBoolean("enable_web_debugging", false)
+                val erudaInject = prefs.getBoolean("use_webuix_eruda", false)
                 val dark = isSystemInDarkTheme()
 
                 val options = rememberWebUIOptions(
@@ -77,6 +77,7 @@ class WebUIXActivity : ComponentActivity() {
                     debug = webDebugging,
                     appVersionCode = BuildConfig.VERSION_CODE,
                     isDarkMode = dark,
+                    enableEruda = erudaInject,
                     cls = WebUIXActivity::class.java
                 )
 
