@@ -176,7 +176,7 @@
 	<string name="select_file_tip">Si consiglia l\'immagine della partizione %1$s</string>
 	<string name="select_kmi">Scegli il KMI</string>
 	<string name="shrink_sparse_image">Riduci al minimo l\'immagine sparse</string>
-	<string name="shrink_sparse_image_message">Ridimensiona l\'immagine sparse dei moduli alla sua reale dimensione. Nota che questo potrebbe causare malfunzionamenti dei moduli, quindi utilizzala solo quando necessario (Come per il backup)).</string>
+	<string name="shrink_sparse_image_message">Ridimensiona l\'immagine sparse dei moduli alla sua reale dimensione. Nota che questo potrebbe causare malfunzionamenti dei moduli, quindi utilizzala solo quando necessario (Come per il backup).</string>
 	<string name="settings_uninstall">Disinstalla</string>
 	<string name="settings_uninstall_temporary">Disinstalla temporaneamente</string>
 	<string name="settings_uninstall_permanent">Disinstalla permanentemente</string>
@@ -196,4 +196,6 @@
 	<string name="settings_language">Lingua</string>
 	<string name="use_webuix">Usa WebUI X</string>
 	<string name="use_webuix_summary">Usa WebUI X invece di WebUI che supporta più API</string>
+        <string name="use_webuix_eruda">Iniettare Eruda in WebUI X</string>
+        <string name="use_webuix_eruda_summary">Inietta una console di debug in WebUI X per semplificare il debug. Richiede che il debug web sia attivo.</string>
 </resources>
