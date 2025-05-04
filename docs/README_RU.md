@@ -28,7 +28,7 @@ KernelSU Next работает с большинством ядер Android (4.4
 
 ## Использование
 
-- [Инструкция по установке](https://ksunext.org/pages/installation.html)
+- [Инструкция по установке](https://ksunext.org/internals/installation.html)
 
 ## Безопасность
 
@@ -59,5 +59,5 @@ KernelSU Next работает с большинством ядер Android (4.4
 - [Magisk](https://github.com/topjohnwu/Magisk): Топовый инструмент для root.  
 - [genuine](https://github.com/brevent/genuine/): Валидация подписи APK v2.  
 - [Diamorphine](https://github.com/m0nad/Diamorphine): Некоторые навыки rootkit.  
-- [KernelSU](https://github.com/tiann/KernelSU): Спасибо tiann, без него KernelSU Next не релизнулся бы.  
+- [KernelSU](https://github.com/tiann/KernelSU): Спасибо tiann, без него KernelSU Next даже не существовал бы.  
 - [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs): 💜 5ec1cff за сохранение KernelSU!
