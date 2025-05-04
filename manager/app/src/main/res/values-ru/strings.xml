@@ -14,7 +14,7 @@
     <string name="home_click_to_install">Нажмите, чтобы установить</string>
     <string name="home_working">Работает</string>
     <string name="home_working_version">Версия: %d</string>
-    <string name="home_superuser_count">Superusers: %d</string>
+    <string name="home_superuser_count">SuperUsers: %d</string>
     <string name="home_module_count">Модули: %d</string>
     <string name="home_failure">Подпись KernelSU Next v2 не найдена в ядре! [!KSU_NEXT || != size/hash]</string>
     <string name="home_failure_tip">Попросите вашего разработчика ядра интегрировать KernelSU Next!</string>
@@ -64,7 +64,7 @@
     <string name="module_version_code">Код версии</string>
     <string name="module_update_json">UpdateJson</string>
     <string name="module_update_json_empty">Пусто</string>
-    <string name="enable_developer_options">Включить настройки разработчика</string>
+    <string name="enable_developer_options">Режим разработчика</string>
     <string name="enable_developer_options_summary">Показывать скрытые настройки и отладочную информацию, актуальную только для разработчиков.</string>
     <string name="module_overlay_fs_not_available">Модули недоступны, так как OverlayFS отключен ядром.</string>
     <string name="refresh">Обновить</string>
@@ -106,7 +106,7 @@
     <string name="home_experimental_kernelsu_body_point_2"> • Предупреждение: разработчики не несут ответственности за потерю данных, повреждение системы или другие последствия, вызванные использованием.</string>
     <string name="home_experimental_kernelsu_body_point_3"> • Только для тестирования: предназначено для пользователей, которые понимают риски и готовы решать возникающие проблемы.</string>
     <string name="about_source_code"><![CDATA[Посмотреть исходный код на %1$s]]></string>
-    <string name="profile" translatable="false">Профиль приложения</string>
+    <string name="profile" translatable="false">Профиль Приложения</string>
     <string name="profile_default">По умолчанию</string>
     <string name="profile_template">Шаблон</string>
     <string name="profile_custom">Настроить</string>
@@ -119,10 +119,10 @@
     <string name="profile_capabilities">Возможности</string>
     <string name="profile_selinux_context">Контекст SELinux</string>
     <string name="profile_umount_modules">Отключить модули</string>
-    <string name="failed_to_update_app_profile">Не удалось обновить профиль приложения для %s</string>
+    <string name="failed_to_update_app_profile">Не удалось обновить Профиль Приложения для %s</string>
     <string name="require_kernel_version">Текущая версия KernelSU Next %1$d слишком низкая для корректной работы менеджера. Пожалуйста, обновитесь до версии %2$d или выше!</string>
     <string name="settings_umount_modules_default">Отключить модули</string>
-    <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Отключить модули\" в профиле приложения. Если включено, это удалит все модификации системы модулями для приложений без установленного профиля.</string>
+    <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Отключить модули\" в Профиле Приложения. Если включено, это удалит все модификации системы модулями для приложений без установленного профиля.</string>
     <string name="settings_susfs_toggle">Скрыть хуки kprobe</string>
     <string name="settings_susfs_toggle_summary">Отключает хуки kprobe, созданные ksu, и вместо этого активирует встроенные функции, реализующие ту же функциональность для ядер, которые не поддерживают kprobe.</string>
     <string name="profile_umount_modules_summary">Включение этой опции позволит KernelSU Next восстанавливать любые изменённые модулями файлы для этого приложения.</string>
@@ -139,8 +139,8 @@
     <string name="failed_to_update_sepolicy">Не удалось обновить правила SELinux для: %s</string>
     <string name="su_not_allowed">Предоставление прав суперпользователя запрещено для: %s</string>
     <string name="module_changelog">Журнал изменений</string>
-    <string name="settings_profile_template">Шаблон профиля приложений</string>
-    <string name="settings_profile_template_summary">Управление локальными и онлайн-шаблонами профилей приложений</string>
+    <string name="settings_profile_template">Шаблон Профиля Приложений</string>
+    <string name="settings_profile_template_summary">Управление локальными и онлайн шаблонами Профилей Приложений</string>
     <string name="app_profile_template_create">Создать шаблон</string>
     <string name="app_profile_template_edit">Редактировать шаблон</string>
     <string name="app_profile_template_id">Идентификатор</string>
@@ -161,12 +161,12 @@
     <string name="app_profile_template_save_failed">Не удалось сохранить шаблон</string>
     <string name="app_profile_template_import_empty">Буфер обмена пуст!</string>
     <string name="module_changelog_failed">Не удалось получить журнал изменений: %s</string>
-    <string name="settings_check_update">Проверить обновления</string>
+    <string name="settings_check_update">Проверять обновления</string>
     <string name="settings_check_update_summary">Автоматически проверять обновления при открытии приложения.</string>
     <string name="grant_root_failed">Не удалось предоставить root-доступ!</string>
     <string name="action">Запустить</string>
     <string name="open">Открыть</string>
-    <string name="enable_web_debugging">Включить отладку WebView</string>
+    <string name="enable_web_debugging">Отладка WebView</string>
     <string name="enable_web_debugging_summary">Можно использовать для отладки WebUI. Включайте только при необходимости.</string>
     <string name="direct_install">Прямая установка (Рекомендуется)</string>
     <string name="select_file">Выберите файл</string>
@@ -193,4 +193,9 @@
     <string name="send_log">Поделиться логами</string>
     <string name="settings_disable_su">Откл. совместимость с su</string>
     <string name="settings_disable_su_summary">Временно отключить возможность приложениям получать права root через команду su (существующие процессы с правами root не будут затронуты).</string>
+    <string name="settings_language">Язык</string>
+    <string name="use_webuix">Использовать WebUI X</string>
+    <string name="use_webuix_summary">Использовать WebUI X вместо WebUI, который поддерживает больше API.</string>
+    <string name="use_webuix_eruda">Инжектить Eruda в WebUI X</string>
+    <string name="use_webuix_eruda_summary">Инжектить консоль отладки в WebUI X, чтобы упростить отладку. Требуется включить отладку WebView.</string>
 </resources>
