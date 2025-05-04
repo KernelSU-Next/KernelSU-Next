@@ -7,6 +7,7 @@ use crate::{defs::BINARY_DIR, utils};
 
 pub const RESETPROP_PATH: &str = concatcp!(BINARY_DIR, "resetprop");
 pub const BUSYBOX_PATH: &str = concatcp!(BINARY_DIR, "busybox");
+#[allow(dead_code)]
 pub const BOOTCTL_PATH: &str = concatcp!(BINARY_DIR, "bootctl");
 
 #[allow(dead_code)]

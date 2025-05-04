@@ -17,7 +17,7 @@ zip-extensions = { version = "0.8", features = [
     "lzma",
     "xz",
 ], default-features = false }
-java-properties = { git = "https://github.com/Kernel-SU/java-properties.git", branch = "master", default-features = false }
+java-properties = { git = "https://github.com/KernelSU-Next/java-properties.git", branch = "master", default-features = false }
 log = "0.4"
 env_logger = { version = "0.11", default-features = false }
 serde_json = "1"
@@ -42,13 +42,13 @@ chrono = "0.4"
 regex-lite = "0.1"
 
 [target.'cfg(any(target_os = "android", target_os = "linux"))'.dependencies]
-rustix = { git = "https://github.com/Kernel-SU/rustix.git", branch = "main", features = [
+rustix = { git = "https://github.com/KernelSU-Next/rustix.git", branch = "main", features = [
     "all-apis",
 ] }
 # some android specific dependencies which compiles under unix are also listed here for convenience of coding
 android-properties = { version = "0.2", features = ["bionic-deprecated"] }
 procfs = "0.17"
-loopdev = { git = "https://github.com/Kernel-SU/loopdev" }
+loopdev = { git = "https://github.com/KernelSU-Next/loopdev" }
 
 [target.'cfg(target_os = "android")'.dependencies]
 android_logger = { version = "0.15", default-features = false }

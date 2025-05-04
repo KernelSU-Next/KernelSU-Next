@@ -17,6 +17,8 @@ on:
       - 'manager/**'
   workflow_call:
   workflow_dispatch:
+  schedule:
+    - cron: "0 12 * * *" # 6 PM UTC+6 | 12 PM UTC
 
 jobs:
   # build-lkm:
@@ -59,6 +61,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Spoof Package ID
+        run: |
+          chmod +x spoof
+          ./spoof
 
       - name: Setup need_upload
         id: need_upload
@@ -164,7 +171,7 @@ jobs:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           COMMIT_URL: ${{ github.event.head_commit.url }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          TITLE: CI Manager (TEST BUILD)
+          TITLE: CI Manager (SPOOFED BUILD)
         run: |
           if [ ! -z "${{ secrets.BOT_TOKEN }}" ]; then
             export VERSION=$(git rev-list --count HEAD)

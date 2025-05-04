@@ -1,12 +1,12 @@
 [versions]
-agp = "8.9.1"
+agp = "8.9.2"
 kotlin = "2.1.20"
-ksp = "2.1.20-1.0.32"
-compose-bom = "2025.03.01"
+ksp = "2.1.20-2.0.1"
+compose-bom = "2025.04.01"
 lifecycle = "2.8.7"
 navigation = "2.8.9"
 activity-compose = "1.10.1"
-kotlinx-coroutines = "1.10.1"
+kotlinx-coroutines = "1.10.2"
 coil-compose = "2.7.0"
 compose-destination = "2.1.0"
 sheets-compose-dialogs = "1.3.0"
@@ -17,6 +17,7 @@ parcelablelist = "2.0.1"
 libsu = "6.0.0"
 apksign = "1.4"
 cmaker = "1.2"
+mmrl = "v33560"
 
 [plugins]
 agp-app = { id = "com.android.application", version.ref = "agp" }
@@ -72,3 +73,8 @@ sheet-compose-dialogs-input = { group = "com.maxkeppeler.sheets-compose-dialogs"
 markdown = { group = "io.noties.markwon", name = "core", version.ref = "markdown" }
 
 lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version = "27.0.12077973" }
+
+mmrl-webui = { group = "com.github.MMRLApp.MMRL", name = "webui", version.ref = "mmrl" }
+mmrl-platform = { group = "com.github.MMRLApp.MMRL", name = "platform", version.ref = "mmrl" }
+mmrl-ui = { group = "com.github.MMRLApp.MMRL", name = "ui", version.ref = "mmrl" }
+mmrl-hidden-api = { group = "com.github.MMRLApp.MMRL", name = "hidden-api", version.ref = "mmrl" }

@@ -194,4 +194,6 @@
     <string name="settings_disable_su">Vô hiệu hoá khả năng của lệnh SU</string>
     <string name="settings_disable_su_summary">Vô hiệu hoá khả năng thực thi lệnh SU để lấy quyền root (những app đã cấp trước đó không bị ảnh hưởng).</string>
     <string name="settings_language">Ngôn ngữ</string>
+    <string name="use_webuix">Dùng WebUI X</string>
+    <string name="use_webuix_summary">Dùng WebUI X thay vì WebUI (hỗ trợ nhiều API hơn).</string>
 </resources>

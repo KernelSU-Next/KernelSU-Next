@@ -81,6 +81,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.dergoogler.mmrl.platform.Platform
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
@@ -108,6 +109,7 @@ import com.rifsxd.ksunext.ui.util.uninstallModule
 import com.rifsxd.ksunext.ui.util.restoreModule
 import com.rifsxd.ksunext.ui.viewmodel.ModuleViewModel
 import com.rifsxd.ksunext.ui.webui.WebUIActivity
+import com.rifsxd.ksunext.ui.webui.WebUIXActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -238,15 +240,18 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     }
 
                     // Show confirm dialog with selected zip file(s) name(s)
-                    val moduleNames = uris.mapIndexed { index, uri -> "\n${index + 1}. ${uri.getFileName(context)}" }.joinToString("")
-                    val confirmContent = context.getString(R.string.module_install_prompt_with_name, moduleNames)
+                    val moduleNames =
+                        uris.mapIndexed { index, uri -> "\n${index + 1}. ${uri.getFileName(context)}" }
+                            .joinToString("")
+                    val confirmContent =
+                        context.getString(R.string.module_install_prompt_with_name, moduleNames)
                     zipUris = uris
                     confirmDialog.showConfirm(
                         title = confirmTitle,
                         content = confirmContent,
                         markdown = true
                     )
-                    
+
                 }
 
                 ExtendedFloatingActionButton(
@@ -281,6 +286,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     )
                 }
             }
+
             else -> {
                 ModuleList(
                     navigator,
@@ -293,10 +299,17 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     onClickModule = { id, name, hasWebUi ->
                         if (hasWebUi) {
                             webUILauncher.launch(
-                                Intent(context, WebUIActivity::class.java)
-                                    .setData(Uri.parse("kernelsu://webui/$id"))
-                                    .putExtra("id", id)
-                                    .putExtra("name", name)
+                                if (prefs.getBoolean("use_webuix", false) && Platform.isAlive) {
+                                    Intent(context, WebUIXActivity::class.java)
+                                        .setData(Uri.parse("kernelsu://webuix/$id"))
+                                        .putExtra("id", id)
+                                        .putExtra("name", name)
+                                } else {
+                                    Intent(context, WebUIActivity::class.java)
+                                        .setData(Uri.parse("kernelsu://webui/$id"))
+                                        .putExtra("id", id)
+                                        .putExtra("name", name)
+                                }
                             )
                         }
                     },
@@ -318,7 +331,7 @@ private fun ModuleList(
     onInstallModule: (Uri) -> Unit,
     onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit,
     context: Context,
-    snackBarHost: SnackbarHostState
+    snackBarHost: SnackbarHostState,
 ) {
     val failedEnable = stringResource(R.string.module_failed_to_enable)
     val failedDisable = stringResource(R.string.module_failed_to_disable)
@@ -342,7 +355,8 @@ private fun ModuleList(
 
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
-    val hasShownWarning = rememberSaveable { mutableStateOf(prefs.getBoolean("has_shown_warning", false)) }
+    val hasShownWarning =
+        rememberSaveable { mutableStateOf(prefs.getBoolean("has_shown_warning", false)) }
 
     var useOverlayFs by rememberSaveable {
         mutableStateOf(
@@ -357,7 +371,7 @@ private fun ModuleList(
         module: ModuleViewModel.ModuleInfo,
         changelogUrl: String,
         downloadUrl: String,
-        fileName: String
+        fileName: String,
     ) {
         val changelogResult = loadingDialog.withLoading {
             withContext(Dispatchers.IO) {
@@ -570,7 +584,8 @@ private fun ModuleList(
                                             reboot()
                                         }
                                     } else {
-                                        val message = if (module.enabled) failedDisable else failedEnable
+                                        val message =
+                                            if (module.enabled) failedDisable else failedEnable
                                         snackBarHost.showSnackbar(message.format(module.name))
                                     }
                                 }
@@ -611,7 +626,7 @@ fun ModuleItem(
     onRestore: (ModuleViewModel.ModuleInfo) -> Unit,
     onCheckChanged: (Boolean) -> Unit,
     onUpdate: (ModuleViewModel.ModuleInfo) -> Unit,
-    onClick: (ModuleViewModel.ModuleInfo) -> Unit
+    onClick: (ModuleViewModel.ModuleInfo) -> Unit,
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth()
@@ -620,7 +635,7 @@ fun ModuleItem(
         val interactionSource = remember { MutableInteractionSource() }
         val indication = LocalIndication.current
         val viewModel = viewModel<ModuleViewModel>()
-        
+
         val context = LocalContext.current
         val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
@@ -862,7 +877,7 @@ fun ModuleItem(
                                 fontSize = MaterialTheme.typography.labelMedium.fontSize,
                                 text = stringResource(R.string.uninstall)
                             )
-		                }
+                        }
                     }
                 }
             }
