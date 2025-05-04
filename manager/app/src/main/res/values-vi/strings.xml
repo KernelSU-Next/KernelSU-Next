@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="issue_report_title">Đang gặp sự cố?</string>
+    <string name="issue_report_title">Gặp sự cố?</string>
     <string name="issue_report_body">Muốn báo cáo lỗi hoặc góp ý?</string>
     <string name="issue_report_body_2">Báo cáo hoặc góp ý nhanh nhất có thể!</string>
     <string name="issue_report_github">Báo cáo trên GitHub</string>
@@ -9,29 +9,29 @@
     <string name="issue_report_telegram_link">https://t.me/ksunext</string>
     <string name="confirm">Xác nhận</string>
     <string name="app_name" translatable="false">KernelSU Next</string>
-    <string name="home">Màn hình chính</string>
+    <string name="home">Trang chủ</string>
     <string name="home_not_installed">Hỗ trợ nhưng chưa cài đặt</string>
-    <string name="home_click_to_install">Bấm để cái đặt</string>
+    <string name="home_click_to_install">Bấm để cài đặt</string>
     <string name="home_working">Đã cài đặt và hoạt động</string>
     <string name="home_working_version">Phiên bản: %d</string>
     <string name="home_superuser_count">Ứng dụng đã cấp su: %d</string>
-    <string name="home_module_count">Modules: %d</string>
-    <string name="home_failure">Chữ kí KernelSU Next v2 Không dược tìm thấy (chưa cài đặt,nhúng sai cách hoặc nhầm trình quản lý?) [ !KSU_NEXT || != size/hash ]</string>
-    <string name="home_failure_tip">Hỏi hoặc tự nhúng nhân KernelSU Next vào Kernel của bạn!</string>
+    <string name="home_module_count">Module: %d</string>
+    <string name="home_failure">Không tìm thấy chữ kí KernelSU Next v2 (chưa cài đặt, nhúng sai cách hoặc nhầm trình quản lý?) [ !KSU_NEXT || != size/hash ]</string>
+    <string name="home_failure_tip">Hỏi hoặc tự nhúng KernelSU Next vào kernel của bạn!</string>
     <string name="home_kernel">Phiên bản kernel</string>
     <string name="enabled">Kích hoạt</string>
     <string name="disabled">Vô hiệu hoá</string>
-    <string name="susfs_supported">hỗ trợ</string>
+    <string name="susfs_supported">Hỗ trợ</string>
     <string name="home_susfs">SuSFS: %s</string>
     <string name="home_susfs_version">Phiên bản SuSFS</string>
     <string name="home_susfs_sus_su">SuS SU</string>
-    <string name="home_android">Phiên bản android</string>
+    <string name="home_android">Phiên bản Android</string>
     <string name="home_manager_version">Phiên bản trình quản lý</string>
     <string name="home_selinux_status">Trạng thái SELinux</string>
     <string name="selinux_status_disabled">Vô hiệu hoá</string>
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_permissive">Permissive</string>
-    <string name="selinux_status_unknown">Chịu</string>
+    <string name="selinux_status_unknown">Không xác định</string>
     <string name="superuser">Superuser</string>
     <string name="module_failed_to_enable">Không thể kích hoạt module: %s</string>
     <string name="module_failed_to_disable">Không thể vô hiệu hoá module: %s</string>
@@ -46,7 +46,7 @@
     <string name="install">Cài đặt</string>
     <string name="reboot">Khởi động lại</string>
     <string name="settings">Cài đặt</string>
-    <string name="reboot_userspace">Khởi động lại systemctrl</string>
+    <string name="reboot_userspace">Khởi động mềm</string>
     <string name="reboot_recovery">Vào Recovery</string>
     <string name="reboot_bootloader">Vào Bootloader</string>
     <string name="reboot_download">Vào Download Mode</string>
@@ -57,7 +57,7 @@
     <string name="module_uninstall_failed">Gỡ cài đặt thất bại: %s</string>
     <string name="module_restore_confirm">Khôi phục module lại như lúc cài %s?</string>
     <string name="module_restore_success">%s đã khôi phục</string>
-    <string name="module_restore_failed">Khôi phục thất bại, vui lòng cài lại  : %s</string>
+    <string name="module_restore_failed">Khôi phục thất bại, vui lòng cài lại: %s</string>
     <string name="module_version">Phiên bản</string>
     <string name="module_author">Người tạo ra</string>
     <string name="module_id">ID</string>
@@ -71,19 +71,19 @@
     <string name="show_system_apps">Hiện thị ứng dụng hệ thống</string>
     <string name="hide_system_apps">Ẩn ứng dụng hệ thống</string>
     <string name="export_log">Xuất logs</string>
-    <string name="safe_mode">CHẾ ĐỘ AN TOÀN!?!?</string>
+    <string name="safe_mode">CHẾ ĐỘ AN TOÀN</string>
     <string name="reboot_to_apply">Khởi động lại để có hiệu lực</string>
     <string name="module_magisk_conflict">Vui lòng gỡ magisk để sử dụng module</string>
     <string name="home_mount_system">Cơ chế mount</string>
     <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
-    <string name="unavailable">Không có sẵn</string>
+    <string name="unavailable">Không khả dụng</string>
     <string name="use_overlay_fs">Sử dụng OverlayFS</string>
     <string name="use_overlay_fs_summary">Gạt bật tắt chuyển giữa phương thức OverlayFS và Magic Mount cho các tập mount hệ thống.</string>
     <string name="reboot_required">Yêu cầu khởi động lại</string>
-    <string name="reboot_message">Một/Nhiều thay đổi cần được khởi động lại hệ thống, khởi động luôn?</string>
+    <string name="reboot_message">Thay đổi sẽ có hiệu lực sau khi khởi động lại, khởi động ngay?</string>
     <string name="module_restore">Khôi phục module</string>
-    <string name="module_restore_message">Khôi phục modules từ bản sao lưu gần nhất.</string>
+    <string name="module_restore_message">Khôi phục module từ bản sao lưu gần nhất.</string>
     <string name="backup_restore">Sao lưu &amp; Khôi phục</string>
     <string name="module_backup">Sao lưu module</string>
     <string name="module_backup_message">Sao lưu những module đang được cài đặt.</string>
@@ -102,8 +102,8 @@
     <string name="home_experimental_kernelsu">⚠️ Cảnh báo nhánh thử nghiệm cho nhà phát triển!</string>
     <string name="home_experimental_kernelsu_repo">127.0.0.1</string>
     <string name="home_experimental_kernelsu_body">KernelSU Next là 1 nhánh của KernelSU luôn có những nhánh thử nghiệm và cập nhật hàng ngày, nó có thể không ổn định</string>
-    <string name="home_experimental_kernelsu_body_point_1"> • Tự chịu trách nghiệm: crashes, những thứ kì lạ, không vào được 1 vài ứng dụng(ngân hàng),... có thể diễn ra.</string>
-    <string name="home_experimental_kernelsu_body_point_2"> • Không bảo hành: Những nhà phát triển trong KernelSU (Next) và bên thứ 3 sẽ không chịu trách nghiệm khi hardbrick,bootloop,mất dữ liệu,... .</string>
+    <string name="home_experimental_kernelsu_body_point_1"> • Tự chịu trách nghiệm: crashes, những thứ kì lạ, không vào được 1 vài ứng dụng (ngân hàng),... có thể xảy ra.</string>
+    <string name="home_experimental_kernelsu_body_point_2"> • Không bảo hành: Các nhà phát triển KernelSU Next và bên thứ 3 sẽ không chịu trách nghiệm cho hardbrick, bootloop, mất dữ liệu,...</string>
     <string name="home_experimental_kernelsu_body_point_3"> • Đùng để thử nghiệm là chính: Chỉ dành cho những người có kĩ năng, kinh nghiệm, trải nghiệm .</string>
     <string name="about_source_code"><![CDATA[Xem mã nguồn tại %1$s]]></string>
     <string name="profile" translatable="false">Hồ sơ ứng dụng</string>
@@ -122,9 +122,9 @@
     <string name="failed_to_update_app_profile">Cập nhật hồ sơ ứng dụng thất bại cho %s</string>
     <string name="require_kernel_version">Phiên bản KernelSU Next được nhúng trong kernel là %1$d và nó quá thấp để trình quản lý hoạt động. Vui lòng cập nhật lên phiên bản %2$d hoặc!</string>
     <string name="settings_umount_modules_default">Umount modules cho toàn hệ thống</string>
-    <string name="settings_umount_modules_default_summary">Giá trị mặc định chung cho \"Umount modules\" trong hồ sơ ứng dụng. Nếu bật, tất cả nhưng module có can thiệp/thay đổi hệ thống sẽ không đổi trừ khi được kích hoạt trong hồ sơ ứng dụng riêng biệt. (modder oem rom hoặc những người muốn chép file vào phân vùng hệ thống nên tắt).</string>
+    <string name="settings_umount_modules_default_summary">Giá trị mặc định chung cho \"Umount modules\" trong Hồ sơ ứng dụng. Nếu bật, mọi thay đổi hệ thống do module gây ra sẽ bị gỡ bỏ đối với các ứng dụng chưa đặt hồ sơ riêng. (Modder OEM rom hoặc những người muốn chép file vào phân vùng hệ thống nên tắt).</string>
     <string name="settings_susfs_toggle">Ẩn kprobe hooks</string>
-    <string name="settings_susfs_toggle_summary">Tính năng này sẽ vô hiệu hoá những kprobe hooks đã tạo bởi kernelsu và sẽ kích hoạt và nhúng những non-kprobe hooks,đảm bảo những kernel non-GKI(EOL) hoạt động ổn định.</string>
+    <string name="settings_susfs_toggle_summary">Tính năng này sẽ vô hiệu hoá những kprobe hooks đã tạo bởi kernelsu và sẽ kích hoạt và nhúng những non-kprobe hooks, đảm bảo những kernel non-GKI(EOL) hoạt động ổn định.</string>
     <string name="profile_umount_modules_summary">Kích hoạt tính năng này sẽ tách các ứng dụng chưa cấp hồ sơ riêng và root.</string>
     <string name="profile_selinux_domain">Tên miền</string>
     <string name="profile_selinux_rules">Quyền</string>
@@ -171,9 +171,9 @@
     <string name="direct_install">Cài đặt trực tiếp (cho GKI 2.0)</string>
     <string name="select_file">Chọn file</string>
     <string name="install_inactive_slot">Cài đặt vào phân vùng update (cho người OTA)</string>
-    <string name="install_inactive_slot_warning">Thiết bị của bạn sẽ BUỘC khởi động vào phân dùng chưa được sử dụng (có thể A hoặc B)\nSử dụng sau khi update OTA.\nTiếp?</string>
+    <string name="install_inactive_slot_warning">Thiết bị của bạn sẽ BUỘC khởi động vào phân dùng chưa được sử dụng (A hoặc B)\nSử dụng sau khi update OTA.\nTiếp?</string>
     <string name="install_next">Tiếp</string>
-    <string name="select_file_tip">tập tin %1$s được khuyến kích</string>
+    <string name="select_file_tip">Tập tin %1$s được khuyến khích</string>
     <string name="select_kmi">Chọn KMI</string>
     <string name="shrink_sparse_image">Nén module.img</string>
     <string name="shrink_sparse_image_message">Nén lại module.img về kích thước thực, CHỈ SỬ DỤNG KHI CÓ HIỂU BIẾT VÀ CẦN THIẾT!?!?!?!?!.</string>
@@ -182,7 +182,7 @@
     <string name="settings_uninstall_permanent">Gỡ cài đặt sạch</string>
     <string name="settings_restore_stock_image">Khôi phục phân vùng khởi động về mặc định</string>
     <string name="settings_uninstall_temporary_message">Tạm thời gỡ KernelSU Next.</string>
-    <string name="settings_uninstall_permanent_message">Gỡ cài đặt sạch hoàn toàn, trả về trạng thái lúc đầu .</string>
+    <string name="settings_uninstall_permanent_message">Gỡ cài đặt sạch hoàn toàn, trả về trạng thái ban đầu.</string>
     <string name="settings_restore_stock_image_message">Khôi phục lại boot lúc đầu (nếu có); nếu bạn cần gỡ hẳn KernelSU Next, sử dụng\"Gỡ cài đặt sạch\".</string>
     <string name="flashing">Đang cài đặt</string>
     <string name="flash_success">Cài đặt thành công</string>
