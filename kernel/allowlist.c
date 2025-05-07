@@ -362,7 +362,7 @@ void do_save_allow_list(struct work_struct *work)
 	struct file *fp =
 		ksu_filp_open_compat(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (IS_ERR(fp)) {
-		pr_err("save_allow_list create file failed: %ld\n", PTR_ERR(fp));
+		pr_err("save_allow_list create file failed: %d\n",  (int)PTR_ERR(fp));
 		return;
 	}
 
@@ -409,7 +409,7 @@ void do_load_allow_list(struct work_struct *work)
 	// load allowlist now!
 	fp = ksu_filp_open_compat(KERNEL_SU_ALLOWLIST, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
-		pr_err("load_allow_list open file failed: %ld\n", PTR_ERR(fp));
+		pr_err("load_allow_list open file failed: %d\n",  (int)PTR_ERR(fp));
 		return;
 	}
 

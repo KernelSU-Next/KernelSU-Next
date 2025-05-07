@@ -299,8 +299,8 @@ void track_throne()
 	struct file *fp =
 		ksu_filp_open_compat(SYSTEM_PACKAGES_LIST_PATH, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
-		pr_err("%s: open " SYSTEM_PACKAGES_LIST_PATH " failed: %ld\n",
-		       __func__, PTR_ERR(fp));
+		pr_err("%s: open " SYSTEM_PACKAGES_LIST_PATH " failed: %d\n",
+		       __func__,  (int)PTR_ERR(fp));
 		return;
 	}
 
