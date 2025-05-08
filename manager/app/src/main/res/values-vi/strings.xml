@@ -196,4 +196,6 @@
     <string name="settings_language">Ngôn ngữ</string>
     <string name="use_webuix">Dùng WebUI X</string>
     <string name="use_webuix_summary">Dùng WebUI X thay vì WebUI (hỗ trợ nhiều API hơn).</string>
+    <string name="use_webuix_eruda">Nhúng nhân Eruda vào WebUI X</string>
+    <string name="use_webuix_eruda_summary">Nhúng trình gỡ lỗi vào WebUI X để việc sửa lỗi thuận tiện hơn. Yêu cầu gỡ lỗi webview được bật.</string>
 </resources>
