@@ -17,6 +17,29 @@ config KSU_DEBUG
 	help
 	  Enable KernelSU debug mode.
 
+config KSU_CONTAINER_COMPAT
+	bool "Containerized Android Compatibility (WSA/Waydroid/Redroid)"
+	depends on KSU
+	default n
+	help
+	  Enable this if compiling KernelSU for a containerized Android
+	  environment like Windows Subsystem for Android (WSA), Waydroid,
+	  or Redroid.
+
+	  This forces tracking mechanisms to execute within the Android
+	  container's mount namespace instead of the host's init_task
+	  namespace, ensuring proper package visibility.
+
+config KSU_THRONE_TRACKER_ALWAYS_THREADED
+	bool "Always run throne tracker in a kthread"
+	depends on KSU && !KSU_CONTAINER_COMPAT
+	default y
+	help
+	  Runs throne_tracker in a separate kthread, including the first run.
+	  Significantly decreases boot time, but may delay crowning slightly
+	  on some FDE / FBEv1 setups.
+	  If unsure, say n.
+
 config KSU_DISABLE_MANAGER
 	bool "Disable KernelSU manager integration"
 	depends on KSU

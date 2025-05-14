@@ -8,9 +8,6 @@
 #include <linux/rculist.h>
 #include <linux/task_work.h>
 #include <linux/version.h>
-#ifdef CONFIG_KSU_SUSFS
-#include <linux/susfs.h>
-#endif
 #include "klog.h" // IWYU pragma: keep
 #include "manager/throne_tracker.h"
 
@@ -26,6 +23,7 @@ struct watch_dir {
 
 static struct fsnotify_group *g;
 
+#ifndef CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED
 static void ksu_track_throne_tw_func(struct callback_head *cb)
 {
     kfree(cb);
@@ -33,14 +31,7 @@ static void ksu_track_throne_tw_func(struct callback_head *cb)
     if (current->flags & PF_EXITING)
         return;
     track_throne(false);
-#ifdef CONFIG_KSU_SUSFS_PRIORITY_UID_FILTER
-    // Renew the priority uid bitmap filter
-    susfs_parse_priority_app_strings();
-#endif
-#ifdef CONFIG_KSU_SUSFS_SUS_PATH
-    // Renew the sus path uid bitmap filter
-    susfs_parse_sus_path_app_strings();
-#endif
+    susfs_renew_uid_filters();
 }
 
 // Never scan from the fsnotify handler: fsnotify_mark_srcu and the rename's dir
@@ -63,15 +54,10 @@ static void ksu_defer_track_throne(void)
     }
     pr_warn("defer track_throne failed, run it inline\n");
     track_throne(false);
-#ifdef CONFIG_KSU_SUSFS_PRIORITY_UID_FILTER
-    // Renew the priority uid bitmap filter
-    susfs_parse_priority_app_strings();
-#endif
-#ifdef CONFIG_KSU_SUSFS_SUS_PATH
-    // Renew the sus path uid bitmap filter
-    susfs_parse_sus_path_app_strings();
-#endif
+    susfs_renew_uid_filters();
 }
+#endif
+
 
 static int ksu_handle_inode_event(struct fsnotify_mark *mark, u32 mask,
                                   struct inode *inode, struct inode *dir,
@@ -83,7 +69,11 @@ static int ksu_handle_inode_event(struct fsnotify_mark *mark, u32 mask,
         return 0;
     if (file_name->len == 13 && !memcmp(file_name->name, "packages.list", 13)) {
         pr_info("packages.list detected: %d\n", mask);
+#ifdef CONFIG_KSU_THRONE_TRACKER_ALWAYS_THREADED
+        track_throne(false);
+#else
         ksu_defer_track_throne();
+#endif
     }
     return 0;
 }

@@ -174,6 +174,17 @@ void apply_kernelsu_rules()
     ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "getpgid");
     ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "sigkill");
 
+    // throne_tracker kthread; /data | /data/app traversal; apk / packages.list access
+    ksu_allow(db, "kernel", "kernel", "capability", "dac_read_search");
+    ksu_allow(db, "kernel", "system_data_file", "dir", "search");
+    ksu_allow(db, "kernel", "packages_list_file", "file", "read");
+    ksu_allow(db, "kernel", "packages_list_file", "file", "open");
+    ksu_allow(db, "kernel", "apk_data_file", "dir", "read");
+    ksu_allow(db, "kernel", "apk_data_file", "dir", "open");
+    ksu_allow(db, "kernel", "apk_data_file", "dir", "search");
+    ksu_allow(db, "kernel", "apk_data_file", "file", "read");
+    ksu_allow(db, "kernel", "apk_data_file", "file", "open");
+
     // Return value ignored: the policy is published either way.
     ksu_policydb_fixup_len(db, "apply_kernelsu_rules");
     rcu_assign_pointer(selinux_state.policy, pol);
