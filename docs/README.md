@@ -28,7 +28,7 @@ Currently, only the `arm64-v8a` architecture is supported.
 
 ## Usage
 
-- [Installation instruction](https://ksunext.org/pages/installation.html)
+- [Installation instruction](https://ksunext.org/internals/installation.html)
 
 ## Security
 

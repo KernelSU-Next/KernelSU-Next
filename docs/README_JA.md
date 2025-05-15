@@ -28,7 +28,7 @@ KernelSU Next は 4.4 から 6.6 までのほとんどの Android カーネル�
 
 ## 使い方
 
-- [インストール手順](https://ksunext.org/pages/installation.html)
+- [インストール手順](https://ksunext.org/internals/installation.html)
 
 ## セキュリティ
 
