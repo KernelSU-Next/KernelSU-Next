@@ -638,6 +638,7 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 	try_umount("/system_ext", true, 0);
 	try_umount("/vendor", true, 0);
 	try_umount("/product", true, 0);
+	try_umount("/optics", true, 0);
 	try_umount("/data/adb/modules", false, MNT_DETACH);
 
 	// try umount ksu temp path
