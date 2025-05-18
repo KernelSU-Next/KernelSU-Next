@@ -29,9 +29,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.intl.Locale
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.pm.PackageInfoCompat
+import com.dergoogler.mmrl.ui.component.LabelItem
+import com.dergoogler.mmrl.ui.component.LabelItemDefaults
+import com.dergoogler.mmrl.ui.component.text.TextRow
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 // import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination // DISBAND LKM MODE
@@ -197,7 +202,8 @@ private fun TopBar(
                     }) {
                         RebootDropdownItem(id = R.string.reboot)
 
-                        val pm = LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?
+                        val pm =
+                            LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?
                         @Suppress("DEPRECATION")
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && pm?.isRebootingUserspaceSupported == true) {
                             RebootDropdownItem(id = R.string.reboot_userspace, reason = "userspace")
@@ -240,59 +246,80 @@ private fun StatusCard(
             else MaterialTheme.colorScheme.errorContainer
         })
     ) {
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                if (kernelVersion.isGKI()) {
-                    onClickInstall()
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    if (kernelVersion.isGKI()) {
+                        onClickInstall()
+                    }
                 }
-            }
-            .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
+                .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
             when {
                 ksuVersion != null -> {
-                    val safeMode = when {
-                        Natives.isSafeMode -> " [${stringResource(id = R.string.safe_mode)}]"
-                        else -> ""
-                    }
-
                     val workingMode = when {
-                        lkmMode == true -> " <LKM>"
-                        lkmMode == false || kernelVersion.isGKI() -> " <GKI2>"
-                        lkmMode == null && kernelVersion.isULegacy() -> " <U-LEGACY>"
-                        lkmMode == null && kernelVersion.isLegacy() -> " <LEGACY>"
-                        lkmMode == null && kernelVersion.isGKI1() -> " <GKI1>"
-                        else -> " <NON-STANDARD>"
+                        lkmMode == true -> "LKM"
+                        lkmMode == false || kernelVersion.isGKI() -> "GKI2"
+                        lkmMode == null && kernelVersion.isULegacy() -> "U-LEGACY"
+                        lkmMode == null && kernelVersion.isLegacy() -> "LEGACY"
+                        lkmMode == null && kernelVersion.isGKI1() -> "GKI1"
+                        else -> "NON-STANDARD"
                     }
-
-                    val workingText =
-                        "${stringResource(id = R.string.home_working)}$workingMode$safeMode"
 
                     Icon(
                         getSeasonalIcon(), // Use dynamic seasonal icon
                         contentDescription = stringResource(R.string.home_working)
                     )
-                    Column(Modifier.padding(start = 20.dp)) {
-                        Text(
-                            text = workingText,
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(Modifier.height(4.dp))
+                    Column(
+                        modifier = Modifier.padding(start = 20.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        val labelStyle = LabelItemDefaults.style
+                        TextRow(
+                            trailingContent = {
+                                LabelItem(
+                                    icon = if (Natives.isSafeMode) {
+                                        {
+                                            Icon(
+                                                tint = labelStyle.contentColor,
+                                                imageVector = Icons.Filled.Security,
+                                                contentDescription = null
+                                            )
+                                        }
+                                    } else {
+                                        null
+                                    },
+                                    text = {
+                                        Text(
+                                            text = workingMode,
+                                            style = labelStyle.textStyle.copy(color = labelStyle.contentColor),
+                                        )
+                                    }
+                                )
+                            }
+                        ) {
+                            Text(
+                                text = stringResource(id = R.string.home_working),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                        }
+
                         Text(
                             text = stringResource(R.string.home_working_version, ksuVersion),
                             style = MaterialTheme.typography.bodyMedium
                         )
-                        Spacer(Modifier.height(4.dp))
+
                         Text(
                             text = stringResource(
                                 R.string.home_superuser_count, getSuperuserCount()
                             ), style = MaterialTheme.typography.bodyMedium
                         )
-                        Spacer(Modifier.height(4.dp))
+
                         Text(
                             text = stringResource(R.string.home_module_count, getModuleCount()),
                             style = MaterialTheme.typography.bodyMedium
                         )
-                        Spacer(Modifier.height(4.dp))
+
                         val suSFS = getSuSFS()
                         if (suSFS == "Supported") {
                             Text(
@@ -395,6 +422,7 @@ private fun InfoCard() {
                                 contentDescription = null,
                                 modifier = Modifier.padding(end = 20.dp)
                             )
+
                             is Painter -> Icon(
                                 painter = icon,
                                 contentDescription = null,
@@ -414,7 +442,7 @@ private fun InfoCard() {
                         )
                     }
                 }
-                
+
             }
 
 
@@ -430,7 +458,7 @@ private fun InfoCard() {
                 content = "${Build.VERSION.RELEASE} (${Build.VERSION.SDK_INT})",
                 icon = Icons.Filled.Android,
 
-            )
+                )
 
             Spacer(Modifier.height(16.dp))
             val managerVersion = getManagerVersion(context)
@@ -460,13 +488,14 @@ private fun InfoCard() {
                 content = currentMountSystem().ifEmpty { stringResource(R.string.unavailable) },
                 icon = Icons.Filled.SettingsSuggest,
             )
-            
+
             val suSFS = getSuSFS()
             if (suSFS == "Supported") {
                 val isSUS_SU = getSuSFSFeatures() == "CONFIG_KSU_SUSFS_SUS_SU"
                 val susSUMode = if (isSUS_SU) {
                     val mode = susfsSUS_SU_Mode()
-                    val modeString = if (mode == "2") stringResource(R.string.enabled) else stringResource(R.string.disabled)
+                    val modeString =
+                        if (mode == "2") stringResource(R.string.enabled) else stringResource(R.string.disabled)
                     "| SuS SU: $modeString"
                 } else ""
                 Spacer(Modifier.height(16.dp))
@@ -487,12 +516,13 @@ fun NextCard() {
 
     ElevatedCard {
 
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                uriHandler.openUri(url)
-            }
-            .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    uriHandler.openUri(url)
+                }
+                .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
             Column {
                 Text(
                     text = stringResource(R.string.home_next_kernelsu),
@@ -516,13 +546,15 @@ fun EXperimentalCard() {
 
     ElevatedCard {
 
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            /*.clickable {
-                uriHandler.openUri(url)
-            }
-            */
-            .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                /*.clickable {
+                    uriHandler.openUri(url)
+                }
+                */
+                .padding(24.dp), verticalAlignment = Alignment.CenterVertically
+        ) {
             Column {
                 Text(
                     text = stringResource(R.string.home_experimental_kernelsu),
