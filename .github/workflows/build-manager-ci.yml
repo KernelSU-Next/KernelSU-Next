@@ -23,32 +23,18 @@ jobs:
   #   uses: ./.github/workflows/build-lkm.yml
   #   secrets: inherit
 
-  build-susfsd-aarch64:
+  build-susfsd:
     # needs: build-lkm
     strategy:
       matrix:
         include:
-          - target: aarch64-linux-android
-            os: ubuntu-latest
-    uses: ./.github/workflows/susfsd-aarch64.yml
+          - os: ubuntu-latest
+    uses: ./.github/workflows/susfsd.yml
     with:
-      target: ${{ matrix.target }}
-      os: ${{ matrix.os }}
-      
-  build-susfsd-arm:
-    needs: build-susfsd-aarch64
-    strategy:
-      matrix:
-        include:
-          - target: armv7-linux-androideabi
-            os: ubuntu-latest
-    uses: ./.github/workflows/susfsd-arm.yml
-    with:
-      target: ${{ matrix.target }}
       os: ${{ matrix.os }}
 
   build-ksud:
-    needs: build-susfsd-arm
+    needs: build-susfsd
     strategy:
       matrix:
         include:
@@ -104,16 +90,10 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Download arm64 susfsd
+      - name: Download susfsd
         uses: actions/download-artifact@v4
         with:
-          name: susfsd-aarch64-linux-android
-          path: .
-          
-      - name: Download arm susfsd
-        uses: actions/download-artifact@v4
-        with:
-          name: susfsd-armv7a-linux-androideabi
+          name: susfsd-linux-android
           path: .
 
       - name: Copy susfsd to app jniLibs

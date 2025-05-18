@@ -37,10 +37,10 @@ jobs:
 
     - name: Import susfsd Libraries
       run: |
-        cp susfsd-aarch64-linux-android/arm64-v8a/susfsd ./userspace/ksud_overlayfs/bin/aarch64/
-        cp susfsd-aarch64-linux-android/arm64-v8a/susfsd ./userspace/ksud_magic/bin/aarch64/
-        cp susfsd-armv7a-linux-androideabi/armeabi-v7a/susfsd ./userspace/ksud_overlayfs/bin/arm/
-        cp susfsd-armv7a-linux-androideabi/armeabi-v7a/susfsd ./userspace/ksud_magic/bin/arm/
+        cp susfsd-linux-android/arm64-v8a/susfsd ./userspace/ksud_overlayfs/bin/aarch64/
+        cp susfsd-linux-android/arm64-v8a/susfsd ./userspace/ksud_magic/bin/aarch64/
+        cp susfsd-linux-android/armeabi-v7a/susfsd ./userspace/ksud_overlayfs/bin/arm/
+        cp susfsd-linux-android/armeabi-v7a/susfsd ./userspace/ksud_magic/bin/arm/
 
     - name: Setup Rust
       run: |
