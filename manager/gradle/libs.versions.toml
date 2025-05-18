@@ -17,7 +17,7 @@ parcelablelist = "2.0.1"
 libsu = "6.0.0"
 apksign = "1.4"
 cmaker = "1.2"
-mmrl = "v33560"
+mmrl = "346470abb8"
 
 [plugins]
 agp-app = { id = "com.android.application", version.ref = "agp" }

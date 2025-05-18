@@ -109,14 +109,9 @@ class SuperUserViewModel : ViewModel() {
             val pm = ksuApp.packageManager
             val start = SystemClock.elapsedRealtime()
 
-            val userInfos = Platform.userManager.getUsers()
-            val packages = mutableListOf<PackageInfo>()
+            val userManager = Platform.userManager
             val packageManager = Platform.packageManager
-
-            for (userInfo in userInfos) {
-                Log.i(TAG, "fetchAppList: ${userInfo.id}")
-                packages.addAll(packageManager.getInstalledPackages(0, userInfo.id))
-            }
+            val packages = packageManager.getInstalledPackages(0, userManager.myUserId)
 
             apps = packages.map {
                 val appInfo = it.applicationInfo
