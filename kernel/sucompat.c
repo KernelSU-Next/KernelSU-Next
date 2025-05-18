@@ -64,7 +64,11 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 	}
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	if (!ksu_is_allow_uid(current_uid().val)) {
+#else
+	if (!ksu_is_allow_uid(current_uid())) {
+#endif
 		return 0;
 	}
 
@@ -91,7 +95,11 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 	}
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	if (!ksu_is_allow_uid(current_uid().val)) {
+#else
+	if (!ksu_is_allow_uid(current_uid())) {
+#endif
 		return 0;
 	}
 
@@ -152,7 +160,11 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 	if (likely(memcmp(filename->name, su, sizeof(su))))
 		return 0;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	if (!ksu_is_allow_uid(current_uid().val))
+#else
+	if (!ksu_is_allow_uid(current_uid()))
+#endif
 		return 0;
 
 	pr_info("do_execveat_common su found\n");
@@ -185,7 +197,11 @@ int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
 	if (likely(memcmp(path, su, sizeof(su))))
 		return 0;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	if (!ksu_is_allow_uid(current_uid().val))
+#else
+	if (!ksu_is_allow_uid(current_uid()))
+#endif
 		return 0;
 
 	pr_info("sys_execve su found\n");
@@ -208,7 +224,11 @@ int ksu_handle_devpts(struct inode *inode)
 		return 0;
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	uid_t uid = current_uid().val;
+#else
+	uid_t uid = current_uid();
+#endif
 	if (uid % 100000 < 10000) {
 		// not untrusted_app, ignore it
 		return 0;

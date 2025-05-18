@@ -15,7 +15,11 @@ static inline bool ksu_is_manager_uid_valid()
 
 static inline bool is_manager()
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	return unlikely(ksu_manager_uid == current_uid().val);
+#else
+	return unlikely(ksu_manager_uid == current_uid());
+#endif
 }
 
 static inline uid_t ksu_get_manager_uid()

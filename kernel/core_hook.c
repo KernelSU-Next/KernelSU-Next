@@ -65,7 +65,11 @@ static inline bool is_allow_su()
 		// we are manager, allow!
 		return true;
 	}
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	return ksu_is_allow_uid(current_uid().val);
+#else
+	return ksu_is_allow_uid(current_uid());
+#endif
 }
 
 static inline bool is_unsupported_uid(uid_t uid)
@@ -150,7 +154,11 @@ void escape_to_root(void)
 		BUG_ON(!cred);
 	} while (!get_cred_rcu(cred));
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	if (cred->euid.val == 0) {
+#else
+	if (cred->euid == 0) {
+#endif
 		pr_warn("Already root, don't escape!\n");
 		rcu_read_unlock();
 		return;
@@ -158,23 +166,45 @@ void escape_to_root(void)
 #else
 	cred = (struct cred *)__task_cred(current);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	if (cred->euid.val == 0) {
+#else
+	if (cred->euid == 0) {
+#endif
 		pr_warn("Already root, don't escape!\n");
 		return;
 	}
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	struct root_profile *profile = ksu_get_root_profile(cred->uid.val);
+#else
+	struct root_profile *profile = ksu_get_root_profile(cred->uid);
+#endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	cred->uid.val = profile->uid;
 	cred->suid.val = profile->uid;
 	cred->euid.val = profile->uid;
 	cred->fsuid.val = profile->uid;
+#else
+	cred->uid = profile->uid;
+	cred->suid = profile->uid;
+	cred->euid = profile->uid;
+	cred->fsuid = profile->uid;
+#endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	cred->gid.val = profile->gid;
 	cred->fsgid.val = profile->gid;
 	cred->sgid.val = profile->gid;
 	cred->egid.val = profile->gid;
+#else
+	cred->gid = profile->gid;
+	cred->fsgid = profile->gid;
+	cred->sgid = profile->gid;
+	cred->egid = profile->gid;
+#endif
 	cred->securebits = 0;
 
 	BUILD_BUG_ON(sizeof(profile->capabilities.effective) !=
@@ -218,7 +248,11 @@ int ksu_handle_rename(struct dentry *old_dentry, struct dentry *new_dentry)
 		return 0;
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	if (current_uid().val != 1000) {
+#else
+	if (current_uid() != 1000) {
+#endif
 		// skip non system uid
 		return 0;
 	}
@@ -282,14 +316,22 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 	}
 
 	// TODO: find it in throne tracker!
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	uid_t current_uid_val = current_uid().val;
+#else
+	uid_t current_uid_val = current_uid();
+#endif
 	uid_t manager_uid = ksu_get_manager_uid();
 	if (current_uid_val != manager_uid &&
 	    current_uid_val % 100000 == manager_uid) {
 		ksu_set_manager_uid(current_uid_val);
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	bool from_root = 0 == current_uid().val;
+#else
+	bool from_root = 0 == current_uid();
+#endif
 	bool from_manager = is_manager();
 
 	if (!from_root && !from_manager) {
@@ -313,7 +355,11 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 
 	if (arg2 == CMD_GRANT_ROOT) {
 		if (is_allow_su()) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 			pr_info("allow root for: %d\n", current_uid().val);
+#else
+			pr_info("allow root for: %d\n", current_uid());
+#endif
 			escape_to_root();
 			if (copy_to_user(result, &reply_ok, sizeof(reply_ok))) {
 				pr_err("grant_root: prctl reply error\n");
@@ -525,7 +571,11 @@ static bool is_appuid(kuid_t uid)
 #define FIRST_APPLICATION_UID 10000
 #define LAST_APPLICATION_UID 19999
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	uid_t appid = uid.val % PER_USER_RANGE;
+#else
+	uid_t appid = uid % PER_USER_RANGE;
+#endif
 	return appid >= FIRST_APPLICATION_UID && appid <= LAST_APPLICATION_UID;
 }
 
@@ -537,7 +587,11 @@ static bool should_umount(struct path *path)
 
 	if (current->nsproxy->mnt_ns == init_nsproxy.mnt_ns) {
 		pr_info("ignore global mnt namespace process: %d\n",
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 			current_uid().val);
+#else
+			current_uid());
+#endif
 		return false;
 	}
 
@@ -596,27 +650,49 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 	kuid_t new_uid = new->uid;
 	kuid_t old_uid = old->uid;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	if (0 != old_uid.val) {
+#else
+	if (0 != old_uid) {
+#endif
 		// old process is not root, ignore it.
 		return 0;
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	if (!is_appuid(new_uid) || is_unsupported_uid(new_uid.val)) {
 		// pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid.val);
+#else
+	if (!is_appuid(new_uid) || is_unsupported_uid(new_uid)) {
+		// pr_info("handle setuid ignore non application or isolated uid: %d\n", new_uid);
+#endif
 		return 0;
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	if (ksu_is_allow_uid(new_uid.val)) {
 		// pr_info("handle setuid ignore allowed application: %d\n", new_uid.val);
+#else
+	if (ksu_is_allow_uid(new_uid)) {
+		// pr_info("handle setuid ignore allowed application: %d\n", new_uid);
+#endif
 		return 0;
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	if (!ksu_uid_should_umount(new_uid.val)) {
+#else
+	if (!ksu_uid_should_umount(new_uid)) {
+#endif
 		return 0;
 	} else {
 #ifdef CONFIG_KSU_DEBUG
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 		pr_info("uid: %d should not umount!\n", current_uid().val);
-#endif
+#else // #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
+		pr_info("uid: %d should not umount!\n", current_uid());
+#endif // #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
+#endif // #ifdef CONFIG_KSU_DEBUG
 	}
 
 	// check old process's selinux context, if it is not zygote, ignore it!
@@ -630,9 +706,13 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 	}
 #ifdef CONFIG_KSU_DEBUG
 	// umount the target mnt
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 	pr_info("handle umount for uid: %d, pid: %d\n", new_uid.val,
+#else // #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
+	pr_info("handle umount for uid: %d, pid: %d\n", new_uid,
+#endif // #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0) || defined(CONFIG_UIDGID_STRICT_TYPE_CHECKS)
 		current->pid);
-#endif
+#endif // #ifdef CONFIG_KSU_DEBUG
 
 	// fixme: use `collect_mounts` and `iterate_mount` to iterate all mountpoint and
 	// filter the mountpoint whose target is `/data/adb`
