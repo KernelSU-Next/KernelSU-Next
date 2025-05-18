@@ -8,9 +8,6 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
-      target:
-        required: true
-        type: string
       os:
         required: false
         type: string
@@ -29,6 +26,6 @@ jobs:
     - name: Upload arm64 Build Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: susfsd-aarch64-linux-android
+        name: susfsd-linux-android
         path: ./userspace/susfsd/libs
     
