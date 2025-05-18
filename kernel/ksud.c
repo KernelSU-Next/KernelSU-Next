@@ -9,7 +9,7 @@
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
 #include <linux/input-event-codes.h>
 #else
-#include <uapi/linux/input.h>
+#include <linux/input.h>
 #endif
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 1, 0)
 #include <linux/aio.h>
