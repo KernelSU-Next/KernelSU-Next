@@ -170,7 +170,12 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 			return FILLDIR_ACTOR_CONTINUE;
 		}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
 		strscpy(data->dirpath, dirpath, DATA_PATH_LEN);
+#else
+		strncpy(data->dirpath, dirpath, DATA_PATH_LEN);
+		data->dirpath[DATA_PATH_LEN - 1] = '\0';
+#endif
 		data->depth = my_ctx->depth - 1;
 		list_add_tail(&data->list, my_ctx->data_path_list);
 	} else {
@@ -226,7 +231,12 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 
 	// First depth
 	struct data_path data;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 18, 0)
 	strscpy(data.dirpath, path, DATA_PATH_LEN);
+#else
+	strncpy(data.dirpath, path, DATA_PATH_LEN);
+	data.dirpath[DATA_PATH_LEN - 1] = '\0';
+#endif
 	data.depth = depth;
 	list_add_tail(&data.list, &data_path_list);
 
