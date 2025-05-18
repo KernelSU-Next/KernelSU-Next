@@ -32,7 +32,7 @@ static struct sdesc *init_sdesc(struct crypto_shash *alg)
 	size = sizeof(struct shash_desc) + crypto_shash_descsize(alg);
 	sdesc = kmalloc(size, GFP_KERNEL);
 	if (!sdesc)
-		return ERR_PTR(-ENOMEM);
+		return NULL;
 	sdesc->shash.tfm = alg;
 	return sdesc;
 }
@@ -44,9 +44,9 @@ static int calc_hash(struct crypto_shash *alg, const unsigned char *data,
 	int ret;
 
 	sdesc = init_sdesc(alg);
-	if (IS_ERR(sdesc)) {
+	if (sdesc == NULL) {
 		pr_info("can't alloc sdesc\n");
-		return PTR_ERR(sdesc);
+		return -ENOMEM;
 	}
 
 	ret = crypto_shash_digest(&sdesc->shash, data, datalen, digest);
@@ -100,7 +100,7 @@ static bool check_block(struct file *fp, u32 *size4, loff_t *pos, u32 *offset,
 		}
 		ksu_kernel_read_compat(fp, cert, *size4, pos);
 		unsigned char digest[SHA256_DIGEST_SIZE];
-		if (IS_ERR(ksu_sha256(cert, *size4, digest))) {
+		if (ksu_sha256(cert, *size4, digest)) {
 			pr_info("sha256 error\n");
 			return false;
 		}
