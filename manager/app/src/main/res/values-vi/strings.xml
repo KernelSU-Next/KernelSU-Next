@@ -12,6 +12,8 @@
     <string name="home">Trang chủ</string>
     <string name="home_not_installed">Hỗ trợ nhưng chưa cài đặt</string>
     <string name="home_click_to_install">Bấm để cài đặt</string>
+    <string name="lkm_mode_deprecated">Chế độ LKM không còn được hỗ trợ!</string>
+    <string name="lkm_alternative_suggestion">Cài đặt kernel GKI hoặc tự nhúng KernelSU Next vào kernel của bạn.</string>
     <string name="home_working">Đã cài đặt và hoạt động</string>
     <string name="home_working_version">Phiên bản: %d</string>
     <string name="home_superuser_count">Ứng dụng đã cấp su: %d</string>
