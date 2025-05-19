@@ -950,11 +950,16 @@ void __init ksu_lsm_hook_init(void)
 	}
 	smp_mb();
 }
-#endif
+#endif // MODULE
+#endif // CONFIG_KSU_LSM_SECURITY_HOOKS
 
 void __init ksu_core_init(void)
 {
+#ifdef CONFIG_KSU_LSM_SECURITY_HOOKS
 	ksu_lsm_hook_init();
+#else	
+	pr_info("ksu_core_init: LSM hooks not in use.\n");
+#endif
 }
 
 void ksu_core_exit(void)
@@ -965,9 +970,3 @@ void ksu_core_exit(void)
 	// ksu_kprobe_exit();
 #endif
 }
-#else
-void __init ksu_core_init(void)
-{
-	pr_info("ksu_core_init: LSM hooks not in use.\n");
-}
-#endif //CONFIG_KSU_LSM_SECURITY_HOOKS
