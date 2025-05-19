@@ -393,6 +393,8 @@ install_module() {
   handle_partition system_ext true
   handle_partition product true
   handle_partition odm true
+  handle_partition optics true
+  handle_partition prism true
 
   # Handle replace folders
   for TARGET in $REPLACE; do

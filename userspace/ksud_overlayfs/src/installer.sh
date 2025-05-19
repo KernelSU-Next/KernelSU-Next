@@ -408,6 +408,8 @@ install_module() {
   handle_partition system_ext
   handle_partition product
   handle_partition odm
+  handle_partition optics
+  handle_partition prism
 
   if $BOOTMODE; then
     mktouch $NVBASE/modules/$MODID/update

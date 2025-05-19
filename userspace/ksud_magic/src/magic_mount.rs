@@ -154,6 +154,8 @@ fn collect_module_files() -> Result<Option<Node>> {
             ("system_ext", true),
             ("product", true),
             ("odm", false),
+	    ("optics", true),
+	    ("prism", true),
         ] {
             let path_of_root = Path::new("/").join(partition);
             let path_of_system = Path::new("/system").join(partition);
