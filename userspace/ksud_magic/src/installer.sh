@@ -200,8 +200,10 @@ mount_partitions() {
     SYSTEM_ROOT=true
     setup_mntpoint /system_root
     for part in optics prism; do
-      setup_mntpoint "/$part"
-      mount_ro_ensure "$part$SLOT" "/$part"
+      if [ -d "/system_root/$part" ]; then
+        setup_mntpoint "/$part"
+        mount_ro_ensure "$part$SLOT" "/$part"
+      fi
     done
     if ! mount --move /system /system_root; then
       umount /system
