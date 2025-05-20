@@ -36,9 +36,9 @@ enum Commands {
 
     /// Install KernelSU Next userspace component to system
     Install {
-         #[arg(long, default_value = None)]
-         magiskboot: Option<PathBuf>,
-     },
+        #[arg(long, default_value = None)]
+        magiskboot: Option<PathBuf>,
+    },
 
     /// Uninstall KernelSU Next modules and itself(LKM Only)
     Uninstall {
@@ -112,7 +112,6 @@ enum Commands {
     //     #[arg(long, default_value = None)]
     //     magiskboot: Option<PathBuf>,
     // },
-
     /// Show boot information
     BootInfo {
         #[command(subcommand)]
@@ -381,7 +380,6 @@ pub fn run() -> Result<()> {
         //     magiskboot,
         //     kmi,
         // } => crate::boot_patch::patch(boot, kernel, module, init, ota, flash, out, magiskboot, kmi), // DISBAND LKM MODE
-
         Commands::BootInfo { command } => match command {
             BootInfo::CurrentKmi => {
                 let kmi = crate::boot_patch::get_current_kmi()?;

@@ -1,4 +1,4 @@
-name: Build Manager
+name: Build Manager CI
 
 on:
   push:
@@ -24,15 +24,13 @@ jobs:
   #   secrets: inherit
 
   build-susfsd:
-    # needs: build-lkm // DISBAND LKM MODE
+    # needs: build-lkm
     strategy:
       matrix:
         include:
-          - target: aarch64-linux-android
-            os: ubuntu-latest
+          - os: ubuntu-latest
     uses: ./.github/workflows/susfsd.yml
     with:
-      target: ${{ matrix.target }}
       os: ${{ matrix.os }}
 
   build-ksud:
@@ -41,6 +39,8 @@ jobs:
       matrix:
         include:
           - target: aarch64-linux-android
+            os: ubuntu-latest
+          - target: armv7-linux-androideabi
             os: ubuntu-latest
     uses: ./.github/workflows/ksud.yml
     with:
@@ -90,36 +90,55 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Download arm64 susfsd
+      - name: Download susfsd
         uses: actions/download-artifact@v4
         with:
-          name: susfsd-aarch64-linux-android
+          name: susfsd-linux-android
           path: .
 
       - name: Copy susfsd to app jniLibs
         run: |
           mkdir -p app/src/main/jniLibs/arm64-v8a
           cp -f ../arm64-v8a/susfsd ../manager/app/src/main/jniLibs/arm64-v8a/libsusfsd.so
+          
+          mkdir -p app/src/main/jniLibs/armeabi-v7a
+          cp -f ../armeabi-v7a/susfsd ../manager/app/src/main/jniLibs/armeabi-v7a/libsusfsd.so
 
       - name: Download arm64 ksud_overlayfs
         uses: actions/download-artifact@v4
         with:
           name: ksud_overlayfs-aarch64-linux-android
           path: ksud_overlayfs
+          
+      - name: Download arm ksud_overlayfs
+        uses: actions/download-artifact@v4
+        with:
+          name: ksud_overlayfs-armv7-linux-androideabi
+          path: ksud_overlayfs
 
       - name: Copy ksud_overlayfs to app jniLibs
         run: |
           cp -f ../ksud_overlayfs/aarch64-linux-android/release/ksud ../manager/app/src/main/jniLibs/arm64-v8a/libksud_overlayfs.so
+          
+          cp -f ../ksud_overlayfs/armv7-linux-androideabi/release/ksud ../manager/app/src/main/jniLibs/armeabi-v7a/libksud_overlayfs.so
 
       - name: Download arm64 ksud_magic
         uses: actions/download-artifact@v4
         with:
           name: ksud_magic-aarch64-linux-android
           path: ksud_magic
+          
+      - name: Download arm ksud_magic
+        uses: actions/download-artifact@v4
+        with:
+          name: ksud_magic-armv7-linux-androideabi
+          path: ksud_magic
 
       - name: Copy ksud_magic to app jniLibs
         run: |
           cp -f ../ksud_magic/aarch64-linux-android/release/ksud ../manager/app/src/main/jniLibs/arm64-v8a/libksud_magic.so
+          
+          cp -f ../ksud_magic/armv7-linux-androideabi/release/ksud ../manager/app/src/main/jniLibs/armeabi-v7a/libksud_magic.so
 
       - name: Build with Gradle
         run: |

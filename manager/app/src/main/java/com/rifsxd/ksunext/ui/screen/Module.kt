@@ -518,20 +518,6 @@ private fun ModuleList(
             },
         ) {
             when {
-                useOverlayFs && !viewModel.isOverlayAvailable -> {
-                    item {
-                        Box(
-                            modifier = Modifier.fillParentMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = stringResource(R.string.module_overlay_fs_not_available),
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                }
-
                 viewModel.moduleList.isEmpty() -> {
                     item {
                         Box(

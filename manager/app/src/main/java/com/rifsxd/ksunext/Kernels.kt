@@ -26,6 +26,19 @@ data class KernelVersion(val major: Int, val patchLevel: Int, val subLevel: Int)
 
         return false
     }
+
+    fun isULegacy(): Boolean {
+        return major == 3
+    }
+
+    fun isLegacy(): Boolean {
+        return major == 4 && patchLevel in 1..18
+    }
+
+    fun isGKI1(): Boolean {
+        return (major == 4 && patchLevel >= 19) || (major == 5 && patchLevel < 10)
+    }
+
 }
 
 fun parseKernelVersion(version: String): KernelVersion {

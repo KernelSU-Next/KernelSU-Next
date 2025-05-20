@@ -196,4 +196,6 @@
     <string name="settings_language">Idioma</string>
     <string name="use_webuix">Usar WebUI X</string>
     <string name="use_webuix_summary">Use o WebUI X em vez do WebUI, que oferece suporte a mais APIs.</string>
+    <string name="use_webuix_eruda">Injetar Eruda no WebUI X</string>
+    <string name="use_webuix_eruda_summary">Injeta um console de depuração no WebUI X para facilitar a depuração. Requer que a depuração web esteja ativada.</string>
 </resources>

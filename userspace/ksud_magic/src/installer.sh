@@ -392,7 +392,7 @@ install_module() {
   handle_partition vendor true
   handle_partition system_ext true
   handle_partition product true
-  handle_partition odm false
+  handle_partition odm true
 
   # Handle replace folders
   for TARGET in $REPLACE; do
