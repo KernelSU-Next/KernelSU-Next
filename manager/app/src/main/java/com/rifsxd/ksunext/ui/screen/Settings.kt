@@ -329,7 +329,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             }
             if (ksuVersion != null) {
                 SwitchItem(
-                    beta = true,
+                    beta = false,
                     enabled = Platform.isAlive,
                     icon = Icons.Filled.WebAsset,
                     title = stringResource(id = R.string.use_webuix),
@@ -347,7 +347,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             }
             if (ksuVersion != null) {
                 SwitchItem(
-                    beta = true,
+                    beta = false,
                     enabled = Platform.isAlive && useWebUIX && enableWebDebugging,
                     icon = Icons.Filled.FormatListNumbered,
                     title = stringResource(id = R.string.use_webuix_eruda),

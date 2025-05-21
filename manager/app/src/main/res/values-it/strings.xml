@@ -123,7 +123,7 @@
 	<string name="require_kernel_version">La versione attualmente installata di KernelSU Next %1$d è troppo vecchia ed il gestore non può funzionare correttamente. Si prega di aggiornare alla versione %2$d o successiva!</string>
 	<string name="settings_umount_modules_default">Scollega moduli</string>
 	<string name="settings_umount_modules_default_summary">Il valore predefinito per \"Scollega moduli\" in App Profile. Se attivato, rimuoverà tutte le modifiche al sistema da parte dei moduli per le applicazioni che non hanno un profilo impostato.</string>
-	<string name="settings_susfs_toggle">Nascondi kprobe hooks</string>
+	<string name="settings_susfs_toggle">Nascondi kprobes hook</string>
 	<string name="settings_susfs_toggle_summary">Questa opzione disabilita gli hook kprobe creati da ksu e, al loro posto, attiva gli hook non-kprobe incorporati, implementando la stessa funzionalità che verrebbe applicata a un kernel non-GKI, che non supporta kprobe.</string>
 	<string name="profile_umount_modules_summary">Attivando questa opzione permetterai a KernelSU Next di ripristinare ogni file modificato dai moduli per questa app.</string>
 	<string name="profile_selinux_domain">Dominio</string>

@@ -109,8 +109,8 @@
     <string name="require_kernel_version">KernelSU Next เวอร์ชัน %1$d ต่ำเกินไป ทำให้ตัวจัดการไม่สามารถทำงานได้อย่างถูกต้อง โปรดอัปเกรดเป็นเวอร์ชัน %2$d หรือสูงกว่า!</string>
     <string name="settings_umount_modules_default">Umount โมดูลตามค่าเริ่มต้น</string>
     <string name="settings_umount_modules_default_summary">หากเปิดใช้งานค่าเริ่มต้นโดยทั่วไปสำหรับ \"Umount โมดูล\" ในโปรไฟล์แอป จะเป็นการลบการแก้ไขโมดูลทั้งหมดในระบบสำหรับแอปพลิเคชันที่ไม่มีการตั้งค่าโปรไฟล์</string>
-    <string name="settings_susfs_toggle">ซ่อน kprobe hooks</string>
-    <string name="settings_susfs_toggle_summary">จะปิดใช้งาน kprobe hooks ที่สร้างโดย ksu และเปิดใช้งาน non-kprobe hooks ที่ฝังไว้แทน โดยใช้ฟังก์ชันการทำงานเดียวกันกับที่ใช้กับเคอร์เนลที่ไม่ใช่ GKI ซึ่งไม่รองรับ</string>
+    <string name="settings_susfs_toggle">ซ่อน kprobes hook</string>
+    <string name="settings_susfs_toggle_summary">จะปิดใช้งาน kprobes hook ที่สร้างโดย ksu และเปิดใช้งาน non-kprobes hook ที่ฝังไว้แทน โดยใช้ฟังก์ชันการทำงานเดียวกันกับที่ใช้กับเคอร์เนลที่ไม่ใช่ GKI ซึ่งไม่รองรับ</string>
     <string name="profile_umount_modules_summary">การเปิดใช้งานตัวเลือกนี้จะทำให้ KernelSU Next สามารถกู้คืนไฟล์ที่แก้ไขโดยโมดูลสำหรับแอปนี้ได้</string>
     <string name="profile_selinux_domain">โดเมน</string>
     <string name="profile_selinux_rules">กฎ</string>

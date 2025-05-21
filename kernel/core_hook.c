@@ -964,7 +964,7 @@ void __init ksu_core_init(void)
 
 void ksu_core_exit(void)
 {
-#ifdef CONFIG_KSU_WITH_KPROBES
+#ifdef CONFIG_KSU_KPROBES_HOOK
 	pr_info("ksu_core_kprobe_exit\n");
 	// we dont use this now
 	// ksu_kprobe_exit();

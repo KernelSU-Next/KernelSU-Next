@@ -330,20 +330,20 @@ private fun StatusCard(
                     }
                 }
 
-                kernelVersion.isGKI() -> {
-                    Icon(Icons.Filled.Report, stringResource(R.string.lkm_mode_deprecated))
-                    Column(Modifier.padding(start = 20.dp)) {
-                        Text(
-                            text = stringResource(R.string.lkm_mode_deprecated),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = stringResource(R.string.lkm_alternative_suggestion),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                }
+                // kernelVersion.isGKI() -> {
+                //     Icon(Icons.Filled.Report, stringResource(R.string.lkm_mode_deprecated))
+                //     Column(Modifier.padding(start = 20.dp)) {
+                //         Text(
+                //             text = stringResource(R.string.lkm_mode_deprecated),
+                //             style = MaterialTheme.typography.titleMedium
+                //         )
+                //         Spacer(Modifier.height(4.dp))
+                //         Text(
+                //             text = stringResource(R.string.lkm_alternative_suggestion),
+                //             style = MaterialTheme.typography.bodyMedium
+                //         )
+                //     }
+                // }
 
                 else -> {
                     Icon(Icons.Filled.Dangerous, stringResource(R.string.home_failure))

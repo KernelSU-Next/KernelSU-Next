@@ -24,7 +24,7 @@
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
 
-#ifndef CONFIG_KSU_WITH_KPROBES
+#ifndef CONFIG_KSU_KPROBES_HOOK
 static bool ksu_sucompat_non_kp __read_mostly = true;
 #endif
 
@@ -58,7 +58,7 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 {
 	const char su[] = SU_PATH;
 
-#ifndef CONFIG_KSU_WITH_KPROBES
+#ifndef CONFIG_KSU_KPROBES_HOOK
 	if (!ksu_sucompat_non_kp) {
 		return 0;
 	}
@@ -85,7 +85,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 	// const char sh[] = SH_PATH;
 	const char su[] = SU_PATH;
 
-#ifndef CONFIG_KSU_WITH_KPROBES
+#ifndef CONFIG_KSU_KPROBES_HOOK
 	if (!ksu_sucompat_non_kp){
 		return 0;
 	}
@@ -135,7 +135,7 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 	const char sh[] = KSUD_PATH;
 	const char su[] = SU_PATH;
 
-#ifndef CONFIG_KSU_WITH_KPROBES
+#ifndef CONFIG_KSU_KPROBES_HOOK
 	if (!ksu_sucompat_non_kp) {
 		return 0;
 	}
@@ -170,7 +170,7 @@ int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
 	const char su[] = SU_PATH;
 	char path[sizeof(su) + 1];
 
-#ifndef CONFIG_KSU_WITH_KPROBES
+#ifndef CONFIG_KSU_KPROBES_HOOK
 	if (!ksu_sucompat_non_kp) {
 		return 0;
 	}
@@ -179,8 +179,23 @@ int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
 	if (unlikely(!filename_user))
 		return 0;
 
-	memset(path, 0, sizeof(path));
-	ksu_strncpy_from_user_nofault(path, *filename_user, sizeof(path));
+	// nofault variant fails probably due to pagefault_disable
+	// some cpus dont really have that good speculative execution
+	// substitute set_fs, check if pointer is valid
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,0,0)
+	if (!access_ok(VERIFY_READ, *filename_user, sizeof(path)))
+		return 0;
+#else
+	if (!access_ok(*filename_user, sizeof(path)))
+		return 0;
+#endif
+	// success = returns number of bytes and should be less than path
+	long len = strncpy_from_user(path, *filename_user, sizeof(path));
+	if (len <= 0 || len > sizeof(path))
+		return 0;
+
+	// strncpy_from_user_nofault does this too
+	path[sizeof(path) - 1] = '\0';
 
 	if (likely(memcmp(path, su, sizeof(su))))
 		return 0;
@@ -198,7 +213,7 @@ int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
 
 int ksu_handle_devpts(struct inode *inode)
 {
-#ifndef CONFIG_KSU_WITH_KPROBES
+#ifndef CONFIG_KSU_KPROBES_HOOK
 	if (!ksu_sucompat_non_kp) {
 		return 0;
 	}
@@ -232,7 +247,7 @@ int ksu_handle_devpts(struct inode *inode)
 	return 0;
 }
 
-#ifdef CONFIG_KSU_WITH_KPROBES
+#ifdef CONFIG_KSU_KPROBES_HOOK
 
 static int faccessat_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
@@ -315,7 +330,7 @@ static struct kprobe *su_kps[4];
 // sucompat: permited process can execute 'su' to gain root access.
 void ksu_sucompat_init()
 {
-#ifdef CONFIG_KSU_WITH_KPROBES
+#ifdef CONFIG_KSU_KPROBES_HOOK
 	su_kps[0] = init_kprobe(SYS_EXECVE_SYMBOL, execve_handler_pre);
 	su_kps[1] = init_kprobe(SYS_FACCESSAT_SYMBOL, faccessat_handler_pre);
 	su_kps[2] = init_kprobe(SYS_NEWFSTATAT_SYMBOL, newfstatat_handler_pre);
@@ -328,7 +343,7 @@ void ksu_sucompat_init()
 
 void ksu_sucompat_exit()
 {
-#ifdef CONFIG_KSU_WITH_KPROBES
+#ifdef CONFIG_KSU_KPROBES_HOOK
 	for (int i = 0; i < ARRAY_SIZE(su_kps); i++) {
 		destroy_kprobe(&su_kps[i]);
 	}
