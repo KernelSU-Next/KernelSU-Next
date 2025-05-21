@@ -21,6 +21,7 @@
     <string name="home_failure">KernelSU Next v2 signature not found in kernel! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Ask your kernel developer to integrate KernelSU Next!</string>
     <string name="home_kernel">Kernel version</string>
+    <string name="hook_mode">Hook mode</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
     <string name="susfs_supported">Supported</string>

@@ -11,6 +11,8 @@ bool become_manager(const char *);
 
 int get_version();
 
+bool get_hook_mode(char *mode, int mode_len);
+
 bool get_allow_list(int *uids, int *size);
 
 bool uid_should_umount(int uid);

@@ -26,6 +26,16 @@ Java_com_rifsxd_ksunext_Natives_getVersion(JNIEnv *env, jobject) {
 }
 
 extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_rifsxd_ksunext_Natives_getHookMode(JNIEnv *env, jobject) {
+    char mode[16] = {0};
+    if (get_hook_mode(mode, sizeof(mode))) {
+        return env->NewStringUTF(mode);
+    }
+    return nullptr;
+}
+
+extern "C"
 JNIEXPORT jintArray JNICALL
 Java_com_rifsxd_ksunext_Natives_getAllowList(JNIEnv *env, jobject) {
     int uids[1024];

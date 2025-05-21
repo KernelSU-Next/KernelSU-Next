@@ -452,6 +452,15 @@ private fun InfoCard() {
                 icon = painterResource(R.drawable.ic_linux),
             )
 
+            if (Natives.version >= Natives.MINIMAL_SUPPORTED_HOOK_MODE) {
+                Spacer(Modifier.height(16.dp))
+                InfoCardItem(
+                    label = stringResource(R.string.hook_mode),
+                    content = Natives.getHookMode() ?: stringResource(R.string.unavailable),
+                    icon = Icons.Filled.Phishing,
+                )
+            }
+
             Spacer(Modifier.height(16.dp))
             InfoCardItem(
                 label = stringResource(R.string.home_android),
