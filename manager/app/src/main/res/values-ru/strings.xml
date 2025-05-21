@@ -87,12 +87,12 @@
     <string name="reboot_message">Изменения вступят в силу после перезагрузки системы. Перезагрузить сейчас?</string>
     <string name="module_restore">Восстановить модули</string>
     <string name="module_restore_message">Восстановление модулей из последней резервной копии.</string>
-    <string name="backup_restore">Бекапы и восстановление</string>
-    <string name="module_backup">Бекап модулей</string>
+    <string name="backup_restore">Бэкапы и восстановление</string>
+    <string name="module_backup">Бэкап модулей</string>
     <string name="module_backup_message">Резервное копирование текущих установленных модулей.</string>
     <string name="allowlist_restore">Восстановить список разрешений</string>
     <string name="allowlist_restore_message">Восстановить список разрешений из последнего резервного копирования.</string>
-    <string name="allowlist_backup">Бекап списка разрешений</string>
+    <string name="allowlist_backup">Бэкап списка разрешений</string>
     <string name="allowlist_backup_message">Резервное копирование текущего списка разрешений.</string>
     <string name="warning">Предупреждение</string>
     <string name="warning_message">Эта функция всё ещё находится в стадии бета-тестирования. Пожалуйста, убедитесь, что вы создали резервные копии модулей перед использованием. Используйте это только если понимаете возможные риски. Будьте осторожны.</string>
