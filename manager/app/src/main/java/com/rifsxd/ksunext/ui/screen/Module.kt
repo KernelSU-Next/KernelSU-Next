@@ -299,7 +299,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     onClickModule = { id, name, hasWebUi ->
                         if (hasWebUi) {
                             webUILauncher.launch(
-                                if (prefs.getBoolean("use_webuix", false) && Platform.isAlive) {
+                                if (prefs.getBoolean("use_webuix", true) && Platform.isAlive) {
                                     Intent(context, WebUIXActivity::class.java)
                                         .setData(Uri.parse("kernelsu://webuix/$id"))
                                         .putExtra("id", id)

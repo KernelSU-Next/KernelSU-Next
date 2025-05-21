@@ -274,7 +274,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
             var checkUpdate by rememberSaveable {
                 mutableStateOf(
-                    prefs.getBoolean("check_update", true)
+                    prefs.getBoolean("check_update", false)
                 )
             }
             SwitchItem(
@@ -324,7 +324,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
             var useWebUIX by rememberSaveable {
                 mutableStateOf(
-                    prefs.getBoolean("use_webuix", false)
+                    prefs.getBoolean("use_webuix", true)
                 )
             }
             if (ksuVersion != null) {
