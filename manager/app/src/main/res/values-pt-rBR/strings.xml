@@ -12,6 +12,8 @@
     <string name="home">Início</string>
     <string name="home_not_installed">Não instalado</string>
     <string name="home_click_to_install">Clique para instalar</string>
+    <string name="lkm_mode_deprecated">O modo LKM agora está obsoleto!</string>
+    <string name="lkm_alternative_suggestion">Instale o kernel GKI ou integre o KernelSU Next ao seu dispositivo.</string>
     <string name="home_working">Em execução</string>
     <string name="home_working_version">Versão: %d</string>
     <string name="home_superuser_count">SuperUsuários: %d</string>
@@ -27,6 +29,7 @@
     <string name="home_susfs_sus_su">SuS SU</string>
     <string name="home_android">Versão do Android</string>
     <string name="home_manager_version">Versão do gerenciador</string>
+    <string name="home_abi">ABI</string>
     <string name="home_selinux_status">Status do SELinux</string>
     <string name="selinux_status_disabled">Desativado</string>
     <string name="selinux_status_enforcing">Impondo</string>

@@ -162,7 +162,7 @@ private fun AppItem(
                     } else {
                         if (Natives.uidShouldUmount(app.uid)) {
                             LabelItem(
-                                text = "UNMOUNT",
+                                text = "UMOUNT",
                                 style = LabelItemDefaults.style.copy(
                                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer

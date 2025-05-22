@@ -12,6 +12,8 @@
 	<string name="home">Home</string>
 	<string name="home_not_installed">Non installato</string>
 	<string name="home_click_to_install">Clicca per installare</string>
+	<string name="lkm_mode_deprecated">La modalità LKM è ora obsoleta!</string>
+	<string name="lkm_alternative_suggestion">Installa il kernel GKI o integra KernelSU Next sul tuo dispositivo.</string>
 	<string name="home_working">In esecuzione</string>
 	<string name="home_working_version">Versione: %d</string>
 	<string name="home_superuser_count">Applicazioni con accesso root: %d</string>
@@ -19,6 +21,7 @@
 	<string name="home_failure">Firma KernelSU Next v2 non trovata nel kernel! [ !KSU_NEXT || != size/hash ]</string>
 	<string name="home_failure_tip">Chiedi allo sviluppatore del kernel di integrare KernelSU Next!</string>
 	<string name="home_kernel">Versione Kernel</string>
+	<string name="hook_mode">Modalità Hook</string>
 	<string name="enabled">Abilitato</string>
 	<string name="disabled">Disabilitato</string>
 	<string name="susfs_supported">Supportato</string>
@@ -27,6 +30,7 @@
 	<string name="home_susfs_sus_su">SuS SU</string>
 	<string name="home_android">Versione Android</string>
 	<string name="home_manager_version">Versione del manager</string>
+	<string name="home_abi">ABI</string>
 	<string name="home_selinux_status">Stato di SELinux</string>
 	<string name="selinux_status_disabled">Disabilitato</string>
 	<string name="selinux_status_enforcing">Enforcing</string>

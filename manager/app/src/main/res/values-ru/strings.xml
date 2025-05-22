@@ -12,13 +12,16 @@
     <string name="home">Главная</string>
     <string name="home_not_installed">Не установлено</string>
     <string name="home_click_to_install">Нажмите, чтобы установить</string>
+    <string name="lkm_mode_deprecated">Режим LKM теперь устарел!</string>
+    <string name="lkm_alternative_suggestion">Установите GKI ядро или интегрируйте ядра рядом с вашим устройством.</string>
     <string name="home_working">Работает</string>
     <string name="home_working_version">Версия: %d</string>
-    <string name="home_superuser_count">SuperUsers: %d</string>
+    <string name="home_superuser_count">Superusers: %d</string>
     <string name="home_module_count">Модули: %d</string>
     <string name="home_failure">Подпись KernelSU Next v2 не найдена в ядре! [!KSU_NEXT || != size/hash]</string>
     <string name="home_failure_tip">Попросите вашего разработчика ядра интегрировать KernelSU Next!</string>
     <string name="home_kernel">Версия ядра</string>
+    <string name="hook_mode">Режим хуков</string>
     <string name="disabled">Отключено</string>
     <string name="enabled">Включено</string>
     <string name="susfs_supported">Поддерживается</string>
@@ -27,12 +30,13 @@
     <string name="home_susfs_sus_su">SuS SU</string>
     <string name="home_android">Версия Android</string>
     <string name="home_manager_version">Версия менеджера</string>
+    <string name="home_abi">ABI</string>
     <string name="home_selinux_status">Статус SELinux</string>
     <string name="selinux_status_disabled">Отключен</string>
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Неизвестно</string>
-    <string name="superuser">SuperUser</string>
+    <string name="superuser">Superuser</string>
     <string name="module_failed_to_enable">Не удалось включить модуль: %s</string>
     <string name="module_failed_to_disable">Не удалось отключить модуль: %s</string>
     <string name="module_empty">Нет установленных модулей</string>
@@ -82,15 +86,15 @@
     <string name="use_overlay_fs_summary">Переключение между использованием OverlayFS и Magic Mount для системы монтирования KernelSU Next.</string>
     <string name="reboot_required">Требуется перезагрузка</string>
     <string name="reboot_message">Изменения вступят в силу после перезагрузки системы. Перезагрузить сейчас?</string>
-    <string name="module_restore">Восстановить модуль</string>
+    <string name="module_restore">Восстановить модули</string>
     <string name="module_restore_message">Восстановление модулей из последней резервной копии.</string>
-    <string name="backup_restore">Резервное копирование и восстановление</string>
-    <string name="module_backup">Резервное копирование модуля</string>
+    <string name="backup_restore">Бэкапы и восстановление</string>
+    <string name="module_backup">Бэкап модулей</string>
     <string name="module_backup_message">Резервное копирование текущих установленных модулей.</string>
     <string name="allowlist_restore">Восстановить список разрешений</string>
     <string name="allowlist_restore_message">Восстановить список разрешений из последнего резервного копирования.</string>
-    <string name="allowlist_backup">Создать резервную копию списка разрешений</string>
-    <string name="allowlist_backup_message">Создать резервную копию текущего списка разрешений.</string>
+    <string name="allowlist_backup">Бэкап списка разрешений</string>
+    <string name="allowlist_backup_message">Резервное копирование текущего списка разрешений.</string>
     <string name="warning">Предупреждение</string>
     <string name="warning_message">Эта функция всё ещё находится в стадии бета-тестирования. Пожалуйста, убедитесь, что вы создали резервные копии модулей перед использованием. Используйте это только если понимаете возможные риски. Будьте осторожны.</string>
     <string name="proceed">Продолжить</string>
@@ -123,8 +127,8 @@
     <string name="require_kernel_version">Текущая версия KernelSU Next %1$d слишком низкая для корректной работы менеджера. Пожалуйста, обновитесь до версии %2$d или выше!</string>
     <string name="settings_umount_modules_default">Отключить модули</string>
     <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Отключить модули\" в Профиле Приложения. Если включено, это удалит все модификации системы модулями для приложений без установленного профиля.</string>
-    <string name="settings_susfs_toggle">Скрыть хуки kprobe</string>
-    <string name="settings_susfs_toggle_summary">Отключает хуки kprobe, созданные ksu, и вместо этого активирует встроенные функции, реализующие ту же функциональность для ядер, которые не поддерживают kprobe.</string>
+    <string name="settings_susfs_toggle">Скрыть хук kprobes</string>
+    <string name="settings_susfs_toggle_summary">Эта опция отключает хук kprobes, созданный ksu, и вместо него активирует встроенный хук без использования kprobes, реализующий ту же функциональность, которая применяется к ядрам без GKI, не поддерживающим kprobe.</string>
     <string name="profile_umount_modules_summary">Включение этой опции позволит KernelSU Next восстанавливать любые изменённые модулями файлы для этого приложения.</string>
     <string name="profile_selinux_domain">Домен</string>
     <string name="profile_selinux_rules">Правила</string>
@@ -196,6 +200,6 @@
     <string name="settings_language">Язык</string>
     <string name="use_webuix">Использовать WebUI X</string>
     <string name="use_webuix_summary">Использовать WebUI X вместо WebUI, который поддерживает больше API.</string>
-    <string name="use_webuix_eruda">Инжектить Eruda в WebUI X</string>
+    <string name="use_webuix_eruda">Инжект Eruda в WebUI X</string>
     <string name="use_webuix_eruda_summary">Инжектить консоль отладки в WebUI X, чтобы упростить отладку. Требуется включить отладку WebView.</string>
 </resources>
