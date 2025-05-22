@@ -28,7 +28,7 @@ Actuellement, seul `arm64-v8a` est pris en charge.
 
 ## Utilisation
 
-- [Instructions d'installation](https://KernelSU-Next.github.io/KernelSU-Next/)
+- [Instructions d'installation](https://ksunext.org/pages/installation.html)
 
 ## Sécurité
 
