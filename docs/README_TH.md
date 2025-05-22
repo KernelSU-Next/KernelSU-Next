@@ -28,7 +28,7 @@ KernelSU Next รองรับแบบเป็นทางการตั้
 
 ## การใช้งาน
 
-- [คำแนะนำในการติดตั้ง](https://KernelSU-Next.github.io/KernelSU-Next/)
+- [คำแนะนำในการติดตั้ง](https://ksunext.org/pages/installation.html)
 
 ## ความปลอดภัย
 
