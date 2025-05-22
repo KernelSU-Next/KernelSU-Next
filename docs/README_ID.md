@@ -28,7 +28,7 @@ Saat ini, hanya `arm64-v8a` yang didukung.
 
 ## Penggunaan
 
-- [Petunjuk instalasi](https://KernelSU-Next.github.io/KernelSU-Next/)
+- [Petunjuk instalasi](https://ksunext.org/pages/installation.html)
 
 ## Keamanan
 
