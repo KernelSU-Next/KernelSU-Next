@@ -4,7 +4,7 @@
 
 <img src="/assets/kernelsu_next.png" style="width: 96px;" alt="logo">
 
-Рут-рішення на основі ядра для пристроїв Android.
+Root-рішення на основі ядра для пристроїв Android.
 
 [![Останній реліз](https://img.shields.io/github/v/release/KernelSU-Next/KernelSU-Next?label=Release&logo=github)](https://github.com/KernelSU-Next/KernelSU-Next/releases/latest)
 [![Нічний реліз (Нестабільний)](https://img.shields.io/badge/Nightly%20Release-gray?logo=hackthebox&logoColor=fff)](https://nightly.link/KernelSU-Next/KernelSU-Next/workflows/build-manager-ci/next/Manager)
