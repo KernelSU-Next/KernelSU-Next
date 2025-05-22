@@ -20,7 +20,7 @@ Root-рішення на основі ядра для пристроїв Android
 2. Module system based on dynamic mount system [Magic Mount](https://topjohnwu.github.io/Magisk/details.html#magic-mount) / [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
 3. [Профілі додатків](https://kernelsu.org/guide/app-profile.html): Обмеж права руту для додатків.
 
-## Compatibility state
+## Стан сумісності
 
 KernelSU Next офіційно підтримує більшість Android ядер починаючи з 4.4 і до 6.6.
  - Користувачі GKI 2.0 (5.10+) ядра можуть використовувати готові образи та LKM/KMI.
