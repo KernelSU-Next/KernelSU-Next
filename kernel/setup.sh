@@ -43,7 +43,7 @@ setup_kernelsu() {
     cd "$GKI_ROOT/KernelSU-Next"
     git stash && echo "[-] Stashed current changes."
     if [ "$(git status | grep -Po 'v\d+(\.\d+)*' | head -n1)" ]; then
-        git checkout next && echo "[-] Switched to next branch."
+        git checkout next-susfs && echo "[-] Switched to next-susfs branch."
     fi
     git pull && echo "[+] Repository updated."
     if [ -z "${1-}" ]; then

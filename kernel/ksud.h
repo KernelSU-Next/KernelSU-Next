@@ -5,7 +5,7 @@
 
 #define KSUD_PATH "/data/adb/ksud"
 
-void on_post_fs_data(void);
+void ksu_on_post_fs_data(void);
 
 bool ksu_is_safe_mode(void);
 
