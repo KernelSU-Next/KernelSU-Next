@@ -28,7 +28,7 @@ KernelSU Next 正式支持大多數從 4.4 到 6.6 的 Android 內核
 
 ## 用法
 
-- [安裝說明](https://KernelSU-Next.github.io/KernelSU-Next/)
+- [安裝說明](https://ksunext.org/pages/installation.html)
 
 ## 安全性
 
