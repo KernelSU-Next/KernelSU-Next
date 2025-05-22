@@ -28,7 +28,7 @@ Obecnie obsługiwana jest tylko architektura `arm64-v8a`.
 
 ## Użycie
 
-- [Instrukcja instalacji](https://KernelSU-Next.github.io/KernelSU-Next/)
+- [Instrukcja instalacji](https://ksunext.org/pages/installation.html)
 
 ## Bezpieczeństwo
 
