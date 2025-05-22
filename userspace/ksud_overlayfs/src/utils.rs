@@ -192,7 +192,6 @@ fn is_ok_empty(dir: &str) -> bool {
     }
 }
 
-#[allow(deprecated)]
 fn find_temp_path() -> String {
     use std::result::Result::Ok;
 
