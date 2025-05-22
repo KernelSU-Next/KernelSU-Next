@@ -28,7 +28,7 @@ KernelSU Next는 공식적으로 대부분의 4.4부터 6.6의 안드로이드 �
 
 ## 사용 방법
 
-- [설치 방법](https://KernelSU-Next.github.io/KernelSU-Next/)
+- [설치 방법](https://ksunext.org/pages/installation.html)
 
 ## 보안
 
