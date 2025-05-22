@@ -28,7 +28,7 @@ Hiện tại kernelSU Next chỉ hỗ trợ những cpu có `arm64-v8a`
 
 ## Sử dụng
 
-- [Hướng dẫn vá KernelSU Next vào Kernel của bạn (yêu cầu kernel source)](https://KernelSU-Next.github.io/KernelSU-Next/)
+- [Hướng dẫn vá KernelSU Next vào Kernel của bạn (yêu cầu kernel source)](https://ksunext.org/pages/installation.html)
 
 ## Bảo mật
 
