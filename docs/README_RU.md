@@ -28,7 +28,7 @@ KernelSU Next работает с большинством ядер Android (4.4
 
 ## Использование
 
-- [Инструкция по установке](https://ksunext.org/internals/installation.html)
+- [Инструкция по установке](https://ksunext.org/pages/installation.html)
 
 ## Безопасность
 
