@@ -12,6 +12,8 @@
     <string name="home">Головна</string>
     <string name="home_not_installed">Не встановлено</string>
     <string name="home_click_to_install">Натисніть, щоб встановити</string>
+    <string name="lkm_mode_deprecated">Режим LKM тепер застарілий!</string>
+    <string name="lkm_alternative_suggestion">Встановіть ядро GKI або інтегруйте ядра поруч із вашим пристроєм.</string>
     <string name="home_working">Працює</string>
     <string name="home_working_version">Версія: %d</string>
     <string name="home_superuser_count">SuperUsers: %d</string>
@@ -19,6 +21,7 @@
     <string name="home_failure">Підпис KernelSU Next v2 не знайдено в ядрі! [!KSU_NEXT || != size/hash]</string>
     <string name="home_failure_tip">Попросіть вашого розробника ядра інтегрувати KernelSU Next!</string>
     <string name="home_kernel">Версія ядра</string>
+    <string name="hook_mode">Режим хуків</string>
     <string name="disabled">Вимкнено</string>
     <string name="enabled">Увімкнено</string>
     <string name="susfs_supported">Підтримується</string>
@@ -27,6 +30,7 @@
     <string name="home_susfs_sus_su">SuS SU</string>
     <string name="home_android">Версія Android</string>
     <string name="home_manager_version">Версія менеджера</string>
+    <string name="home_abi">ABI</string>
     <string name="home_selinux_status">Статус SELinux</string>
     <string name="selinux_status_disabled">Вимкнено</string>
     <string name="selinux_status_enforcing">Enforcing</string>
@@ -85,12 +89,12 @@
     <string name="module_restore">Відновити модуль</string>
     <string name="module_restore_message">Відновлення модулів із останньої резервної копії.</string>
     <string name="backup_restore">Резервне копіювання і відновлення</string>
-    <string name="module_backup">Резервне копіювання модуля</string>
-    <string name="module_backup_message">Резервне копіювання поточних встановлених модулів.</string>
+    <string name="module_backup">Бекап модуля</string>
+    <string name="module_backup_message">Бекап поточних встановлених модулів.</string>
     <string name="allowlist_restore">Відновити список дозволів</string>
     <string name="allowlist_restore_message">Відновити список дозволів із останнього резервного копіювання.</string>
-    <string name="allowlist_backup">Створити резервну копію списку дозволів</string>
-    <string name="allowlist_backup_message">Створити резервну копію поточного списку дозволів.</string>
+    <string name="allowlist_backup">Бекап списку дозволів</string>
+    <string name="allowlist_backup_message">Бекап поточного списку дозволів.</string>
     <string name="warning">Попередження</string>
     <string name="warning_message">Ця функція все ще перебуває у стадії бета-тестування. Будь ласка, переконайтеся, що ви створили резервні копії модулів перед використанням. Використовуйте це лише якщо розумієте можливі ризики. Будьте обережні.</string>
     <string name="proceed">Продовжити</string>
@@ -196,6 +200,6 @@
     <string name="settings_language">Мова</string>
     <string name="use_webuix">Використовувати WebUI X</string>
     <string name="use_webuix_summary">Використовувати WebUI X замість WebUI, який підтримує більше API.</string>
-    <string name="use_webuix_eruda">Інжектити Eruda у WebUI X</string>
+    <string name="use_webuix_eruda">Інжект Eruda у WebUI X</string>
     <string name="use_webuix_eruda_summary">Інжектити консоль відладки у WebUI X, щоб спростити відладку. Потрібно увімкнути відладку WebView.</string>
 </resources>
