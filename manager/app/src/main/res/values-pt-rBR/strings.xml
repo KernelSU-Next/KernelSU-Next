@@ -21,6 +21,7 @@
     <string name="home_failure">Assinatura KernelSU Next v2 não encontrada no kernel! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Peça ao seu desenvolvedor de kernel para integrar o KernelSU Next!</string>
     <string name="home_kernel">Versão do kernel</string>
+    <string name="hook_mode">Modo do hook</string>
     <string name="enabled">Ativado</string>
     <string name="disabled">Desativado</string>
     <string name="susfs_supported">Suportado</string>
@@ -126,8 +127,8 @@
     <string name="require_kernel_version">A versão atual do KernelSU Next %1$d é muito baixa para o gerenciador funcionar corretamente. Por favor, atualize para a versão %2$d ou superior!</string>
     <string name="settings_umount_modules_default">Desmontar módulos</string>
     <string name="settings_umount_modules_default_summary">O valor padrão global para \"Desmontar módulos\" em Perfil do Aplicativo. Se ativado, ele removerá todas as modificações do módulo no sistema para apps que não possuem um perfil definido.</string>
-    <string name="settings_susfs_toggle">Ocultar ganchos kprobe</string>
-    <string name="settings_susfs_toggle_summary">Esta opção desativa os ganchos kprobe criados pelo ksu e, em vez disso, ativa os ganchos embutidos não-kprobe, implementando a mesma funcionalidade que seria aplicada a um kernel não-GKI, que não oferece suporte para kprobe.</string>
+    <string name="settings_susfs_toggle">Ocultar hook kprobes</string>
+    <string name="settings_susfs_toggle_summary">Esta opção desativa os hook kprobes criados pelo ksu e, em vez disso, ativa os hooks embutidos não-kprobes, implementando a mesma funcionalidade que seria aplicada a um kernel não-GKI, que não oferece suporte para kprobe.</string>
     <string name="profile_umount_modules_summary">Ativar esta opção permitirá que o KernelSU Next restaure quaisquer arquivos modificados pelos módulos para este app.</string>
     <string name="profile_selinux_domain">Domínio</string>
     <string name="profile_selinux_rules">Regras</string>

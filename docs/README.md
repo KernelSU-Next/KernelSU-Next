@@ -12,7 +12,7 @@ A kernel-based root solution for Android devices.
 [![GitHub License](https://img.shields.io/github/license/KernelSU-Next/KernelSU-Next?logo=gnu)](/LICENSE)
 
 > [!IMPORTANT]  
-> Support for installing KernelSU Next in LKM mode through manager was disabled, you can still update it by manually repacking ```init_boot```.
+> Support for installing KernelSU Next in LKM mode through manager was disabled, you can still update it by manually repacking `init_boot`.
 
 ## Features
 
