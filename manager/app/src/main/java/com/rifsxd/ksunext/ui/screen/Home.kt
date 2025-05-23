@@ -457,29 +457,30 @@ private fun InfoCard() {
             }
 
             Column {
-                if (ksuVersion != null) {
-                    val managerVersion = getManagerVersion(context)
+                val managerVersion = getManagerVersion(context)
+                InfoCardItem(
+                    label = stringResource(R.string.home_manager_version),
+                    content = "${managerVersion.first} (${managerVersion.second})",
+                    icon = painterResource(R.drawable.ic_ksu_next),
+                )
+
+                if (Natives.version >= Natives.MINIMAL_SUPPORTED_HOOK_MODE) {
+                    Spacer(Modifier.height(16.dp))
                     InfoCardItem(
-                        label = stringResource(R.string.home_manager_version),
-                        content = "${managerVersion.first} (${managerVersion.second})",
-                        icon = painterResource(R.drawable.ic_ksu_next),
+                        label = stringResource(R.string.hook_mode),
+                        content = Natives.getHookMode() ?: stringResource(R.string.unavailable),
+                        icon = Icons.Filled.Phishing,
                     )
+                }
 
-                    if (Natives.version >= Natives.MINIMAL_SUPPORTED_HOOK_MODE) {
-                        Spacer(Modifier.height(16.dp))
-                        InfoCardItem(
-                            label = stringResource(R.string.hook_mode),
-                            content = Natives.getHookMode() ?: stringResource(R.string.unavailable),
-                            icon = Icons.Filled.Phishing,
-                        )
-                    }
-
+                if (ksuVersion != null) {
                     Spacer(Modifier.height(16.dp))
                     InfoCardItem(
                         label = stringResource(R.string.home_mount_system),
                         content = currentMountSystem().ifEmpty { stringResource(R.string.unavailable) },
                         icon = Icons.Filled.SettingsSuggest,
                     )
+                    
 
                     val suSFS = getSuSFS()
                     if (suSFS == "Supported") {
