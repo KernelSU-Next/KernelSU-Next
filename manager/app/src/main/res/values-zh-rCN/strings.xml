@@ -12,6 +12,8 @@
     <string name="home">主页</string>
     <string name="home_not_installed">未安装</string>
     <string name="home_click_to_install">点击安装</string>
+    <string name="lkm_mode_deprecated">LKM 模式已弃用！</string>
+    <string name="lkm_alternative_suggestion">安装 GKI 内核或手动将 KernelSU Next 集成到你的设备。</string>
     <string name="home_working">工作中</string>
     <string name="home_working_version">版本：%d</string>
     <string name="home_superuser_count">超级用户数：%d</string>
@@ -19,6 +21,7 @@
     <string name="home_failure">内核中未找到 KernelSU Next V2 签名！ [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">请让你的内核开发人员集成 KernelSU Next！</string>
     <string name="home_kernel">内核版本</string>
+    <string name="hook_mode">Hook 模式</string>
     <string name="enabled">已启用</string>
     <string name="disabled">已禁用</string>
     <string name="susfs_supported">支持</string>
@@ -27,6 +30,7 @@
     <string name="home_susfs_sus_su">SuS SU</string>
     <string name="home_android">Android 版本</string>
     <string name="home_manager_version">管理器版本</string>
+    <string name="home_abi">ABI</string>
     <string name="home_selinux_status">SELinux 状态</string>
     <string name="selinux_status_disabled">被禁用</string>
     <string name="selinux_status_enforcing">强制执行</string>
@@ -192,6 +196,10 @@
     <string name="log_saved">日志已保存</string>
     <string name="send_log">分享日志</string>
     <string name="settings_disable_su">禁用超级用户指令</string>
-    <string name="settings_disable_su_summary">临时禁止任何应用通过 su 命令获取 root 权限（已运行的 root 进程不受影响）</string>
+    <string name="settings_disable_su_summary">临时禁止任何应用通过 su 命令获取 root 权限（已运行的 root 进程不受影响）。</string>
     <string name="settings_language">语言</string>
+    <string name="use_webuix">使用 WebUI X</string>
+    <string name="use_webuix_summary">使用具有更多 API 支持的 WebUI X 取代旧有 WebUI。</string>
+    <string name="use_webuix_eruda">对 WebUI X 注入 Eruda</string>
+    <string name="use_webuix_eruda_summary">给 WebUI X 注入一个调试控制台以简化调试流程，需要启用 Web 调试。</string>
 </resources>
