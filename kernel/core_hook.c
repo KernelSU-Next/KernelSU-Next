@@ -541,25 +541,6 @@ static bool is_appuid(kuid_t uid)
 	return appid >= FIRST_APPLICATION_UID && appid <= LAST_APPLICATION_UID;
 }
 
-static bool should_umount(struct path *path)
-{
-	if (!path) {
-		return false;
-	}
-
-	if (current->nsproxy->mnt_ns == init_nsproxy.mnt_ns) {
-		pr_info("ignore global mnt namespace process: %d\n",
-			current_uid().val);
-		return false;
-	}
-
-	if (path->mnt && path->mnt->mnt_sb && path->mnt->mnt_sb->s_type) {
-		const char *fstype = path->mnt->mnt_sb->s_type->name;
-		return strcmp(fstype, "overlay") == 0;
-	}
-	return false;
-}
-
 static int ksu_umount_mnt(struct path *path, int flags)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) || defined(KSU_UMOUNT)
@@ -570,7 +551,7 @@ static int ksu_umount_mnt(struct path *path, int flags)
 #endif
 }
 
-static void try_umount(const char *mnt, bool check_mnt, int flags)
+static void try_umount(const char *mnt, int flags)
 {
 	struct path path;
 	int err = kern_path(mnt, 0, &path);
@@ -583,19 +564,22 @@ static void try_umount(const char *mnt, bool check_mnt, int flags)
 		return;
 	}
 
-	// we are only interest in some specific mounts
-	if (check_mnt && !should_umount(&path)) {
-		return;
-	}
-
 	err = ksu_umount_mnt(&path, flags);
 	if (err) {
 		pr_warn("umount %s failed: %d\n", mnt, err);
 	}
 }
 
+struct mount_entry {
+    char *umountable;
+    struct list_head list;
+};
+LIST_HEAD(mount_list);
+
 int ksu_handle_setuid(struct cred *new, const struct cred *old)
 {
+	struct mount_entry *entry, *tmp;
+
 	// this hook is used for umounting overlayfs for some uid, if there isn't any module mounted, just ignore it!
 	if (!ksu_module_mounted) {
 		return 0;
@@ -646,26 +630,48 @@ int ksu_handle_setuid(struct cred *new, const struct cred *old)
 		current->pid);
 #endif
 
-	// fixme: use `collect_mounts` and `iterate_mount` to iterate all mountpoint and
-	// filter the mountpoint whose target is `/data/adb`
-	try_umount("/odm", true, 0);
-	try_umount("/system", true, 0);
-	try_umount("/system_ext", true, 0);
-	try_umount("/vendor", true, 0);
-	try_umount("/product", true, 0);
-	try_umount("/data/adb/modules", false, MNT_DETACH);
+	list_for_each_entry_safe(entry, tmp, &mount_list, list) {
+		try_umount(entry->umountable, MNT_DETACH);
+		// don't free! keep on heap! this is used on subsequent setuid calls
+		// if this is freed, we dont have anything to umount next
+		// FIXME: might leak, refresh the list?
+	}
+	return 0;
+}
 
-	// try umount ksu temp path
-	try_umount("/debug_ramdisk", false, MNT_DETACH);
-	try_umount("/sbin", false, MNT_DETACH);
+static int ksu_mount_monitor(const char *dev_name, const char *dirname, const char *type)
+{
+	char *device_name_copy = kstrdup(dev_name, GFP_KERNEL);
+	char *fstype_copy = kstrdup(type, GFP_KERNEL);
+	char *dirname_copy = kstrdup(dirname, GFP_KERNEL);
+	struct mount_entry *new_entry;
+
+	if (!device_name_copy || !dirname_copy) { 
+		// allow null fstype_copy for bind mounts/loopbacks
+		goto out;
+	}
 	
-	// try umount hosts file
-	try_umount("/system/etc/hosts", false, MNT_DETACH);
+	/*
+	 * feel free to add your own patterns
+	 * default one is just KSU devname or it starts with /data/adb/modules
+	 * added LSPosed dex2oat and hosts as that was whats here originally
+	 */
 
-	// try umount lsposed dex2oat bins
-	try_umount("/apex/com.android.art/bin/dex2oat64", false, MNT_DETACH);
-	try_umount("/apex/com.android.art/bin/dex2oat32", false, MNT_DETACH);
-
+	if ((!strcmp(device_name_copy, "KSU")) 
+		|| strstarts(dirname_copy, "/data/adb/modules")
+		|| strstr(dirname_copy, "com.android.art/bin/dex2oat")
+		|| !strcmp(dirname_copy, "/system/etc/hosts") ) {
+		new_entry = kmalloc(sizeof(*new_entry), GFP_KERNEL);
+		if (new_entry) {
+			new_entry->umountable = kstrdup(dirname, GFP_KERNEL);
+			list_add(&new_entry->list, &mount_list);
+			pr_info("%s: devicename %s fstype: %s path: %s\n", __func__, device_name_copy, fstype_copy, new_entry->umountable);
+		}
+	}
+out:
+	kfree(device_name_copy);
+	kfree(fstype_copy);
+	kfree(dirname_copy);
 	return 0;
 }
 
@@ -738,6 +744,29 @@ __maybe_unused int ksu_kprobe_exit(void)
 	return 0;
 }
 
+// for UL, hook on security.c ksu_sb_mount(dev_name, path, type, flags, data);
+int ksu_sb_mount(const char *dev_name, const struct path *path,
+                        const char *type, unsigned long flags, void *data)
+{
+	/* 
+	 * 384 is what throne_tracker uses, something sensible even for /data/app
+	 * we can pattern match revanced mounts even.
+	 * we are not really interested on mountpoints that are longer than that
+	 * this is now up to the modder for tweaking
+	 */
+	char buf[384];
+	char *dir_name = d_path(path, buf, sizeof(buf));
+
+	if (dir_name && dir_name != buf) {
+#ifdef CONFIG_KSU_DEBUG
+		pr_info("security_sb_mount: devname: %s path: %s type: %s \n", dev_name, dir_name, type);
+#endif
+		return ksu_mount_monitor(dev_name, dir_name, type);
+	} else {
+		return 0;
+	}
+}
+
 // kernel 4.9 and older
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) || defined(CONFIG_IS_HW_HISI) || defined(CONFIG_KSU_ALLOWLIST_WORKAROUND)
 int ksu_key_permission(key_ref_t key_ref, const struct cred *cred,
@@ -781,6 +810,7 @@ static struct security_hook_list ksu_hooks[] = {
 	LSM_HOOK_INIT(task_prctl, ksu_task_prctl),
 	LSM_HOOK_INIT(inode_rename, ksu_inode_rename),
 	LSM_HOOK_INIT(task_fix_setuid, ksu_task_fix_setuid),
+	LSM_HOOK_INIT(sb_mount, ksu_sb_mount),
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) || defined(CONFIG_IS_HW_HISI) || defined(CONFIG_KSU_ALLOWLIST_WORKAROUND)
 	LSM_HOOK_INIT(key_permission, ksu_key_permission)
 #endif
