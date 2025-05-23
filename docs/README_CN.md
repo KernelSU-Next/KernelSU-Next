@@ -11,6 +11,9 @@
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![GitHub License](https://img.shields.io/github/license/KernelSU-Next/KernelSU-Next?logo=gnu)](/LICENSE)
 
+> [!重要]  
+> 通过管理器以 LKM 模式安装 KernelSU Next 的支持已被禁用，但您仍可手动重新打包 `init_boot` 进行更新。
+
 ## 特性
 
 1. 基于内核的 `SU` 和权限管理
