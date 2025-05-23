@@ -401,7 +401,7 @@ fn _install_module(zip: &str) -> Result<()> {
     }
     fn get_sparse_image_size() -> u64 {
         let default_size = 6 << 30; // 6GB
-        let custom_size_file = "/data/adb/ksu/custom_sparse_size.txt";
+        let custom_size_file = "/data/adb/ksu/custom_sparse_size";
         match fs::read_to_string(custom_size_file) {
             Ok(contents) => match parse_size(&contents) {
                 Ok(size) => size,

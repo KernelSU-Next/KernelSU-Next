@@ -29,6 +29,7 @@
 #define CMD_IS_UID_SHOULD_UMOUNT 13
 #define CMD_IS_SU_ENABLED 14
 #define CMD_ENABLE_SU 15
+#define CMD_HOOK_MODE 16
 
 static bool ksuctl(int cmd, void* arg1, void* arg2) {
     int32_t result = 0;
@@ -59,6 +60,12 @@ int get_version() {
         is_lkm = true;
     }
     return version;
+}
+
+const char* get_hook_mode() {
+    static char mode[16];
+    ksuctl(CMD_HOOK_MODE, mode, nullptr);
+    return mode;
 }
 
 bool get_allow_list(int *uids, int *size) {

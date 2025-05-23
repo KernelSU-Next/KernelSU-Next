@@ -34,7 +34,6 @@ android {
     }
 
     buildFeatures {
-        aidl = true
         buildConfig = true
         compose = true
         prefab = true
@@ -133,4 +132,9 @@ dependencies {
     implementation(libs.androidx.webkit)
 
     implementation(libs.lsposed.cxx)
+
+    implementation(libs.mmrl.platform)
+    compileOnly(libs.mmrl.hidden.api)
+    implementation(libs.mmrl.ui)
+    implementation(libs.mmrl.webui)
 }

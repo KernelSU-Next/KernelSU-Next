@@ -52,6 +52,6 @@ jobs:
             android*-lkm/*_kernelsu.ko
             AnyKernel3-*.zip
             boot-images-*/Image-*/*.img.gz
-            ksud_magic/ksud_magic-*
-            ksud_overlayfs/ksud_overlayfs-*
-            susfsd/susfsd-*
+            ksud_magic-*/ksud_magic-*
+            ksud_overlayfs-*/ksud_overlayfs-*
+            susfsd-*/susfsd-*

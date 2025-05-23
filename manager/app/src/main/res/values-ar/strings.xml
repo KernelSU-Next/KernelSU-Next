@@ -32,11 +32,11 @@
     <string name="selinux_status_enforcing">مفعل</string>
     <string name="selinux_status_permissive">مرن</string>
     <string name="selinux_status_unknown">غير معروف</string>
-    <string name="superuser">مستخدم خارق</string>
+    <string name="superuser">المستخدم خارق</string>
     <string name="module_failed_to_enable">فشل في تشغيل إضافة: %s</string>
     <string name="module_failed_to_disable">فشل في إيقاف إضافة: %s</string>
     <string name="module_empty">لا توجد إضافات مثبته</string>
-    <string name="module">الإضافة</string>
+    <string name="module">الإضافات</string>
     <string name="module_install_prompt_with_name">الإضافة/ات التالية سيتم تثبيتها: %1$s</string>
     <string name="module_sort_a_to_z">تصنيف (أ-ي)</string>
     <string name="module_sort_z_to_a">تصنيف (ي-أ)</string>
@@ -49,7 +49,7 @@
     <string name="reboot_userspace">إعادة تشغيل سريعة</string>
     <string name="reboot_recovery">إعادة التشغيل إلى وضع الريكفري</string>
     <string name="reboot_bootloader">إعادة التشغيل إلى وضع bootloader</string>
-    <string name="reboot_download">إعادة التشغيل إلى وضع التحميل</string>
+    <string name="reboot_download">إعادة التشغيل إلى وضع التنزيل</string>
     <string name="reboot_edl">إعادة التشغيل إلى وضع EDL</string>
     <string name="about">حول</string>
     <string name="module_uninstall_confirm">هل انت متأكد من حذف تلك الإضافة %s؟</string>
@@ -75,11 +75,11 @@
     <string name="reboot_to_apply">إعادة التشغيل لتطبيق التغييرات</string>
     <string name="module_magisk_conflict">الإضافات غير متاحة بسبب تعارض مع Magisk!</string>
     <string name="home_mount_system">نظام الإضافات</string>
-    <string name="home_magic_mount">Mount السحري</string>
+    <string name="home_magic_mount">Magic Mount</string>
     <string name="home_overlayfs_mount">OverlayFS</string>
     <string name="unavailable">غير متاح</string>
     <string name="use_overlay_fs">استخدام OverlayFS</string>
-    <string name="use_overlay_fs_summary">التبديل بين استخدام OverlayFS أو Mount السحري لنظام Mount الخاص بـ KernelSU Next.</string>
+    <string name="use_overlay_fs_summary">التبديل بين استخدام OverlayFS أو Magic Mount لنظام Mount الخاص بـKernelSU Next.</string>
     <string name="reboot_required">إعادة التشغيل مطلوبة</string>
     <string name="reboot_message">ستدخل التغييرات حيز التنفيذ بعد إعادة تشغيل النظام. هل تريد إعادة التشغيل الآن؟</string>
     <string name="module_restore">استعادة الإضافة</string>
@@ -105,7 +105,7 @@
     <string name="home_experimental_kernelsu_body_point_1"> • استخدم على مسؤوليتك: قد تحدث أعطال أو سلوك غير متوقع أو مشاكل في النظام.</string>
     <string name="home_experimental_kernelsu_body_point_2"> • لا ضمان: المطورون غير مسؤولين عن أي فقدان للبيانات أو تلف النظام أو عواقب أخرى ناتجة عن استخدامه.</string>
     <string name="home_experimental_kernelsu_body_point_3"> • لأغراض الاختبار فقط: مخصص للمستخدمين الذين يفهمون المخاطر ويشعرون بالراحة في حل المشكلات.</string>
-    <string name="about_source_code"><![CDATA[عرض الشيفرة المصدرية في %1$s]]></string>
+    <string name="about_source_code"><![CDATA[عرض رمز المصدر في %1$s]]></string>
     <string name="profile" translatable="false">ملف التطبيق</string>
     <string name="profile_default">افتراضي</string>
     <string name="profile_template">قالب</string>

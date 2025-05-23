@@ -120,7 +120,7 @@
     <string name="require_kernel_version">Die aktuelle KernelSU Next Version %1$d ist zu veraltet, damit der Manager richtig funktioniert. aktualisieren Sie bitte auf Version %2$d oder höher!</string>
     <string name="settings_umount_modules_default">Umount Module</string>
     <string name="settings_umount_modules_default_summary">Der globale Standardwert für \„Umount Module\“ in App Profile. Wenn er aktiviert ist, werden alle Moduländerungen im System für Anwendungen entfernt, für die kein Profil festgelegt wurde.</string>
-    <string name="settings_susfs_toggle">verstecke kprobe hooks</string>
+    <string name="settings_susfs_toggle">verstecke kprobes hook</string>
     <string name="settings_susfs_toggle_summary">Diese Option deaktiviert die von ksu erzeugten kprobe-hooks und aktiviert stattdessen die eingebetteten nicht-kprobe-hooks, die die gleiche Funktionalität implementieren, die auf einen Nicht-GKI-Kernel angewendet würde, der kprobe nicht unterstützt.</string>
     <string name="profile_umount_modules_summary">Wenn Sie diese Option aktivieren, kann KernelSU Next alle von den Modulen für diese Anwendung geänderten Dateien wiederherstellen.</string>
     <string name="profile_selinux_domain">Domain</string>

@@ -1,4 +1,4 @@
-[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | **Русский** | [ภาษาไทย](README_TH.md) | [Tiếng Việt](README_VI.md) | [Italiano](README_IT.md) | [Polski](README_PL.md) | [Български](README_BG.md)
+[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | **Русский** | [Український](README_UA.md) | [ภาษาไทย](README_TH.md) | [Tiếng Việt](README_VI.md) | [Italiano](README_IT.md) | [Polski](README_PL.md) | [Български](README_BG.md) | [日本語](README_JA.md)
 
 # KernelSU Next
 
@@ -28,7 +28,7 @@ KernelSU Next работает с большинством ядер Android (4.4
 
 ## Использование
 
-- [Инструкция по установке](https://KernelSU-Next.github.io/KernelSU-Next/)
+- [Инструкция по установке](https://ksunext.org/pages/installation.html)
 
 ## Безопасность
 
@@ -59,5 +59,5 @@ KernelSU Next работает с большинством ядер Android (4.4
 - [Magisk](https://github.com/topjohnwu/Magisk): Топовый инструмент для root.  
 - [genuine](https://github.com/brevent/genuine/): Валидация подписи APK v2.  
 - [Diamorphine](https://github.com/m0nad/Diamorphine): Некоторые навыки rootkit.  
-- [KernelSU](https://github.com/tiann/KernelSU): Спасибо tiann, без него KernelSU Next не релизнулся бы.  
+- [KernelSU](https://github.com/tiann/KernelSU): Спасибо tiann, без него KernelSU Next даже не существовал бы.  
 - [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs): 💜 5ec1cff за сохранение KernelSU!

@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -24,6 +25,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.dergoogler.mmrl.platform.Platform
+import com.dergoogler.mmrl.ui.component.LabelItem
+import com.dergoogler.mmrl.ui.component.LabelItemDefaults
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AppProfileScreenDestination
@@ -43,7 +47,7 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val listState = rememberLazyListState()
 
-    LaunchedEffect(key1 = navigator) {
+    LaunchedEffect(navigator) {
         viewModel.search = ""
         if (viewModel.appList.isEmpty()) {
             viewModel.fetchAppList()
@@ -148,16 +152,32 @@ private fun AppItem(
         supportingContent = {
             Column {
                 Text(app.packageName)
-                FlowRow {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     if (app.allowSu) {
-                        LabelText(label = "ROOT")
+                        LabelItem(
+                            text = "ROOT",
+                        )
                     } else {
                         if (Natives.uidShouldUmount(app.uid)) {
-                            LabelText(label = "UMOUNT")
+                            LabelItem(
+                                text = "UMOUNT",
+                                style = LabelItemDefaults.style.copy(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            )
                         }
                     }
                     if (app.hasCustomProfile) {
-                        LabelText(label = "CUSTOM")
+                        LabelItem(
+                            text = "CUSTOM",
+                            style = LabelItemDefaults.style.copy(
+                                containerColor = MaterialTheme.colorScheme.onTertiary,
+                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                            )
+                        )
                     }
                 }
             }

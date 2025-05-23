@@ -1,4 +1,4 @@
-name: Build susfsd
+name: Build susfsd aarch64
 on:
   push:
     branches: [ "next" ]
@@ -8,9 +8,6 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
-      target:
-        required: true
-        type: string
       os:
         required: false
         type: string
@@ -26,9 +23,9 @@ jobs:
     - name: Build susfsd
       working-directory: ./userspace/susfsd
       run: $ANDROID_NDK/ndk-build
-    - name: Upload a Build Artifact
+    - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: susfsd-aarch64-linux-android
+        name: susfsd-linux-android
         path: ./userspace/susfsd/libs
     

@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Generate 3 random lowercase words (6 letters each)
+word1=$(tr -dc 'a-z' </dev/urandom | head -c6)
+word2=$(tr -dc 'a-z' </dev/urandom | head -c6)
+word3=$(tr -dc 'a-z' </dev/urandom | head -c6)
+
+echo "Generated words:"
+echo "com     -> $word1"
+echo "rifsxd  -> $word2"
+echo "ksunext -> $word3"
+echo ""
+
+# Export variables for use in find -exec
+export word1 word2 word3
+
+# Rename directories
+find . -depth -type d -name 'com' -execdir mv {} "$word1" \;
+find . -depth -type d -name 'rifsxd' -execdir mv {} "$word2" \;
+find . -depth -type d -name 'ksunext' -execdir mv {} "$word3" \;
+
+# Replace inside files
+find . -type f -exec sed -i \
+    -e "s/com\.rifsxd\.ksunext/$word1.$word2.$word3/g" \
+    -e "s/com\/rifsxd\/ksunext/$word1\/$word2\/$word3/g" \
+    -e "s/com_rifsxd_ksunext/${word1}_${word2}_${word3}/g" {} +
+
+echo "Done."
