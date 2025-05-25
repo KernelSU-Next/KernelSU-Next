@@ -8,6 +8,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dergoogler.mmrl.platform.model.ModuleConfig
+import com.dergoogler.mmrl.platform.model.ModuleConfig.Companion.asModuleConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.Collator
@@ -39,7 +41,8 @@ class ModuleViewModel : ViewModel() {
         val updateJson: String,
         val hasWebUi: Boolean,
         val hasActionScript: Boolean,
-        val dirId: String
+        val dirId: String,
+        val config: ModuleConfig,
     )
 
     data class ModuleUpdateInfo(
@@ -104,20 +107,24 @@ class ModuleViewModel : ViewModel() {
                     .asSequence()
                     .map { array.getJSONObject(it) }
                     .map { obj ->
+                        val id = obj.getString("id")
+                        val config = id.asModuleConfig
+
                         ModuleInfo(
-                            obj.getString("id"),
-                            obj.optString("name"),
+                            id,
+                            config.name ?: obj.optString("name"),
                             obj.optString("author", "Unknown"),
                             obj.optString("version", "Unknown"),
                             obj.optInt("versionCode", 0),
-                            obj.optString("description"),
+                            config.description ?: obj.optString("description"),
                             obj.getBoolean("enabled"),
                             obj.getBoolean("update"),
                             obj.getBoolean("remove"),
                             obj.optString("updateJson"),
                             obj.optBoolean("web"),
                             obj.optBoolean("action"),
-                            obj.getString("dir_id")
+                            obj.getString("dir_id"),
+                            config
                         )
                     }.toList()
                 isNeedRefresh = false

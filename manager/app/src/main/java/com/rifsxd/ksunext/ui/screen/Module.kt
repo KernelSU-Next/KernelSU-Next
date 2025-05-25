@@ -111,6 +111,7 @@ import com.rifsxd.ksunext.ui.viewmodel.ModuleViewModel
 import com.rifsxd.ksunext.ui.webui.WebUIActivity
 import com.rifsxd.ksunext.ui.webui.WebUIXActivity
 import androidx.core.net.toUri
+import com.dergoogler.mmrl.platform.model.ModuleConfig
 import com.dergoogler.mmrl.platform.model.ModuleConfig.Companion.asModuleConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -909,7 +910,8 @@ fun ModuleItemPreview() {
         updateJson = "",
         hasWebUi = false,
         hasActionScript = false,
-        dirId = "dirId"
+        dirId = "dirId",
+        config = ModuleConfig()
     )
     ModuleItem(EmptyDestinationsNavigator, module, "", {}, {}, {}, {}, {})
 }
