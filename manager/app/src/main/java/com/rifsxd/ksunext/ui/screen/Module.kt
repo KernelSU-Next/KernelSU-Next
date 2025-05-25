@@ -110,6 +110,7 @@ import com.rifsxd.ksunext.ui.util.restoreModule
 import com.rifsxd.ksunext.ui.viewmodel.ModuleViewModel
 import com.rifsxd.ksunext.ui.webui.WebUIActivity
 import com.rifsxd.ksunext.ui.webui.WebUIXActivity
+import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -301,12 +302,12 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                             webUILauncher.launch(
                                 if (prefs.getBoolean("use_webuix", true) && Platform.isAlive) {
                                     Intent(context, WebUIXActivity::class.java)
-                                        .setData(Uri.parse("kernelsu://webuix/$id"))
+                                        .setData("kernelsu://webuix/$id".toUri())
                                         .putExtra("id", id)
                                         .putExtra("name", name)
                                 } else {
                                     Intent(context, WebUIActivity::class.java)
-                                        .setData(Uri.parse("kernelsu://webui/$id"))
+                                        .setData("kernelsu://webui/$id".toUri())
                                         .putExtra("id", id)
                                         .putExtra("name", name)
                                 }
