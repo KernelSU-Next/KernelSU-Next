@@ -9,7 +9,7 @@ config KSU
 	  To compile as a module, choose M here: the
 	  module will be called kernelsu.
 
-config KSU_WITH_KPROBES
+config KSU_KPROBES_HOOK
 	bool "Use kprobes for kernelsu"
 	depends on KSU
 	depends on KPROBES
@@ -31,5 +31,13 @@ config KSU_ALLOWLIST_WORKAROUND
         help
           Enable session keyring init workaround for problematic devices.
           Useful for situations where the SU allowlist is not kept after a reboot.
+
+config KSU_LSM_SECURITY_HOOKS
+	bool "use lsm security hooks"
+        depends on KSU
+        default y
+	help
+	  Disabling this is mostly only useful for kernel 4.1 and older.
+	  Make sure to implement manual hooks on security/security.c.
 
 endmenu

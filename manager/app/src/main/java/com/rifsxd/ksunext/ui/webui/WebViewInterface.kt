@@ -9,8 +9,8 @@ import android.webkit.JavascriptInterface
 import android.widget.Toast
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
-import com.dergoogler.mmrl.webui.interfaces.WebUIInterface
 import com.dergoogler.mmrl.webui.model.JavaScriptInterface
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.ShellUtils
@@ -25,7 +25,7 @@ import java.util.concurrent.CompletableFuture
 
 class WebViewInterface(
     wxOptions: WXOptions,
-) : WebUIInterface(wxOptions) {
+) : WXInterface(wxOptions) {
     override var name: String = "ksu"
 
     companion object {
@@ -185,7 +185,7 @@ class WebViewInterface(
     @JavascriptInterface
     fun moduleInfo(): String {
         val moduleInfos = JSONArray(listModules())
-        var currentModuleInfo = JSONObject()
+        val currentModuleInfo = JSONObject()
         currentModuleInfo.put("moduleDir", modDir)
         val moduleId = File(modDir).getName()
         for (i in 0 until moduleInfos.length()) {
@@ -195,7 +195,7 @@ class WebViewInterface(
                 continue
             }
 
-            var keys = currentInfo.keys()
+            val keys = currentInfo.keys()
             for (key in keys) {
                 currentModuleInfo.put(key, currentInfo.get(key))
             }

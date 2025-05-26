@@ -7,14 +7,25 @@ use crate::{defs::BINARY_DIR, utils};
 
 pub const RESETPROP_PATH: &str = concatcp!(BINARY_DIR, "resetprop");
 pub const BUSYBOX_PATH: &str = concatcp!(BINARY_DIR, "busybox");
-#[allow(dead_code)]
+
 pub const BOOTCTL_PATH: &str = concatcp!(BINARY_DIR, "bootctl");
 
 #[allow(dead_code)]
 pub const SUSFSD_PATH: &str = concatcp!(BINARY_DIR, "susfsd");
 
+#[cfg(all(target_arch = "aarch64", target_os = "android"))]
 #[derive(RustEmbed)]
 #[folder = "bin/aarch64"]
+struct Asset;
+
+#[cfg(all(target_arch = "arm", target_os = "android"))]
+#[derive(RustEmbed)]
+#[folder = "bin/arm"]
+struct Asset;
+
+#[cfg(all(target_arch = "x86_64", target_os = "android"))]
+#[derive(RustEmbed)]
+#[folder = "bin/x86_64"]
 struct Asset;
 
 pub fn ensure_binaries(ignore_if_exist: bool) -> Result<()> {

@@ -203,7 +203,7 @@ fn find_temp_path() -> String {
     let r = tempfile::tempdir_in("/dev/");
     match r {
         Ok(tmp_dir) => {
-            if let Some(path) = tmp_dir.into_path().to_str() {
+            if let Some(path) = tmp_dir.keep().to_str() {
                 return path.to_string();
             }
         }

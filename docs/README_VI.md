@@ -1,4 +1,4 @@
-[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | [Русский](README_RU.md) | [ภาษาไทย](README_TH.md) | **Tiếng Việt** | [Italiano](README_IT.md) | [Polski](README_PL.md) | [Български](README_BG.md) | [日本語](README_JA.md)
+[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | [Русский](README_RU.md) | [Український](README_UA.md) | [ภาษาไทย](README_TH.md) | **Tiếng Việt** | [Italiano](README_IT.md) | [Polski](README_PL.md) | [Български](README_BG.md) | [日本語](README_JA.md)
 
 # KernelSU Next
 
@@ -28,7 +28,7 @@ Hiện tại kernelSU Next chỉ hỗ trợ những cpu có `arm64-v8a`
 
 ## Sử dụng
 
-- [Hướng dẫn vá KernelSU Next vào Kernel của bạn (yêu cầu kernel source)](https://KernelSU-Next.github.io/KernelSU-Next/)
+- [Hướng dẫn vá KernelSU Next vào Kernel của bạn (yêu cầu kernel source)](https://ksunext.org/pages/installation.html)
 
 ## Bảo mật
 

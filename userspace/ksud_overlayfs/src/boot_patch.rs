@@ -19,7 +19,6 @@ use crate::defs::{KSU_BACKUP_DIR, KSU_BACKUP_FILE_PREFIX};
 use crate::{assets, utils};
 
 #[cfg(target_os = "android")]
-#[allow(dead_code)]
 fn ensure_gki_kernel() -> Result<()> {
     let version = get_kernel_version()?;
     let is_gki = version.0 == 5 && version.1 >= 10 || version.2 > 5;
@@ -28,7 +27,6 @@ fn ensure_gki_kernel() -> Result<()> {
 }
 
 #[cfg(target_os = "android")]
-#[allow(dead_code)]
 pub fn get_kernel_version() -> Result<(i32, i32, i32)> {
     let uname = rustix::system::uname();
     let version = uname.release().to_string_lossy();
@@ -94,12 +92,10 @@ pub fn get_current_kmi() -> Result<String> {
 }
 
 #[cfg(not(target_os = "android"))]
-#[allow(dead_code)]
 pub fn get_current_kmi() -> Result<String> {
     bail!("Unsupported platform")
 }
 
-#[allow(dead_code)]
 fn parse_kmi_from_kernel(kernel: &PathBuf, workdir: &Path) -> Result<String> {
     use std::fs::{File, copy};
     use std::io::{BufReader, Read};
@@ -133,7 +129,6 @@ fn parse_kmi_from_kernel(kernel: &PathBuf, workdir: &Path) -> Result<String> {
     bail!("Try to choose LKM manually")
 }
 
-#[allow(dead_code)]
 fn parse_kmi_from_boot(magiskboot: &Path, image: &PathBuf, workdir: &Path) -> Result<String> {
     let image_path = workdir.join("image");
 
@@ -158,7 +153,6 @@ fn parse_kmi_from_boot(magiskboot: &Path, image: &PathBuf, workdir: &Path) -> Re
     parse_kmi_from_kernel(&image_path, workdir)
 }
 
-#[allow(dead_code)]
 fn do_cpio_cmd(magiskboot: &Path, workdir: &Path, cmd: &str) -> Result<()> {
     let status = Command::new(magiskboot)
         .current_dir(workdir)
@@ -173,7 +167,6 @@ fn do_cpio_cmd(magiskboot: &Path, workdir: &Path, cmd: &str) -> Result<()> {
     Ok(())
 }
 
-#[allow(dead_code)]
 fn is_magisk_patched(magiskboot: &Path, workdir: &Path) -> Result<bool> {
     let status = Command::new(magiskboot)
         .current_dir(workdir)
@@ -186,7 +179,6 @@ fn is_magisk_patched(magiskboot: &Path, workdir: &Path) -> Result<bool> {
     Ok(status.code() == Some(1))
 }
 
-#[allow(dead_code)]
 fn is_kernelsu_patched(magiskboot: &Path, workdir: &Path) -> Result<bool> {
     let status = Command::new(magiskboot)
         .current_dir(workdir)
@@ -198,7 +190,6 @@ fn is_kernelsu_patched(magiskboot: &Path, workdir: &Path) -> Result<bool> {
     Ok(status.success())
 }
 
-#[allow(dead_code)]
 fn dd<P: AsRef<Path>, Q: AsRef<Path>>(ifile: P, ofile: Q) -> Result<()> {
     let status = Command::new("dd")
         .stdout(Stdio::null())
@@ -332,7 +323,6 @@ pub fn restore(
     Ok(())
 }
 
-#[allow(dead_code)]
 #[allow(clippy::too_many_arguments)]
 pub fn patch(
     image: Option<PathBuf>,
@@ -352,7 +342,6 @@ pub fn patch(
     result
 }
 
-#[allow(dead_code)]
 #[allow(clippy::too_many_arguments)]
 fn do_patch(
     image: Option<PathBuf>,
@@ -540,7 +529,6 @@ fn do_patch(
 }
 
 #[cfg(target_os = "android")]
-#[allow(dead_code)]
 fn calculate_sha1(file_path: impl AsRef<Path>) -> Result<String> {
     use sha1::Digest;
     use std::io::Read;
@@ -561,7 +549,6 @@ fn calculate_sha1(file_path: impl AsRef<Path>) -> Result<String> {
 }
 
 #[cfg(target_os = "android")]
-#[allow(dead_code)]
 fn do_backup(magiskboot: &Path, workdir: &Path, image: &str) -> Result<()> {
     let sha1 = calculate_sha1(image)?;
     let filename = format!("{KSU_BACKUP_FILE_PREFIX}{sha1}");
@@ -582,7 +569,6 @@ fn do_backup(magiskboot: &Path, workdir: &Path, image: &str) -> Result<()> {
 }
 
 #[cfg(target_os = "android")]
-#[allow(dead_code)]
 fn clean_backup(sha1: &str) -> Result<()> {
     println!("- Clean up backup");
     let backup_name = format!("{}{}", KSU_BACKUP_FILE_PREFIX, sha1);
@@ -605,7 +591,6 @@ fn clean_backup(sha1: &str) -> Result<()> {
     Ok(())
 }
 
-#[allow(dead_code)]
 fn flash_boot(bootdevice: &Option<String>, new_boot: PathBuf) -> Result<()> {
     let Some(bootdevice) = bootdevice else {
         bail!("boot device not found")
@@ -619,7 +604,6 @@ fn flash_boot(bootdevice: &Option<String>, new_boot: PathBuf) -> Result<()> {
     Ok(())
 }
 
-#[allow(dead_code)]
 fn find_magiskboot(magiskboot_path: Option<PathBuf>, workdir: &Path) -> Result<PathBuf> {
     let magiskboot = {
         if which("magiskboot").is_ok() {
@@ -644,7 +628,6 @@ fn find_magiskboot(magiskboot_path: Option<PathBuf>, workdir: &Path) -> Result<P
     Ok(magiskboot)
 }
 
-#[allow(dead_code)]
 fn find_boot_image(
     image: &Option<PathBuf>,
     skip_init: bool,
@@ -694,7 +677,6 @@ fn find_boot_image(
     Ok((bootimage, bootdevice))
 }
 
-#[allow(dead_code)]
 fn post_ota() -> Result<()> {
     use crate::defs::ADB_DIR;
     use assets::BOOTCTL_PATH;

@@ -9,15 +9,19 @@ edition = "2024"
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 const_format = "0.2"
-zip = { version = "2", default-features = false }
-zip-extensions = { version = "0.8", features = [
+zip = { version = "3",  features = [
     "deflate",
     "deflate64",
     "time",
     "lzma",
     "xz",
 ], default-features = false }
-java-properties = { git = "https://github.com/KernelSU-Next/java-properties.git", branch = "master", default-features = false }
+zip-extensions = { version = "0.8", features = [
+    "deflate",
+    "lzma",
+    "xz",
+], default-features = false }
+java-properties = { git = "https://github.com/Kernel-SU/java-properties.git", branch = "master", default-features = false }
 log = "0.4"
 env_logger = { version = "0.11", default-features = false }
 serde_json = "1"
