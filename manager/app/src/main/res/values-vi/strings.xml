@@ -21,6 +21,7 @@
     <string name="home_failure">Không tìm thấy chữ kí KernelSU Next v2 (chưa cài đặt, nhúng sai cách hoặc nhầm trình quản lý?) [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Hỏi hoặc tự nhúng KernelSU Next vào kernel của bạn!</string>
     <string name="home_kernel">Phiên bản kernel</string>
+    <string name="hook_mode">Chế độ hook</string>
     <string name="enabled">Kích hoạt</string>
     <string name="disabled">Vô hiệu hoá</string>
     <string name="susfs_supported">Hỗ trợ</string>
@@ -98,6 +99,7 @@
     <string name="proceed">Tiếp tục</string>
     <string name="cancel">Huỷ</string>
     <string name="later">Để sau</string>
+    <string name="lkm_warning_message">LKM patch của bạn có vài thành phần mã đóng, bạn có muốn tiếp tục?</string>
     <string name="home_next_kernelsu">🔥 Bản dựng tiếp theo</string>
     <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Nhánh thử nghiệm tiếp theo. Xem trong GitHub!</string>
