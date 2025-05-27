@@ -100,6 +100,7 @@
     <string name="proceed">Prosseguir</string>
     <string name="cancel">Cancelar</string>
     <string name="later">Mais tarde</string>
+    <string name="lkm_warning_message">O patch LKM depende de componentes de código fechado. Deseja continuar?</string>
     <string name="home_next_kernelsu">🔥 Compilação next</string>
     <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Branch next experimental. Confira no GitHub!</string>
@@ -199,7 +200,7 @@
     <string name="settings_disable_su_summary">Desative temporariamente a capacidade de qualquer app obter privilégios root por meio do comando ⁠su (processos root existentes não serão afetados).</string>
     <string name="settings_language">Idioma</string>
     <string name="use_webuix">Usar WebUI X</string>
-    <string name="use_webuix_summary">Use o WebUI X em vez do WebUI, que oferece suporte a mais APIs.</string>
+    <string name="use_webuix_summary">Use o WebUI X em vez do WebUI, que oferece suporte a mais APIs. Esteja ciente de que os desenvolvedores podem substituir esse recurso na configuração do módulo.</string>
     <string name="use_webuix_eruda">Injetar Eruda no WebUI X</string>
     <string name="use_webuix_eruda_summary">Injeta um console de depuração no WebUI X para facilitar a depuração. Requer que a depuração web esteja ativada.</string>
 </resources>
