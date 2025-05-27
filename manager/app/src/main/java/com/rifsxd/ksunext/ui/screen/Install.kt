@@ -22,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -30,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -77,6 +79,32 @@ import com.rifsxd.ksunext.ui.util.rootAvailable
 @Destination<RootGraph>
 @Composable
 fun InstallScreen(navigator: DestinationsNavigator) {
+    var showLkmWarning by remember { mutableStateOf(true) }
+
+    if (showLkmWarning) {
+        AlertDialog(
+            onDismissRequest = {
+                showLkmWarning = false
+                navigator.popBackStack()
+            },
+            title = { Text(stringResource(R.string.warning)) },
+            text = { Text(stringResource(R.string.lkm_warning_message)) },
+            confirmButton = {
+                TextButton(onClick = { showLkmWarning = false }) {
+                    Text(stringResource(R.string.proceed))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showLkmWarning = false
+                    navigator.popBackStack()
+                }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
     var installMethod by remember {
         mutableStateOf<InstallMethod?>(null)
     }

@@ -11,9 +11,6 @@ A kernel-based root solution for Android devices.
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![GitHub License](https://img.shields.io/github/license/KernelSU-Next/KernelSU-Next?logo=gnu)](/LICENSE)
 
-> [!IMPORTANT]  
-> Support for installing KernelSU Next in LKM mode through manager was disabled, you can still update it by manually repacking `init_boot`.
-
 ## Features
 
 1. Kernel-based `su` and root access management.

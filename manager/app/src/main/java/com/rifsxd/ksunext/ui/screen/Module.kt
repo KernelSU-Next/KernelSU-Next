@@ -110,6 +110,9 @@ import com.rifsxd.ksunext.ui.util.restoreModule
 import com.rifsxd.ksunext.ui.viewmodel.ModuleViewModel
 import com.rifsxd.ksunext.ui.webui.WebUIActivity
 import com.rifsxd.ksunext.ui.webui.WebUIXActivity
+import androidx.core.net.toUri
+import com.dergoogler.mmrl.platform.model.ModuleConfig
+import com.dergoogler.mmrl.platform.model.ModuleConfig.Companion.asModuleConfig
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -298,17 +301,37 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     },
                     onClickModule = { id, name, hasWebUi ->
                         if (hasWebUi) {
+                            val wxEngine = Intent(context, WebUIXActivity::class.java)
+                                .setData("kernelsu://webuix/$id".toUri())
+                                .putExtra("id", id)
+                                .putExtra("name", name)
+
+                            val ksuEngine = Intent(context, WebUIActivity::class.java)
+                                .setData("kernelsu://webui/$id".toUri())
+                                .putExtra("id", id)
+                                .putExtra("name", name)
+
+                            val config = id.asModuleConfig
+
+                            val engine = config.getWebuiEngine(context)
+
+                            if (engine != null) {
+                                webUILauncher.launch(
+                                    when (config.getWebuiEngine(context)) {
+                                        "wx" -> wxEngine
+                                        "ksu" -> ksuEngine
+                                        else -> wxEngine
+                                    }
+                                )
+
+                                return@ModuleList
+                            }
+
                             webUILauncher.launch(
                                 if (prefs.getBoolean("use_webuix", true) && Platform.isAlive) {
-                                    Intent(context, WebUIXActivity::class.java)
-                                        .setData(Uri.parse("kernelsu://webuix/$id"))
-                                        .putExtra("id", id)
-                                        .putExtra("name", name)
+                                    wxEngine
                                 } else {
-                                    Intent(context, WebUIActivity::class.java)
-                                        .setData(Uri.parse("kernelsu://webui/$id"))
-                                        .putExtra("id", id)
-                                        .putExtra("name", name)
+                                    ksuEngine
                                 }
                             )
                         }
@@ -357,12 +380,6 @@ private fun ModuleList(
 
     val hasShownWarning =
         rememberSaveable { mutableStateOf(prefs.getBoolean("has_shown_warning", false)) }
-
-    var useOverlayFs by rememberSaveable {
-        mutableStateOf(
-            prefs.getBoolean("use_overlay_fs", false)
-        )
-    }
 
     val loadingDialog = rememberLoadingDialog()
     val confirmDialog = rememberConfirmDialog()
@@ -887,7 +904,8 @@ fun ModuleItemPreview() {
         updateJson = "",
         hasWebUi = false,
         hasActionScript = false,
-        dirId = "dirId"
+        dirId = "dirId",
+        config = ModuleConfig()
     )
     ModuleItem(EmptyDestinationsNavigator, module, "", {}, {}, {}, {}, {})
 }

@@ -11,9 +11,6 @@
 [![Ліцензія: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![GitHub Ліцензія](https://img.shields.io/github/license/KernelSU-Next/KernelSU-Next?logo=gnu)](/LICENSE)
 
-> [!IMPORTANT]  
-> Підтримка встановлення KernelSU Next способом модуля ядра через менеджер була вимкнена, натомість ви можете самі оновити його перепаковуючи ```init_boot``` вручну.
-
 ## Можливості
 
 1. `su` на основі ядра та можливість контролювати дозволи руту.

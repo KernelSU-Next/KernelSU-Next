@@ -18,6 +18,7 @@
     <string name="home_working_version">Version: %d</string>
     <string name="home_superuser_count">Superusers: %d</string>
     <string name="home_module_count">Modules: %d</string>
+    <string name="home_module_update_count">Updates: %d</string>
     <string name="home_failure">KernelSU Next v2 signature not found in kernel! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Ask your kernel developer to integrate KernelSU Next!</string>
     <string name="home_kernel">Kernel version</string>
@@ -100,6 +101,7 @@
     <string name="proceed">Proceed</string>
     <string name="cancel">Cancel</string>
     <string name="later">Later</string>
+    <string name="lkm_warning_message">The LKM patch relies on closed source components. Do you want to continue?</string>
     <string name="home_next_kernelsu">🔥 Next build</string>
     <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Next experimental branch. Check it out on GitHub!</string>
@@ -199,7 +201,7 @@
     <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
     <string name="settings_language">Language</string>
     <string name="use_webuix">Use WebUI X</string>
-    <string name="use_webuix_summary">Use WebUI X instead of WebUI, which supports more APIs.</string>
+    <string name="use_webuix_summary">Use WebUI X instead of WebUI, which supports more APIs. Be aware that developers can override this feature in their module config.</string>
     <string name="use_webuix_eruda">Inject Eruda into WebUI X</string>
     <string name="use_webuix_eruda_summary">Inject a debug console into WebUI X to make debugging easier. Requires web debugging to be on.</string>
 </resources>

@@ -28,6 +28,7 @@ jobs:
       - build-a13-kernel
       - build-a14-kernel
       - build-a15-kernel
+      - build-wsa-kernel
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
@@ -52,6 +53,7 @@ jobs:
             android*-lkm/*_kernelsu.ko
             AnyKernel3-*.zip
             boot-images-*/Image-*/*.img.gz
-            ksud_magic-*/ksud_magic-*
-            ksud_overlayfs-*/ksud_overlayfs-*
-            susfsd-*/susfsd-*
+            kernel-WSA*.zip
+            ksud_magic*.zip
+            ksud_overlayfs*.zip
+            susfsd*.zip

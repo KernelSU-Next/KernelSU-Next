@@ -11,9 +11,6 @@ Uma solução root baseada em kernel para dispositivos Android.
 [![License: GPL v2](https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 [![GitHub License](https://img.shields.io/github/license/KernelSU-Next/KernelSU-Next?logo=gnu)](/LICENSE)
 
-> [!IMPORTANT]  
-> O suporte para instalação do KernelSU Next no modo LKM através do gerenciador foi desativado. Você ainda pode atualizá-lo manualmente reempacotando `init_boot`.
-
 ## Características
 
 1. `su` e gerenciamento de acesso root baseado em kernel.

@@ -3,14 +3,14 @@ name: Clippy check
 on:
   push:
     branches:
-      - next
+      - x86
     paths:
       - '.github/workflows/clippy.yml'
       - 'userspace/ksud_magic/**'
       - 'userspace/ksud_overlayfs/**'
   pull_request:
     branches:
-      - next
+      - x86
     paths:
       - '.github/workflows/clippy.yml'
       - 'userspace/ksud_magic/**'
@@ -46,3 +46,9 @@ jobs:
         run: |
           cross clippy --manifest-path userspace/ksud_magic/Cargo.toml --target aarch64-linux-android --release
           cross clippy --manifest-path userspace/ksud_overlayfs/Cargo.toml --target aarch64-linux-android --release
+
+          cross clippy --manifest-path userspace/ksud_magic/Cargo.toml --target armv7-linux-androideabi --release
+          cross clippy --manifest-path userspace/ksud_overlayfs/Cargo.toml --target armv7-linux-androideabi --release
+
+          cross clippy --manifest-path userspace/ksud_magic/Cargo.toml --target x86_64-linux-android --release
+          cross clippy --manifest-path userspace/ksud_overlayfs/Cargo.toml --target x86_64-linux-android --release

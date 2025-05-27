@@ -19,7 +19,6 @@ use crate::defs::{KSU_BACKUP_DIR, KSU_BACKUP_FILE_PREFIX};
 use crate::{assets, utils};
 
 #[cfg(target_os = "android")]
-#[allow(dead_code)]
 fn ensure_gki_kernel() -> Result<()> {
     let version = get_kernel_version()?;
     let is_gki = version.0 == 5 && version.1 >= 10 || version.2 > 5;
@@ -28,7 +27,6 @@ fn ensure_gki_kernel() -> Result<()> {
 }
 
 #[cfg(target_os = "android")]
-#[allow(dead_code)]
 pub fn get_kernel_version() -> Result<(i32, i32, i32)> {
     let uname = rustix::system::uname();
     let version = uname.release().to_string_lossy();
@@ -53,7 +51,6 @@ pub fn get_kernel_version() -> Result<(i32, i32, i32)> {
 }
 
 #[cfg(target_os = "android")]
-#[allow(dead_code)]
 fn parse_kmi(version: &str) -> Result<String> {
     let re = Regex::new(r"(.* )?(\d+\.\d+)(\S+)?(android\d+)(.*)")?;
     let cap = re
@@ -65,7 +62,6 @@ fn parse_kmi(version: &str) -> Result<String> {
 }
 
 #[cfg(target_os = "android")]
-#[allow(dead_code)]
 fn parse_kmi_from_uname() -> Result<String> {
     let uname = rustix::system::uname();
     let version = uname.release().to_string_lossy();
@@ -73,7 +69,6 @@ fn parse_kmi_from_uname() -> Result<String> {
 }
 
 #[cfg(target_os = "android")]
-#[allow(dead_code)]
 fn parse_kmi_from_modules() -> Result<String> {
     use std::io::BufRead;
     // find a *.ko in /vendor/lib/modules
@@ -92,18 +87,15 @@ fn parse_kmi_from_modules() -> Result<String> {
 }
 
 #[cfg(target_os = "android")]
-#[allow(dead_code)]
 pub fn get_current_kmi() -> Result<String> {
     parse_kmi_from_uname().or_else(|_| parse_kmi_from_modules())
 }
 
 #[cfg(not(target_os = "android"))]
-#[allow(dead_code)]
 pub fn get_current_kmi() -> Result<String> {
     bail!("Unsupported platform")
 }
 
-#[allow(dead_code)]
 fn parse_kmi_from_kernel(kernel: &PathBuf, workdir: &Path) -> Result<String> {
     use std::fs::{File, copy};
     use std::io::{BufReader, Read};
@@ -137,7 +129,6 @@ fn parse_kmi_from_kernel(kernel: &PathBuf, workdir: &Path) -> Result<String> {
     bail!("Try to choose LKM manually")
 }
 
-#[allow(dead_code)]
 fn parse_kmi_from_boot(magiskboot: &Path, image: &PathBuf, workdir: &Path) -> Result<String> {
     let image_path = workdir.join("image");
 
@@ -162,7 +153,6 @@ fn parse_kmi_from_boot(magiskboot: &Path, image: &PathBuf, workdir: &Path) -> Re
     parse_kmi_from_kernel(&image_path, workdir)
 }
 
-#[allow(dead_code)]
 fn do_cpio_cmd(magiskboot: &Path, workdir: &Path, cmd: &str) -> Result<()> {
     let status = Command::new(magiskboot)
         .current_dir(workdir)
@@ -177,7 +167,6 @@ fn do_cpio_cmd(magiskboot: &Path, workdir: &Path, cmd: &str) -> Result<()> {
     Ok(())
 }
 
-#[allow(dead_code)]
 fn is_magisk_patched(magiskboot: &Path, workdir: &Path) -> Result<bool> {
     let status = Command::new(magiskboot)
         .current_dir(workdir)
@@ -190,7 +179,6 @@ fn is_magisk_patched(magiskboot: &Path, workdir: &Path) -> Result<bool> {
     Ok(status.code() == Some(1))
 }
 
-#[allow(dead_code)]
 fn is_kernelsu_patched(magiskboot: &Path, workdir: &Path) -> Result<bool> {
     let status = Command::new(magiskboot)
         .current_dir(workdir)
@@ -202,7 +190,6 @@ fn is_kernelsu_patched(magiskboot: &Path, workdir: &Path) -> Result<bool> {
     Ok(status.success())
 }
 
-#[allow(dead_code)]
 fn dd<P: AsRef<Path>, Q: AsRef<Path>>(ifile: P, ofile: Q) -> Result<()> {
     let status = Command::new("dd")
         .stdout(Stdio::null())
@@ -219,7 +206,6 @@ fn dd<P: AsRef<Path>, Q: AsRef<Path>>(ifile: P, ofile: Q) -> Result<()> {
     Ok(())
 }
 
-#[allow(dead_code)]
 pub fn restore(
     image: Option<PathBuf>,
     magiskboot_path: Option<PathBuf>,
@@ -337,7 +323,6 @@ pub fn restore(
     Ok(())
 }
 
-#[allow(dead_code)]
 #[allow(clippy::too_many_arguments)]
 pub fn patch(
     image: Option<PathBuf>,
@@ -357,7 +342,6 @@ pub fn patch(
     result
 }
 
-#[allow(dead_code)]
 #[allow(clippy::too_many_arguments)]
 fn do_patch(
     image: Option<PathBuf>,
@@ -544,7 +528,6 @@ fn do_patch(
     Ok(())
 }
 
-#[allow(dead_code)]
 #[cfg(target_os = "android")]
 fn calculate_sha1(file_path: impl AsRef<Path>) -> Result<String> {
     use sha1::Digest;
@@ -565,7 +548,6 @@ fn calculate_sha1(file_path: impl AsRef<Path>) -> Result<String> {
     Ok(format!("{:x}", result))
 }
 
-#[allow(dead_code)]
 #[cfg(target_os = "android")]
 fn do_backup(magiskboot: &Path, workdir: &Path, image: &str) -> Result<()> {
     let sha1 = calculate_sha1(image)?;
@@ -586,7 +568,6 @@ fn do_backup(magiskboot: &Path, workdir: &Path, image: &str) -> Result<()> {
     Ok(())
 }
 
-#[allow(dead_code)]
 #[cfg(target_os = "android")]
 fn clean_backup(sha1: &str) -> Result<()> {
     println!("- Clean up backup");
@@ -610,7 +591,6 @@ fn clean_backup(sha1: &str) -> Result<()> {
     Ok(())
 }
 
-#[allow(dead_code)]
 fn flash_boot(bootdevice: &Option<String>, new_boot: PathBuf) -> Result<()> {
     let Some(bootdevice) = bootdevice else {
         bail!("boot device not found")
@@ -624,7 +604,6 @@ fn flash_boot(bootdevice: &Option<String>, new_boot: PathBuf) -> Result<()> {
     Ok(())
 }
 
-#[allow(dead_code)]
 fn find_magiskboot(magiskboot_path: Option<PathBuf>, workdir: &Path) -> Result<PathBuf> {
     let magiskboot = {
         if which("magiskboot").is_ok() {
@@ -649,7 +628,6 @@ fn find_magiskboot(magiskboot_path: Option<PathBuf>, workdir: &Path) -> Result<P
     Ok(magiskboot)
 }
 
-#[allow(dead_code)]
 fn find_boot_image(
     image: &Option<PathBuf>,
     skip_init: bool,
