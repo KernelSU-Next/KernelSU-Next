@@ -12,18 +12,26 @@
     <string name="home">主頁</string>
     <string name="home_not_installed">未安裝</string>
     <string name="home_click_to_install">點擊安裝</string>
+    <string name="lkm_mode_deprecated">LKM 模式已棄用！</string>
+    <string name="lkm_alternative_suggestion">請安裝 GKI 內核或手動將 KernelSU Next 整合到你的裝置。</string>
     <string name="home_working">工作中</string>
     <string name="home_working_version">版本: %d</string>
     <string name="home_superuser_count">超級使用者數: %d</string>
     <string name="home_module_count">模組數: %d</string>
+    <string name="home_module_update_count">可更新模組數: %d</string>
     <string name="home_failure">內核中未找到 KernelSU Next v2 簽名！ [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">請讓你的內核開發人員整合 KernelSU Next！</string>
     <string name="home_kernel">內核版本</string>
+    <string name="hook_mode">Hook 模式</string>
+    <string name="enabled">已啟用</string>
+    <string name="disabled">已禁用</string>
+    <string name="susfs_supported">支援</string>
     <string name="home_susfs">SuSFS：%s</string>
     <string name="home_susfs_version">SuSFS 版本</string>
     <string name="home_susfs_sus_su">SuS SU</string>
     <string name="home_android">Android 版本</string>
-    <string name="home_manager_version">管理器版本</string>
+    <string name="home_manager_version">管理員版本</string>
+    <string name="home_abi">接口</string>
     <string name="home_selinux_status">SELinux 狀態</string>
     <string name="selinux_status_disabled">被禁用</string>
     <string name="selinux_status_enforcing">強制執行</string>
@@ -93,6 +101,7 @@
     <string name="proceed">繼續</string>
     <string name="cancel">取消</string>
     <string name="later">稍後</string>
+    <string name="lkm_warning_message">此 LKM 補丁依賴於閉源組件，你確定要繼續嗎？</string>
     <string name="home_next_kernelsu">🔥 Next 構建</string>
     <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Next 實驗性分支。在 GitHub 上查看！</string>
@@ -191,4 +200,8 @@
     <string name="settings_disable_su">關閉 SU 相容</string>
     <string name="settings_disable_su_summary">暫時禁止任何應用通過 su 命令獲取 root 權限（已運行的 root 進程不受影響）</string>
     <string name="settings_language">語言</string>
+    <string name="use_webuix">使用 WebUI X</string>
+    <string name="use_webuix_summary">使用具有更多 API 支援的 WebUI X 取代舊有 WebUI。</string>
+    <string name="use_webuix_eruda">對 WebUI X 注入 Eruda</string>
+    <string name="use_webuix_eruda_summary">給 WebUI X 注入一個偵錯主控台以簡化偵錯流程，需要啟用 Web 偵錯功能。</string>
 </resources>
