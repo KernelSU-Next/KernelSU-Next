@@ -18,13 +18,16 @@
     <string name="home_working_version">Версия: %d</string>
     <string name="home_superuser_count">Superusers: %d</string>
     <string name="home_module_count">Модули: %d</string>
+    <string name="home_module_update_count">Обновления: %d</string>
     <string name="home_failure">Подпись KernelSU Next v2 не найдена в ядре! [!KSU_NEXT || != size/hash]</string>
     <string name="home_failure_tip">Попросите вашего разработчика ядра интегрировать KernelSU Next!</string>
     <string name="home_kernel">Версия ядра</string>
     <string name="hook_mode">Режим хуков</string>
+    <string name="enable">Включить</string>
+    <string name="disable">Отключить</string>
     <string name="disabled">Отключено</string>
     <string name="enabled">Включено</string>
-    <string name="susfs_supported">Поддерживается</string>
+    <string name="susfs_supported">Доступно</string>
     <string name="home_susfs">SuSFS: %s</string>
     <string name="home_susfs_version">Версия SuSFS</string>
     <string name="home_susfs_sus_su">SuS SU</string>
@@ -49,6 +52,7 @@
     <string name="module_install">Установить</string>
     <string name="install">Установить</string>
     <string name="reboot">Перезагрузка</string>
+    <string name="uninstalled">Удалено</string>
     <string name="settings">Настройки</string>
     <string name="reboot_userspace">Мягкая перезагрузка</string>
     <string name="reboot_recovery">Перезагрузка в Recovery</string>
@@ -100,6 +104,7 @@
     <string name="proceed">Продолжить</string>
     <string name="cancel">Отмена</string>
     <string name="later">Позже</string>
+    <string name="lkm_warning_message">Патч LKM использует компоненты с закрытым исходным кодом. Хотите продолжить?</string>
     <string name="home_next_kernelsu">🔥 Следующий билд</string>
     <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Следующая экспериментальная ветка. Посмотрите на GitHub!</string>
@@ -109,7 +114,7 @@
     <string name="home_experimental_kernelsu_body_point_1"> • Используйте на свой страх и риск: могут возникнуть сбои, непредвиденное поведение или проблемы с системой.</string>
     <string name="home_experimental_kernelsu_body_point_2"> • Предупреждение: разработчики не несут ответственности за потерю данных, повреждение системы или другие последствия, вызванные использованием.</string>
     <string name="home_experimental_kernelsu_body_point_3"> • Только для тестирования: предназначено для пользователей, которые понимают риски и готовы решать возникающие проблемы.</string>
-    <string name="about_source_code"><![CDATA[Посмотреть исходный код на %1$s]]></string>
+    <string name="about_source_code"><![CDATA[Исходный код на %1$s]]></string>
     <string name="profile" translatable="false">Профиль Приложения</string>
     <string name="profile_default">По умолчанию</string>
     <string name="profile_template">Шаблон</string>
@@ -133,6 +138,7 @@
     <string name="profile_selinux_domain">Домен</string>
     <string name="profile_selinux_rules">Правила</string>
     <string name="module_update">Обновить</string>
+    <string name="module_updated">Обновлено</string>
     <string name="module_downloading">Загрузка модуля: %s</string>
     <string name="module_start_downloading">Начало загрузки: %s</string>
     <string name="new_version_available">Доступна новая версия %s, нажмите для обновления.</string>
@@ -140,6 +146,10 @@
     <string name="close">Закрыть</string>
     <string name="force_stop_app">Принудительно остановить</string>
     <string name="restart_app">Перезапустить</string>
+    <string name="settings_amoled_mode">Режим AMOLED</string>
+    <string name="settings_amoled_mode_summary">Включите чисто черную тему, полезную для экранов AMOLED, чтобы снизить нагрузку на глаза и сэкономить заряд батареи.</string>
+    <string name="restart_required">Требуется перезапуск</string>
+    <string name="restart_app_message">Чтобы изменения вступили в силу, необходимо перезапустить приложение.</string>
     <string name="failed_to_update_sepolicy">Не удалось обновить правила SELinux для: %s</string>
     <string name="su_not_allowed">Предоставление прав суперпользователя запрещено для: %s</string>
     <string name="module_changelog">Журнал изменений</string>
@@ -169,6 +179,7 @@
     <string name="settings_check_update_summary">Автоматически проверять обновления при открытии приложения.</string>
     <string name="grant_root_failed">Не удалось предоставить root-доступ!</string>
     <string name="action">Запустить</string>
+    <string name="webui">WebUI</string>
     <string name="open">Открыть</string>
     <string name="enable_web_debugging">Отладка WebView</string>
     <string name="enable_web_debugging_summary">Можно использовать для отладки WebUI. Включайте только при необходимости.</string>
