@@ -148,7 +148,7 @@
     <string name="restart_app">Restart</string>
     <string name="settings_amoled_mode">AMOLED mode</string>
     <string name="settings_amoled_mode_summary">Enable a pure black theme useful for AMOLED screens to reduce eye strain and save battery.</string>
-    <string name="restart_required">Restart Required</string>
+    <string name="restart_required">Restart required</string>
     <string name="restart_app_message">The app needs to restart for this change to take effect.</string>
     <string name="failed_to_update_sepolicy">Failed to update SELinux rules for: %s</string>
     <string name="su_not_allowed">Granting superuser isn\'t allowed for: %s</string>
