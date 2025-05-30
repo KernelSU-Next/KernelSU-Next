@@ -23,6 +23,8 @@
     <string name="home_failure_tip">Peça ao seu desenvolvedor de kernel para integrar o KernelSU Next!</string>
     <string name="home_kernel">Versão do kernel</string>
     <string name="hook_mode">Modo do hook</string>
+    <string name="enable">Ativar</string>
+    <string name="disable">Desativar</string>
     <string name="enabled">Ativado</string>
     <string name="disabled">Desativado</string>
     <string name="susfs_supported">Suportado</string>
@@ -50,6 +52,7 @@
     <string name="module_install">Instalar</string>
     <string name="install">Instalar</string>
     <string name="reboot">Reiniciar</string>
+    <string name="uninstalled">Desinstalado</string>
     <string name="settings">Configurações</string>
     <string name="reboot_userspace">Reinicialização suave</string>
     <string name="reboot_recovery">Reiniciar em modo Recovery</string>
@@ -135,6 +138,7 @@
     <string name="profile_selinux_domain">Domínio</string>
     <string name="profile_selinux_rules">Regras</string>
     <string name="module_update">Atualizar</string>
+    <string name="module_updated">Atualizado</string>
     <string name="module_downloading">Baixando módulo %s</string>
     <string name="module_start_downloading">Começando a baixar %s</string>
     <string name="new_version_available">Nova versão %s está disponível, clique para atualizar.</string>
@@ -142,6 +146,10 @@
     <string name="close">Fechar</string>
     <string name="force_stop_app">Forçar parada</string>
     <string name="restart_app">Reiniciar</string>
+    <string name="settings_amoled_mode">Modo AMOLED</string>
+    <string name="settings_amoled_mode_summary">Ative um tema preto puro útil para telas AMOLED para reduzir o cansaço visual e economizar bateria.</string>
+    <string name="restart_required">Reinicialização necessária</string>
+    <string name="restart_app_message">O app precisa ser reiniciado para que essa alteração tenha efeito.</string>
     <string name="failed_to_update_sepolicy">Falha ao atualizar as regras do SELinux para: %s</string>
     <string name="su_not_allowed">O acesso de SuperUsuário não é permitido para: %s</string>
     <string name="module_changelog">Registro de alterações</string>
@@ -171,6 +179,7 @@
     <string name="settings_check_update_summary">Verifique automaticamente se há atualizações ao abrir o app</string>
     <string name="grant_root_failed">Falha ao conceder acesso root!</string>
     <string name="action">Ação</string>
+    <string name="webui">WebUI</string>
     <string name="open">Abrir</string>
     <string name="enable_web_debugging">Ativar depuração do WebView</string>
     <string name="enable_web_debugging_summary">Pode ser usado para depurar o WebUI. Por favor, ative somente quando necessário.</string>
