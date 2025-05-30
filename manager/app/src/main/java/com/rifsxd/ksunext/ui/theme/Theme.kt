@@ -17,25 +17,50 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 
 private val DarkColorScheme = darkColorScheme(
-    primary = YELLOW,
-    secondary = YELLOW_DARK,
+    primary = PRIMARY,
+    secondary = PRIMARY_DARK,
     tertiary = SECONDARY_DARK
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = YELLOW,
-    secondary = YELLOW_LIGHT,
+    primary = PRIMARY,
+    secondary = PRIMARY_LIGHT,
     tertiary = SECONDARY_LIGHT
 )
+
+fun Color.blend(other: Color, ratio: Float): Color {
+    val inverse = 1f - ratio
+    return Color(
+        red = red * inverse + other.red * ratio,
+        green = green * inverse + other.green * ratio,
+        blue = blue * inverse + other.blue * ratio,
+        alpha = alpha
+    )
+}
 
 @Composable
 fun KernelSUTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
+    amoledMode: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
+        amoledMode && darkTheme && dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            val context = LocalContext.current
+            val dynamicScheme = dynamicDarkColorScheme(context)
+            dynamicScheme.copy(
+                background = AMOLED_BLACK,
+                surface = AMOLED_BLACK,
+                surfaceVariant = dynamicScheme.surfaceVariant.blend(AMOLED_BLACK, 0.6f),
+                surfaceContainer = dynamicScheme.surfaceContainer.blend(AMOLED_BLACK, 0.6f),
+                surfaceContainerLow = dynamicScheme.surfaceContainerLow.blend(AMOLED_BLACK, 0.6f),
+                surfaceContainerLowest = dynamicScheme.surfaceContainerLowest.blend(AMOLED_BLACK, 0.6f),
+                surfaceContainerHigh = dynamicScheme.surfaceContainerHigh.blend(AMOLED_BLACK, 0.6f),
+                surfaceContainerHighest = dynamicScheme.surfaceContainerHighest.blend(AMOLED_BLACK, 0.6f),
+            )
+        }
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)

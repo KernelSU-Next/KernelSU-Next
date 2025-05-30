@@ -8,6 +8,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -80,6 +81,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dergoogler.mmrl.platform.Platform
 import com.ramcosta.composedestinations.annotation.Destination
@@ -110,9 +112,7 @@ import com.rifsxd.ksunext.ui.util.restoreModule
 import com.rifsxd.ksunext.ui.viewmodel.ModuleViewModel
 import com.rifsxd.ksunext.ui.webui.WebUIActivity
 import com.rifsxd.ksunext.ui.webui.WebUIXActivity
-import androidx.core.net.toUri
-import com.dergoogler.mmrl.platform.model.ModuleConfig
-import com.dergoogler.mmrl.platform.model.ModuleConfig.Companion.asModuleConfig
+import com.dergoogler.mmrl.ui.component.LabelItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -310,22 +310,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                 .setData("kernelsu://webui/$id".toUri())
                                 .putExtra("id", id)
                                 .putExtra("name", name)
-
-                            val config = id.asModuleConfig
-
-                            val engine = config.getWebuiEngine(context)
-
-                            if (engine != null) {
-                                webUILauncher.launch(
-                                    when (config.getWebuiEngine(context)) {
-                                        "wx" -> wxEngine
-                                        "ksu" -> ksuEngine
-                                        else -> wxEngine
-                                    }
-                                )
-
-                                return@ModuleList
-                            }
 
                             webUILauncher.launch(
                                 if (prefs.getBoolean("use_webuix", true) && Platform.isAlive) {
@@ -601,6 +585,7 @@ private fun ModuleList(
                                         updatedModule.first,
                                         "${module.name}-${updatedModule.second}.zip"
                                     )
+                                    viewModel.markNeedRefresh()
                                 }
                             },
                             onClick = {
@@ -658,7 +643,7 @@ fun ModuleItem(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 val moduleVersion = stringResource(id = R.string.module_version)
                 val moduleAuthor = stringResource(id = R.string.module_author)
@@ -670,6 +655,71 @@ fun ModuleItem(
                 Column(
                     modifier = Modifier.fillMaxWidth(0.8f)
                 ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        LabelItem(
+                            text = if (module.enabled) stringResource(R.string.enabled) else stringResource(R.string.disabled),
+                            style = if (module.enabled)
+                                com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy()
+                            else
+                                com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                        )
+                        if (module.remove) {
+                            LabelItem(
+                                text = stringResource(R.string.uninstalled),
+                                style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            )
+                        }
+                        if (updateUrl.isNotEmpty() && !module.remove && !module.update) {
+                            LabelItem(
+                                text = stringResource(R.string.module_update),
+                                style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                    containerColor = MaterialTheme.colorScheme.onTertiary,
+                                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                                )
+                            )
+                        }
+                        if (!module.remove) {
+                            if (module.update) {
+                                LabelItem(
+                                    text = stringResource(R.string.module_updated),
+                                    style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                )
+                            }
+                        }
+                        if (module.hasWebUi) {
+                            LabelItem(
+                                text = stringResource(R.string.webui),
+                                style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                            )
+                        }
+                        if (module.hasActionScript) {
+                            LabelItem(
+                                text = stringResource(R.string.action),
+                                style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     Text(
                         text = module.name,
                         fontSize = MaterialTheme.typography.titleMedium.fontSize,
@@ -723,18 +773,86 @@ fun ModuleItem(
                     }
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End,
                 ) {
-                    Switch(
-                        enabled = !module.update,
-                        checked = module.enabled,
-                        onCheckedChange = onCheckChanged,
-                        interactionSource = if (!module.hasWebUi) interactionSource else null
-                    )
+                    var expanded by remember { mutableStateOf(false) }
+                    IconButton(onClick = { expanded = true }) {
+                        Icon(
+                            Icons.Filled.MoreVert,
+                            contentDescription = "Module actions"
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        if (updateUrl.isNotEmpty() && !module.remove) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.module_update)) },
+                                onClick = {
+                                    expanded = false
+                                    onUpdate(module)
+                                }
+                            )
+                            HorizontalDivider()
+                        }
+                        
+                        if (module.hasWebUi) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.webui)) },
+                                onClick = {
+                                    expanded = false
+                                    onClick(module)
+                                }
+                            )
+                        }
+                        if (module.hasActionScript) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.action)) },
+                                onClick = {
+                                    expanded = false
+                                    navigator.navigate(ExecuteModuleActionScreenDestination(module.dirId))
+                                    viewModel.markNeedRefresh()
+                                }
+                            )
+                        }
+
+                        if (module.hasWebUi || module.hasActionScript ) {
+                            HorizontalDivider()
+                        }
+
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    if (module.enabled) stringResource(R.string.disable)
+                                    else stringResource(R.string.enable)
+                                )
+                            },
+                            onClick = {
+                                expanded = false
+                                onCheckChanged(!module.enabled)
+                            }
+                        )
+                        if (module.remove) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.restore)) },
+                                onClick = {
+                                    expanded = false
+                                    onRestore(module)
+                                }
+                            )
+                        } else {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.uninstall)) },
+                                onClick = {
+                                    expanded = false
+                                    onUninstall(module)
+                                }
+                            )
+                        }
+                    }
                 }
             }
 
@@ -751,139 +869,7 @@ fun ModuleItem(
                 textDecoration = textDecoration
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            HorizontalDivider(thickness = Dp.Hairline)
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                if (module.hasActionScript) {
-                    FilledTonalButton(
-                        modifier = Modifier.defaultMinSize(52.dp, 32.dp),
-                        enabled = !module.remove && module.enabled,
-                        onClick = {
-                            navigator.navigate(ExecuteModuleActionScreenDestination(module.dirId))
-                            viewModel.markNeedRefresh()
-                        },
-                        contentPadding = ButtonDefaults.TextButtonContentPadding
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(20.dp),
-                            imageVector = Icons.Outlined.PlayArrow,
-                            contentDescription = null
-                        )
-                        if (!module.hasWebUi && updateUrl.isEmpty()) {
-                            Text(
-                                modifier = Modifier.padding(start = 7.dp),
-                                text = stringResource(R.string.action),
-                                fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                                fontSize = MaterialTheme.typography.labelMedium.fontSize
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.weight(0.1f, true))
-                }
-
-                if (module.hasWebUi) {
-                    FilledTonalButton(
-                        modifier = Modifier.defaultMinSize(52.dp, 32.dp),
-                        enabled = !module.remove && module.enabled,
-                        onClick = { onClick(module) },
-                        interactionSource = interactionSource,
-                        contentPadding = ButtonDefaults.TextButtonContentPadding
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(20.dp),
-                            imageVector = Icons.AutoMirrored.Outlined.Wysiwyg,
-                            contentDescription = null
-                        )
-                        if (!module.hasActionScript && updateUrl.isEmpty()) {
-                            Text(
-                                modifier = Modifier.padding(start = 7.dp),
-                                fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                                fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                                text = stringResource(R.string.open)
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.weight(1f, true))
-
-                if (updateUrl.isNotEmpty()) {
-                    Button(
-                        modifier = Modifier.defaultMinSize(52.dp, 32.dp),
-                        enabled = !module.remove,
-                        onClick = { onUpdate(module) },
-                        shape = ButtonDefaults.textShape,
-                        contentPadding = ButtonDefaults.TextButtonContentPadding
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(20.dp),
-                            imageVector = Icons.Outlined.Download,
-                            contentDescription = null
-                        )
-                        if (!module.hasActionScript || !module.hasWebUi) {
-                            Text(
-                                modifier = Modifier.padding(start = 7.dp),
-                                fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                                fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                                text = stringResource(R.string.module_update)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.weight(0.1f, true))
-                }
-
-                if (module.remove) {
-                    FilledTonalButton(
-                        modifier = Modifier.defaultMinSize(52.dp, 32.dp),
-                        onClick = { onRestore(module) },
-                        contentPadding = ButtonDefaults.TextButtonContentPadding
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(20.dp),
-                            imageVector = Icons.Outlined.Restore,
-                            contentDescription = null
-                        )
-                        if (!module.hasActionScript && !module.hasWebUi && updateUrl.isEmpty()) {
-                            Text(
-                                modifier = Modifier.padding(start = 7.dp),
-                                fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                                fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                                text = stringResource(R.string.restore)
-                            )
-                        }
-                    }
-                } else {
-                    FilledTonalButton(
-                        modifier = Modifier.defaultMinSize(52.dp, 32.dp),
-                        enabled = true,
-                        onClick = { onUninstall(module) },
-                        contentPadding = ButtonDefaults.TextButtonContentPadding
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(20.dp),
-                            imageVector = Icons.Outlined.Delete,
-                            contentDescription = null
-                        )
-                        if (!module.hasActionScript && !module.hasWebUi && updateUrl.isEmpty()) {
-                            Text(
-                                modifier = Modifier.padding(start = 7.dp),
-                                fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
-                                fontSize = MaterialTheme.typography.labelMedium.fontSize,
-                                text = stringResource(R.string.uninstall)
-                            )
-                        }
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.height(6.dp))
         }
     }
 }
@@ -904,8 +890,7 @@ fun ModuleItemPreview() {
         updateJson = "",
         hasWebUi = false,
         hasActionScript = false,
-        dirId = "dirId",
-        config = ModuleConfig()
+        dirId = "dirId"
     )
     ModuleItem(EmptyDestinationsNavigator, module, "", {}, {}, {}, {}, {})
 }

@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -356,6 +357,50 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 ) {
                     prefs.edit().putBoolean("use_webuix_eruda", it).apply()
                     useWebUIXEruda = it
+                }
+            }
+
+            var enableAmoled by rememberSaveable {
+                mutableStateOf(
+                    prefs.getBoolean("enable_amoled", false)
+                )
+            }
+            var showRestartDialog by remember { mutableStateOf(false) }
+            if (isSystemInDarkTheme()) {
+                SwitchItem(
+                    icon = Icons.Filled.Contrast,
+                    title = stringResource(id = R.string.settings_amoled_mode),
+                    summary = stringResource(id = R.string.settings_amoled_mode_summary),
+                    checked = enableAmoled
+                ) { checked ->
+                    prefs.edit().putBoolean("enable_amoled", checked).apply()
+                    enableAmoled = checked
+                    showRestartDialog = true
+                }
+                if (showRestartDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showRestartDialog = false },
+                        title = { Text(stringResource(R.string.restart_required)) },
+                        text = { Text(stringResource(R.string.restart_app_message)) },
+                        confirmButton = {
+                            TextButton(onClick = {
+                                showRestartDialog = false
+                                // Restart the app
+                                val packageManager = context.packageManager
+                                val intent = packageManager.getLaunchIntentForPackage(context.packageName)
+                                intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                                context.startActivity(intent)
+                                Runtime.getRuntime().exit(0)
+                            }) {
+                                Text(stringResource(R.string.restart_app))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showRestartDialog = false }) {
+                                Text(stringResource(R.string.later))
+                            }
+                        }
+                    )
                 }
             }
 

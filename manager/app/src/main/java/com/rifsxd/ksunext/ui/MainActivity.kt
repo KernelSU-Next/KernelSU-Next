@@ -1,5 +1,6 @@
 package com.rifsxd.ksunext.ui
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -70,7 +71,13 @@ class MainActivity : ComponentActivity() {
         if (isManager) install()
 
         setContent {
-            KernelSUTheme {
+            // Read AMOLED mode preference
+            val prefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
+            val amoledMode = prefs.getBoolean("enable_amoled", false)
+
+            KernelSUTheme (
+                amoledMode = amoledMode
+            ) {
                 val navController = rememberNavController()
                 val snackBarHostState = remember { SnackbarHostState() }
                 val currentDestination = navController.currentBackStackEntryAsState()?.value?.destination

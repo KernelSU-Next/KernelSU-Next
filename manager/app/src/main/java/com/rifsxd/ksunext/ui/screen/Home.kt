@@ -51,6 +51,7 @@ import com.rifsxd.ksunext.ui.component.rememberConfirmDialog
 import com.rifsxd.ksunext.ui.util.*
 import com.rifsxd.ksunext.ui.util.module.LatestVersionInfo
 import com.rifsxd.ksunext.ui.viewmodel.ModuleViewModel
+import com.rifsxd.ksunext.ui.viewmodel.SuperUserViewModel
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,10 +88,22 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             val lkmMode = ksuVersion?.let {
                 if (it >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && kernelVersion.isGKI()) Natives.isLkmMode else null
             }
-
+            
+            val superUserViewModel: SuperUserViewModel = viewModel()
+            
             val moduleViewModel: ModuleViewModel = viewModel()
+
+            LaunchedEffect(Unit) {
+                if (superUserViewModel.appList.isEmpty()) {
+                    superUserViewModel.fetchAppList()
+                }
+
+                if (moduleViewModel.moduleList.isEmpty()) {
+                    moduleViewModel.fetchModuleList()
+                }
+            }
+
             val moduleUpdateCount = moduleViewModel.moduleList.count { 
-                // Only count modules when update available (updateUrl is not empty)
                 moduleViewModel.checkUpdate(it).first.isNotEmpty()
             }
 
@@ -204,7 +217,7 @@ private fun TopBar(
                     showDropdown = true
                 }) {
                     Icon(
-                        imageVector = Icons.Filled.Refresh,
+                        imageVector = Icons.Filled.PowerSettingsNew,
                         contentDescription = stringResource(id = R.string.reboot)
                     )
 
@@ -266,7 +279,9 @@ private fun StatusCard(
                 .fillMaxWidth()
                 .clickable {
                     tapCount++
-                    if (tapCount == 10) {
+                    if (tapCount == 5) {
+                        Toast.makeText(context, "What are you doing? 🤔", Toast.LENGTH_SHORT).show()
+                    } else if (tapCount == 10) {
                         Toast.makeText(context, "Never gonna give you up! 💜", Toast.LENGTH_SHORT).show()
                         val url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
                         val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))

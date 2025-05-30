@@ -152,6 +152,9 @@ private fun AppItem(
         supportingContent = {
             Column {
                 Text(app.packageName)
+
+                Spacer(modifier = Modifier.height(4.dp))
+                
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {

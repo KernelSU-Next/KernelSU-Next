@@ -8,8 +8,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dergoogler.mmrl.platform.model.ModuleConfig
-import com.dergoogler.mmrl.platform.model.ModuleConfig.Companion.asModuleConfig
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.TIMEOUT_MILLIS
 import kotlinx.coroutines.delay
@@ -45,8 +43,7 @@ class ModuleViewModel : ViewModel() {
         val updateJson: String,
         val hasWebUi: Boolean,
         val hasActionScript: Boolean,
-        val dirId: String,
-        val config: ModuleConfig,
+        val dirId: String
     )
 
     data class ModuleUpdateInfo(
@@ -120,23 +117,21 @@ class ModuleViewModel : ViewModel() {
                         .map { array.getJSONObject(it) }
                         .map { obj ->
                             val id = obj.getString("id")
-                            val config = id.asModuleConfig
 
                             ModuleInfo(
                                 id,
-                                config.name ?: obj.optString("name"),
+                                obj.optString("name"),
                                 obj.optString("author", "Unknown"),
                                 obj.optString("version", "Unknown"),
                                 obj.optInt("versionCode", 0),
-                                config.description ?: obj.optString("description"),
+                                obj.optString("description"),
                                 obj.getBoolean("enabled"),
                                 obj.getBoolean("update"),
                                 obj.getBoolean("remove"),
                                 obj.optString("updateJson"),
                                 obj.optBoolean("web"),
                                 obj.optBoolean("action"),
-                                obj.getString("dir_id"),
-                                config
+                                obj.getString("dir_id")
                             )
                         }.toList()
                     isNeedRefresh = false
