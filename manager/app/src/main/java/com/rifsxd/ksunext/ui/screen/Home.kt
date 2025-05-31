@@ -51,6 +51,7 @@ import com.rifsxd.ksunext.ui.component.rememberConfirmDialog
 import com.rifsxd.ksunext.ui.util.*
 import com.rifsxd.ksunext.ui.util.module.LatestVersionInfo
 import com.rifsxd.ksunext.ui.viewmodel.ModuleViewModel
+import com.rifsxd.ksunext.ui.viewmodel.SuperUserViewModel
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,10 +88,22 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             val lkmMode = ksuVersion?.let {
                 if (it >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && kernelVersion.isGKI()) Natives.isLkmMode else null
             }
-
+            
+            val superUserViewModel: SuperUserViewModel = viewModel()
+            
             val moduleViewModel: ModuleViewModel = viewModel()
+
+            LaunchedEffect(Unit) {
+                if (superUserViewModel.appList.isEmpty()) {
+                    superUserViewModel.fetchAppList()
+                }
+
+                if (moduleViewModel.moduleList.isEmpty()) {
+                    moduleViewModel.fetchModuleList()
+                }
+            }
+
             val moduleUpdateCount = moduleViewModel.moduleList.count { 
-                // Only count modules when update available (updateUrl is not empty)
                 moduleViewModel.checkUpdate(it).first.isNotEmpty()
             }
 

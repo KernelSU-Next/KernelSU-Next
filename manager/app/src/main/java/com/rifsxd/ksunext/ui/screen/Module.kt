@@ -81,6 +81,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dergoogler.mmrl.platform.Platform
 import com.ramcosta.composedestinations.annotation.Destination
@@ -111,9 +112,6 @@ import com.rifsxd.ksunext.ui.util.restoreModule
 import com.rifsxd.ksunext.ui.viewmodel.ModuleViewModel
 import com.rifsxd.ksunext.ui.webui.WebUIActivity
 import com.rifsxd.ksunext.ui.webui.WebUIXActivity
-import androidx.core.net.toUri
-import com.dergoogler.mmrl.platform.model.ModuleConfig
-import com.dergoogler.mmrl.platform.model.ModuleConfig.Companion.asModuleConfig
 import com.dergoogler.mmrl.ui.component.LabelItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -312,22 +310,6 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                 .setData("kernelsu://webui/$id".toUri())
                                 .putExtra("id", id)
                                 .putExtra("name", name)
-
-                            val config = id.asModuleConfig
-
-                            val engine = config.getWebuiEngine(context)
-
-                            if (engine != null) {
-                                webUILauncher.launch(
-                                    when (config.getWebuiEngine(context)) {
-                                        "wx" -> wxEngine
-                                        "ksu" -> ksuEngine
-                                        else -> wxEngine
-                                    }
-                                )
-
-                                return@ModuleList
-                            }
 
                             webUILauncher.launch(
                                 if (prefs.getBoolean("use_webuix", true) && Platform.isAlive) {
@@ -908,8 +890,7 @@ fun ModuleItemPreview() {
         updateJson = "",
         hasWebUi = false,
         hasActionScript = false,
-        dirId = "dirId",
-        config = ModuleConfig()
+        dirId = "dirId"
     )
     ModuleItem(EmptyDestinationsNavigator, module, "", {}, {}, {}, {}, {})
 }
