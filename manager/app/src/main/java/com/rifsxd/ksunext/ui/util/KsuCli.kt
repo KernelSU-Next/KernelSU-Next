@@ -621,6 +621,13 @@ fun currentMountSystem(): String {
     return result.substringAfter(":").substringAfter(" ").trim()
 }
 
+fun getModuleSize(dir: File): Long {
+    val shell = getRootShell()
+    val cmd = "du -sb '${dir.absolutePath}' | awk '{print \$1}'"
+    val result = ShellUtils.fastCmd(shell, cmd).trim()
+    return result.toLongOrNull() ?: 0L
+}
+
 fun setAppProfileTemplate(id: String, template: String): Boolean {
     val shell = getRootShell()
     val escapedTemplate = template.replace("\"", "\\\"")

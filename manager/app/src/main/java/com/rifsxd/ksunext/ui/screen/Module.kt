@@ -125,9 +125,11 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
     LaunchedEffect(Unit) {
+        viewModel.sortAToZ = prefs.getBoolean("module_sort_a_to_z", true)
+        viewModel.sortZToA = prefs.getBoolean("module_sort_z_to_a", false)
+        viewModel.sortSizeLowToHigh = prefs.getBoolean("module_sort_size_low_to_high", false)
+        viewModel.sortSizeHighToLow = prefs.getBoolean("module_sort_size_high_to_low", false)
         if (viewModel.moduleList.isEmpty() || viewModel.isNeedRefresh) {
-            viewModel.sortAToZ = prefs.getBoolean("module_sort_a_to_z", true)
-            viewModel.sortZToA = prefs.getBoolean("module_sort_z_to_a", false)
             viewModel.fetchModuleList()
         }
     }
@@ -180,9 +182,13 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                 onClick = {
                                     viewModel.sortAToZ = !viewModel.sortAToZ
                                     viewModel.sortZToA = false
+                                    viewModel.sortSizeLowToHigh = false
+                                    viewModel.sortSizeHighToLow = false
                                     prefs.edit()
                                         .putBoolean("module_sort_a_to_z", viewModel.sortAToZ)
                                         .putBoolean("module_sort_z_to_a", false)
+                                        .putBoolean("module_sort_size_low_to_high", false)
+                                        .putBoolean("module_sort_size_high_to_low", false)
                                         .apply()
                                     scope.launch {
                                         viewModel.fetchModuleList()
@@ -200,9 +206,61 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                 onClick = {
                                     viewModel.sortZToA = !viewModel.sortZToA
                                     viewModel.sortAToZ = false
+                                    viewModel.sortSizeLowToHigh = false
+                                    viewModel.sortSizeHighToLow = false
                                     prefs.edit()
                                         .putBoolean("module_sort_z_to_a", viewModel.sortZToA)
                                         .putBoolean("module_sort_a_to_z", false)
+                                        .putBoolean("module_sort_size_low_to_high", false)
+                                        .putBoolean("module_sort_size_high_to_low", false)
+                                        .apply()
+                                    scope.launch {
+                                        viewModel.fetchModuleList()
+                                    }
+                                }
+                            )
+
+                            DropdownMenuItem(
+                                text = {
+                                    Text(stringResource(R.string.module_size_low_to_high))
+                                },
+                                trailingIcon = {
+                                    Checkbox(checked = viewModel.sortSizeLowToHigh, onCheckedChange = null)
+                                },
+                                onClick = {
+                                    viewModel.sortSizeLowToHigh = !viewModel.sortSizeLowToHigh
+                                    viewModel.sortAToZ = false
+                                    viewModel.sortZToA = false
+                                    viewModel.sortSizeHighToLow = false
+                                    prefs.edit()
+                                        .putBoolean("module_sort_size_low_to_high", viewModel.sortSizeLowToHigh)
+                                        .putBoolean("module_sort_a_to_z", false)
+                                        .putBoolean("module_sort_z_to_a", false)
+                                        .putBoolean("module_sort_size_high_to_low", false)
+                                        .apply()
+                                    scope.launch {
+                                        viewModel.fetchModuleList()
+                                    }
+                                }
+                            )
+
+                            DropdownMenuItem(
+                                text = {
+                                    Text(stringResource(R.string.module_size_high_to_low))
+                                },
+                                trailingIcon = {
+                                    Checkbox(checked = viewModel.sortSizeHighToLow, onCheckedChange = null)
+                                },
+                                onClick = {
+                                    viewModel.sortSizeHighToLow = !viewModel.sortSizeHighToLow
+                                    viewModel.sortAToZ = false
+                                    viewModel.sortZToA = false
+                                    viewModel.sortSizeLowToHigh = false
+                                    prefs.edit()
+                                        .putBoolean("module_sort_size_high_to_low", viewModel.sortSizeHighToLow)
+                                        .putBoolean("module_sort_a_to_z", false)
+                                        .putBoolean("module_sort_z_to_a", false)
+                                        .putBoolean("module_sort_size_low_to_high", false)
                                         .apply()
                                     scope.launch {
                                         viewModel.fetchModuleList()
@@ -897,6 +955,13 @@ fun ModuleItem(
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             LabelItem(
+                                text = formatSize(module.size),
+                                style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            )
+                            LabelItem(
                                 text = if (module.enabled) stringResource(R.string.enabled) else stringResource(R.string.disabled),
                                 style = if (module.enabled)
                                     com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy()
@@ -935,23 +1000,25 @@ fun ModuleItem(
                                     )
                                 }
                             }
-                            if (module.hasWebUi) {
-                                LabelItem(
-                                    text = stringResource(R.string.webui),
-                                    style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            if (!module.remove) {
+                                if (module.hasWebUi) {
+                                    LabelItem(
+                                        text = stringResource(R.string.webui),
+                                        style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                        )
                                     )
-                                )
-                            }
-                            if (module.hasActionScript) {
-                                LabelItem(
-                                    text = stringResource(R.string.action),
-                                    style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
-                                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                }
+                                if (module.hasActionScript) {
+                                    LabelItem(
+                                        text = stringResource(R.string.action),
+                                        style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
 
@@ -1036,42 +1103,46 @@ fun ModuleItem(
                                 HorizontalDivider()
                             }
                             
-                            if (module.hasWebUi) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.webui)) },
-                                    onClick = {
-                                        expanded = false
-                                        onClick(module)
-                                    }
-                                )
-                            }
-                            if (module.hasActionScript) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.action)) },
-                                    onClick = {
-                                        expanded = false
-                                        navigator.navigate(ExecuteModuleActionScreenDestination(module.dirId))
-                                        viewModel.markNeedRefresh()
-                                    }
-                                )
-                            }
-
-                            if (module.hasWebUi || module.hasActionScript ) {
-                                HorizontalDivider()
-                            }
-
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        if (module.enabled) stringResource(R.string.disable)
-                                        else stringResource(R.string.enable)
+                            if (!module.remove) {
+                                if (module.hasWebUi) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.webui)) },
+                                        onClick = {
+                                            expanded = false
+                                            onClick(module)
+                                        }
                                     )
-                                },
-                                onClick = {
-                                    expanded = false
-                                    onCheckChanged(!module.enabled)
                                 }
-                            )
+                                if (module.hasActionScript) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.action)) },
+                                        onClick = {
+                                            expanded = false
+                                            navigator.navigate(ExecuteModuleActionScreenDestination(module.dirId))
+                                            viewModel.markNeedRefresh()
+                                        }
+                                    )
+                                }
+
+                                if (module.hasWebUi || module.hasActionScript ) {
+                                    HorizontalDivider()
+                                }
+                            }
+
+                            if (!module.remove) {
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            if (module.enabled) stringResource(R.string.disable)
+                                            else stringResource(R.string.enable)
+                                        )
+                                    },
+                                    onClick = {
+                                        expanded = false
+                                        onCheckChanged(!module.enabled)
+                                    }
+                                )
+                            }
                             if (module.remove) {
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.restore)) },
@@ -1112,6 +1183,18 @@ fun ModuleItem(
     }
 }
 
+fun formatSize(size: Long): String {
+    val kb = 1024
+    val mb = kb * 1024
+    val gb = mb * 1024
+    return when {
+        size >= gb -> String.format("%.2f GB", size.toDouble() / gb)
+        size >= mb -> String.format("%.2f MB", size.toDouble() / mb)
+        size >= kb -> String.format("%.2f KB", size.toDouble() / kb)
+        else -> "$size B"
+    }
+}
+
 @Preview
 @Composable
 fun ModuleItemPreview() {
@@ -1128,7 +1211,8 @@ fun ModuleItemPreview() {
         updateJson = "",
         hasWebUi = false,
         hasActionScript = false,
-        dirId = "dirId"
+        dirId = "dirId",
+        size = 12345678L
     )
     ModuleItem(EmptyDestinationsNavigator, module, "", {}, {}, {}, {}, {})
 }
