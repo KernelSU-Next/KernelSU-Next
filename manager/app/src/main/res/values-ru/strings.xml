@@ -45,8 +45,10 @@
     <string name="module_empty">Нет установленных модулей</string>
     <string name="module">Модули</string>
     <string name="module_install_prompt_with_name">Следующие модуль(и) будут установлены: %1$s</string>
-    <string name="module_sort_a_to_z">Сортировать (А-Я)</string>
-    <string name="module_sort_z_to_a">Сортировать (Я-А)</string>
+    <string name="module_sort_a_to_z">Сортировать (А → Я)</string>
+    <string name="module_sort_z_to_a">Сортировать (Я → А)</string>
+    <string name="module_size_low_to_high">Сортировать (Низкий → Высокий)</string>
+    <string name="module_size_high_to_low">Сортировать (Высокий → Низкий)</string>
     <string name="uninstall">Удалить</string>
     <string name="restore">Восстановить</string>
     <string name="module_install">Установить</string>
