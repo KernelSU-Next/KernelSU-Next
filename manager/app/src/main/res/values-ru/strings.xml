@@ -147,7 +147,7 @@
     <string name="force_stop_app">Принудительно остановить</string>
     <string name="restart_app">Перезапустить</string>
     <string name="settings_amoled_mode">Режим AMOLED</string>
-    <string name="settings_amoled_mode_summary">Включите чисто черную тему, полезную для экранов AMOLED, чтобы снизить нагрузку на глаза и сэкономить заряд батареи.</string>
+    <string name="settings_amoled_mode_summary">Включить полностью тёмную тему, оптимизированную для дисплеев AMOLED, чтобы снизить зрительную нагрузку и сэкономить заряд аккумулятора.</string>
     <string name="restart_required">Требуется перезапуск</string>
     <string name="restart_app_message">Чтобы изменения вступили в силу, необходимо перезапустить приложение.</string>
     <string name="failed_to_update_sepolicy">Не удалось обновить правила SELinux для: %s</string>
@@ -209,8 +209,11 @@
     <string name="settings_disable_su">Откл. совместимость с su</string>
     <string name="settings_disable_su_summary">Временно отключить возможность приложениям получать права root через команду su (существующие процессы с правами root не будут затронуты).</string>
     <string name="settings_language">Язык</string>
+    <string name="settings_legacyui">Использовать старый UI</string>
+    <string name="settings_legacyui_summary">Переключиться на предыдущий стиль интерфейса.</string>
     <string name="use_webuix">Использовать WebUI X</string>
     <string name="use_webuix_summary">Использовать WebUI X вместо WebUI, который поддерживает больше API.</string>
     <string name="use_webuix_eruda">Инжект Eruda в WebUI X</string>
     <string name="use_webuix_eruda_summary">Инжектить консоль отладки в WebUI X, чтобы упростить отладку. Требуется включить отладку WebView.</string>
+    <string name="customization">Кастомизация</string>
 </resources>
