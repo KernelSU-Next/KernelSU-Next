@@ -63,11 +63,15 @@ class ModuleViewModel : ViewModel() {
 
     var sortAToZ by mutableStateOf(false)
     var sortZToA by mutableStateOf(false)
+    var sortSizeLowToHigh by mutableStateOf(false)
+    var sortSizeHighToLow by mutableStateOf(false)
 
     val moduleList by derivedStateOf {
         val comparator = when {
             sortAToZ -> compareBy<ModuleInfo> { it.name.lowercase() }
             sortZToA -> compareByDescending<ModuleInfo> { it.name.lowercase() }
+            sortSizeLowToHigh -> compareBy<ModuleInfo> { it.size }
+            sortSizeHighToLow -> compareByDescending<ModuleInfo> { it.size }
             else -> compareBy<ModuleInfo> { it.dirId }
         }.thenBy(Collator.getInstance(Locale.getDefault()), ModuleInfo::id)
 
