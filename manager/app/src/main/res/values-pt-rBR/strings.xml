@@ -45,8 +45,10 @@
     <string name="module_empty">Nenhum módulo instalado</string>
     <string name="module">Módulo</string>
     <string name="module_install_prompt_with_name">Os seguintes módulos serão instalados: %1$s</string>
-    <string name="module_sort_a_to_z">Ordenar (A-Z)</string>
-    <string name="module_sort_z_to_a">Ordenar (Z-A)</string>
+    <string name="module_sort_a_to_z">Ordenar (A → Z)</string>
+    <string name="module_sort_z_to_a">Ordenar (Z → A)</string>
+    <string name="module_size_low_to_high">Ordenar (Menor → Maior)</string>
+    <string name="module_size_high_to_low">Ordenar (Maior → Menor)</string>
     <string name="uninstall">Desinstalar</string>
     <string name="restore">Restaurar</string>
     <string name="module_install">Instalar</string>
@@ -209,8 +211,11 @@
     <string name="settings_disable_su">Desativar compatibilidade su</string>
     <string name="settings_disable_su_summary">Desative temporariamente a capacidade de qualquer app obter privilégios root por meio do comando ⁠su (processos root existentes não serão afetados).</string>
     <string name="settings_language">Idioma</string>
+    <string name="settings_legacyui">Usar IU antiga</string>
+    <string name="settings_legacyui_summary">Mude para o estilo de interface do usuário anterior.</string>
     <string name="use_webuix">Usar WebUI X</string>
     <string name="use_webuix_summary">Use o WebUI X em vez do WebUI, que oferece suporte a mais APIs.</string>
     <string name="use_webuix_eruda">Injetar Eruda no WebUI X</string>
     <string name="use_webuix_eruda_summary">Injeta um console de depuração no WebUI X para facilitar a depuração. Requer que a depuração web esteja ativada.</string>
+    <string name="customization">Personalização</string>
 </resources>
