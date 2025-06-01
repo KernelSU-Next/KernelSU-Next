@@ -45,8 +45,10 @@
 	<string name="module_empty">Nessun modulo installato</string>
 	<string name="module">Modulo</string>
 	<string name="module_install_prompt_with_name">Verranno installati i seguenti moduli: %1$s</string>
-	<string name="module_sort_a_to_z">Ordinare (A-Z)</string>
-	<string name="module_sort_z_to_a">Ordinare (Z-A)</string>
+	<string name="module_sort_a_to_z">Ordina (A → Z)</string>
+	<string name="module_sort_z_to_a">Ordina (Z → A)</string>
+	<string name="module_size_low_to_high">Ordina (Basso → Alto)</string>
+	<string name="module_size_high_to_low">Ordina (Alto → Basso)</string>
 	<string name="uninstall">Disinstalla</string>
 	<string name="restore">Ripristina</string>
 	<string name="module_install">Installa</string>
