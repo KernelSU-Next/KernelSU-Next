@@ -24,7 +24,7 @@ KernelSU Next suporta oficialmente a maioria dos kernels Android a partir de 4.4
  - Os kernels GKI 1.0 (4.19 - 5.4) precisam ser reconstruídos com o driver KernelSU.
  - Os kernels EOL (<4.14) também precisam ser reconstruídos com o driver KernelSU (3.18+ é experimental e pode precisar portar algumas funções).
 
-Atualmente, apenas a arquitetura `arm64-v8a`, `armeabi-v7a` & `x86_64` é compatível.
+Atualmente, apenas as arquiteturas `arm64-v8a`, `armeabi-v7a` & `x86_64` são compatíveis.
 
 ## Uso
 
