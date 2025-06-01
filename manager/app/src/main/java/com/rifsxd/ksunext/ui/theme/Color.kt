@@ -9,4 +9,7 @@ val SECONDARY_LIGHT = Color(0xFFA6DA95)   // Catppuccin Green
 val PRIMARY_DARK = Color(0xFF7DC4E4)      // Catppuccin Sky
 val SECONDARY_DARK = Color(0xFFF5BDE6)    // Catppuccin Pink
 
-val AMOLED_BLACK = Color(0xFF000000) // Pure black for AMOLED
+val AMOLED_BLACK = Color(0xFF000000)      // Pure black for AMOLED
+
+val DARK_PURPLE = Color(0xFF6E6CB6)       // Catppuccin Mauve (dark purple)
+val DARK_GREY = Color(0xFF363A4F)         // Catppuccin Surface (dark grey)

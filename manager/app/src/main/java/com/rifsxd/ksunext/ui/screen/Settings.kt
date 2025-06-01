@@ -66,6 +66,7 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AppProfileTemplateScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.BackupRestoreScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.CustomizationScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import kotlinx.coroutines.Dispatchers
@@ -223,9 +224,11 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             }
 
             var useOverlayFs by rememberSaveable {
-                mutableStateOf(
-                    prefs.getBoolean("use_overlay_fs", false)
-                )
+                mutableStateOf(readMountSystemFile())
+            }
+
+            LaunchedEffect(Unit) {
+                useOverlayFs = readMountSystemFile()
             }
 
             var showRebootDialog by remember { mutableStateOf(false) }
@@ -243,8 +246,10 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     useOverlayFs = it
                     if (useOverlayFs) {
                         moduleBackup()
+                        updateMountSystemFile(true)
                     } else {
                         moduleMigration()
+                        updateMountSystemFile(false)
                     }
                     if (isManager) install()
                     showRebootDialog = true
@@ -360,50 +365,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 }
             }
 
-            var enableAmoled by rememberSaveable {
-                mutableStateOf(
-                    prefs.getBoolean("enable_amoled", false)
-                )
-            }
-            var showRestartDialog by remember { mutableStateOf(false) }
-            if (isSystemInDarkTheme()) {
-                SwitchItem(
-                    icon = Icons.Filled.Contrast,
-                    title = stringResource(id = R.string.settings_amoled_mode),
-                    summary = stringResource(id = R.string.settings_amoled_mode_summary),
-                    checked = enableAmoled
-                ) { checked ->
-                    prefs.edit().putBoolean("enable_amoled", checked).apply()
-                    enableAmoled = checked
-                    showRestartDialog = true
-                }
-                if (showRestartDialog) {
-                    AlertDialog(
-                        onDismissRequest = { showRestartDialog = false },
-                        title = { Text(stringResource(R.string.restart_required)) },
-                        text = { Text(stringResource(R.string.restart_app_message)) },
-                        confirmButton = {
-                            TextButton(onClick = {
-                                showRestartDialog = false
-                                // Restart the app
-                                val packageManager = context.packageManager
-                                val intent = packageManager.getLaunchIntentForPackage(context.packageName)
-                                intent?.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-                                context.startActivity(intent)
-                                Runtime.getRuntime().exit(0)
-                            }) {
-                                Text(stringResource(R.string.restart_app))
-                            }
-                        },
-                        dismissButton = {
-                            TextButton(onClick = { showRestartDialog = false }) {
-                                Text(stringResource(R.string.later))
-                            }
-                        }
-                    )
-                }
-            }
-
             if (isOverlayAvailable && useOverlayFs) {
                 val shrink = stringResource(id = R.string.shrink_sparse_image)
                 val shrinkMessage = stringResource(id = R.string.shrink_sparse_image_message)
@@ -427,6 +388,20 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     }
                 )
             }
+
+            val customization = stringResource(id = R.string.customization)
+            ListItem(
+                leadingContent = {
+                    Icon(
+                        Icons.Filled.Palette,
+                        customization
+                    )
+                },
+                headlineContent = { Text(customization) },
+                modifier = Modifier.clickable {
+                    navigator.navigate(CustomizationScreenDestination)
+                }
+            )
 
             if (ksuVersion != null) {
                 val backupRestore = stringResource(id = R.string.backup_restore)

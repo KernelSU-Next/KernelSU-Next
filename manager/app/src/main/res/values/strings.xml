@@ -45,8 +45,10 @@
     <string name="module_empty">No module installed</string>
     <string name="module">Module</string>
     <string name="module_install_prompt_with_name">The following module(s) will be installed: %1$s</string>
-    <string name="module_sort_a_to_z">Sort (A-Z)</string>
-    <string name="module_sort_z_to_a">Sort (Z-A)</string>
+    <string name="module_sort_a_to_z">Sort (A → Z)</string>
+    <string name="module_sort_z_to_a">Sort (Z → A)</string>
+    <string name="module_size_low_to_high">Sort (Low → High)</string>
+    <string name="module_size_high_to_low">Sort (High → Low)</string>
     <string name="uninstall">Uninstall</string>
     <string name="restore">Restore</string>
     <string name="module_install">Install</string>
@@ -209,8 +211,11 @@
     <string name="settings_disable_su">Disable su compatibility</string>
     <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
     <string name="settings_language">Language</string>
+    <string name="settings_legacyui">Use Legacy UI</string>
+    <string name="settings_legacyui_summary">Switch to the previous user interface style.</string>
     <string name="use_webuix">Use WebUI X</string>
     <string name="use_webuix_summary">Use WebUI X instead of WebUI, which supports more APIs.</string>
     <string name="use_webuix_eruda">Inject Eruda into WebUI X</string>
     <string name="use_webuix_eruda_summary">Inject a debug console into WebUI X to make debugging easier. Requires web debugging to be on.</string>
+    <string name="customization">Customization</string>
 </resources>
