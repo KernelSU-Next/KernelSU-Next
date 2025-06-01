@@ -65,6 +65,18 @@ fun KernelSUTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
+        amoledMode && darkTheme -> {
+            DarkColorScheme.copy(
+                background = AMOLED_BLACK,
+                surface = AMOLED_BLACK,
+                surfaceVariant = DARK_GREY.blend(AMOLED_BLACK, 0.8f),
+                surfaceContainer = DARK_GREY.blend(AMOLED_BLACK, 0.8f),
+                surfaceContainerLow = DARK_GREY.blend(AMOLED_BLACK, 0.8f),
+                surfaceContainerLowest = DARK_GREY.blend(AMOLED_BLACK, 0.8f),
+                surfaceContainerHigh = DARK_GREY.blend(AMOLED_BLACK, 0.8f),
+                surfaceContainerHighest = DARK_GREY.blend(AMOLED_BLACK, 0.8f),
+            )
+        }
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }

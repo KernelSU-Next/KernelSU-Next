@@ -15,11 +15,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import java.io.File
 import java.text.Collator
 import java.util.Locale
 import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.ui.util.HanziToPinyin
 import com.rifsxd.ksunext.ui.util.listModules
+import com.rifsxd.ksunext.ui.util.getModuleSize
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -43,7 +45,8 @@ class ModuleViewModel : ViewModel() {
         val updateJson: String,
         val hasWebUi: Boolean,
         val hasActionScript: Boolean,
-        val dirId: String
+        val dirId: String,
+        val size: Long
     )
 
     data class ModuleUpdateInfo(
@@ -117,6 +120,9 @@ class ModuleViewModel : ViewModel() {
                         .map { array.getJSONObject(it) }
                         .map { obj ->
                             val id = obj.getString("id")
+                            val dirId = obj.getString("dir_id")
+                            val moduleDir = File("/data/adb/modules/$dirId")
+                            val size = getModuleSize(moduleDir)
 
                             ModuleInfo(
                                 id,
@@ -131,7 +137,8 @@ class ModuleViewModel : ViewModel() {
                                 obj.optString("updateJson"),
                                 obj.optBoolean("web"),
                                 obj.optBoolean("action"),
-                                obj.getString("dir_id")
+                                dirId,
+                                size
                             )
                         }.toList()
                     isNeedRefresh = false
