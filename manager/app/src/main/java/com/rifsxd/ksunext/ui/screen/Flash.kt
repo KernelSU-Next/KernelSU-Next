@@ -1,5 +1,6 @@
 package com.rifsxd.ksunext.ui.screen
 
+import android.content.Context
 import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
@@ -45,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -118,6 +120,11 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
     var flashing by rememberSaveable {
         mutableStateOf(FlashingStatus.FLASHING)
     }
+
+    val context = LocalContext.current
+
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    val developerOptionsEnabled = prefs.getBoolean("enable_developer_options", false)
 
     val view = LocalView.current
     DisposableEffect(flashing) {
@@ -237,7 +244,7 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
             }
             Text(
                 modifier = Modifier.padding(8.dp),
-                text = text,
+                text = if (developerOptionsEnabled) logContent.toString() else text,
                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
                 fontFamily = FontFamily.Monospace,
                 lineHeight = MaterialTheme.typography.bodySmall.lineHeight,

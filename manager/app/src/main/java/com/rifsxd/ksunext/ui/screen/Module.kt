@@ -633,243 +633,481 @@ fun ModuleItem(
             )
         }
 
+        val useLagacyUI = prefs.getBoolean("use_legacyui", false)
+
         LaunchedEffect(Unit) {
             developerOptionsEnabled = prefs.getBoolean("enable_developer_options", false)
         }
 
-        Column(
-            modifier = Modifier
-                .padding(22.dp, 18.dp, 22.dp, 12.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+        if (useLagacyUI) {
+            Column(
+                modifier = Modifier
+                    .padding(22.dp, 18.dp, 22.dp, 12.dp)
             ) {
-                val moduleVersion = stringResource(id = R.string.module_version)
-                val moduleAuthor = stringResource(id = R.string.module_author)
-                val moduleId = stringResource(id = R.string.module_id)
-                val moduleVersionCode = stringResource(id = R.string.module_version_code)
-                val moduleUpdateJson = stringResource(id = R.string.module_update_json)
-                val moduleUpdateJsonEmpty = stringResource(id = R.string.module_update_json_empty)
-
-                Column(
-                    modifier = Modifier.fillMaxWidth(0.8f)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    val moduleVersion = stringResource(id = R.string.module_version)
+                    val moduleAuthor = stringResource(id = R.string.module_author)
+                    val moduleId = stringResource(id = R.string.module_id)
+                    val moduleVersionCode = stringResource(id = R.string.module_version_code)
+                    val moduleUpdateJson = stringResource(id = R.string.module_update_json)
+                    val moduleUpdateJsonEmpty = stringResource(id = R.string.module_update_json_empty)
+
+                    Column(
+                        modifier = Modifier.fillMaxWidth(0.8f)
                     ) {
-                        LabelItem(
-                            text = if (module.enabled) stringResource(R.string.enabled) else stringResource(R.string.disabled),
-                            style = if (module.enabled)
-                                com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy()
-                            else
-                                com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
-                                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
-                                )
+                        Text(
+                            text = module.name,
+                            fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                            fontWeight = FontWeight.SemiBold,
+                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                            fontFamily = MaterialTheme.typography.titleMedium.fontFamily,
+                            textDecoration = textDecoration,
                         )
-                        if (module.remove) {
-                            LabelItem(
-                                text = stringResource(R.string.uninstalled),
-                                style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
-                                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                                    contentColor = MaterialTheme.colorScheme.onErrorContainer
-                                )
+
+                        Text(
+                            text = "$moduleVersion: ${module.version}",
+                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                            fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                            textDecoration = textDecoration
+                        )
+
+                        Text(
+                            text = "$moduleAuthor: ${module.author}",
+                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                            fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                            textDecoration = textDecoration
+                        )
+
+                        if (developerOptionsEnabled) {
+
+                            Text(
+                                text = "$moduleId: ${module.id}",
+                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                                fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                                textDecoration = textDecoration
                             )
-                        }
-                        if (updateUrl.isNotEmpty() && !module.remove && !module.update) {
-                            LabelItem(
-                                text = stringResource(R.string.module_update),
-                                style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
-                                    containerColor = MaterialTheme.colorScheme.onTertiary,
-                                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                                )
+
+                            Text(
+                                text = "$moduleVersionCode: ${module.versionCode}",
+                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                                fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                                textDecoration = textDecoration
                             )
-                        }
-                        if (!module.remove) {
-                            if (module.update) {
-                                LabelItem(
-                                    text = stringResource(R.string.module_updated),
-                                    style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
-                                        containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-                                    )
-                                )
-                            }
-                        }
-                        if (module.hasWebUi) {
-                            LabelItem(
-                                text = stringResource(R.string.webui),
-                                style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                            )
-                        }
-                        if (module.hasActionScript) {
-                            LabelItem(
-                                text = stringResource(R.string.action),
-                                style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                                )
+
+                            Text(
+                                text = if (module.updateJson.isNotEmpty()) "$moduleUpdateJson: ${module.updateJson}" else "$moduleUpdateJson: $moduleUpdateJsonEmpty",
+                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                                fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                                textDecoration = textDecoration
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.weight(1f))
 
-                    Text(
-                        text = module.name,
-                        fontSize = MaterialTheme.typography.titleMedium.fontSize,
-                        fontWeight = FontWeight.SemiBold,
-                        lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
-                        fontFamily = MaterialTheme.typography.titleMedium.fontFamily,
-                        textDecoration = textDecoration,
-                    )
-
-                    Text(
-                        text = "$moduleVersion: ${module.version}",
-                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                        lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
-                        fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
-                        textDecoration = textDecoration
-                    )
-
-                    Text(
-                        text = "$moduleAuthor: ${module.author}",
-                        fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                        lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
-                        fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
-                        textDecoration = textDecoration
-                    )
-
-                    if (developerOptionsEnabled) {
-
-                        Text(
-                            text = "$moduleId: ${module.id}",
-                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
-                            fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
-                            textDecoration = textDecoration
-                        )
-
-                        Text(
-                            text = "$moduleVersionCode: ${module.versionCode}",
-                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
-                            fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
-                            textDecoration = textDecoration
-                        )
-
-                        Text(
-                            text = if (module.updateJson.isNotEmpty()) "$moduleUpdateJson: ${module.updateJson}" else "$moduleUpdateJson: $moduleUpdateJsonEmpty",
-                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
-                            fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
-                            textDecoration = textDecoration
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        Switch(
+                            enabled = !module.update,
+                            checked = module.enabled,
+                            onCheckedChange = onCheckChanged,
+                            interactionSource = if (!module.hasWebUi) interactionSource else null
                         )
                     }
                 }
 
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = module.description,
+                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                    fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                    lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                    fontWeight = MaterialTheme.typography.bodySmall.fontWeight,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 4,
+                    textDecoration = textDecoration
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                HorizontalDivider(thickness = Dp.Hairline)
+
+                Spacer(modifier = Modifier.height(4.dp))
+
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    var expanded by remember { mutableStateOf(false) }
-                    IconButton(onClick = { expanded = true }) {
-                        Icon(
-                            Icons.Filled.MoreVert,
-                            contentDescription = "Module actions"
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
-                    ) {
-                        if (updateUrl.isNotEmpty() && !module.remove) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.module_update)) },
-                                onClick = {
-                                    expanded = false
-                                    onUpdate(module)
-                                }
-                            )
-                            HorizontalDivider()
-                        }
-                        
-                        if (module.hasWebUi) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.webui)) },
-                                onClick = {
-                                    expanded = false
-                                    onClick(module)
-                                }
-                            )
-                        }
-                        if (module.hasActionScript) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.action)) },
-                                onClick = {
-                                    expanded = false
-                                    navigator.navigate(ExecuteModuleActionScreenDestination(module.dirId))
-                                    viewModel.markNeedRefresh()
-                                }
-                            )
-                        }
-
-                        if (module.hasWebUi || module.hasActionScript ) {
-                            HorizontalDivider()
-                        }
-
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    if (module.enabled) stringResource(R.string.disable)
-                                    else stringResource(R.string.enable)
-                                )
-                            },
+                    if (module.hasActionScript) {
+                        FilledTonalButton(
+                            modifier = Modifier.defaultMinSize(52.dp, 32.dp),
+                            enabled = !module.remove && module.enabled,
                             onClick = {
-                                expanded = false
-                                onCheckChanged(!module.enabled)
+                                navigator.navigate(ExecuteModuleActionScreenDestination(module.dirId))
+                                viewModel.markNeedRefresh()
+                            },
+                            contentPadding = ButtonDefaults.TextButtonContentPadding
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                imageVector = Icons.Outlined.PlayArrow,
+                                contentDescription = null
+                            )
+                            if (!module.hasWebUi && updateUrl.isEmpty()) {
+                                Text(
+                                    modifier = Modifier.padding(start = 7.dp),
+                                    text = stringResource(R.string.action),
+                                    fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                                    fontSize = MaterialTheme.typography.labelMedium.fontSize
+                                )
                             }
-                        )
-                        if (module.remove) {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.restore)) },
-                                onClick = {
-                                    expanded = false
-                                    onRestore(module)
-                                }
+                        }
+
+                        Spacer(modifier = Modifier.weight(0.1f, true))
+                    }
+
+                    if (module.hasWebUi) {
+                        FilledTonalButton(
+                            modifier = Modifier.defaultMinSize(52.dp, 32.dp),
+                            enabled = !module.remove && module.enabled,
+                            onClick = { onClick(module) },
+                            interactionSource = interactionSource,
+                            contentPadding = ButtonDefaults.TextButtonContentPadding
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                imageVector = Icons.AutoMirrored.Outlined.Wysiwyg,
+                                contentDescription = null
                             )
-                        } else {
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.uninstall)) },
-                                onClick = {
-                                    expanded = false
-                                    onUninstall(module)
-                                }
+                            if (!module.hasActionScript && updateUrl.isEmpty()) {
+                                Text(
+                                    modifier = Modifier.padding(start = 7.dp),
+                                    fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                                    fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                    text = stringResource(R.string.open)
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.weight(1f, true))
+
+                    if (updateUrl.isNotEmpty()) {
+                        Button(
+                            modifier = Modifier.defaultMinSize(52.dp, 32.dp),
+                            enabled = !module.remove,
+                            onClick = { onUpdate(module) },
+                            shape = ButtonDefaults.textShape,
+                            contentPadding = ButtonDefaults.TextButtonContentPadding
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                imageVector = Icons.Outlined.Download,
+                                contentDescription = null
                             )
+                            if (!module.hasActionScript || !module.hasWebUi) {
+                                Text(
+                                    modifier = Modifier.padding(start = 7.dp),
+                                    fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                                    fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                    text = stringResource(R.string.module_update)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.weight(0.1f, true))
+                    }
+
+                    if (module.remove) {
+                        FilledTonalButton(
+                            modifier = Modifier.defaultMinSize(52.dp, 32.dp),
+                            onClick = { onRestore(module) },
+                            contentPadding = ButtonDefaults.TextButtonContentPadding
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                imageVector = Icons.Outlined.Restore,
+                                contentDescription = null
+                            )
+                            if (!module.hasActionScript && !module.hasWebUi && updateUrl.isEmpty()) {
+                                Text(
+                                    modifier = Modifier.padding(start = 7.dp),
+                                    fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                                    fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                    text = stringResource(R.string.restore)
+                                )
+                            }
+                        }
+                    } else {
+                        FilledTonalButton(
+                            modifier = Modifier.defaultMinSize(52.dp, 32.dp),
+                            enabled = true,
+                            onClick = { onUninstall(module) },
+                            contentPadding = ButtonDefaults.TextButtonContentPadding
+                        ) {
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                imageVector = Icons.Outlined.Delete,
+                                contentDescription = null
+                            )
+                            if (!module.hasActionScript && !module.hasWebUi && updateUrl.isEmpty()) {
+                                Text(
+                                    modifier = Modifier.padding(start = 7.dp),
+                                    fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                                    fontSize = MaterialTheme.typography.labelMedium.fontSize,
+                                    text = stringResource(R.string.uninstall)
+                                )
+                            }
                         }
                     }
                 }
             }
+        } else {
+            Column(
+                modifier = Modifier
+                    .padding(22.dp, 18.dp, 22.dp, 12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    val moduleVersion = stringResource(id = R.string.module_version)
+                    val moduleAuthor = stringResource(id = R.string.module_author)
+                    val moduleId = stringResource(id = R.string.module_id)
+                    val moduleVersionCode = stringResource(id = R.string.module_version_code)
+                    val moduleUpdateJson = stringResource(id = R.string.module_update_json)
+                    val moduleUpdateJsonEmpty = stringResource(id = R.string.module_update_json_empty)
 
-            Spacer(modifier = Modifier.height(12.dp))
+                    Column(
+                        modifier = Modifier.fillMaxWidth(0.8f)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            LabelItem(
+                                text = if (module.enabled) stringResource(R.string.enabled) else stringResource(R.string.disabled),
+                                style = if (module.enabled)
+                                    com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy()
+                                else
+                                    com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                            )
+                            if (module.remove) {
+                                LabelItem(
+                                    text = stringResource(R.string.uninstalled),
+                                    style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                )
+                            }
+                            if (updateUrl.isNotEmpty() && !module.remove && !module.update) {
+                                LabelItem(
+                                    text = stringResource(R.string.module_update),
+                                    style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                        containerColor = MaterialTheme.colorScheme.onTertiary,
+                                        contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                                    )
+                                )
+                            }
+                            if (!module.remove) {
+                                if (module.update) {
+                                    LabelItem(
+                                        text = stringResource(R.string.module_updated),
+                                        style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                                            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+                                        )
+                                    )
+                                }
+                            }
+                            if (module.hasWebUi) {
+                                LabelItem(
+                                    text = stringResource(R.string.webui),
+                                    style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                                    )
+                                )
+                            }
+                            if (module.hasActionScript) {
+                                LabelItem(
+                                    text = stringResource(R.string.action),
+                                    style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                                    )
+                                )
+                            }
+                        }
 
-            Text(
-                text = module.description,
-                fontSize = MaterialTheme.typography.bodySmall.fontSize,
-                fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
-                lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
-                fontWeight = MaterialTheme.typography.bodySmall.fontWeight,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 4,
-                textDecoration = textDecoration
-            )
+                        Spacer(modifier = Modifier.height(8.dp))
 
-            Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = module.name,
+                            fontSize = MaterialTheme.typography.titleMedium.fontSize,
+                            fontWeight = FontWeight.SemiBold,
+                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                            fontFamily = MaterialTheme.typography.titleMedium.fontFamily,
+                            textDecoration = textDecoration,
+                        )
+
+                        Text(
+                            text = "$moduleVersion: ${module.version}",
+                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                            fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                            textDecoration = textDecoration
+                        )
+
+                        Text(
+                            text = "$moduleAuthor: ${module.author}",
+                            fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                            lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                            fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                            textDecoration = textDecoration
+                        )
+
+                        if (developerOptionsEnabled) {
+
+                            Text(
+                                text = "$moduleId: ${module.id}",
+                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                                fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                                textDecoration = textDecoration
+                            )
+
+                            Text(
+                                text = "$moduleVersionCode: ${module.versionCode}",
+                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                                fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                                textDecoration = textDecoration
+                            )
+
+                            Text(
+                                text = if (module.updateJson.isNotEmpty()) "$moduleUpdateJson: ${module.updateJson}" else "$moduleUpdateJson: $moduleUpdateJsonEmpty",
+                                fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                                lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                                fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                                textDecoration = textDecoration
+                            )
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        var expanded by remember { mutableStateOf(false) }
+                        IconButton(onClick = { expanded = true }) {
+                            Icon(
+                                Icons.Filled.MoreVert,
+                                contentDescription = "Module actions"
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+                        ) {
+                            if (updateUrl.isNotEmpty() && !module.remove) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.module_update)) },
+                                    onClick = {
+                                        expanded = false
+                                        onUpdate(module)
+                                    }
+                                )
+                                HorizontalDivider()
+                            }
+                            
+                            if (module.hasWebUi) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.webui)) },
+                                    onClick = {
+                                        expanded = false
+                                        onClick(module)
+                                    }
+                                )
+                            }
+                            if (module.hasActionScript) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.action)) },
+                                    onClick = {
+                                        expanded = false
+                                        navigator.navigate(ExecuteModuleActionScreenDestination(module.dirId))
+                                        viewModel.markNeedRefresh()
+                                    }
+                                )
+                            }
+
+                            if (module.hasWebUi || module.hasActionScript ) {
+                                HorizontalDivider()
+                            }
+
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        if (module.enabled) stringResource(R.string.disable)
+                                        else stringResource(R.string.enable)
+                                    )
+                                },
+                                onClick = {
+                                    expanded = false
+                                    onCheckChanged(!module.enabled)
+                                }
+                            )
+                            if (module.remove) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.restore)) },
+                                    onClick = {
+                                        expanded = false
+                                        onRestore(module)
+                                    }
+                                )
+                            } else {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.uninstall)) },
+                                    onClick = {
+                                        expanded = false
+                                        onUninstall(module)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = module.description,
+                    fontSize = MaterialTheme.typography.bodySmall.fontSize,
+                    fontFamily = MaterialTheme.typography.bodySmall.fontFamily,
+                    lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
+                    fontWeight = MaterialTheme.typography.bodySmall.fontWeight,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 4,
+                    textDecoration = textDecoration
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+            }
         }
     }
 }

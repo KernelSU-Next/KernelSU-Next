@@ -64,6 +64,10 @@ fun HomeScreen(navigator: DestinationsNavigator) {
     val isManager = Natives.becomeManager(ksuApp.packageName)
     val ksuVersion = if (isManager) Natives.version else null
 
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    val developerOptionsEnabled = prefs.getBoolean("enable_developer_options", false)
+
     Scaffold(
         topBar = {
             TopBar(
@@ -129,7 +133,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                 UpdateCard()
             }
             //NextCard()
-            InfoCard()
+            InfoCard(autoExpand = developerOptionsEnabled)
             IssueReportCard()
             //EXperimentalCard()
             Spacer(Modifier)
@@ -436,21 +440,21 @@ fun WarningCard(
 }
 
 @Composable
-private fun InfoCard() {
+private fun InfoCard(autoExpand: Boolean = false) {
     val context = LocalContext.current
 
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
-    var useOverlayFs by rememberSaveable {
-        mutableStateOf(prefs.getBoolean("use_overlay_fs", false))
-    }
-
     val isManager = Natives.becomeManager(ksuApp.packageName)
     val ksuVersion = if (isManager) Natives.version else null
 
-    LaunchedEffect(Unit) {
-        useOverlayFs = prefs.getBoolean("use_overlay_fs", false)
-    }
+    var expanded by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(autoExpand) {
+        if (autoExpand) {
+            expanded = true
+        }
+    }   
 
     ElevatedCard {
         Column(
@@ -458,8 +462,6 @@ private fun InfoCard() {
                 .fillMaxWidth()
                 .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 16.dp)
         ) {
-            var expanded by rememberSaveable { mutableStateOf(false) }
-
             @Composable
             fun InfoCardItem(label: String, content: String, icon: Any? = null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
