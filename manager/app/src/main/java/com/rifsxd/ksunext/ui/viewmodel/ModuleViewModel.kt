@@ -46,7 +46,8 @@ class ModuleViewModel : ViewModel() {
         val hasWebUi: Boolean,
         val hasActionScript: Boolean,
         val dirId: String,
-        val size: Long
+        val size: Long,
+        val banner: String
     )
 
     data class ModuleUpdateInfo(
@@ -142,7 +143,8 @@ class ModuleViewModel : ViewModel() {
                                 obj.optBoolean("web"),
                                 obj.optBoolean("action"),
                                 dirId,
-                                size
+                                size,
+                                obj.optString("banner")
                             )
                         }.toList()
                     isNeedRefresh = false

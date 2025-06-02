@@ -96,13 +96,29 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
                 )
             }
             SwitchItem(
-                icon = Icons.Filled.ColorLens,
+                icon = Icons.Filled.Dashboard,
                 title = stringResource(id = R.string.settings_legacyui),
                 summary = stringResource(id = R.string.settings_legacyui_summary),
                 checked = useLagacyUI
             ) {
                 prefs.edit().putBoolean("use_legacyui", it).apply()
                 useLagacyUI = it
+            }
+
+            var useBanner by rememberSaveable {
+                mutableStateOf(
+                    prefs.getBoolean("use_banner", true)
+                )
+            }
+            SwitchItem(
+                enabled = !useLagacyUI,
+                icon = Icons.Filled.ViewCarousel,
+                title = stringResource(id = R.string.settings_banner),
+                summary = stringResource(id = R.string.settings_banner_summary),
+                checked = useBanner
+            ) {
+                prefs.edit().putBoolean("use_banner", it).apply()
+                useBanner = it
             }
 
             var enableAmoled by rememberSaveable {

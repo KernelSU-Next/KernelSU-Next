@@ -213,6 +213,8 @@
     <string name="settings_language">Language</string>
     <string name="settings_legacyui">Use Legacy UI</string>
     <string name="settings_legacyui_summary">Switch to the previous user interface style.</string>
+    <string name="settings_banner">Enable banners</string>
+    <string name="settings_banner_summary">Show background banners for modules.</string>
     <string name="use_webuix">Use WebUI X</string>
     <string name="use_webuix_summary">Use WebUI X instead of WebUI, which supports more APIs.</string>
     <string name="use_webuix_eruda">Inject Eruda into WebUI X</string>
