@@ -213,7 +213,7 @@
 	<string name="settings_language">Lingua</string>
 	<string name="settings_legacyui">Usa Legacy UI</string>
 	<string name="settings_legacyui_summary">Passa allo stile precedente dell\'interfaccia utente.</string>
-	<string name="settings_banner">Abilita banner</string>Add commentMore actions
+	<string name="settings_banner">Abilita banner</string>
 	<string name="settings_banner_summary">Mostra banner di sfondo per i moduli.</string>
 	<string name="use_webuix">Usa WebUI X</string>
 	<string name="use_webuix_summary">Usa WebUI X invece di WebUI che supporta più API.</string>
