@@ -21,6 +21,12 @@ jobs:
   build-a15-kernel:
     uses: ./.github/workflows/build-kernel-a15.yml
     secrets: inherit
+  build-wsa-kernel:
+    uses: ./.github/workflows/build-kernel-wsa.yml
+    secrets: inherit
+  build-arcvm-kernel:
+    uses: ./.github/workflows/build-kernel-arcvm.yml
+    secrets: inherit
   release:
     needs:
       - build-manager
@@ -29,6 +35,7 @@ jobs:
       - build-a14-kernel
       - build-a15-kernel
       - build-wsa-kernel
+      - build-arcvm-kernel
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
@@ -38,6 +45,24 @@ jobs:
           for dir in AnyKernel3-*; do
             if [ -d "$dir" ]; then
               echo "----- Zip $dir -----"
+              (cd $dir && zip -r9 "$dir".zip ./* -x .git .gitignore ./*.zip && mv *.zip ..)
+            fi
+          done
+
+      - name: Zip WSA kernel
+        run: |
+          for dir in kernel-WSA-*; do
+            if [ -d "$dir" ]; then
+              echo "------ Zip $dir ----------"
+              (cd $dir && zip -r9 "$dir".zip ./* -x .git .gitignore ./*.zip && mv *.zip ..)
+            fi
+          done
+
+      - name: Zip ChromeOS ARCVM kernel
+        run: |
+          for dir in kernel-ARCVM-*; do
+            if [ -d "$dir" ]; then
+              echo "------ Zip $dir ----------"
               (cd $dir && zip -r9 "$dir".zip ./* -x .git .gitignore ./*.zip && mv *.zip ..)
             fi
           done
@@ -54,6 +79,7 @@ jobs:
             AnyKernel3-*.zip
             boot-images-*/Image-*/*.img.gz
             kernel-WSA*.zip
+            kernel-ARCVM*.zip
             ksud_magic*.zip
             ksud_overlayfs*.zip
             susfsd*.zip
