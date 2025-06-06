@@ -102,6 +102,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.R
 import com.rifsxd.ksunext.ksuApp
@@ -122,6 +123,7 @@ import com.rifsxd.ksunext.ui.viewmodel.ModuleViewModel
 import com.rifsxd.ksunext.ui.webui.WebUIActivity
 import com.rifsxd.ksunext.ui.webui.WebUIXActivity
 import com.dergoogler.mmrl.ui.component.LabelItem
+import com.topjohnwu.superuser.io.SuFile
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -716,15 +718,39 @@ fun ModuleItem(
                         .matchParentSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    AsyncImage(
-                        model = module.banner,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight(),
-                        contentScale = ContentScale.Crop,
-                        alpha = 0.18f
-                    )
+                    if (module.banner.startsWith("https", true) || module.banner.startsWith("http", true)) {
+                        AsyncImage(
+                            model = module.banner,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(),
+                            contentScale = ContentScale.Crop,
+                            alpha = 0.18f
+                        )
+                    } else {
+                        val bannerData = remember(module.banner) {
+                            try {
+                                val file = SuFile("/data/adb/modules/${module.id}/${module.banner}")
+                                file.newInputStream().use { it.readBytes() }
+                            } catch (e: Exception) {
+                                null
+                            }
+                        }
+                        if (bannerData != null) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(context)
+                                    .data(bannerData)
+                                    .build(),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .fillMaxHeight(),
+                                contentScale = ContentScale.Crop,
+                                alpha = 0.18f
+                            )
+                        }
+                    }
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -742,7 +768,6 @@ fun ModuleItem(
                     )
                 }
             }
-
             Column {
                 val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
                 val interactionSource = remember { MutableInteractionSource() }
