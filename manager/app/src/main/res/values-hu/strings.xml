@@ -209,7 +209,7 @@
     <string name="settings_amoled_mode">AMOLED mód</string>
     <string name="settings_amoled_mode_summary">Engedélyezzen egy teljesen fekete témát, amely leginkább AMOLED képernyőkön hasznos. Csökkenti a szem megerőltetését és az akkumulátort is kíméli.</string>
     <string name="restart_required">Újraindítás szükséges</string>
-    <string name="settings_legacyui">Legacy UI-t használata</string>
+    <string name="settings_legacyui">Legacy UI használata</string>
     <string name="settings_legacyui_summary">Váltás az előző felhasználói felületre.</string>
     <string name="settings_banner">Bannerek engedélyezése</string>
     <string name="settings_banner_summary">Mutassa a modulok hátterének bannereit.</string>
