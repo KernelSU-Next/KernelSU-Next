@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="issue_report_title">Problémája van?</string>
-    <string name="issue_report_body">Hibát észlelt, vagy van visszajelzése?</string>
+    <string name="issue_report_body">Hibát észlelt, vagy visszajelzése van?</string>
     <string name="issue_report_body_2">Jelentse mielőbb!</string>
     <string name="issue_report_github">Report on GitHub</string>
     <string name="issue_report_telegram">Kapcsolatfelvétel Telegramon keresztül</string>
@@ -12,13 +12,16 @@
     <string name="home">Kezdőlap</string>
     <string name="home_not_installed">Nincs telepítve</string>
     <string name="home_click_to_install">Kattintson a telepítéshez</string>
+    <string name="lkm_alternative_suggestion">Telepíts GKI kernelt, vagy integráld a KernelSU Next-et az eszközödbe.</string>
     <string name="home_working">Működik</string>
     <string name="home_working_version">Verzió: %d</string>
     <string name="home_superuser_count">Superuserek: %d</string>
     <string name="home_module_count">Modulok: %d</string>
+    <string name="home_module_update_count">Frissítések: %d</string>
     <string name="home_failure">KernelSU Next v2 aláírás nem található a kernelben! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Kérje meg kernel fejlesztőjét, hogy integrálja a KernelSU Next-et!</string>
     <string name="home_kernel">Kernel verzió</string>
+    <string name="disable">Kikapcsolva</string>
     <string name="enabled">Bekapcsolva</string>
     <string name="disabled">Kikapcsolva</string>
     <string name="susfs_supported">Támogatott</string>
@@ -38,13 +41,15 @@
     <string name="module_empty">Nincs telepített modul</string>
     <string name="module">Modul</string>
     <string name="module_install_prompt_with_name">A következő modul(ok) lesznek telepítve: %1$s</string>
-    <string name="module_sort_a_to_z">Rendezés (A-Z)</string>
-    <string name="module_sort_z_to_a">Rendezés (Z-A)</string>
+    <string name="module_sort_a_to_z">Rendezés (A → Z)</string>
+    <string name="module_sort_z_to_a">Rendezés (Z → A)</string>
+    <string name="module_size_high_to_low">Rendezés (Magas → Alacsony)</string>
     <string name="uninstall">Eltávolítás</string>
     <string name="restore">Visszaállítás</string>
     <string name="module_install">Telepítés</string>
     <string name="install">Telepítés</string>
     <string name="reboot">Újraindítás</string>
+    <string name="uninstalled">Eltávolítva</string>
     <string name="settings">Beállítások</string>
     <string name="reboot_userspace">Lágy újraindítás</string>
     <string name="reboot_recovery">Újraindítás Recovery módba</string>
@@ -96,6 +101,7 @@
     <string name="proceed">Folytatás</string>
     <string name="cancel">Mégse</string>
     <string name="later">Később</string>
+    <string name="lkm_warning_message">Az LKM patch zárt forráskódú komponenseken alapul. Folytatja?</string>
     <string name="home_next_kernelsu">🔥 Next build</string>
     <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Next kísérleti branch. Nézze meg a GitHubon!</string>
@@ -129,6 +135,7 @@
     <string name="profile_selinux_domain">Domain</string>
     <string name="profile_selinux_rules">Szabályok</string>
     <string name="module_update">Frissítés</string>
+    <string name="module_updated">Frissítve</string>
     <string name="module_downloading">%s modul letöltése</string>
     <string name="module_start_downloading">Letöltés indítása: %s</string>
     <string name="new_version_available">Új verzió (%s) elérhető, kattintson a frissítéshez.</string>
@@ -136,6 +143,7 @@
     <string name="close">Bezár</string>
     <string name="force_stop_app">Kényszer leállítás</string>
     <string name="restart_app">Újraindítás</string>
+    <string name="restart_app_message">A módosítás érvénybe lépéséhez újra kell indítani az alkalmazást.</string>
     <string name="failed_to_update_sepolicy">Nem sikerült frissíteni a SELinux szabályait a következőhöz: %s</string>
     <string name="su_not_allowed">Superuser megadása nem engedélyezett a következőhöz: %s</string>
     <string name="module_changelog">Változásnapló</string>
@@ -194,4 +202,20 @@
     <string name="settings_disable_su">Kapcsolja ki a su kompatibilitást</string>
     <string name="settings_disable_su_summary">Ideiglenesen tiltsa le bármely alkalmazás azon képességét, hogy root jogosultságokat szerezzen a ⁠su paranccsal (a már meglévő folyamatokat ez nem érinti).</string>
     <string name="settings_language">Nyelv</string>
+    <string name="lkm_mode_deprecated">Az LKM mód elavult!</string>
+    <string name="hook_mode">Hook módszer</string>
+    <string name="enable">Bekapcsolva</string>
+    <string name="module_size_low_to_high">Rendezés (Alacsony → Magas)</string>
+    <string name="settings_amoled_mode">AMOLED mód</string>
+    <string name="settings_amoled_mode_summary">Engedélyezzen egy teljesen fekete témát, amely leginkább AMOLED képernyőkön hasznos. Csökkenti a szem megerőltetését és az akkumulátort is kíméli.</string>
+    <string name="restart_required">Újraindítás szükséges</string>
+    <string name="settings_legacyui">Legacy UI-t használata</string>
+    <string name="settings_legacyui_summary">Váltás az előző felhasználói felületre.</string>
+    <string name="settings_banner">Bannerek engedélyezése</string>
+    <string name="settings_banner_summary">Mutassa a modulok hátterének bannereit.</string>
+    <string name="use_webuix">WebUI X használata</string>
+    <string name="use_webuix_summary">A WebUI X több API-t támogat, mint a WebUI.</string>
+    <string name="use_webuix_eruda">Eruda injektálása a WebUI X-be</string>
+    <string name="use_webuix_eruda_summary">Hibakeresési konzol injektálása a WebUI X-be a hibakeresés megkönnyítése érdekében. Ehhez a webes hibakeresést be kell kapcsolni.</string>
+    <string name="customization">Testreszabás</string>
 </resources>
