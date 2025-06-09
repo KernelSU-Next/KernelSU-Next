@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Wysiwyg
 import androidx.compose.material.icons.filled.*
@@ -101,6 +102,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.R
 import com.rifsxd.ksunext.ksuApp
@@ -121,6 +123,7 @@ import com.rifsxd.ksunext.ui.viewmodel.ModuleViewModel
 import com.rifsxd.ksunext.ui.webui.WebUIActivity
 import com.rifsxd.ksunext.ui.webui.WebUIXActivity
 import com.dergoogler.mmrl.ui.component.LabelItem
+import com.topjohnwu.superuser.io.SuFile
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>
@@ -696,20 +699,58 @@ fun ModuleItem(
             val useBanner = prefs.getBoolean("use_banner", true)
 
             if (useBanner && !useLagacyUI && module.banner.isNotEmpty()) {
+                val isDark = isSystemInDarkTheme()
+                val colorScheme = MaterialTheme.colorScheme
+                val context = LocalContext.current
+                val amoledMode = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                    .getBoolean("amoled_mode", false)
+                val isDynamic = colorScheme.primary != colorScheme.secondary
+
+                val fadeColor = when {
+                    amoledMode && isDark -> Color.Black
+                    isDynamic -> colorScheme.surface
+                    isDark -> Color(0xFF222222)
+                    else -> Color.White
+                }
+
                 Box(
                     modifier = Modifier
                         .matchParentSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    AsyncImage(
-                        model = module.banner,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight(),
-                        contentScale = ContentScale.Crop,
-                        alpha = 0.18f
-                    )
+                    if (module.banner.startsWith("https", true) || module.banner.startsWith("http", true)) {
+                        AsyncImage(
+                            model = module.banner,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(),
+                            contentScale = ContentScale.Crop,
+                            alpha = 0.18f
+                        )
+                    } else {
+                        val bannerData = remember(module.banner) {
+                            try {
+                                val file = SuFile("/data/adb/modules/${module.id}/${module.banner}")
+                                file.newInputStream().use { it.readBytes() }
+                            } catch (e: Exception) {
+                                null
+                            }
+                        }
+                        if (bannerData != null) {
+                            AsyncImage(
+                                model = ImageRequest.Builder(context)
+                                    .data(bannerData)
+                                    .build(),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .fillMaxHeight(),
+                                contentScale = ContentScale.Crop,
+                                alpha = 0.18f
+                            )
+                        }
+                    }
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -717,8 +758,8 @@ fun ModuleItem(
                             .background(
                                 Brush.verticalGradient(
                                     colors = listOf(
-                                        Color.Black.copy(alpha = 0.0f),
-                                        Color.Black.copy(alpha = 0.9f)
+                                        fadeColor.copy(alpha = 0.0f),
+                                        fadeColor.copy(alpha = 0.8f)
                                     ),
                                     startY = 0f,
                                     endY = Float.POSITIVE_INFINITY
@@ -727,7 +768,6 @@ fun ModuleItem(
                     )
                 }
             }
-
             Column {
                 val textDecoration = if (!module.remove) null else TextDecoration.LineThrough
                 val interactionSource = remember { MutableInteractionSource() }
