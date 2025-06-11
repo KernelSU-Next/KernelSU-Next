@@ -1,5 +1,6 @@
 package com.rifsxd.ksunext.ui.viewmodel
 
+import android.net.Uri
 import android.os.SystemClock
 import android.util.Log
 import androidx.compose.runtime.derivedStateOf
@@ -91,6 +92,16 @@ class ModuleViewModel : ViewModel() {
 
     fun markNeedRefresh() {
         isNeedRefresh = true
+    }
+
+    var zipUris by mutableStateOf<List<Uri>>(emptyList())
+
+    fun updateZipUris(uris: List<Uri>) {
+        zipUris = uris
+    }
+
+    fun clearZipUris() {
+        zipUris = emptyList()
     }
 
     fun fetchModuleList() {

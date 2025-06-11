@@ -290,8 +290,11 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                 val confirmTitle = stringResource(R.string.module)
                 var zipUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
                 val confirmDialog = rememberConfirmDialog(onConfirm = {
-                    navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(zipUris)))
-                    viewModel.markNeedRefresh()
+                    if (viewModel.zipUris.isNotEmpty()) {
+                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(viewModel.zipUris)))
+                        viewModel.clearZipUris()
+                        viewModel.markNeedRefresh()
+                    }
                 })
                 val selectZipLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.StartActivityForResult()
@@ -310,6 +313,10 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     } else {
                         data.data?.let { uris.add(it) }
                     }
+
+                    if (uris.isEmpty()) return@rememberLauncherForActivityResult
+
+                    viewModel.updateZipUris(uris)
 
                     // Show confirm dialog with selected zip file(s) name(s)
                     val moduleNames =
