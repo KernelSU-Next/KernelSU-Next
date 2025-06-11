@@ -313,3 +313,8 @@ JNIEXPORT jboolean JNICALL
 Java_com_rifsxd_ksunext_Natives_setSuEnabled(JNIEnv *env, jobject thiz, jboolean enabled) {
     return set_su_enabled(enabled);
 }
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_rifsxd_ksunext_Natives_isKPMEnabled(JNIEnv *env, jobject) {
+    return is_KPM_enable();
+}

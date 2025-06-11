@@ -30,6 +30,7 @@
 #define CMD_IS_SU_ENABLED 14
 #define CMD_ENABLE_SU 15
 #define CMD_HOOK_MODE 16
+#define CMD_ENABLE_KPM 100
 
 static bool ksuctl(int cmd, void* arg1, void* arg2) {
     int32_t result = 0;
@@ -103,4 +104,9 @@ bool is_su_enabled() {
     // if ksuctl failed, we assume su is enabled, and it cannot be disabled.
     ksuctl(CMD_IS_SU_ENABLED, &enabled, nullptr);
     return enabled;
+}
+
+bool is_KPM_enable() {
+    bool enabled = false;
+    return ksuctl(CMD_ENABLE_KPM, &enabled, nullptr), enabled;
 }

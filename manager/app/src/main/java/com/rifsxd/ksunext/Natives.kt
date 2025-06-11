@@ -81,6 +81,12 @@ object Natives {
     external fun isSuEnabled(): Boolean
     external fun setSuEnabled(enabled: Boolean): Boolean
 
+    /**
+     * Check if the KPM (Kernel Package Manager) is enabled.
+     * @return true if KPM is enabled, false otherwise.
+     */
+    external fun isKPMEnabled(): Boolean
+
     private const val NON_ROOT_DEFAULT_PROFILE_KEY = "$"
     private const val NOBODY_UID = 9999
 
