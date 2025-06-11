@@ -47,6 +47,8 @@
 #include "throne_tracker.h"
 #include "kernel_compat.h"
 
+#include "kpm/kpm.h"
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0) || defined(KSU_COMPAT_GET_CRED_RCU)
 #define KSU_GET_CRED_RCU
 #endif
@@ -448,6 +450,26 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 			pr_err("prctl copy err, cmd: %lu\n", arg2);
 		}
 		return 0;
+	}
+
+	#ifdef CONFIG_KPM
+	// KPM Control
+	if(sukisu_is_kpm_control_code(arg2)) {
+		int res;
+
+		pr_info("KPM: calling before arg2=%d\n", (int) arg2);
+		
+		res = sukisu_handle_kpm(arg2, arg3, arg4, arg5);
+
+		return 0;
+	}
+	#endif
+	// KPM info
+	if (arg2 == CMD_ENABLE_KPM) {
+    	bool KPM_Enabled = IS_ENABLED(CONFIG_KPM);
+    	if (copy_to_user((void __user *)arg3, &KPM_Enabled, sizeof(KPM_Enabled)))
+        	pr_info("KPM: copy_to_user() failed\n");
+    	return 0;
 	}
 
 	// all other cmds are for 'root manager'

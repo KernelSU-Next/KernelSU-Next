@@ -40,4 +40,13 @@ config KSU_LSM_SECURITY_HOOKS
 	  Disabling this is mostly only useful for kernel 4.1 and older.
 	  Make sure to implement manual hooks on security/security.c.
 
+config KPM
+	bool "Enable SukiSU KPM"
+	depends on KSU && 64BIT
+	default n
+	help
+	  Enabling this option will activate the KPM feature of SukiSU.
+	  This option is suitable for scenarios where you need to force KPM to be enabled.
+	  but it may affect system stability.
+
 endmenu
