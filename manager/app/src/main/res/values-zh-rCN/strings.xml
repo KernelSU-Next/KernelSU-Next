@@ -101,12 +101,12 @@
     <string name="allowlist_backup_message">备份当前的超级用户列表</string>
     <string name="module_backup">备份模块</string>
     <string name="module_backup_message">备份当前已安装的模块。</string>
-    <string name="warning">警告</string>
+    <string name="warning">免责声明</string>
     <string name="warning_message">此为尚在开发阶段的实验功能，继续操作前请确保模块已备份。使用此功能需要先了解其风险，在知晓后果的情况下谨慎操作。</string>
     <string name="proceed">继续</string>
     <string name="cancel">取消</string>
     <string name="later">稍后</string>
-    <string name="lkm_warning_message">此 LKM 补丁依赖于闭源组件，你确定要继续吗？</string>
+    <string name="lkm_warning_message">此 LKM 补丁依赖于闭源组件，确认操作代表你知晓因继续使用该功能所导致的一切后果与开发团队无关。</string>
     <string name="home_next_kernelsu">🔥 Next 构建</string>
     <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Next 实验性分支。在 GitHub 上查看！</string>
@@ -180,7 +180,7 @@
     <string name="settings_check_update">检查更新</string>
     <string name="settings_check_update_summary">在应用启动后自动检查是否有更新。</string>
     <string name="grant_root_failed">获取 root 失败！</string>
-    <string name="action">动作</string>
+    <string name="action">执行</string>
     <string name="webui">WebUI</string>
     <string name="open">打开</string>
     <string name="enable_web_debugging">启用 WebView 调试</string>
@@ -219,5 +219,5 @@
     <string name="use_webuix_summary">使用更完善的 WebUI X 取代旧有 WebUI，请注意模块开发者可在模块信息中单独覆盖此项设置。</string>
     <string name="use_webuix_eruda">对 WebUI X 注入 Eruda</string>
     <string name="use_webuix_eruda_summary">使用 WebUI X 时注入控制台以便于调试，需要启用 WebView 调试功能。</string>
-    <string name="customization">自定义</string>
+    <string name="customization">外观</string>
 </resources>

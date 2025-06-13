@@ -180,7 +180,7 @@
     <string name="settings_check_update">檢查更新</string>
     <string name="settings_check_update_summary">在應用啟動後自動檢查是否有最新版。</string>
     <string name="grant_root_failed">獲取 root 失敗！</string>
-    <string name="action">Action</string>
+    <string name="action">執行</string>
     <string name="webui">WebUI</string>
     <string name="open">打開</string>
     <string name="enable_web_debugging">啟用 WebView 偵錯</string>
@@ -219,5 +219,5 @@
     <string name="use_webuix_summary">使用更爲完善的 WebUI X 而不是 WebUI，請注意模組開發人員能在模組信息中覆寫這個設置。</string>
     <string name="use_webuix_eruda">將 Eruda 注入 WebUI X</string>
     <string name="use_webuix_eruda_summary">在使用 WebUI X 時注入控制台以便於偵錯，需要啟用 WebView 偵錯功能。</string>
-    <string name="customization">客制化</string>
+    <string name="customization">自訂外觀</string>
 </resources>
