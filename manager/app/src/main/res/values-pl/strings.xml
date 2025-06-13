@@ -12,13 +12,19 @@
     <string name="home">Strona główna</string>
     <string name="home_not_installed">Niezainstalowany</string>
     <string name="home_click_to_install">Kliknij, aby zainstalować</string>
+    <string name="lkm_mode_deprecated">Tryb LKM jest już przestarzały!</string>
+    <string name="lkm_alternative_suggestion">Zainstaluj jądro GKI lub zintegruj KernelSU Next ze swoim urządzeniem.</string>
     <string name="home_working">Uruchomiony</string>
     <string name="home_working_version">Wersja: %d</string>
     <string name="home_superuser_count">Superuserów: %d</string>
     <string name="home_module_count">Modułów: %d</string>
+    <string name="home_module_update_count">Aktualizacji: %d</string>
     <string name="home_failure">Nie znaleziono sygnatury KernelSU Next v2 w jądrze! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Poproś swojego programistę jądra o integrację KernelSU Next!</string>
     <string name="home_kernel">Wersja jądra</string>
+    <string name="hook_mode">Tryb hookowania</string>
+    <string name="enable">Aktywuj</string>
+    <string name="disable">Dezaktywuj</string>
     <string name="enabled">Aktywny</string>
     <string name="disabled">Nieaktywny</string>
     <string name="susfs_supported">Obsługiwany</string>
@@ -27,6 +33,7 @@
     <string name="home_susfs_sus_su">SuS SU</string>
     <string name="home_android">Wersja Androida</string>
     <string name="home_manager_version">Wersja managera</string>
+    <string name="home_abi">ABI</string>
     <string name="home_selinux_status">Status SELinux</string>
     <string name="selinux_status_disabled">Wyłączony</string>
     <string name="selinux_status_enforcing">Enforcing</string>
@@ -38,13 +45,16 @@
     <string name="module_empty">Brak zainstalowanych modułów</string>
     <string name="module">Moduły</string>
     <string name="module_install_prompt_with_name">Następujące moduły zostaną zainstalowane: %1$s</string>
-    <string name="module_sort_a_to_z">Sortuj (A-Z)</string>
-    <string name="module_sort_z_to_a">Sortuj (Z-A)</string>
+    <string name="module_sort_a_to_z">Sortuj (A → Z)</string>
+    <string name="module_sort_z_to_a">Sortuj (Z → A)</string>
+    <string name="module_size_low_to_high">Sortuj (Najmniejszy → Największy)</string>
+    <string name="module_size_high_to_low">Sortuj (Największy → Najmniejszy)</string>
     <string name="uninstall">Odinstaluj</string>
     <string name="restore">Przywróć</string>
     <string name="module_install">Zainstaluj</string>
     <string name="install">Zainstaluj</string>
     <string name="reboot">Reboot (uruchom ponownie)</string>
+    <string name="uninstalled">Odinstalowany</string>
     <string name="settings">Ustawienia</string>
     <string name="reboot_userspace">Miękki reboot</string>
     <string name="reboot_recovery">Reboot do trybu Recovery</string>
@@ -96,6 +106,7 @@
     <string name="proceed">Dalej</string>
     <string name="cancel">Anuluj</string>
     <string name="later">Później</string>
+    <string name="lkm_warning_message">Łatka LKM opiera się na komponentach o zamkniętym kodzie źródłowym. Czy chcesz kontynuować?</string>
     <string name="home_next_kernelsu">🔥 Kompilacja Next</string>
     <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Eksperymentalna gałąź Next. Sprawdź na GitHub!</string>
@@ -129,6 +140,7 @@
     <string name="profile_selinux_domain">Domena</string>
     <string name="profile_selinux_rules">Reguły</string>
     <string name="module_update">Zaktualizuj</string>
+    <string name="module_updated">Zaktualizowany</string>
     <string name="module_downloading">Pobieranie modułu: %s</string>
     <string name="module_start_downloading">Rozpocznij pobieranie: %s</string>
     <string name="new_version_available">Nowa wersja %s jest dostępna, kliknij, aby zaktualizować.</string>
@@ -136,6 +148,10 @@
     <string name="close">Zamknij</string>
     <string name="force_stop_app">Wymuś zatrzymanie</string>
     <string name="restart_app">Uruchom ponownie</string>
+    <string name="settings_amoled_mode">Tryb AMOLED</string>
+    <string name="settings_amoled_mode_summary">Włącz czysto czarny motyw, przydatny dla ekranów AMOLED, aby zmniejszyć zmęczenie oczu oraz zużycie baterii.</string>
+    <string name="restart_required">Wymagany restart</string>
+    <string name="restart_app_message">Aplikacja wymaga ponownego uruchomienia, aby zmiana została uwzględniona.</string>
     <string name="failed_to_update_sepolicy">Nie udało się zaktualizować reguł SELinux dla: %s</string>
     <string name="su_not_allowed">Przyznanie uprawnień superusera nie jest dozwolone dla: %s</string>
     <string name="module_changelog">Dziennik zmian</string>
@@ -165,6 +181,7 @@
     <string name="settings_check_update_summary">Automatycznie sprawdzaj dostępność aktualizacji przy otwieraniu aplikacji.</string>
     <string name="grant_root_failed">Nie udało się przyznać uprawnień roota!</string>
     <string name="action">Akcja</string>
+    <string name="webui">WebUI</string>
     <string name="open">Otwórz</string>
     <string name="enable_web_debugging">Włącz debugowanie WebView</string>
     <string name="enable_web_debugging_summary">Możesz użyć tej opcji w celu debugowania WebUI. Włącz tylko wtedy, gdy jest to potrzebne.</string>
@@ -194,4 +211,13 @@
     <string name="settings_disable_su">Wyłącz funkcjonalność su</string>
     <string name="settings_disable_su_summary">Tymczasowo wyłącz możliwość uzyskania uprawnień roota przez dowolną aplikację za pomocą polecenia ⁠su (nie będzie to miało wpływu na istniejące procesy roota).</string>
     <string name="settings_language">Język</string>
+    <string name="settings_legacyui">Używaj starszego interfejsu użytkownika</string>
+    <string name="settings_legacyui_summary">Przełącz na poprzedni styl interfejsu użytkownika.</string>
+    <string name="settings_banner">Włącz banery</string>
+    <string name="settings_banner_summary">Pokazuj tła-banery dla modułów.</string>
+    <string name="use_webuix">Używaj WebUI X</string>
+    <string name="use_webuix_summary">Używaj WebUI X zamiast WebUI, który obsługuje więcej interfejsów API.</string>
+    <string name="use_webuix_eruda">Wstrzykuj Eruda do WebUI X</string>
+    <string name="use_webuix_eruda_summary">Wstrzyknij konsolę debugowania do WebUI X, aby ułatwić debugowanie. Wymagane jest aktywne debugowanie WebView.</string>
+    <string name="customization">Personalizacja</string>
 </resources>
