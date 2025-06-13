@@ -547,6 +547,38 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 				pr_info("susfs: copy_to_user() failed\n");
 			return 0;
 		}
+                if (arg2 == CMD_SUSFS_SET_ANDROID_DATA_ROOT_PATH) {
+                        int error = 0;
+                        if (!ksu_access_ok((void __user*)arg3, SUSFS_MAX_LEN_PATHNAME)) {
+                                pr_err("susfs: CMD_SUSFS_SET_ANDROID_DATA_ROOT_PATH -> arg3 is not accessible\n");
+                                return 0;
+                        }
+                        if (!ksu_access_ok((void __user*)arg5, sizeof(error))) {
+                                pr_err("susfs: CMD_SUSFS_SET_ANDROID_DATA_ROOT_PATH -> arg5 is not accessible\n");
+                                return 0;
+                        }
+                        error = susfs_set_i_state_on_external_dir((char __user*)arg3, CMD_SUSFS_SET_ANDROID_DATA_ROOT_PATH);
+                        pr_info("susfs: CMD_SUSFS_SET_ANDROID_DATA_ROOT_PATH -> ret: %d\n", error);
+                        if (copy_to_user((void __user*)arg5, &error, sizeof(error)))
+                                pr_info("susfs: copy_to_user() failed\n");
+                        return 0;
+                }
+                if (arg2 == CMD_SUSFS_SET_SDCARD_ROOT_PATH) {
+                        int error = 0;
+                        if (!ksu_access_ok((void __user*)arg3, SUSFS_MAX_LEN_PATHNAME)) {
+                                pr_err("susfs: CMD_SUSFS_SET_SDCARD_ROOT_PATH -> arg3 is not accessible\n");
+                                return 0;
+                        }
+                        if (!ksu_access_ok((void __user*)arg5, sizeof(error))) {
+                                pr_err("susfs: CMD_SUSFS_SET_SDCARD_ROOT_PATH -> arg5 is not accessible\n");
+                                return 0;
+                        }
+                        error = susfs_set_i_state_on_external_dir((char __user*)arg3, CMD_SUSFS_SET_SDCARD_ROOT_PATH);
+                        pr_info("susfs: CMD_SUSFS_SET_SDCARD_ROOT_PATH -> ret: %d\n", error);
+                        if (copy_to_user((void __user*)arg5, &error, sizeof(error)))
+                                pr_info("susfs: copy_to_user() failed\n");
+                        return 0;
+                }
 #endif //#ifdef CONFIG_KSU_SUSFS_SUS_PATH
 #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
 		if (arg2 == CMD_SUSFS_ADD_SUS_MOUNT) {
@@ -782,35 +814,32 @@ int ksu_handle_prctl(int option, unsigned long arg2, unsigned long arg3,
 #ifdef CONFIG_KSU_SUSFS_SUS_KSTAT
 			enabled_features |= (1 << 4);
 #endif
-#ifdef CONFIG_KSU_SUSFS_SUS_OVERLAYFS
+#ifdef CONFIG_KSU_SUSFS_TRY_UMOUNT
 			enabled_features |= (1 << 5);
 #endif
-#ifdef CONFIG_KSU_SUSFS_TRY_UMOUNT
+#ifdef CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT
 			enabled_features |= (1 << 6);
 #endif
-#ifdef CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT
+#ifdef CONFIG_KSU_SUSFS_SPOOF_UNAME
 			enabled_features |= (1 << 7);
 #endif
-#ifdef CONFIG_KSU_SUSFS_SPOOF_UNAME
+#ifdef CONFIG_KSU_SUSFS_ENABLE_LOG
 			enabled_features |= (1 << 8);
 #endif
-#ifdef CONFIG_KSU_SUSFS_ENABLE_LOG
+#ifdef CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS
 			enabled_features |= (1 << 9);
 #endif
-#ifdef CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS
+#ifdef CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG
 			enabled_features |= (1 << 10);
 #endif
-#ifdef CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG
+#ifdef CONFIG_KSU_SUSFS_OPEN_REDIRECT
 			enabled_features |= (1 << 11);
 #endif
-#ifdef CONFIG_KSU_SUSFS_OPEN_REDIRECT
+#ifdef CONFIG_KSU_SUSFS_SUS_SU
 			enabled_features |= (1 << 12);
 #endif
-#ifdef CONFIG_KSU_SUSFS_SUS_SU
-			enabled_features |= (1 << 13);
-#endif
 #ifdef CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT
-			enabled_features |= (1 << 14);
+			enabled_features |= (1 << 13);
 #endif
 			error = copy_to_user((void __user*)arg3, (void*)&enabled_features, sizeof(enabled_features));
 			pr_info("susfs: CMD_SUSFS_SHOW_ENABLED_FEATURES -> ret: %d\n", error);
