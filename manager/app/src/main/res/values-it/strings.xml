@@ -220,4 +220,5 @@
 	<string name="use_webuix_eruda">Iniettare Eruda in WebUI X</string>
 	<string name="use_webuix_eruda_summary">Inietta una console di debug in WebUI X per semplificare il debug. Richiede che il debug web sia attivo.</string>
 	<string name="customization">Personalizzazione</string>
+	<string name="developer">Sviluppatore</string>
 </resources>
