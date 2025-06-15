@@ -191,8 +191,6 @@
     <string name="select_kmi">Виберіть KMI</string>
     <string name="shrink_sparse_image">Мінімізувати розріджене зображення</string>
     <string name="shrink_sparse_image_message">Змініть розмір розрідженого зображення, де розташований модуль, до його фактичного розміру. Зверніть увагу, що це може призвести до неправильної роботи модуля, тому використовуйте його лише за необхідності (наприклад, для бекапу).</string>
-    <string name="shrink_sparse_image">Зменшити modules.img образ</string>
-    <string name="shrink_sparse_image_message">Змініть розмір modules.img образу, у якому знаходяться модулі, до його фактичного розміру. Зверніть увагу, що це може викликати ненормальну роботу модулів, тому використовуйте лише при необхідності (наприклад, для бекапу).</string>
     <string name="settings_uninstall">Видалення</string>
     <string name="settings_uninstall_temporary">Тимчасове видалення</string>
     <string name="settings_uninstall_permanent">Повне видалення</string>
