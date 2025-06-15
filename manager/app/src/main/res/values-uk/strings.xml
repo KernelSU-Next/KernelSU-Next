@@ -45,13 +45,14 @@
     <string name="module_install_prompt_with_name">Наступні модуль(і) будуть встановлені: %1$s</string>
     <string name="module_sort_a_to_z">Сортувати (А-Я)</string>
     <string name="module_sort_z_to_a">Сортувати (Я-А)</string>
-    <string name="module_size_low_to_high">Сортувати (Маленький → Великий)</string>
-    <string name="module_size_high_to_low">Сортувати (Великий → Маленький)</string>
+    <string name="module_size_low_to_high">Сортувати (Низький → Великий)</string>
+    <string name="module_size_high_to_low">Сортувати (Великий → Низький)</string>
     <string name="uninstall">Видалити</string>
     <string name="restore">Відновити</string>
     <string name="module_install">Встановити</string>
     <string name="install">Встановити</string>
     <string name="reboot">Перезавантаження</string>
+    <string name="uninstalled">Видалено</string>
     <string name="settings">Налаштування</string>
     <string name="reboot_userspace">М’яка перезавантаження</string>
     <string name="reboot_recovery">Перезавантаження в Recovery</string>
