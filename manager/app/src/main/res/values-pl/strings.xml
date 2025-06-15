@@ -220,4 +220,6 @@
     <string name="use_webuix_eruda">Wstrzykuj Eruda do WebUI X</string>
     <string name="use_webuix_eruda_summary">Wstrzyknij konsolę debugowania do WebUI X, aby ułatwić debugowanie. Wymagane jest aktywne debugowanie WebView.</string>
     <string name="customization">Personalizacja</string>
+    <string name="developer">Programista</string>
+    <string name="sucompat_disabled">SUCOMPAT NIEAKTYWNY</string>
 </resources>
