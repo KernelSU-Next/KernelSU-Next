@@ -218,4 +218,5 @@
     <string name="use_webuix_eruda">Інжект Eruda у WebUI X</string>
     <string name="use_webuix_eruda_summary">Інжектити консоль відладки у WebUI X, щоб спростити відладку. Потрібно увімкнути відладку WebView.</string>
     <string name="customization">Кастомізація</string>
+    <string name="developer">Розробник</string>
 </resources>
