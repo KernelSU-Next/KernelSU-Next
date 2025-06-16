@@ -139,8 +139,8 @@
     <string name="profile_umount_modules_summary">啟用後將允許 KernelSU-Next 為本應用還原被模組修改過的檔案。</string>
     <string name="profile_selinux_domain">域</string>
     <string name="profile_selinux_rules">規則</string>
-    <string name="module_update">更新</string>
-    <string name="module_updated">已經更新</string>
+    <string name="module_update">有新版本</string>
+    <string name="module_updated">重啓生效</string>
     <string name="module_downloading">正在下載模組: %s</string>
     <string name="module_start_downloading">開始下載: %s</string>
     <string name="new_version_available">發現新版本：%s，點擊升級。</string>
@@ -178,7 +178,7 @@
     <string name="app_profile_template_import_empty">剪貼簿為空！</string>
     <string name="module_changelog_failed">獲取更新日誌失敗: %s</string>
     <string name="settings_check_update">檢查更新</string>
-    <string name="settings_check_update_summary">在應用啟動後自動檢查是否有最新版。</string>
+    <string name="settings_check_update_summary">在應用啟動後自動檢查是否有新版本。</string>
     <string name="grant_root_failed">獲取 root 失敗！</string>
     <string name="action">執行</string>
     <string name="webui">WebUI</string>
@@ -220,4 +220,6 @@
     <string name="use_webuix_eruda">將 Eruda 注入 WebUI X</string>
     <string name="use_webuix_eruda_summary">在使用 WebUI X 時注入控制台以便於偵錯，需要啟用 WebView 偵錯功能。</string>
     <string name="customization">自訂外觀</string>
+    <string name="developer">開發人員設定</string>
+    <string name="sucompat_disabled">SUCOMPAT 已經禁用</string>
 </resources>
