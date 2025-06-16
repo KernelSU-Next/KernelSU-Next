@@ -47,8 +47,8 @@
     <string name="module_install_prompt_with_name">Следующие модуль(и) будут установлены: %1$s</string>
     <string name="module_sort_a_to_z">Сортировать (А → Я)</string>
     <string name="module_sort_z_to_a">Сортировать (Я → А)</string>
-    <string name="module_size_low_to_high">Сортировать (Низкий → Высокий)</string>
-    <string name="module_size_high_to_low">Сортировать (Высокий → Низкий)</string>
+    <string name="module_size_low_to_high">Сортировать (Меньше → Больше)</string>
+    <string name="module_size_high_to_low">Сортировать (Больше → Меньше)</string>
     <string name="uninstall">Удалить</string>
     <string name="restore">Восстановить</string>
     <string name="module_install">Установить</string>
@@ -213,9 +213,13 @@
     <string name="settings_language">Язык</string>
     <string name="settings_legacyui">Использовать старый UI</string>
     <string name="settings_legacyui_summary">Переключиться на предыдущий стиль интерфейса.</string>
+    <string name="settings_banner">Включить баннеры</string>
+    <string name="settings_banner_summary">Показывать фоновые баннеры для модулей.</string>
     <string name="use_webuix">Использовать WebUI X</string>
     <string name="use_webuix_summary">Использовать WebUI X вместо WebUI, который поддерживает больше API.</string>
     <string name="use_webuix_eruda">Инжект Eruda в WebUI X</string>
     <string name="use_webuix_eruda_summary">Инжектить консоль отладки в WebUI X, чтобы упростить отладку. Требуется включить отладку WebView.</string>
     <string name="customization">Кастомизация</string>
+    <string name="developer">Для разработчиков</string>
+    <string name="sucompat_disabled">SUCOMPAT ОТКЛЮЧЕН</string>
 </resources>
