@@ -55,7 +55,7 @@
     <string name="install">Встановити</string>
     <string name="reboot">Перезавантаження</string>
     <string name="uninstalled">Видалено</string>
-    <string name="settings">Налаштування</string>
+    <string name="settings">Параметри</string>
     <string name="reboot_userspace">М’яка перезавантаження</string>
     <string name="reboot_recovery">Перезавантаження в Recovery</string>
     <string name="reboot_bootloader">Перезавантаження в Bootloader</string>
