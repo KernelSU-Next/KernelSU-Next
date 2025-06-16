@@ -94,7 +94,7 @@
     <string name="reboot_message">Zmiany zaczną obowiązywać po restarcie systemu. Czy chcesz teraz uruchomić ponownie system?</string>
     <string name="module_restore">Przywróć moduły z kopii zapasowej</string>
     <string name="module_restore_message">Przywróć moduły z ostatniej kopii zapasowej.</string>
-    <string name="backup_restore">Tworzenie / przywracanie kopii zapasowej</string>
+    <string name="backup_restore">Tworzenie i przywracanie kopii zapasowej</string>
     <string name="module_backup">Utwórz kopię zapasową modułów</string>
     <string name="module_backup_message">Utwórz kopię zapasową obecnie zainstalowanych modułów.</string>
     <string name="allowlist_restore">Przywróć listę zgód z kopii zapasowej</string>
