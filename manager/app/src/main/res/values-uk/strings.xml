@@ -23,6 +23,8 @@
     <string name="home_failure_tip">Попросіть вашого розробника ядра інтегрувати KernelSU Next!</string>
     <string name="home_kernel">Версія ядра</string>
     <string name="hook_mode">Режим хуків</string>
+    <string name="enable">Увімкнути</string>
+    <string name="disable">Вимкнути</string>
     <string name="disabled">Вимкнено</string>
     <string name="enabled">Увімкнено</string>
     <string name="susfs_supported">Доступно</string>
@@ -218,5 +220,6 @@
     <string name="use_webuix_eruda">Інжект Eruda у WebUI X</string>
     <string name="use_webuix_eruda_summary">Інжектити консоль відладки у WebUI X, щоб спростити відладку. Потрібно увімкнути відладку WebView.</string>
     <string name="customization">Кастомізація</string>
-    <string name="developer">Розробник</string>
+    <string name="developer">Для Розробників</string>
+    <string name="sucompat_disabled">SUCOMPAT ВИМКНЕНО</string>
 </resources>
