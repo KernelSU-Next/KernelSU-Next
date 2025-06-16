@@ -220,4 +220,6 @@
     <string name="use_webuix_eruda">Injetar Eruda no WebUI X</string>
     <string name="use_webuix_eruda_summary">Injeta um console de depuração no WebUI X para facilitar a depuração. Requer que a depuração web esteja ativada.</string>
     <string name="customization">Personalização</string>
+    <string name="developer">Desenvolvedor</string>
+    <string name="sucompat_disabled">SUCOMPAT DESATIVADO</string>
 </resources>
