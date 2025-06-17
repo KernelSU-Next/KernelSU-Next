@@ -416,6 +416,7 @@ private fun ModuleList(
     val moduleUninstallConfirm = stringResource(R.string.module_uninstall_confirm)
     val moduleRestoreConfirm = stringResource(R.string.module_restore_confirm)
     val updateText = stringResource(R.string.module_update)
+    val updateLable = stringResource(R.string.module_update_available)
     val changelogText = stringResource(R.string.module_changelog)
     val downloadingText = stringResource(R.string.module_downloading)
     val startDownloadingText = stringResource(R.string.module_start_downloading)
@@ -827,7 +828,7 @@ fun ModuleItem(
                                 }
                                 if (updateUrl.isNotEmpty() && !module.remove && !module.update) {
                                     LabelItem(
-                                        text = stringResource(R.string.module_update),
+                                        text = stringResource(R.string.module_update_available),
                                         style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
                                             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                                             contentColor = MaterialTheme.colorScheme.onTertiaryContainer
