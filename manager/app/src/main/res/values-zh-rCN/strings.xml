@@ -140,7 +140,7 @@
     <string name="profile_selinux_domain">域</string>
     <string name="profile_selinux_rules">规则</string>
     <string name="module_update">更新</string>
-    <string name="module_update_available">有更新</string>
+    <string name="module_update_available">更新可用</string>
     <string name="module_updated">重启生效</string>
     <string name="module_downloading">正在下载模块: %s</string>
     <string name="module_start_downloading">开始下载: %s</string>

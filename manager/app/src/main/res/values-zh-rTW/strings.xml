@@ -139,7 +139,8 @@
     <string name="profile_umount_modules_summary">啟用後將允許 KernelSU-Next 為本應用還原被模組修改過的檔案。</string>
     <string name="profile_selinux_domain">域</string>
     <string name="profile_selinux_rules">規則</string>
-    <string name="module_update">有新版本</string>
+    <string name="module_update">更新</string>
+    <string name="module_update_available">更新可用</string>
     <string name="module_updated">重啓生效</string>
     <string name="module_downloading">正在下載模組: %s</string>
     <string name="module_start_downloading">開始下載: %s</string>
