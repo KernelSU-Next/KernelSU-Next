@@ -180,9 +180,9 @@
     <string name="settings_check_update">Проверять обновления</string>
     <string name="settings_check_update_summary">Автоматически проверять обновления при открытии приложения.</string>
     <string name="grant_root_failed">Не удалось предоставить root-доступ!</string>
-    <string name="action">Запустить</string>
+    <string name="action">Скрипт</string>
     <string name="webui">WebUI</string>
-    <string name="open">Открыть</string>
+    <string name="open">WebUI</string>
     <string name="enable_web_debugging">Отладка WebView</string>
     <string name="enable_web_debugging_summary">Можно использовать для отладки WebUI. Включайте только при необходимости.</string>
     <string name="direct_install">Прямая установка (Рекомендуется)</string>
@@ -205,9 +205,9 @@
     <string name="flash_success">Прошивка выполнена успешно</string>
     <string name="flash_failed">Ошибка прошивки</string>
     <string name="selected_lkm">Выбран LKM: %s</string>
-    <string name="save_log">Сохранить логи</string>
+    <string name="save_log">Сохранить\nлоги</string>
     <string name="log_saved">Логи сохранены</string>
-    <string name="send_log">Поделиться логами</string>
+    <string name="send_log">Поделиться\nлогами</string>
     <string name="settings_disable_su">Откл. совместимость с su</string>
     <string name="settings_disable_su_summary">Временно отключить возможность приложениям получать права root через команду su (существующие процессы с правами root не будут затронуты).</string>
     <string name="settings_language">Язык</string>
