@@ -180,7 +180,7 @@
     <string name="settings_check_update">Перевіряти оновлення</string>
     <string name="settings_check_update_summary">Автоматично перевіряти оновлення при відкритті додатка.</string>
     <string name="grant_root_failed">Не вдалося надати root-доступ!</string>
-    <string name="action">Дія</string>
+    <string name="action">Скрипт</string>
     <string name="webui">WebUI</string>
     <string name="open">WebUI</string>
     <string name="enable_web_debugging">Відладка WebView</string>
