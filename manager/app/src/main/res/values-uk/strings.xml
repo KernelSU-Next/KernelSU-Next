@@ -144,7 +144,7 @@
     <string name="module_downloading">Завантаження модуля: %s</string>
     <string name="module_start_downloading">Початок завантаження: %s</string>
     <string name="new_version_available">Доступна нова версія %s, натисніть для оновлення.</string>
-    <string name="launch_app">Запустити</string>
+    <string name="launch_app">Дія</string>
     <string name="close">Закрити</string>
     <string name="force_stop_app">Примусово зупинити</string>
     <string name="restart_app">Перезапустити</string>
@@ -182,7 +182,7 @@
     <string name="grant_root_failed">Не вдалося надати root-доступ!</string>
     <string name="action">Запустити</string>
     <string name="webui">WebUI</string>
-    <string name="open">Відкрити</string>
+    <string name="open">WebUI</string>
     <string name="enable_web_debugging">Відладка WebView</string>
     <string name="enable_web_debugging_summary">Можна використовувати для відладки WebUI. Увімкніть лише при необхідності.</string>
     <string name="direct_install">Пряма установка (Рекомендовано)</string>
