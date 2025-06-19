@@ -7,6 +7,7 @@
 #include <linux/kallsyms.h>
 #include <linux/kernel.h>
 #include <linux/kprobes.h>
+#include <linux/binfmts.h>
 #ifdef CONFIG_KSU_LSM_SECURITY_HOOKS
 #include <linux/lsm_hooks.h>
 #endif
@@ -49,6 +50,16 @@
 #include "selinux/selinux.h"
 #include "throne_tracker.h"
 #include "kernel_compat.h"
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0) || defined(KSU_COMPAT_GET_CRED_RCU)
+#define KSU_GET_CRED_RCU
+#endif
+
+#ifdef CONFIG_KSU_LSM_SECURITY_HOOKS
+#define LSM_HANDLER_TYPE static int
+#else
+#define LSM_HANDLER_TYPE int
+#endif
 
 #ifdef CONFIG_KSU_SUSFS
 bool susfs_is_allow_su(void)
@@ -1282,6 +1293,31 @@ int ksu_key_permission(key_ref_t key_ref, const struct cred *cred,
 }
 #endif
 
+// needs some locking, checking with copy_from_user_nofault,
+// theres actually failed / incomplete copies
+static bool is_locked_copy_ok(void *to, const void __user *from, size_t len)
+{
+	DEFINE_SPINLOCK(ksu_usercopy_spinlock);
+	spin_lock(&ksu_usercopy_spinlock);
+	bool ret = !ksu_copy_from_user_nofault(to, from, len);
+	spin_unlock(&ksu_usercopy_spinlock);
+
+	return ret;
+}
+
+LSM_HANDLER_TYPE ksu_bprm_check(struct linux_binprm *bprm)
+{
+	char *filename = (char *)bprm->filename;
+
+	if (likely(!ksu_execveat_hook))
+		return 0;
+
+	ksu_handle_pre_ksud(filename);
+
+	return 0;
+
+}
+
 #ifdef CONFIG_KSU_LSM_SECURITY_HOOKS
 static int ksu_task_prctl(int option, unsigned long arg2, unsigned long arg3,
 			  unsigned long arg4, unsigned long arg5)
@@ -1304,6 +1340,7 @@ static int ksu_task_fix_setuid(struct cred *new, const struct cred *old,
 
 #ifndef MODULE
 static struct security_hook_list ksu_hooks[] = {
+	LSM_HOOK_INIT(bprm_check_security, ksu_bprm_check),
 	LSM_HOOK_INIT(task_prctl, ksu_task_prctl),
 	LSM_HOOK_INIT(inode_rename, ksu_inode_rename),
 	LSM_HOOK_INIT(task_fix_setuid, ksu_task_fix_setuid),
