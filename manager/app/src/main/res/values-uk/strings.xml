@@ -107,7 +107,7 @@
     <string name="cancel">Скасувати</string>
     <string name="later">Пізніше</string>
     <string name="lkm_warning_message">Патч LKM базується на компонентах із закритим кодом. Продовжити?</string>
-    <string name="home_next_kernelsu">🔥 Наступна збірка</string>
+    <string name="home_next_kernelsu">🔥 Наступна збірка</string>\n
     <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Наступна експериментальна гілка. Подивіться на GitHub!</string>
     <string name="home_experimental_kernelsu">⚠️ Попередження про експериментальну розробку!</string>
@@ -205,9 +205,9 @@
     <string name="flash_success">Прошивка виконана успішно</string>
     <string name="flash_failed">Помилка прошивки</string>
     <string name="selected_lkm">Вибрано LKM: %s</string>
-    <string name="save_log">Зберегти логи</string>
+    <string name="save_log">Зберегти\nлоги</string>
     <string name="log_saved">Логи збережено</string>
-    <string name="send_log">Поділитися логами</string>
+    <string name="send_log">Поділитися\nлогами</string>
     <string name="settings_disable_su">Вимкн. сумісність із su</string>
     <string name="settings_disable_su_summary">Тимчасово вимкнути можливість додаткам отримувати права root через команду su (існуючі процеси з правами root не будуть зачеплені).</string>
     <string name="settings_language">Мова</string>
