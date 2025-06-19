@@ -107,7 +107,7 @@
     <string name="cancel">Скасувати</string>
     <string name="later">Пізніше</string>
     <string name="lkm_warning_message">Патч LKM базується на компонентах із закритим кодом. Продовжити?</string>
-    <string name="home_next_kernelsu">🔥 Наступна збірка</string>\n
+    <string name="home_next_kernelsu">🔥 Наступна збірка</string>
     <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Наступна експериментальна гілка. Подивіться на GitHub!</string>
     <string name="home_experimental_kernelsu">⚠️ Попередження про експериментальну розробку!</string>
