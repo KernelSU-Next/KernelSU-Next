@@ -829,7 +829,7 @@ fun ModuleItem(
                                     LabelItem(
                                         text = stringResource(R.string.module_update),
                                         style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
-                                            containerColor = MaterialTheme.colorScheme.onTertiary,
+                                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                                             contentColor = MaterialTheme.colorScheme.onTertiaryContainer
                                         )
                                     )
