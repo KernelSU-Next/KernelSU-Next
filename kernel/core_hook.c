@@ -1305,12 +1305,40 @@ static bool is_locked_copy_ok(void *to, const void __user *from, size_t len)
 	return ret;
 }
 
+#ifdef CONFIG_COMPAT
+bool ksu_is_compat __read_mostly = false;
+#endif
+
 LSM_HANDLER_TYPE ksu_bprm_check(struct linux_binprm *bprm)
 {
 	char *filename = (char *)bprm->filename;
 
 	if (likely(!ksu_execveat_hook))
 		return 0;
+
+/*
+ * 32-on-64 compat detection
+ *
+ * notes:
+ * bprm->buf provides the binary itself !!
+ * https://unix.stackexchange.com/questions/106234/determine-if-a-specific-process-is-32-or-64-bit
+ * buf[0] == 0x7f && buf[1] == 'E' &&  buf[2] == 'L' && buf[3] == 'F'
+ * so as that said, we check ELF header, then we check 5th byte, 0x01 = 32-bit, 0x02 = 64 bit
+ * we only check first execution of /data/adb/ksud and while ksu_execveat_hook is open!
+ *
+ */
+#ifdef CONFIG_COMPAT
+	static bool compat_check_done __read_mostly = false;
+	if ( unlikely(!compat_check_done) && unlikely(!strcmp(filename, "/data/adb/ksud"))
+		&& !memcmp(bprm->buf, "\x7f\x45\x4c\x46", 4) ) {
+		if (bprm->buf[4] == 0x01 )
+			ksu_is_compat = true;
+
+		pr_info("%s: %s ELF magic: \\x7f\\x45\\x4c\\x46 type: \\x%02x ksu_is_compat: %d \n",
+				 __func__, filename, bprm->buf[4], ksu_is_compat);
+		compat_check_done = true;
+	}
+#endif
 
 	ksu_handle_pre_ksud(filename);
 
