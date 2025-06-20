@@ -9,7 +9,7 @@
     <string name="issue_report_telegram_link">https://t.me/ksunext</string>
     <string name="confirm">Potwierdź</string>
     <string name="app_name" translatable="false">KernelSU Next</string>
-    <string name="home">Strona główna</string>
+    <string name="home">Główna</string>
     <string name="home_not_installed">Niezainstalowany</string>
     <string name="home_click_to_install">Kliknij, aby zainstalować</string>
     <string name="lkm_mode_deprecated">Tryb LKM jest już przestarzały!</string>
