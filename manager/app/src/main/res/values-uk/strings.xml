@@ -44,7 +44,7 @@
     <string name="module_failed_to_disable">Не вдалося вимкнути модуль: %s</string>
     <string name="module_empty">Нема встановлених модулів</string>
     <string name="module">Модулі</string>
-    <string name="module_install_prompt_with_name">Наступні модуль(і) будуть встановлені: %1$s</string>
+    <string name="module_install_prompt_with_name">Наступні модулі будуть встановлені: %1$s</string>
     <string name="module_sort_a_to_z">Сортувати (А-Я)</string>
     <string name="module_sort_z_to_a">Сортувати (Я-А)</string>
     <string name="module_size_low_to_high">Сортувати (Менше → Більше)</string>
