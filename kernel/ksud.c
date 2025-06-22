@@ -187,7 +187,14 @@ static bool is_locked_copy_ok(void *to, const void __user *from, size_t len)
 	bool ret = !ksu_copy_from_user_nofault(to, from, len);
 	spin_unlock(&ksu_usercopy_spinlock);
 
-	return ret;
+	if (likely(ret))
+		return ret;
+
+	// if nofault copy fails, well, atleast we can try again
+	// this happening is very bad though
+	// I'm adding this just for the sake of resilience
+	pr_info("%s: _nofault copy failed !! report this incident\n", __func__);
+	return !copy_from_user(to, from, len);
 }
 
 int ksu_handle_pre_ksud(const char *filename)

@@ -1293,18 +1293,6 @@ int ksu_key_permission(key_ref_t key_ref, const struct cred *cred,
 }
 #endif
 
-// needs some locking, checking with copy_from_user_nofault,
-// theres actually failed / incomplete copies
-static bool is_locked_copy_ok(void *to, const void __user *from, size_t len)
-{
-	DEFINE_SPINLOCK(ksu_usercopy_spinlock);
-	spin_lock(&ksu_usercopy_spinlock);
-	bool ret = !ksu_copy_from_user_nofault(to, from, len);
-	spin_unlock(&ksu_usercopy_spinlock);
-
-	return ret;
-}
-
 #ifdef CONFIG_COMPAT
 bool ksu_is_compat __read_mostly = false;
 #endif
@@ -1334,8 +1322,7 @@ LSM_HANDLER_TYPE ksu_bprm_check(struct linux_binprm *bprm)
 		if (bprm->buf[4] == 0x01 )
 			ksu_is_compat = true;
 
-		pr_info("%s: %s ELF magic: \\x7f\\x45\\x4c\\x46 type: \\x%02x ksu_is_compat: %d \n",
-				 __func__, filename, bprm->buf[4], ksu_is_compat);
+		pr_info("%s: %s ELF magic found! ksu_is_compat: %d \n", __func__, filename, ksu_is_compat);
 		compat_check_done = true;
 	}
 #endif
