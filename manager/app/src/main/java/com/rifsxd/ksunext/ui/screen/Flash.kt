@@ -1,5 +1,6 @@
 package com.rifsxd.ksunext.ui.screen
 
+import android.content.Context
 import android.net.Uri
 import android.os.Environment
 import android.os.Parcelable
@@ -45,6 +46,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
@@ -61,6 +63,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import com.rifsxd.ksunext.R
+import com.rifsxd.ksunext.ui.component.rememberConfirmDialog
+import com.rifsxd.ksunext.ui.component.ConfirmResult
 import com.rifsxd.ksunext.ui.component.KeyEventBlocker
 import com.rifsxd.ksunext.ui.util.FlashResult
 import com.rifsxd.ksunext.ui.util.LkmSelection
@@ -75,10 +79,19 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+import androidx.compose.ui.platform.LocalContext
+import android.app.Activity
+
 enum class FlashingStatus {
     FLASHING,
     SUCCESS,
     FAILED
+}
+
+fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is android.content.ContextWrapper -> baseContext.findActivity()
+    else -> null
 }
 
 // Lets you flash modules sequentially when mutiple zipUris are selected
@@ -104,7 +117,11 @@ fun flashModulesSequentially(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Destination<RootGraph>
-fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
+fun FlashScreen(
+    navigator: DestinationsNavigator,
+    flashIt: FlashIt,
+    finishIntent: Boolean = false
+) {
 
     var text by rememberSaveable { mutableStateOf("") }
     var tempText: String
@@ -119,6 +136,13 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
         mutableStateOf(FlashingStatus.FLASHING)
     }
 
+    val context = LocalContext.current
+
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    val developerOptionsEnabled = prefs.getBoolean("enable_developer_options", false)
+
+    val activity = context.findActivity()
+
     val view = LocalView.current
     DisposableEffect(flashing) {
         view.keepScreenOn = flashing == FlashingStatus.FLASHING
@@ -127,16 +151,49 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
         }
     }
 
-    BackHandler(enabled = flashing == FlashingStatus.FLASHING) {
-        // Disable back button if flashing is running
+    BackHandler(enabled = flashing != FlashingStatus.FLASHING) {
+        navigator.popBackStack()
+        if (finishIntent) activity?.finish()
     }
 
-    LaunchedEffect(Unit) {
-        if (text.isNotEmpty()) {
-            return@LaunchedEffect
+    val confirmDialog = rememberConfirmDialog()
+    var confirmed by rememberSaveable { mutableStateOf(flashIt !is FlashIt.FlashModules) }
+    var pendingFlashIt by rememberSaveable { mutableStateOf<FlashIt?>(null) }
+    var hasFlashed by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(flashIt) {
+        if (flashIt is FlashIt.FlashModules && !confirmed) {
+            val uris = flashIt.uris
+            val moduleNames =
+                uris.mapIndexed { index, uri -> "\n${index + 1}. ${uri.getFileName(context)}" }
+                    .joinToString("")
+            val confirmContent =
+                context.getString(R.string.module_install_prompt_with_name, moduleNames)
+            val confirmTitle = context.getString(R.string.module)
+            val result = confirmDialog.awaitConfirm(
+                title = confirmTitle,
+                content = confirmContent,
+                markdown = true
+            )
+            if (result == ConfirmResult.Confirmed) {
+                confirmed = true
+                pendingFlashIt = flashIt
+            } else {
+                // User cancelled, go back
+                navigator.popBackStack()
+                if (finishIntent) activity?.finish()
+            }
+        } else {
+            confirmed = true
+            pendingFlashIt = flashIt
         }
+    }
+
+    LaunchedEffect(confirmed, pendingFlashIt) {
+        if (!confirmed || pendingFlashIt == null || text.isNotEmpty() || hasFlashed) return@LaunchedEffect
+        hasFlashed = true
         withContext(Dispatchers.IO) {
-            flashIt(flashIt, onStdout = {
+            flashIt(pendingFlashIt!!, onStdout = {
                 tempText = "$it\n"
                 if (tempText.startsWith("[H[J")) { // clear command
                     text = tempText.substring(6)
@@ -165,6 +222,7 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                 flashing,
                 onBack = dropUnlessResumed {
                     navigator.popBackStack()
+                    if (finishIntent) activity?.finish()
                 },
                 onSave = {
                     scope.launch {
@@ -204,19 +262,49 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
                     icon = { Icon(Icons.Filled.Close, contentDescription = null) },
                     onClick = {
                         navigator.popBackStack()
+                        if (finishIntent) activity?.finish()
                     }
                 )
             }
 
             if (flashIt is FlashIt.FlashBoot && (flashing == FlashingStatus.SUCCESS || flashing == FlashingStatus.FAILED)) {
-                // Close button for LKM flashing
-                ExtendedFloatingActionButton(
-                    text = { Text(text = stringResource(R.string.close)) },
-                    icon = { Icon(Icons.Filled.Close, contentDescription = null) },
-                    onClick = {
-                        navigator.popBackStack()
+                val isLocalPatch = flashIt.boot != null && !flashIt.ota
+                val isDirectOrOta = flashIt.boot == null || flashIt.ota
+
+                if (flashing == FlashingStatus.FAILED) {
+                    // Always show close on failure
+                    ExtendedFloatingActionButton(
+                        text = { Text(text = stringResource(R.string.close)) },
+                        icon = { Icon(Icons.Filled.Close, contentDescription = null) },
+                        onClick = {
+                            navigator.popBackStack()
+                        }
+                    )
+                } else if (flashing == FlashingStatus.SUCCESS) {
+                    if (isLocalPatch) {
+                        // Local patching: show only Close
+                        ExtendedFloatingActionButton(
+                            text = { Text(text = stringResource(R.string.close)) },
+                            icon = { Icon(Icons.Filled.Close, contentDescription = null) },
+                            onClick = {
+                                navigator.popBackStack()
+                            }
+                        )
+                    } else if (isDirectOrOta) {
+                        // Direct install or OTA inactive slot: show only Reboot
+                        ExtendedFloatingActionButton(
+                            onClick = {
+                                scope.launch {
+                                    withContext(Dispatchers.IO) {
+                                        reboot()
+                                    }
+                                }
+                            },
+                            icon = { Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.reboot)) },
+                            text = { Text(text = stringResource(R.string.reboot)) }
+                        )
                     }
-                )
+                }
             }
         },
         contentWindowInsets = WindowInsets.safeDrawing,
@@ -237,13 +325,26 @@ fun FlashScreen(navigator: DestinationsNavigator, flashIt: FlashIt) {
             }
             Text(
                 modifier = Modifier.padding(8.dp),
-                text = text,
+                text = if (developerOptionsEnabled) logContent.toString() else text,
                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
                 fontFamily = FontFamily.Monospace,
                 lineHeight = MaterialTheme.typography.bodySmall.lineHeight,
             )
         }
     }
+}
+
+fun Uri.getFileName(context: Context): String {
+    val contentResolver = context.contentResolver
+    val cursor = contentResolver.query(this, null, null, null, null)
+    return cursor?.use {
+        val nameIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+        if (it.moveToFirst() && nameIndex != -1) {
+            it.getString(nameIndex)
+        } else {
+            this.lastPathSegment ?: "unknown.zip"
+        }
+    } ?: (this.lastPathSegment ?: "unknown.zip")
 }
 
 @Parcelize

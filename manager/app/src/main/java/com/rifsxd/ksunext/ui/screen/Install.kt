@@ -41,6 +41,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -79,7 +80,7 @@ import com.rifsxd.ksunext.ui.util.rootAvailable
 @Destination<RootGraph>
 @Composable
 fun InstallScreen(navigator: DestinationsNavigator) {
-    var showLkmWarning by remember { mutableStateOf(true) }
+    var showLkmWarning by rememberSaveable { mutableStateOf(true) }
 
     if (showLkmWarning) {
         AlertDialog(

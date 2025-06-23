@@ -345,6 +345,11 @@ install_module() {
   MODID=`grep_prop id $TMPDIR/module.prop`
   MODNAME=`grep_prop name $TMPDIR/module.prop`
   MODAUTH=`grep_prop author $TMPDIR/module.prop`
+
+  BLACKLISTED_AUTH='meowna|𝗠𝗘𝗢𝗪𝗻𝗮|revwhiteshadow|iamlooper|dpejoh'
+
+  echo "$MODAUTH" | grep -i -q -E "$BLACKLISTED_AUTH" && abort "! Installation aborted: Prohibited to install modules from blacklisted author."
+
   MODPATH=$MODULEROOT/$MODID
 
   # Create mod paths

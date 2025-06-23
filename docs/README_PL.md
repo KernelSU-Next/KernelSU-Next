@@ -24,7 +24,7 @@ KernelSU Next oficjalnie obsługuje większość jąder Androida od wersji 4.4 d
  - Jądra GKI 1.0 (4.19 - 5.4) muszą zostać zrekompilowane z dodatkiem sterownika KernelSU.
  - Jądra EOL (<4.14) również muszą zostać zrekompilowane z dodatkiem sterownika KernelSU (obsługa 3.18+ jest eksperymentalna i może wymagać backportu pewnych funkcji).
 
-Obecnie obsługiwana jest tylko architektura `arm64-v8a`.
+Obecnie obsługiwana jest tylko architektura `arm64-v8a`, `armeabi-v7a` & `x86_64`
 
 ## Użycie
 

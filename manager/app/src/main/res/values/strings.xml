@@ -18,10 +18,13 @@
     <string name="home_working_version">Version: %d</string>
     <string name="home_superuser_count">Superusers: %d</string>
     <string name="home_module_count">Modules: %d</string>
+    <string name="home_module_update_count">Updates: %d</string>
     <string name="home_failure">KernelSU Next v2 signature not found in kernel! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Ask your kernel developer to integrate KernelSU Next!</string>
     <string name="home_kernel">Kernel version</string>
     <string name="hook_mode">Hook mode</string>
+    <string name="enable">Enable</string>
+    <string name="disable">Disable</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
     <string name="susfs_supported">Supported</string>
@@ -42,13 +45,16 @@
     <string name="module_empty">No module installed</string>
     <string name="module">Module</string>
     <string name="module_install_prompt_with_name">The following module(s) will be installed: %1$s</string>
-    <string name="module_sort_a_to_z">Sort (A-Z)</string>
-    <string name="module_sort_z_to_a">Sort (Z-A)</string>
+    <string name="module_sort_a_to_z">Sort (A → Z)</string>
+    <string name="module_sort_z_to_a">Sort (Z → A)</string>
+    <string name="module_size_low_to_high">Sort (Low → High)</string>
+    <string name="module_size_high_to_low">Sort (High → Low)</string>
     <string name="uninstall">Uninstall</string>
     <string name="restore">Restore</string>
     <string name="module_install">Install</string>
     <string name="install">Install</string>
     <string name="reboot">Reboot</string>
+    <string name="uninstalled">Uninstalled</string>
     <string name="settings">Settings</string>
     <string name="reboot_userspace">Soft Reboot</string>
     <string name="reboot_recovery">Reboot to Recovery</string>
@@ -134,6 +140,7 @@
     <string name="profile_selinux_domain">Domain</string>
     <string name="profile_selinux_rules">Rules</string>
     <string name="module_update">Update</string>
+    <string name="module_updated">Updated</string>
     <string name="module_downloading">Downloading module: %s</string>
     <string name="module_start_downloading">Start downloading: %s</string>
     <string name="new_version_available">New version %s is available, click to upgrade.</string>
@@ -141,6 +148,10 @@
     <string name="close">Close</string>
     <string name="force_stop_app">Force stop</string>
     <string name="restart_app">Restart</string>
+    <string name="settings_amoled_mode">AMOLED mode</string>
+    <string name="settings_amoled_mode_summary">Enable a pure black theme useful for AMOLED screens to reduce eye strain and save battery.</string>
+    <string name="restart_required">Restart required</string>
+    <string name="restart_app_message">The app needs to restart for this change to take effect.</string>
     <string name="failed_to_update_sepolicy">Failed to update SELinux rules for: %s</string>
     <string name="su_not_allowed">Granting superuser isn\'t allowed for: %s</string>
     <string name="module_changelog">Changelog</string>
@@ -170,6 +181,7 @@
     <string name="settings_check_update_summary">Automatically check for updates when opening the app.</string>
     <string name="grant_root_failed">Failed to grant root!</string>
     <string name="action">Action</string>
+    <string name="webui">WebUI</string>
     <string name="open">Open</string>
     <string name="enable_web_debugging">Enable WebView debugging</string>
     <string name="enable_web_debugging_summary">Can be used to debug WebUI. Please enable only when needed.</string>
@@ -199,8 +211,15 @@
     <string name="settings_disable_su">Disable su compatibility</string>
     <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
     <string name="settings_language">Language</string>
+    <string name="settings_legacyui">Use Legacy UI</string>
+    <string name="settings_legacyui_summary">Switch to the previous user interface style.</string>
+    <string name="settings_banner">Enable banners</string>
+    <string name="settings_banner_summary">Show background banners for modules.</string>
     <string name="use_webuix">Use WebUI X</string>
-    <string name="use_webuix_summary">Use WebUI X instead of WebUI, which supports more APIs. Be aware that developers can override this feature in their module config.</string>
+    <string name="use_webuix_summary">Use WebUI X instead of WebUI, which supports more APIs.</string>
     <string name="use_webuix_eruda">Inject Eruda into WebUI X</string>
     <string name="use_webuix_eruda_summary">Inject a debug console into WebUI X to make debugging easier. Requires web debugging to be on.</string>
+    <string name="customization">Customization</string>
+    <string name="developer">Developer</string>
+    <string name="sucompat_disabled">SUCOMPAT DISABLED</string>
 </resources>

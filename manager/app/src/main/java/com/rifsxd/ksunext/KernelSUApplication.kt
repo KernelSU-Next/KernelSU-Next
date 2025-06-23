@@ -11,6 +11,10 @@ import okhttp3.Cache
 import okhttp3.OkHttpClient
 import java.io.File
 import java.util.Locale
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import com.rifsxd.ksunext.ui.webui.initPlatform
 
 lateinit var ksuApp: KernelSUApplication
 
@@ -23,6 +27,9 @@ class KernelSUApplication : Application() {
         ksuApp = this
 
         Platform.setHiddenApiExemptions()
+
+        // Pre-initialize WX Platform as early as possible
+        launchPlatformInit()
 
         val context = this
         val iconSize = resources.getDimensionPixelSize(android.R.dimen.app_icon_size)
@@ -54,5 +61,11 @@ class KernelSUApplication : Application() {
                 }.build()
     }
 
+    private fun launchPlatformInit() {
+        // Use a coroutine to avoid blocking the main thread
+        GlobalScope.launch(Dispatchers.IO) {
+            initPlatform()
+        }
+    }
 
 }

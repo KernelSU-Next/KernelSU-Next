@@ -54,19 +54,6 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
         }
     }
 
-    LaunchedEffect(viewModel.search) {
-        if (viewModel.search.isEmpty()) {
-            listState.scrollToItem(0)
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        if (viewModel.refreshOnReturn) {
-            viewModel.fetchAppList()
-            viewModel.refreshOnReturn = false
-        }
-    }
-
     Scaffold(
         topBar = {
             SearchAppBar(
@@ -105,7 +92,7 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                                     }
                                 )
                             }, onClick = {
-                                viewModel.showSystemApps = !viewModel.showSystemApps
+                                viewModel.updateShowSystemApps(!viewModel.showSystemApps)
                                 showDropdown = false
                             })
                         }
@@ -131,7 +118,6 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
             ) {
                 items(viewModel.appList, key = { it.packageName + it.uid }) { app ->
                     AppItem(app) {
-                        viewModel.refreshOnReturn = true
                         navigator.navigate(AppProfileScreenDestination(app))
                     }
                 }
@@ -152,6 +138,9 @@ private fun AppItem(
         supportingContent = {
             Column {
                 Text(app.packageName)
+
+                Spacer(modifier = Modifier.height(4.dp))
+                
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {

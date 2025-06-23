@@ -24,7 +24,7 @@ KernelSU Next, resmi olarak Android çekirdeklerinin çoğunu 4.4 sürümünden 
  - GKI 1.0 (4.19 - 5.4) çekirdeklerinin KernelSU sürücüsü ile yeniden derlenmesi gerekir.
  - EOL (<4.14) çekirdekler de KernelSU sürücüsüyle yeniden derlenmelidir (3.18+ deneysel olup bazı fonksiyonların geri aktarımı gerekebilir).
 
-Şu anda yalnızca `arm64-v8a` mimarisi desteklenmektedir.
+Şu anda yalnızca `arm64-v8a`, `armeabi-v7a` & `x86_64` mimarisi desteklenmektedir.
 
 ## Kullanım
 

@@ -43,10 +43,10 @@ jobs:
           ubuntu-version: "16.04"
           cached: ${{ steps.cache-llvm.outputs.cache-hit }}
 
-      - name: Checkout KernelSU
+      - name: Checkout KernelSU-Next
         uses: actions/checkout@v4
         with:
-          path: KernelSU
+          path: KernelSU-Next
           fetch-depth: 0
 
       - name: Setup kernel source
@@ -63,23 +63,23 @@ jobs:
           save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
           max-size: 2G
 
-      - name: Setup KernelSU
+      - name: Setup KernelSU-Next
         working-directory: WSA-Linux-Kernel
         run: |
-          echo "[+] KernelSU setup"
+          echo "[+] KernelSU-Next setup"
           KERNEL_ROOT=$GITHUB_WORKSPACE/WSA-Linux-Kernel
           echo "[+] KERNEL_ROOT: $KERNEL_ROOT"
-          echo "[+] Copy KernelSU driver to $KERNEL_ROOT/drivers"
-          ln -sf $GITHUB_WORKSPACE/KernelSU/kernel $KERNEL_ROOT/drivers/kernelsu
-          echo "[+] Add KernelSU driver to Makefile"
+          echo "[+] Copy KernelSU-Next driver to $KERNEL_ROOT/drivers"
+          ln -sf $GITHUB_WORKSPACE/KernelSU-Next/kernel $KERNEL_ROOT/drivers/kernelsu
+          echo "[+] Add KernelSU-Next driver to Makefile"
           DRIVER_MAKEFILE=$KERNEL_ROOT/drivers/Makefile
           DRIVER_KCONFIG=$KERNEL_ROOT/drivers/Kconfig
           grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "\nobj-\$(CONFIG_KSU) += kernelsu/\n" >> "$DRIVER_MAKEFILE"
           grep -q "kernelsu" "$DRIVER_KCONFIG" || sed -i "/endmenu/i\\source \"drivers/kernelsu/Kconfig\"" "$DRIVER_KCONFIG"
-          echo "[+] Apply KernelSU patches"
-          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU/.github/patches/5.15/*.patch || echo "[-] No patch found"
-          echo "[+] KernelSU setup done."
-          cd $GITHUB_WORKSPACE/KernelSU
+          echo "[+] Apply KernelSU-Next patches"
+          cd $KERNEL_ROOT && git apply $GITHUB_WORKSPACE/KernelSU-Next/.github/patches/5.15/*.patch || echo "[-] No patch found"
+          echo "[+] KernelSU-Next setup done."
+          cd $GITHUB_WORKSPACE/KernelSU-Next
           VERSION=$(($(git rev-list --count HEAD) + 10200))
           echo "VERSION: $VERSION"
           echo "kernelsu_version=$VERSION" >> $GITHUB_ENV

@@ -24,7 +24,7 @@ KernelSU Next hỗ trợ chính thức các kernel Android từ phiên bản 4.4
  - GKI 1.0 (4.19 - 5.4) kernels cần dược build lại với các nhân KernelSU Next
  - EOL (<4.14) kernels cần dược build lại với các nhân KernelSU Next (các kernels 3.18+ đang dược thử nghiệm và có thể cần backports 1 vài thứ ).
 
-Hiện tại kernelSU Next chỉ hỗ trợ những cpu có `arm64-v8a` 
+Hiện tại kernelSU Next chỉ hỗ trợ những cpu có `arm64-v8a`, `armeabi-v7a` & `x86_64` 
 
 ## Sử dụng
 

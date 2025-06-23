@@ -338,7 +338,7 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 		return 0;
 	}
 
-	if (!d_is_reg(file->f_path.dentry)) {
+	if (!S_ISREG(file->f_path.dentry->d_inode->i_mode)) {
 		return 0;
 	}
 
@@ -396,10 +396,12 @@ int ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
 	if (orig_read) {
 		fops_proxy.read = read_proxy;
 	}
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 16, 0) 
 	orig_read_iter = file->f_op->read_iter;
 	if (orig_read_iter) {
 		fops_proxy.read_iter = read_iter_proxy;
 	}
+#endif
 	// replace the file_operations
 	file->f_op = &fops_proxy;
 	read_count_append = rc_count;
@@ -629,6 +631,29 @@ static void do_stop_execve_hook(struct work_struct *work)
 static void do_stop_input_hook(struct work_struct *work)
 {
 	unregister_kprobe(&input_event_kp);
+}
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
+#include "objsec.h" // task_security_struct
+bool is_ksu_transition(const struct task_security_struct *old_tsec,
+			const struct task_security_struct *new_tsec)
+{
+	static u32 ksu_sid;
+	char *secdata;
+	u32 seclen;
+	bool allowed = false;
+
+	if (!ksu_sid)
+		security_secctx_to_secid("u:r:su:s0", strlen("u:r:su:s0"), &ksu_sid);
+
+	if (security_secid_to_secctx(old_tsec->sid, &secdata, &seclen))
+		return false;
+
+	allowed = (!strcmp("u:r:init:s0", secdata) && new_tsec->sid == ksu_sid);
+	security_release_secctx(secdata, seclen);
+	
+	return allowed;
 }
 #endif
 

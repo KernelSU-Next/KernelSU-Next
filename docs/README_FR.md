@@ -24,7 +24,7 @@ KernelSU Next prend officiellement en charge la plupart des noyaux Android de la
  - Les noyaux GKI 1.0 (4.19 - 5.4) doivent être reconstruits avec le pilote KernelSU.
  - Les noyaux EOL (<4.14) doivent également être reconstruits avec le pilote KernelSU (3.18+ est expérimental et peut nécessiter des rétroportages fonctionnels).
 
-Actuellement, seul `arm64-v8a` est pris en charge.
+Actuellement, seul `arm64-v8a`, `armeabi-v7a` & `x86_64` est pris en charge.
 
 ## Utilisation
 

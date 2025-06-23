@@ -1,5 +1,9 @@
 package com.rifsxd.ksunext.ui.viewmodel
 
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.os.Parcelable
@@ -24,16 +28,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import java.text.Collator
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
+import androidx.core.content.edit
 
 class SuperUserViewModel : ViewModel() {
     val isPlatformAlive get() = Platform.isAlive
 
-    var refreshOnReturn by mutableStateOf(false)
-        public set
-
     companion object {
         private const val TAG = "SuperUserViewModel"
         private var apps by mutableStateOf<List<AppInfo>>(emptyList())
+        private var profileOverrides by mutableStateOf<Map<String, Natives.Profile>>(emptyMap())
     }
 
     @Parcelize
@@ -63,16 +68,26 @@ class SuperUserViewModel : ViewModel() {
             }
     }
 
+    private val prefs = ksuApp.getSharedPreferences("settings", Context.MODE_PRIVATE)!!
+
     var search by mutableStateOf("")
-    var showSystemApps by mutableStateOf(false)
+    var showSystemApps by mutableStateOf(prefs.getBoolean("show_system_apps", false))
+        private set
     var isRefreshing by mutableStateOf(false)
         private set
+
+    fun updateShowSystemApps(newValue: Boolean) {
+        showSystemApps = newValue
+        prefs.edit { putBoolean("show_system_apps", newValue) }
+    }
 
     private val sortedList by derivedStateOf {
         val comparator = compareBy<AppInfo> {
             when {
-                it.allowSu -> 0
-                it.hasCustomProfile -> 1
+                it.profile != null && it.profile.allowSu -> 0
+                it.profile != null && (
+                    if (it.profile.allowSu) !it.profile.rootUseDefault else !it.profile.nonRootUseDefault
+                ) -> 1
                 else -> 2
             }
         }.then(compareBy(Collator.getInstance(Locale.getDefault()), AppInfo::label))
@@ -82,7 +97,9 @@ class SuperUserViewModel : ViewModel() {
     }
 
     val appList by derivedStateOf {
-        sortedList.filter {
+        sortedList.map { app ->
+            profileOverrides[app.packageName]?.let { app.copy(profile = it) } ?: app
+        }.filter {
             it.label.contains(search, true) || it.packageName.contains(
                 search,
                 true
@@ -94,10 +111,14 @@ class SuperUserViewModel : ViewModel() {
         }
     }
 
+    fun updateAppProfile(packageName: String, newProfile: Natives.Profile) {
+        profileOverrides = profileOverrides.toMutableMap().apply {
+            put(packageName, newProfile)
+        }
+    }
 
     suspend fun fetchAppList() {
         isRefreshing = true
-
 
         withContext(Dispatchers.IO) {
             withTimeoutOrNull(TIMEOUT_MILLIS) {
@@ -124,6 +145,7 @@ class SuperUserViewModel : ViewModel() {
                     profile = profile,
                 )
             }.filter { it.packageName != ksuApp.packageName }
+            profileOverrides = emptyMap()
             Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}")
         }
     }

@@ -18,10 +18,13 @@
 	<string name="home_working_version">Versione: %d</string>
 	<string name="home_superuser_count">Applicazioni con accesso root: %d</string>
 	<string name="home_module_count">Moduli: %d</string>
+	<string name="home_module_update_count">Aggiornamenti: %d</string>
 	<string name="home_failure">Firma KernelSU Next v2 non trovata nel kernel! [ !KSU_NEXT || != size/hash ]</string>
 	<string name="home_failure_tip">Chiedi allo sviluppatore del kernel di integrare KernelSU Next!</string>
 	<string name="home_kernel">Versione Kernel</string>
 	<string name="hook_mode">Modalità Hook</string>
+	<string name="enable">Abilita</string>
+	<string name="disable">Disabilita</string>
 	<string name="enabled">Abilitato</string>
 	<string name="disabled">Disabilitato</string>
 	<string name="susfs_supported">Supportato</string>
@@ -42,13 +45,16 @@
 	<string name="module_empty">Nessun modulo installato</string>
 	<string name="module">Modulo</string>
 	<string name="module_install_prompt_with_name">Verranno installati i seguenti moduli: %1$s</string>
-	<string name="module_sort_a_to_z">Ordinare (A-Z)</string>
-	<string name="module_sort_z_to_a">Ordinare (Z-A)</string>
+	<string name="module_sort_a_to_z">Ordina (A → Z)</string>
+	<string name="module_sort_z_to_a">Ordina (Z → A)</string>
+	<string name="module_size_low_to_high">Ordina (Basso → Alto)</string>
+	<string name="module_size_high_to_low">Ordina (Alto → Basso)</string>
 	<string name="uninstall">Disinstalla</string>
 	<string name="restore">Ripristina</string>
 	<string name="module_install">Installa</string>
 	<string name="install">Installa</string>
 	<string name="reboot">Riavvia</string>
+	<string name="uninstalled">Disinstallato</string>
 	<string name="settings">Impostazioni</string>
 	<string name="reboot_userspace">Riavvio rapido</string>
 	<string name="reboot_recovery">Riavvia in Recovery</string>
@@ -100,6 +106,7 @@
 	<string name="proceed">Procedere</string>
 	<string name="cancel">Cancellare</string>
 	<string name="later">Dopo</string>
+	<string name="lkm_warning_message">La patch LKM si basa su componenti closed source. Vuoi continuare?</string>
 	<string name="home_next_kernelsu">🔥 Next build</string>
 	<string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
 	<string name="home_next_kernelsu_body">Branch sperimentale di Next. Dai un\'occhiata su GitHub!</string>
@@ -133,6 +140,7 @@
 	<string name="profile_selinux_domain">Dominio</string>
 	<string name="profile_selinux_rules">Regole</string>
 	<string name="module_update">Aggiorna</string>
+	<string name="module_updated">Aggiornato</string>
 	<string name="module_downloading">Sto scaricando il modulo: %s</string>
 	<string name="module_start_downloading">Inizia a scaricare: %s</string>
 	<string name="new_version_available">Nuova versione: %s disponibile, tocca per aggiornare.</string>
@@ -140,6 +148,10 @@
 	<string name="close">Chiudi</string>
 	<string name="force_stop_app">Arresto forzato</string>
 	<string name="restart_app">Riavvia</string>
+	<string name="settings_amoled_mode">Modalità AMOLED</string>
+	<string name="settings_amoled_mode_summary">Abilita un tema nero puro, utile per gli schermi AMOLED, per ridurre l\'affaticamento degli occhi e risparmiare batteria.</string>
+	<string name="restart_required">Riavvio richiesto</string>
+	<string name="restart_app_message">Affinché la modifica abbia effetto, è necessario riavviare l\'app.</string>
 	<string name="failed_to_update_sepolicy">Aggiornamento regole SELinux per %s fallito</string>
 	<string name="su_not_allowed">Non è consentito concedere i privilegi di superutente per: %s</string>
 	<string name="module_changelog">Registro aggiornamenti</string>
@@ -169,6 +181,7 @@
 	<string name="settings_check_update_summary">Controlla automaticamente gli aggiornamenti all\'apertura dell\'applicazione.</string>
 	<string name="grant_root_failed">Impossibile ottenere l\'accesso root!</string>
 	<string name="action">Azione</string>
+	<string name="webui">WebUI</string>
 	<string name="open">Apri</string>
 	<string name="enable_web_debugging">Abilita il debug di WebView</string>
 	<string name="enable_web_debugging_summary">Può essere usato per il debug di WebUI, è consigliato attivarlo solo quando necessario.</string>
@@ -198,8 +211,14 @@
 	<string name="settings_disable_su">Disabilita la compatibilità su</string>
 	<string name="settings_disable_su_summary">Disattiva temporaneamente la possibilità per qualsiasi app di ottenere privilegi di root tramite il comando su (i processi di root esistenti non saranno interessati).</string>
 	<string name="settings_language">Lingua</string>
+	<string name="settings_legacyui">Usa Legacy UI</string>
+	<string name="settings_legacyui_summary">Passa allo stile precedente dell\'interfaccia utente.</string>
+	<string name="settings_banner">Abilita banner</string>
+	<string name="settings_banner_summary">Mostra banner di sfondo per i moduli.</string>
 	<string name="use_webuix">Usa WebUI X</string>
-	<string name="use_webuix_summary">Usa WebUI X invece di WebUI che supporta più API</string>
-        <string name="use_webuix_eruda">Iniettare Eruda in WebUI X</string>
-        <string name="use_webuix_eruda_summary">Inietta una console di debug in WebUI X per semplificare il debug. Richiede che il debug web sia attivo.</string>
+	<string name="use_webuix_summary">Usa WebUI X invece di WebUI che supporta più API.</string>
+	<string name="use_webuix_eruda">Iniettare Eruda in WebUI X</string>
+	<string name="use_webuix_eruda_summary">Inietta una console di debug in WebUI X per semplificare il debug. Richiede che il debug web sia attivo.</string>
+	<string name="customization">Personalizzazione</string>
+	<string name="developer">Sviluppatore</string>
 </resources>

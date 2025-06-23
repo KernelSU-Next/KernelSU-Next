@@ -24,11 +24,11 @@ KernelSU Next officially supports most Android kernels starting from 4.4 up to 6
  - GKI 1.0 (4.19 - 5.4) kernels need to rebuilt with KernelSU driver.
  - EOL (<4.14) kernels also need to be rebuilt with KernelSU driver (3.18+ is experimental and may need some function backports).
 
-Currently, only the `arm64-v8a` architecture is supported.
+Currently, only the `arm64-v8a`, `armeabi-v7a` & `x86_64` architectures are supported.
 
 ## Usage
 
-- [Installation instruction](https://ksunext.org/pages/installation.html)
+- [Installation instruction](https://kernelsu-next.github.io/webpage/pages/installation.html)
 
 ## Security
 
