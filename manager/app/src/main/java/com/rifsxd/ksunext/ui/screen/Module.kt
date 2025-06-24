@@ -411,6 +411,7 @@ private fun ModuleList(
     val rebootToApply = stringResource(R.string.reboot_to_apply)
     val moduleStr = stringResource(R.string.module)
     val uninstall = stringResource(R.string.uninstall)
+    val uninstalled = stringResource(R.string.uninstalled)
     val restore = stringResource(R.string.restore)
     val cancel = stringResource(android.R.string.cancel)
     val moduleUninstallConfirm = stringResource(R.string.module_uninstall_confirm)
@@ -819,7 +820,7 @@ fun ModuleItem(
                                 )
                                 if (module.remove) {
                                     LabelItem(
-                                        text = stringResource(R.string.uninstall),
+                                        text = stringResource(R.string.uninstalled),
                                         style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
                                             containerColor = MaterialTheme.colorScheme.errorContainer,
                                             contentColor = MaterialTheme.colorScheme.onErrorContainer
