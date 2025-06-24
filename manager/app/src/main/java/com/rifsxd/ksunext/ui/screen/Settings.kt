@@ -39,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -89,6 +90,7 @@ import com.rifsxd.ksunext.ui.util.getBugreportFile
 import com.rifsxd.ksunext.ui.util.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /**
  * @author weishu
@@ -134,8 +136,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 ActivityResultContracts.CreateDocument("application/gzip")
             ) { uri: Uri? ->
                 if (uri == null) return@rememberLauncherForActivityResult
-                scope.launch(Dispatchers.IO) {
-                    loadingDialog.show()
+                scope.launch(Dispatchers.IO) {                    loadingDialog.show()
                     context.contentResolver.openOutputStream(uri)?.use { output ->
                         getBugreportFile(context).inputStream().use {
                             it.copyTo(output)
@@ -144,29 +145,41 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     loadingDialog.hide()
                     snackBarHost.showSnackbar(context.getString(R.string.log_saved))
                 }
-            }
-
-            // Language setting with selection dialog
+            }            // Language setting with selection dialog
             val languageDialog = rememberCustomDialog { dismiss ->
-                val names = LocaleSetting.available.names
-                val tags = LocaleSetting.available.tags
-                val currentIndex = tags.indexOf(Config.locale)
+                // Get all available locales from the system
+                val availableLocales = java.util.Locale.getAvailableLocales()
+                    .filter { it.language.isNotEmpty() }
+                    .distinctBy { "${it.language}_${it.country}" }
+                    .sortedBy { it.getDisplayName(it) }
+                    .take(20) // Limit to prevent overwhelming UI
                 
-                val options = names.mapIndexed { index, name ->
+                // Add system default as first option
+                val allOptions = listOf("system" to context.getString(R.string.system_default)) +
+                    availableLocales.map { locale ->
+                        val tag = if (locale.country.isEmpty()) locale.language else "${locale.language}_${locale.country}"
+                        tag to locale.getDisplayName(locale)
+                    }
+                
+                val currentLocale = prefs.getString("app_locale", "system") ?: "system"
+                val options = allOptions.map { (tag, displayName) ->
                     ListOption(
-                        titleText = name,
-                        selected = index == currentIndex
+                        titleText = displayName,
+                        selected = currentLocale == tag
                     )
                 }
                 
-                var selectedIndex by remember { mutableStateOf(currentIndex) }
+                var selectedIndex by remember { 
+                    mutableIntStateOf(allOptions.indexOfFirst { (tag, _) -> currentLocale == tag })
+                }
                 
                 ListDialog(
                     state = rememberUseCaseState(
                         visible = true,
                         onFinishedRequest = {
-                            if (selectedIndex >= 0 && selectedIndex < tags.size) {
-                                Config.locale = tags[selectedIndex]
+                            if (selectedIndex >= 0 && selectedIndex < allOptions.size) {
+                                val newLocale = allOptions[selectedIndex].first
+                                prefs.edit().putString("app_locale", newLocale).apply()
                             }
                             dismiss()
                         },
@@ -187,9 +200,27 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             }
 
             val language = stringResource(id = R.string.settings_language)
-            val currentLanguageDisplay = remember(Config.locale) {
-                val locale = LocaleSetting.instance.appLocale
-                locale?.getDisplayName(locale) ?: context.getString(R.string.system_default)
+            val currentLanguageDisplay = remember(prefs.getString("app_locale", "system")) {
+                val currentLocale = prefs.getString("app_locale", "system") ?: "system"
+                if (currentLocale == "system") {
+                    context.getString(R.string.system_default)
+                } else {                    try {
+                        val locale = if (currentLocale.contains("_")) {
+                            val parts = currentLocale.split("_")
+                            java.util.Locale.Builder()
+                                .setLanguage(parts[0])
+                                .setRegion(parts.getOrNull(1) ?: "")
+                                .build()
+                        } else {
+                            java.util.Locale.Builder()
+                                .setLanguage(currentLocale)
+                                .build()
+                        }
+                        locale.getDisplayName(locale)
+                    } catch (e: Exception) {
+                        context.getString(R.string.system_default)
+                    }
+                }
             }
             
             ListItem(
