@@ -128,6 +128,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
             val context = LocalContext.current
             val scope = rememberCoroutineScope()
+            val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
             val exportBugreportLauncher = rememberLauncherForActivityResult(
                 ActivityResultContracts.CreateDocument("application/gzip")
@@ -144,6 +145,61 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     snackBarHost.showSnackbar(context.getString(R.string.log_saved))
                 }
             }
+
+            // Language setting with selection dialog
+            val languageDialog = rememberCustomDialog { dismiss ->
+                val names = LocaleSetting.available.names
+                val tags = LocaleSetting.available.tags
+                val currentIndex = tags.indexOf(Config.locale)
+                
+                val options = names.mapIndexed { index, name ->
+                    ListOption(
+                        titleText = name,
+                        selected = index == currentIndex
+                    )
+                }
+                
+                var selectedIndex by remember { mutableStateOf(currentIndex) }
+                
+                ListDialog(
+                    state = rememberUseCaseState(
+                        visible = true,
+                        onFinishedRequest = {
+                            if (selectedIndex >= 0 && selectedIndex < tags.size) {
+                                Config.locale = tags[selectedIndex]
+                            }
+                            dismiss()
+                        },
+                        onCloseRequest = {
+                            dismiss()
+                        }
+                    ),
+                    header = Header.Default(
+                        title = stringResource(R.string.settings_language),
+                    ),
+                    selection = ListSelection.Single(
+                        showRadioButtons = true,
+                        options = options
+                    ) { index, _ ->
+                        selectedIndex = index
+                    }
+                )
+            }
+
+            val language = stringResource(id = R.string.settings_language)
+            val currentLanguageDisplay = remember(Config.locale) {
+                val locale = LocaleSetting.instance.appLocale
+                locale?.getDisplayName(locale) ?: context.getString(R.string.system_default)
+            }
+            
+            ListItem(
+                leadingContent = { Icon(Icons.Filled.Translate, language) },
+                headlineContent = { Text(language) },
+                supportingContent = { Text(currentLanguageDisplay) },
+                modifier = Modifier.clickable {
+                    languageDialog.show()
+                }
+            )
 
             val profileTemplate = stringResource(id = R.string.settings_profile_template)
             if (ksuVersion != null) {
@@ -192,8 +248,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     }
                 }
             }
-
-            val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
             val suSFS = getSuSFS()
             val isSUS_SU = getSuSFSFeatures()
