@@ -87,6 +87,7 @@ import com.rifsxd.ksunext.ui.component.rememberCustomDialog
 import com.rifsxd.ksunext.ui.component.rememberLoadingDialog
 import com.rifsxd.ksunext.ui.util.LocalSnackbarHost
 import com.rifsxd.ksunext.ui.util.getBugreportFile
+import com.rifsxd.ksunext.ui.util.LocaleHelper
 import com.rifsxd.ksunext.ui.util.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -145,80 +146,154 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     loadingDialog.hide()
                     snackBarHost.showSnackbar(context.getString(R.string.log_saved))
                 }
-            }            // Language setting with selection dialog
+            }
+
+            // Language setting with selection dialog
             val languageDialog = rememberCustomDialog { dismiss ->
-                // Get all available locales from the system
-                val availableLocales = java.util.Locale.getAvailableLocales()
-                    .filter { it.language.isNotEmpty() }
-                    .distinctBy { "${it.language}_${it.country}" }
-                    .sortedBy { it.getDisplayName(it) }
-                    .take(20) // Limit to prevent overwhelming UI
-                
-                // Add system default as first option
-                val allOptions = listOf("system" to context.getString(R.string.system_default)) +
-                    availableLocales.map { locale ->
-                        val tag = if (locale.country.isEmpty()) locale.language else "${locale.language}_${locale.country}"
-                        tag to locale.getDisplayName(locale)
+                // Check if should use system language settings
+                if (LocaleHelper.useSystemLanguageSettings) {
+                    // Android 13+ - Jump to system settings
+                    LocaleHelper.launchSystemLanguageSettings(context)
+                    dismiss()
+                } else {
+                    // Android < 13 - Show app language selector
+                    // Dynamically detect supported locales from resources
+                    val supportedLocales = remember {
+                        val locales = mutableListOf<java.util.Locale>()
+                        
+                        // Add system default first
+                        locales.add(java.util.Locale.ROOT) // This will represent "System Default"
+                        
+                        // Dynamically detect available locales by checking resource directories
+                        val resourceDirs = listOf(
+                            "ar", "bg", "de", "fa", "fr", "hu", "in", "it", 
+                            "ja", "ko", "pl", "pt-rBR", "ru", "th", "tr", 
+                            "uk", "vi", "zh-rCN", "zh-rTW"
+                        )
+                        
+                        resourceDirs.forEach { dir ->
+                            try {
+                                val locale = when {
+                                    dir.contains("-r") -> {
+                                        val parts = dir.split("-r")
+                                        java.util.Locale(parts[0], parts[1])
+                                    }
+                                    else -> java.util.Locale(dir)
+                                }
+                                
+                                // Test if this locale has translated resources
+                                val config = android.content.res.Configuration()
+                                config.setLocale(locale)
+                                val localizedContext = context.createConfigurationContext(config)
+                                
+                                // Try to get a translated string to verify the locale is supported
+                                val testString = localizedContext.getString(R.string.settings_language)
+                                val defaultString = context.getString(R.string.settings_language)
+                                
+                                // If the string is different or it's English, it's supported
+                                if (testString != defaultString || locale.language == "en") {
+                                    locales.add(locale)
+                                }
+                            } catch (e: Exception) {
+                                // Skip unsupported locales
+                            }
+                        }
+                        
+                        // Sort by display name
+                        val sortedLocales = locales.drop(1).sortedBy { it.getDisplayName(it) }
+                        mutableListOf<java.util.Locale>().apply {
+                            add(locales.first()) // System default first
+                            addAll(sortedLocales)
+                        }
                     }
-                
-                val currentLocale = prefs.getString("app_locale", "system") ?: "system"
-                val options = allOptions.map { (tag, displayName) ->
-                    ListOption(
-                        titleText = displayName,
-                        selected = currentLocale == tag
+                    
+                    val allOptions = supportedLocales.map { locale ->
+                        val tag = if (locale == java.util.Locale.ROOT) {
+                            "system"
+                        } else if (locale.country.isEmpty()) {
+                            locale.language
+                        } else {
+                            "${locale.language}_${locale.country}"
+                        }
+                        
+                        val displayName = if (locale == java.util.Locale.ROOT) {
+                            context.getString(R.string.system_default)
+                        } else {
+                            locale.getDisplayName(locale)
+                        }
+                        
+                        tag to displayName
+                    }
+                    
+                    val currentLocale = prefs.getString("app_locale", "system") ?: "system"
+                    val options = allOptions.map { (tag, displayName) ->
+                        ListOption(
+                            titleText = displayName,
+                            selected = currentLocale == tag
+                        )
+                    }
+                    
+                    var selectedIndex by remember { 
+                        mutableIntStateOf(allOptions.indexOfFirst { (tag, _) -> currentLocale == tag })
+                    }
+                    
+                    ListDialog(
+                        state = rememberUseCaseState(
+                            visible = true,
+                            onFinishedRequest = {
+                                if (selectedIndex >= 0 && selectedIndex < allOptions.size) {
+                                    val newLocale = allOptions[selectedIndex].first
+                                    prefs.edit().putString("app_locale", newLocale).apply()
+                                    
+                                    // Apply locale change immediately for Android < 13
+                                    LocaleHelper.restartActivity(context)
+                                }
+                                dismiss()
+                            },
+                            onCloseRequest = {
+                                dismiss()
+                            }
+                        ),
+                        header = Header.Default(
+                            title = stringResource(R.string.settings_language),
+                        ),
+                        selection = ListSelection.Single(
+                            showRadioButtons = true,
+                            options = options
+                        ) { index, _ ->
+                            selectedIndex = index
+                        }
                     )
                 }
-                
-                var selectedIndex by remember { 
-                    mutableIntStateOf(allOptions.indexOfFirst { (tag, _) -> currentLocale == tag })
-                }
-                
-                ListDialog(
-                    state = rememberUseCaseState(
-                        visible = true,
-                        onFinishedRequest = {
-                            if (selectedIndex >= 0 && selectedIndex < allOptions.size) {
-                                val newLocale = allOptions[selectedIndex].first
-                                prefs.edit().putString("app_locale", newLocale).apply()
-                            }
-                            dismiss()
-                        },
-                        onCloseRequest = {
-                            dismiss()
-                        }
-                    ),
-                    header = Header.Default(
-                        title = stringResource(R.string.settings_language),
-                    ),
-                    selection = ListSelection.Single(
-                        showRadioButtons = true,
-                        options = options
-                    ) { index, _ ->
-                        selectedIndex = index
-                    }
-                )
             }
 
             val language = stringResource(id = R.string.settings_language)
             val currentLanguageDisplay = remember(prefs.getString("app_locale", "system")) {
-                val currentLocale = prefs.getString("app_locale", "system") ?: "system"
-                if (currentLocale == "system") {
+                if (LocaleHelper.useSystemLanguageSettings) {
+                    // Android 13+ - Show system language info
                     context.getString(R.string.system_default)
-                } else {                    try {
-                        val locale = if (currentLocale.contains("_")) {
-                            val parts = currentLocale.split("_")
-                            java.util.Locale.Builder()
-                                .setLanguage(parts[0])
-                                .setRegion(parts.getOrNull(1) ?: "")
-                                .build()
-                        } else {
-                            java.util.Locale.Builder()
-                                .setLanguage(currentLocale)
-                                .build()
-                        }
-                        locale.getDisplayName(locale)
-                    } catch (e: Exception) {
+                } else {
+                    // Android < 13 - Show current app language
+                    val currentLocale = prefs.getString("app_locale", "system") ?: "system"
+                    if (currentLocale == "system") {
                         context.getString(R.string.system_default)
+                    } else {
+                        try {
+                            val locale = if (currentLocale.contains("_")) {
+                                val parts = currentLocale.split("_")
+                                java.util.Locale.Builder()
+                                    .setLanguage(parts[0])
+                                    .setRegion(parts.getOrNull(1) ?: "")
+                                    .build()
+                            } else {
+                                java.util.Locale.Builder()
+                                    .setLanguage(currentLocale)
+                                    .build()
+                            }
+                            locale.getDisplayName(locale)
+                        } catch (e: Exception) {
+                            context.getString(R.string.system_default)
+                        }
                     }
                 }
             }
