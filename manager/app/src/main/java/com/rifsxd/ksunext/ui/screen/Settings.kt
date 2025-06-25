@@ -176,9 +176,14 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 val locale = when {
                                     dir.contains("-r") -> {
                                         val parts = dir.split("-r")
-                                        java.util.Locale(parts[0], parts[1])
+                                        java.util.Locale.Builder()
+                                            .setLanguage(parts[0])
+                                            .setRegion(parts[1])
+                                            .build()
                                     }
-                                    else -> java.util.Locale(dir)
+                                    else -> java.util.Locale.Builder()
+                                        .setLanguage(dir)
+                                        .build()
                                 }
                                 
                                 // Test if this locale has translated resources
@@ -268,32 +273,28 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             }
 
             val language = stringResource(id = R.string.settings_language)
-            val currentLanguageDisplay = remember(prefs.getString("app_locale", "system")) {
-                if (LocaleHelper.useSystemLanguageSettings) {
-                    // Android 13+ - Show system language info
+            
+            // Get current locale preference and compute display name
+            val currentLocaleTag = prefs.getString("app_locale", "system") ?: "system"
+            val currentLanguageDisplay = remember(currentLocaleTag) {
+                if (currentLocaleTag == "system") {
                     context.getString(R.string.system_default)
                 } else {
-                    // Android < 13 - Show current app language
-                    val currentLocale = prefs.getString("app_locale", "system") ?: "system"
-                    if (currentLocale == "system") {
-                        context.getString(R.string.system_default)
-                    } else {
-                        try {
-                            val locale = if (currentLocale.contains("_")) {
-                                val parts = currentLocale.split("_")
-                                java.util.Locale.Builder()
-                                    .setLanguage(parts[0])
-                                    .setRegion(parts.getOrNull(1) ?: "")
-                                    .build()
-                            } else {
-                                java.util.Locale.Builder()
-                                    .setLanguage(currentLocale)
-                                    .build()
-                            }
-                            locale.getDisplayName(locale)
-                        } catch (e: Exception) {
-                            context.getString(R.string.system_default)
+                    try {
+                        val locale = if (currentLocaleTag.contains("_")) {
+                            val parts = currentLocaleTag.split("_")
+                            java.util.Locale.Builder()
+                                .setLanguage(parts[0])
+                                .setRegion(parts.getOrNull(1) ?: "")
+                                .build()
+                        } else {
+                            java.util.Locale.Builder()
+                                .setLanguage(currentLocaleTag)
+                                .build()
                         }
+                        locale.getDisplayName(locale)
+                    } catch (e: Exception) {
+                        context.getString(R.string.system_default)
                     }
                 }
             }
