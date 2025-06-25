@@ -133,6 +133,14 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             val scope = rememberCoroutineScope()
             val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
+            // Track language state
+            var currentLocaleTag by remember { mutableStateOf(prefs.getString("app_locale", "system") ?: "system") }
+            
+            // Listen for preference changes
+            LaunchedEffect(Unit) {
+                currentLocaleTag = prefs.getString("app_locale", "system") ?: "system"
+            }
+
             val exportBugreportLauncher = rememberLauncherForActivityResult(
                 ActivityResultContracts.CreateDocument("application/gzip")
             ) { uri: Uri? ->
@@ -250,6 +258,9 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                     val newLocale = allOptions[selectedIndex].first
                                     prefs.edit().putString("app_locale", newLocale).apply()
                                     
+                                    // Update local state immediately
+                                    currentLocaleTag = newLocale
+                                    
                                     // Apply locale change immediately for Android < 13
                                     LocaleHelper.restartActivity(context)
                                 }
@@ -274,8 +285,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
             val language = stringResource(id = R.string.settings_language)
             
-            // Get current locale preference and compute display name
-            val currentLocaleTag = prefs.getString("app_locale", "system") ?: "system"
+            // Compute display name based on current locale tag
             val currentLanguageDisplay = remember(currentLocaleTag) {
                 if (currentLocaleTag == "system") {
                     context.getString(R.string.system_default)
