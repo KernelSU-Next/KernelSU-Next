@@ -113,4 +113,37 @@ object LocaleHelper {
             context.recreate()
         }
     }
+    
+    /**
+     * Get current app locale
+     */
+    fun getCurrentAppLocale(context: Context): Locale? {
+        return if (useSystemLanguageSettings) {
+            // Android 13+ - get from system app locale settings
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                try {
+                    val localeManager = context.getSystemService(Context.LOCALE_SERVICE) as? android.app.LocaleManager
+                    val locales = localeManager?.applicationLocales
+                    if (locales != null && !locales.isEmpty) {
+                        locales.get(0)
+                    } else {
+                        null // System default
+                    }
+                } catch (e: Exception) {
+                    null // System default
+                }
+            } else {
+                null // System default
+            }
+        } else {
+            // Android < 13 - get from SharedPreferences
+            val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+            val localeTag = prefs.getString("app_locale", "system") ?: "system"
+            if (localeTag == "system") {
+                null // System default
+            } else {
+                parseLocaleTag(localeTag)
+            }
+        }
+    }
 }

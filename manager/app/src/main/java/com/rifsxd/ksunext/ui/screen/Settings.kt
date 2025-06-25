@@ -133,12 +133,12 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             val scope = rememberCoroutineScope()
             val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
-            // Track language state
-            var currentLocaleTag by remember { mutableStateOf(prefs.getString("app_locale", "system") ?: "system") }
+            // Track language state with current app locale
+            var currentAppLocale by remember { mutableStateOf(LocaleHelper.getCurrentAppLocale(context)) }
             
             // Listen for preference changes
             LaunchedEffect(Unit) {
-                currentLocaleTag = prefs.getString("app_locale", "system") ?: "system"
+                currentAppLocale = LocaleHelper.getCurrentAppLocale(context)
             }
 
             val exportBugreportLauncher = rememberLauncherForActivityResult(
@@ -259,7 +259,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                     prefs.edit().putString("app_locale", newLocale).apply()
                                     
                                     // Update local state immediately
-                                    currentLocaleTag = newLocale
+                                    currentAppLocale = LocaleHelper.getCurrentAppLocale(context)
                                     
                                     // Apply locale change immediately for Android < 13
                                     LocaleHelper.restartActivity(context)
@@ -285,27 +285,13 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
             val language = stringResource(id = R.string.settings_language)
             
-            // Compute display name based on current locale tag
-            val currentLanguageDisplay = remember(currentLocaleTag) {
-                if (currentLocaleTag == "system") {
-                    context.getString(R.string.system_default)
+            // Compute display name based on current app locale (similar to the reference implementation)
+            val currentLanguageDisplay = remember(currentAppLocale) {
+                val locale = currentAppLocale
+                if (locale != null) {
+                    locale.getDisplayName(locale)
                 } else {
-                    try {
-                        val locale = if (currentLocaleTag.contains("_")) {
-                            val parts = currentLocaleTag.split("_")
-                            java.util.Locale.Builder()
-                                .setLanguage(parts[0])
-                                .setRegion(parts.getOrNull(1) ?: "")
-                                .build()
-                        } else {
-                            java.util.Locale.Builder()
-                                .setLanguage(currentLocaleTag)
-                                .build()
-                        }
-                        locale.getDisplayName(locale)
-                    } catch (e: Exception) {
-                        context.getString(R.string.system_default)
-                    }
+                    context.getString(R.string.system_default)
                 }
             }
             
