@@ -140,6 +140,7 @@
     <string name="profile_selinux_domain">Domain</string>
     <string name="profile_selinux_rules">Rules</string>
     <string name="module_update">Update</string>
+    <string name="module_update_available">Update</string>
     <string name="module_updated">Updated</string>
     <string name="module_downloading">Downloading module: %s</string>
     <string name="module_start_downloading">Start downloading: %s</string>
@@ -211,6 +212,7 @@
     <string name="settings_disable_su">Disable su compatibility</string>
     <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
     <string name="settings_language">Language</string>
+    <string name="system_default">System default</string>
     <string name="settings_legacyui">Use Legacy UI</string>
     <string name="settings_legacyui_summary">Switch to the previous user interface style.</string>
     <string name="settings_banner">Enable banners</string>

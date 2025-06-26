@@ -47,14 +47,14 @@
     <string name="module_install_prompt_with_name">是否要繼續安裝模組 %1$s ？</string>
     <string name="module_sort_a_to_z">按 A - Z 排序</string>
     <string name="module_sort_z_to_a">按 Z - A 排序</string>
-    <string name="module_size_low_to_high">按模組大小正序排序</string>
-    <string name="module_size_high_to_low">按模組大小倒序排序</string>
+    <string name="module_size_low_to_high">正序排序（按模組大小）</string>
+    <string name="module_size_high_to_low">倒序排序（按模組大小）</string>
     <string name="uninstall">卸載</string>
     <string name="restore">恢復</string>
     <string name="module_install">安裝</string>
     <string name="install">安裝</string>
     <string name="reboot">重啟</string>
-    <string name="uninstalled">已經卸載</string>
+    <string name="uninstalled">重啓以完成卸載</string>
     <string name="settings">設定</string>
     <string name="reboot_userspace">軟重啟</string>
     <string name="reboot_recovery">重啟到 Recovery</string>
@@ -140,7 +140,8 @@
     <string name="profile_selinux_domain">域</string>
     <string name="profile_selinux_rules">規則</string>
     <string name="module_update">更新</string>
-    <string name="module_updated">已經更新</string>
+    <string name="module_update_available">更新可用</string>
+    <string name="module_updated">重啓以完成更新</string>
     <string name="module_downloading">正在下載模組: %s</string>
     <string name="module_start_downloading">開始下載: %s</string>
     <string name="new_version_available">發現新版本：%s，點擊升級。</string>
@@ -178,9 +179,9 @@
     <string name="app_profile_template_import_empty">剪貼簿為空！</string>
     <string name="module_changelog_failed">獲取更新日誌失敗: %s</string>
     <string name="settings_check_update">檢查更新</string>
-    <string name="settings_check_update_summary">在應用啟動後自動檢查是否有最新版。</string>
+    <string name="settings_check_update_summary">在應用啟動後自動檢查是否有新版本。</string>
     <string name="grant_root_failed">獲取 root 失敗！</string>
-    <string name="action">Action</string>
+    <string name="action">執行</string>
     <string name="webui">WebUI</string>
     <string name="open">打開</string>
     <string name="enable_web_debugging">啟用 WebView 偵錯</string>
@@ -211,6 +212,7 @@
     <string name="settings_disable_su">關閉 SU 相容</string>
     <string name="settings_disable_su_summary">暫時禁止任何應用通過 su 命令獲取 root 權限（已運行的 root 進程不受影響）。</string>
     <string name="settings_language">語言</string>
+    <string name="system_default">跟隨系統</string>
     <string name="settings_legacyui">換回傳統 UI</string>
     <string name="settings_legacyui_summary">使用早期版本 UI 風格。</string>
     <string name="settings_banner">啓用橫幅</string>
@@ -219,5 +221,7 @@
     <string name="use_webuix_summary">使用更爲完善的 WebUI X 而不是 WebUI，請注意模組開發人員能在模組信息中覆寫這個設置。</string>
     <string name="use_webuix_eruda">將 Eruda 注入 WebUI X</string>
     <string name="use_webuix_eruda_summary">在使用 WebUI X 時注入控制台以便於偵錯，需要啟用 WebView 偵錯功能。</string>
-    <string name="customization">客制化</string>
+    <string name="customization">自訂外觀</string>
+    <string name="developer">開發人員設定</string>
+    <string name="sucompat_disabled">SUCOMPAT 已經禁用</string>
 </resources>
