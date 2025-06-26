@@ -14,21 +14,26 @@
     <string name="home_click_to_install">Bấm để cài đặt</string>
     <string name="lkm_mode_deprecated">Chế độ LKM không còn được hỗ trợ!</string>
     <string name="lkm_alternative_suggestion">Cài đặt kernel GKI hoặc tự nhúng KernelSU Next vào kernel của bạn.</string>
-    <string name="home_working">Đã cài đặt và hoạt động</string>
+    <string name="home_working">Đã cài đặt</string>
     <string name="home_working_version">Phiên bản: %d</string>
     <string name="home_superuser_count">Ứng dụng đã cấp su: %d</string>
     <string name="home_module_count">Module: %d</string>
+    <string name="home_module_update_count">Module có cập nhật: %d</string>
     <string name="home_failure">Không tìm thấy chữ kí KernelSU Next v2 (chưa cài đặt, nhúng sai cách hoặc nhầm trình quản lý?) [ !KSU_NEXT || != size/hash ]</string>
-    <string name="home_failure_tip">Hỏi hoặc tự nhúng KernelSU Next vào kernel của bạn!</string>
+    <string name="home_failure_tip">Hỏi hoặc tự nhúng nhân KernelSU Next vào kernel của bạn!</string>
     <string name="home_kernel">Phiên bản kernel</string>
-    <string name="enabled">Kích hoạt</string>
-    <string name="disabled">Vô hiệu hoá</string>
+    <string name="hook_mode">Chế độ hook</string>
+    <string name="enable">Kích hoạt</string>
+    <string name="disable">Vô hiệu hóa</string>
+    <string name="enabled">Đã kích hoạt</string>
+    <string name="disabled">Đã vô hiệu hoá</string>
     <string name="susfs_supported">Hỗ trợ</string>
     <string name="home_susfs">SuSFS: %s</string>
     <string name="home_susfs_version">Phiên bản SuSFS</string>
     <string name="home_susfs_sus_su">SuS SU</string>
     <string name="home_android">Phiên bản Android</string>
     <string name="home_manager_version">Phiên bản trình quản lý</string>
+    <string name="home_abi">ABI</string>
     <string name="home_selinux_status">Trạng thái SELinux</string>
     <string name="selinux_status_disabled">Vô hiệu hoá</string>
     <string name="selinux_status_enforcing">Enforcing</string>
@@ -42,13 +47,16 @@
     <string name="module_install_prompt_with_name">Bạn có THẬT SỰ muốn cài module này không (kiểm tra trước khi cài ASAF) %1$s?</string>
     <string name="module_sort_a_to_z">Sắp xếp (A-Z)</string>
     <string name="module_sort_z_to_a">Sắp xếp (Z-A)</string>
+    <string name="module_size_low_to_high">Sắp xếp (Thấp → Cao)</string>
+    <string name="module_size_high_to_low">Sắp xếp (Cao → Thấp)</string>
     <string name="uninstall">Gỡ cài đặt</string>
     <string name="restore">Khôi phục</string>
     <string name="module_install">Cài đặt</string>
     <string name="install">Cài đặt</string>
     <string name="reboot">Khởi động lại</string>
+    <string name="uninstalled">Đã gỡ cài đặt</string>
     <string name="settings">Cài đặt</string>
-    <string name="reboot_userspace">Khởi động mềm</string>
+    <string name="reboot_userspace">Khởi động TẠM</string>
     <string name="reboot_recovery">Vào Recovery</string>
     <string name="reboot_bootloader">Vào Bootloader</string>
     <string name="reboot_download">Vào Download Mode</string>
@@ -66,7 +74,7 @@
     <string name="module_version_code">Code</string>
     <string name="module_update_json">UpdateJson</string>
     <string name="module_update_json_empty">Trống</string>
-    <string name="enable_developer_options">Kích hoạt tính năng dành cho nhà phát triển</string>
+    <string name="enable_developer_options">Cài đặt dành cho nhà phát triển</string>
     <string name="enable_developer_options_summary">Hiện thị những cài đặt ẩn và nhũng log DÀNH RIÊNG CHO NHÀ PHÁT TRIỂN.</string>
     <string name="module_overlay_fs_not_available">Không thể sử dụng module vì flag Overlayfs không được kích hoạt trong kernel, vui lòng kích hoạt</string>
     <string name="refresh">Làm mới</string>
@@ -98,6 +106,7 @@
     <string name="proceed">Tiếp tục</string>
     <string name="cancel">Huỷ</string>
     <string name="later">Để sau</string>
+    <string name="lkm_warning_message">Bản vá LKM này có những thành phần mã nguồn đóng, bạn có muốn tiếp tục không</string>
     <string name="home_next_kernelsu">🔥 Bản dựng tiếp theo</string>
     <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">Nhánh thử nghiệm tiếp theo. Xem trong GitHub!</string>
@@ -108,7 +117,7 @@
     <string name="home_experimental_kernelsu_body_point_2"> • Không bảo hành: Các nhà phát triển KernelSU Next và bên thứ 3 sẽ không chịu trách nghiệm cho hardbrick, bootloop, mất dữ liệu,...</string>
     <string name="home_experimental_kernelsu_body_point_3"> • Đùng để thử nghiệm là chính: Chỉ dành cho những người có kĩ năng, kinh nghiệm, trải nghiệm .</string>
     <string name="about_source_code"><![CDATA[Xem mã nguồn tại %1$s]]></string>
-    <string name="profile" translatable="false">Hồ sơ ứng dụng</string>
+    <string name="profile" translatable="false">App Profile</string>
     <string name="profile_default">Mặc định</string>
     <string name="profile_template">Mẫu</string>
     <string name="profile_custom">Tuỳ biến</string>
@@ -131,6 +140,7 @@
     <string name="profile_selinux_domain">Tên miền</string>
     <string name="profile_selinux_rules">Quyền</string>
     <string name="module_update">Có cập nhật!</string>
+    <string name="module_updated">Đã cập nhật</string>
     <string name="module_downloading">Tải xuống module: %s</string>
     <string name="module_start_downloading">Đang tải xuống module: %s</string>
     <string name="new_version_available">Phiên bản %s đã ra mắt, bấm để cập nhật.</string>
@@ -138,6 +148,10 @@
     <string name="close">Đóng</string>
     <string name="force_stop_app">Buộc tắt</string>
     <string name="restart_app">Khởi động lại</string>
+    <string name="settings_amoled_mode">Chế độ AMOLED</string>
+    <string name="settings_amoled_mode_summary">Kích hoạt nền đen tuyền, tốt cho mắt và pin trên những thiết bị sử dụng màn AMOLED/OLED.</string>
+    <string name="restart_required">Yêu cầu khởi động lại</string>
+    <string name="restart_app_message">Ứng dụng yêu cầu khởi động lại để có hiệu lực.</string>
     <string name="failed_to_update_sepolicy">Cập nhật phân quyền SELinux thất bại cho: %s</string>
     <string name="su_not_allowed">Cấp quyền SU không được phép cho: %s</string>
     <string name="module_changelog">Nhật kí thay đổi</string>
@@ -162,13 +176,14 @@
     <string name="app_profile_template_sync">Đồng bộ với hồ sơ ứng dụng trực tuyến</string>
     <string name="app_profile_template_save_failed">Lưu hồ sơ ứng dụng thất bại</string>
     <string name="app_profile_template_import_empty">Bảng nhớ tạm đang trống hoặc sai thông tin!</string>
-    <string name="module_changelog_failed">Đọc nhất kí thay đôi thất bại: %s</string>
+    <string name="module_changelog_failed">Lấy nhất kí thay đổi module thất bại: %s</string>
     <string name="settings_check_update">Kiểm tra cập nhật</string>
     <string name="settings_check_update_summary">Tự động kiểm tra cập nhật khi mở ứng dụng.</string>
     <string name="grant_root_failed">Cấp quyền root thất bại!</string>
     <string name="action">Chạy</string>
+    <string name="webui">WebUI</string>
     <string name="open">Mở</string>
-    <string name="enable_web_debugging">Kích hoạt WebView debugging</string>
+    <string name="enable_web_debugging">Kích hoạt gỡ lỗi WebView</string>
     <string name="enable_web_debugging_summary">Sử dụng để debug WebUI. Sử dụng khi bạn có kinh nghiệm, kĩ năng.</string>
     <string name="direct_install">Cài đặt trực tiếp (cho GKI 2.0)</string>
     <string name="select_file">Chọn file</string>
@@ -193,11 +208,18 @@
     <string name="save_log">Lưu logs</string>
     <string name="log_saved">Logs đã được lưu</string>
     <string name="send_log">Chia sẻ logs</string>
-    <string name="settings_disable_su">Vô hiệu hoá khả năng của lệnh SU</string>
+    <string name="settings_disable_su">Vô hiệu hoá lệnh SU</string>
     <string name="settings_disable_su_summary">Vô hiệu hoá khả năng thực thi lệnh SU để lấy quyền root (những app đã cấp trước đó không bị ảnh hưởng).</string>
     <string name="settings_language">Ngôn ngữ</string>
+    <string name="settings_legacyui">Sử dụng giao diện cũ</string>
+    <string name="settings_legacyui_summary">Chuyển về giao diện cũ.</string>
+    <string name="settings_banner">Hiện thị ảnh bìa</string>
+    <string name="settings_banner_summary">Hiện thị ảnh bìa trong module.</string>
     <string name="use_webuix">Dùng WebUI X</string>
     <string name="use_webuix_summary">Dùng WebUI X thay vì WebUI (hỗ trợ nhiều API hơn).</string>
     <string name="use_webuix_eruda">Nhúng nhân Eruda vào WebUI X</string>
     <string name="use_webuix_eruda_summary">Nhúng trình gỡ lỗi vào WebUI X để việc sửa lỗi thuận tiện hơn. Yêu cầu gỡ lỗi webview được bật.</string>
+    <string name="customization">Tùy biến</string>
+    <string name="developer">Cài đặt nhà phát triển</string>
+    <string name="sucompat_disabled">ĐÃ VÔ HIỆU HÓA SUCOMPAT</string>
 </resources>
