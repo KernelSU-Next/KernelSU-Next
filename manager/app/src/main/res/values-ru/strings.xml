@@ -15,10 +15,10 @@
     <string name="lkm_mode_deprecated">Режим LKM теперь устарел!</string>
     <string name="lkm_alternative_suggestion">Установите GKI ядро или интегрируйте ядра рядом с вашим устройством.</string>
     <string name="home_working">Работает</string>
-    <string name="home_working_version">Версия: %d</string>
-    <string name="home_superuser_count">Superusers: %d</string>
-    <string name="home_module_count">Модули: %d</string>
-    <string name="home_module_update_count">Обновления: %d</string>
+    <string name="home_working_version">Версия драйвера: %d</string>
+    <string name="home_superuser_count">Выдано прав: %d</string>
+    <string name="home_module_count">Модулей: %d</string>
+    <string name="home_module_update_count">Обновлений: %d</string>
     <string name="home_failure">Подпись KernelSU Next v2 не найдена в ядре! [!KSU_NEXT || != size/hash]</string>
     <string name="home_failure_tip">Попросите вашего разработчика ядра интегрировать KernelSU Next!</string>
     <string name="home_kernel">Версия ядра</string>
@@ -44,11 +44,11 @@
     <string name="module_failed_to_disable">Не удалось отключить модуль: %s</string>
     <string name="module_empty">Нет установленных модулей</string>
     <string name="module">Модули</string>
-    <string name="module_install_prompt_with_name">Следующие модуль(и) будут установлены: %1$s</string>
+    <string name="module_install_prompt_with_name">Следующие модули будут установлены: %1$s</string>
     <string name="module_sort_a_to_z">Сортировать (А → Я)</string>
     <string name="module_sort_z_to_a">Сортировать (Я → А)</string>
-    <string name="module_size_low_to_high">Сортировать (Низкий → Высокий)</string>
-    <string name="module_size_high_to_low">Сортировать (Высокий → Низкий)</string>
+    <string name="module_size_low_to_high">Сортировать (Меньше → Больше)</string>
+    <string name="module_size_high_to_low">Сортировать (Больше → Меньше)</string>
     <string name="uninstall">Удалить</string>
     <string name="restore">Восстановить</string>
     <string name="module_install">Установить</string>
@@ -180,9 +180,9 @@
     <string name="settings_check_update">Проверять обновления</string>
     <string name="settings_check_update_summary">Автоматически проверять обновления при открытии приложения.</string>
     <string name="grant_root_failed">Не удалось предоставить root-доступ!</string>
-    <string name="action">Запустить</string>
+    <string name="action">Скрипт</string>
     <string name="webui">WebUI</string>
-    <string name="open">Открыть</string>
+    <string name="open">WebUI</string>
     <string name="enable_web_debugging">Отладка WebView</string>
     <string name="enable_web_debugging_summary">Можно использовать для отладки WebUI. Включайте только при необходимости.</string>
     <string name="direct_install">Прямая установка (Рекомендуется)</string>
@@ -205,17 +205,21 @@
     <string name="flash_success">Прошивка выполнена успешно</string>
     <string name="flash_failed">Ошибка прошивки</string>
     <string name="selected_lkm">Выбран LKM: %s</string>
-    <string name="save_log">Сохранить логи</string>
+    <string name="save_log">Сохранить\nлоги</string>
     <string name="log_saved">Логи сохранены</string>
-    <string name="send_log">Поделиться логами</string>
+    <string name="send_log">Поделиться\nлогами</string>
     <string name="settings_disable_su">Откл. совместимость с su</string>
     <string name="settings_disable_su_summary">Временно отключить возможность приложениям получать права root через команду su (существующие процессы с правами root не будут затронуты).</string>
     <string name="settings_language">Язык</string>
     <string name="settings_legacyui">Использовать старый UI</string>
     <string name="settings_legacyui_summary">Переключиться на предыдущий стиль интерфейса.</string>
+    <string name="settings_banner">Включить баннеры</string>
+    <string name="settings_banner_summary">Показывать фоновые баннеры для модулей.</string>
     <string name="use_webuix">Использовать WebUI X</string>
     <string name="use_webuix_summary">Использовать WebUI X вместо WebUI, который поддерживает больше API.</string>
     <string name="use_webuix_eruda">Инжект Eruda в WebUI X</string>
     <string name="use_webuix_eruda_summary">Инжектить консоль отладки в WebUI X, чтобы упростить отладку. Требуется включить отладку WebView.</string>
     <string name="customization">Кастомизация</string>
+    <string name="developer">Для разработчиков</string>
+    <string name="sucompat_disabled">SUCOMPAT ОТКЛЮЧЕН</string>
 </resources>
