@@ -15,14 +15,16 @@
     <string name="lkm_mode_deprecated">Режим LKM тепер застарілий!</string>
     <string name="lkm_alternative_suggestion">Встановіть ядро GKI або інтегруйте ядра поруч із вашим пристроєм.</string>
     <string name="home_working">Працює</string>
-    <string name="home_working_version">Версія: %d</string>
-    <string name="home_superuser_count">SuperUsers: %d</string>
-    <string name="home_module_count">Модулі: %d</string>
+    <string name="home_working_version">Версія драйвера: %d</string>
+    <string name="home_superuser_count">Видано прав: %d</string>
+    <string name="home_module_count">Модулів: %d</string>
     <string name="home_module_update_count">Оновлення: %d</string>
     <string name="home_failure">Підпис KernelSU Next v2 не знайдено в ядрі! [!KSU_NEXT || != size/hash]</string>
     <string name="home_failure_tip">Попросіть вашого розробника ядра інтегрувати KernelSU Next!</string>
     <string name="home_kernel">Версія ядра</string>
     <string name="hook_mode">Режим хуків</string>
+    <string name="enable">Увімкнути</string>
+    <string name="disable">Вимкнути</string>
     <string name="disabled">Вимкнено</string>
     <string name="enabled">Увімкнено</string>
     <string name="susfs_supported">Доступно</string>
@@ -42,18 +44,18 @@
     <string name="module_failed_to_disable">Не вдалося вимкнути модуль: %s</string>
     <string name="module_empty">Нема встановлених модулів</string>
     <string name="module">Модулі</string>
-    <string name="module_install_prompt_with_name">Наступні модуль(і) будуть встановлені: %1$s</string>
+    <string name="module_install_prompt_with_name">Наступні модулі будуть встановлені: %1$s</string>
     <string name="module_sort_a_to_z">Сортувати (А-Я)</string>
     <string name="module_sort_z_to_a">Сортувати (Я-А)</string>
-    <string name="module_size_low_to_high">Сортувати (Низький → Великий)</string>
-    <string name="module_size_high_to_low">Сортувати (Великий → Низький)</string>
+    <string name="module_size_low_to_high">Сортувати (Менше → Більше)</string>
+    <string name="module_size_high_to_low">Сортувати (Більше → Менше)</string>
     <string name="uninstall">Видалити</string>
     <string name="restore">Відновити</string>
     <string name="module_install">Встановити</string>
     <string name="install">Встановити</string>
     <string name="reboot">Перезавантаження</string>
     <string name="uninstalled">Видалено</string>
-    <string name="settings">Налаштування</string>
+    <string name="settings">Параметри</string>
     <string name="reboot_userspace">М’яка перезавантаження</string>
     <string name="reboot_recovery">Перезавантаження в Recovery</string>
     <string name="reboot_bootloader">Перезавантаження в Bootloader</string>
@@ -178,9 +180,9 @@
     <string name="settings_check_update">Перевіряти оновлення</string>
     <string name="settings_check_update_summary">Автоматично перевіряти оновлення при відкритті додатка.</string>
     <string name="grant_root_failed">Не вдалося надати root-доступ!</string>
-    <string name="action">Запустити</string>
+    <string name="action">Скрипт</string>
     <string name="webui">WebUI</string>
-    <string name="open">Відкрити</string>
+    <string name="open">WebUI</string>
     <string name="enable_web_debugging">Відладка WebView</string>
     <string name="enable_web_debugging_summary">Можна використовувати для відладки WebUI. Увімкніть лише при необхідності.</string>
     <string name="direct_install">Пряма установка (Рекомендовано)</string>
@@ -203,9 +205,9 @@
     <string name="flash_success">Прошивка виконана успішно</string>
     <string name="flash_failed">Помилка прошивки</string>
     <string name="selected_lkm">Вибрано LKM: %s</string>
-    <string name="save_log">Зберегти логи</string>
+    <string name="save_log">Зберегти\nлоги</string>
     <string name="log_saved">Логи збережено</string>
-    <string name="send_log">Поділитися логами</string>
+    <string name="send_log">Поділитися\nлогами</string>
     <string name="settings_disable_su">Вимкн. сумісність із su</string>
     <string name="settings_disable_su_summary">Тимчасово вимкнути можливість додаткам отримувати права root через команду su (існуючі процеси з правами root не будуть зачеплені).</string>
     <string name="settings_language">Мова</string>
@@ -218,5 +220,6 @@
     <string name="use_webuix_eruda">Інжект Eruda у WebUI X</string>
     <string name="use_webuix_eruda_summary">Інжектити консоль відладки у WebUI X, щоб спростити відладку. Потрібно увімкнути відладку WebView.</string>
     <string name="customization">Кастомізація</string>
-    <string name="developer">Розробник</string>
+    <string name="developer">Для Розробників</string>
+    <string name="sucompat_disabled">SUCOMPAT ВИМКНЕНО</string>
 </resources>
