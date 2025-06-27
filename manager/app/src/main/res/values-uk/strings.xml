@@ -140,6 +140,7 @@
     <string name="profile_selinux_domain">Домен</string>
     <string name="profile_selinux_rules">Правила</string>
     <string name="module_update">Оновити</string>
+    <string name="module_update_available">Оновити</string>
     <string name="module_updated">Оновлено</string>
     <string name="module_downloading">Завантаження модуля: %s</string>
     <string name="module_start_downloading">Початок завантаження: %s</string>
@@ -211,6 +212,7 @@
     <string name="settings_disable_su">Вимкн. сумісність із su</string>
     <string name="settings_disable_su_summary">Тимчасово вимкнути можливість додаткам отримувати права root через команду su (існуючі процеси з правами root не будуть зачеплені).</string>
     <string name="settings_language">Мова</string>
+    <string name="system_default">Системний</string>
     <string name="settings_legacyui">Використовувати застарілий UI</string>
     <string name="settings_legacyui_summary">Перейти до попереднього стилю інтерфейсу користувача.</string>
     <string name="settings_banner">Увімкнути банери</string>
@@ -222,4 +224,5 @@
     <string name="customization">Кастомізація</string>
     <string name="developer">Для Розробників</string>
     <string name="sucompat_disabled">SUCOMPAT ВИМКНЕНО</string>
+    <string name="zygisk_required">Потрібно Zygisk</string>
 </resources>
