@@ -644,16 +644,26 @@ fun zygiskRequired(dir: File): Boolean {
 fun zygiskAvailable(): Boolean {
     val shell = getRootShell()
     val zygiskLib = "libzygisk.so"
+    val rezygisk64 = "/data/adb/modules/rezygisk/lib64/$zygiskLib"
     val rezygisk = "/data/adb/modules/rezygisk/lib/$zygiskLib"
+    val zygiskNext64 = "/data/adb/modules/zygisksu/lib64/$zygiskLib"
     val zygiskNext = "/data/adb/modules/zygisksu/lib/$zygiskLib"
+
+    val cmdRezygisk64 = "[ -f \"$rezygisk64\" ]"
+    if (ShellUtils.fastCmdResult(shell, cmdRezygisk64)) {
+        return true
+    }
+    val cmdZygiskNext64 = "[ -f \"$zygiskNext64\" ]"
+    if (ShellUtils.fastCmdResult(shell, cmdZygiskNext64)) {
+        return true
+    }
 
     val cmdRezygisk = "[ -f \"$rezygisk\" ]"
     if (ShellUtils.fastCmdResult(shell, cmdRezygisk)) {
         return true
-    } else {
-        val cmdZygiskNext = "[ -f \"$zygiskNext\" ]"
-        return ShellUtils.fastCmdResult(shell, cmdZygiskNext)
     }
+    val cmdZygiskNext = "[ -f \"$zygiskNext\" ]"
+    return ShellUtils.fastCmdResult(shell, cmdZygiskNext)
 }
 
 fun setAppProfileTemplate(id: String, template: String): Boolean {

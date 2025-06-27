@@ -412,11 +412,13 @@ private fun ModuleList(
     val rebootToApply = stringResource(R.string.reboot_to_apply)
     val moduleStr = stringResource(R.string.module)
     val uninstall = stringResource(R.string.uninstall)
+    val uninstalled = stringResource(R.string.uninstalled)
     val restore = stringResource(R.string.restore)
     val cancel = stringResource(android.R.string.cancel)
     val moduleUninstallConfirm = stringResource(R.string.module_uninstall_confirm)
     val moduleRestoreConfirm = stringResource(R.string.module_restore_confirm)
     val updateText = stringResource(R.string.module_update)
+    val updateLable = stringResource(R.string.module_update_available)
     val changelogText = stringResource(R.string.module_changelog)
     val downloadingText = stringResource(R.string.module_downloading)
     val startDownloadingText = stringResource(R.string.module_start_downloading)
@@ -821,7 +823,7 @@ fun ModuleItem(
                                 )
                                 if (module.remove) {
                                     LabelItem(
-                                        text = stringResource(R.string.uninstall),
+                                        text = stringResource(R.string.uninstalled),
                                         style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
                                             containerColor = MaterialTheme.colorScheme.errorContainer,
                                             contentColor = MaterialTheme.colorScheme.onErrorContainer
@@ -839,7 +841,7 @@ fun ModuleItem(
                                 }
                                 if (updateUrl.isNotEmpty() && !module.remove && !module.update) {
                                     LabelItem(
-                                        text = stringResource(R.string.module_update),
+                                        text = stringResource(R.string.module_update_available),
                                         style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
                                             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                                             contentColor = MaterialTheme.colorScheme.onTertiaryContainer
