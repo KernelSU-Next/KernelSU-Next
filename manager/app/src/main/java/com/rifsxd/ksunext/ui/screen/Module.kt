@@ -123,6 +123,7 @@ import com.rifsxd.ksunext.ui.util.reboot
 import com.rifsxd.ksunext.ui.util.toggleModule
 import com.rifsxd.ksunext.ui.util.uninstallModule
 import com.rifsxd.ksunext.ui.util.restoreModule
+import com.rifsxd.ksunext.ui.util.zygiskRequired
 import com.rifsxd.ksunext.ui.viewmodel.ModuleViewModel
 import com.rifsxd.ksunext.ui.webui.WebUIActivity
 import com.rifsxd.ksunext.ui.webui.WebUIXActivity
@@ -783,6 +784,8 @@ fun ModuleItem(
                     )
                 }
 
+                val filterZygiskModules = zygiskAvailable() || !module.zygiskRequired
+
                 LaunchedEffect(Unit) {
                     developerOptionsEnabled = prefs.getBoolean("enable_developer_options", false)
                 }
@@ -825,6 +828,15 @@ fun ModuleItem(
                                         )
                                     )
                                 }
+                                if (!zygiskAvailable() && module.zygiskRequired && !module.remove) {
+                                    LabelItem(
+                                        text = stringResource(R.string.zygisk_required),
+                                        style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                            containerColor = MaterialTheme.colorScheme.errorContainer,
+                                            contentColor = MaterialTheme.colorScheme.onErrorContainer
+                                        )
+                                    )
+                                }
                                 if (updateUrl.isNotEmpty() && !module.remove && !module.update) {
                                     LabelItem(
                                         text = stringResource(R.string.module_update),
@@ -846,7 +858,7 @@ fun ModuleItem(
                                     }
                                 }
                                 if (module.enabled && !module.remove) {
-                                    if (module.hasWebUi) {
+                                    if (module.hasWebUi && filterZygiskModules) {
                                         LabelItem(
                                             text = stringResource(R.string.webui),
                                             style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
@@ -855,7 +867,7 @@ fun ModuleItem(
                                             )
                                         )
                                     }
-                                    if (module.hasActionScript) {
+                                    if (module.hasActionScript && filterZygiskModules) {
                                         LabelItem(
                                             text = stringResource(R.string.action),
                                             style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
@@ -961,7 +973,7 @@ fun ModuleItem(
                             if (module.hasActionScript) {
                                 FilledTonalButton(
                                     modifier = Modifier.defaultMinSize(52.dp, 32.dp),
-                                    enabled = !module.remove && module.enabled,
+                                    enabled = !module.remove && module.enabled && filterZygiskModules,
                                     onClick = {
                                         navigator.navigate(ExecuteModuleActionScreenDestination(module.dirId))
                                         viewModel.markNeedRefresh()
@@ -989,7 +1001,7 @@ fun ModuleItem(
                             if (module.hasWebUi) {
                                 FilledTonalButton(
                                     modifier = Modifier.defaultMinSize(52.dp, 32.dp),
-                                    enabled = !module.remove && module.enabled,
+                                    enabled = !module.remove && module.enabled && filterZygiskModules,
                                     onClick = { onClick(module) },
                                     interactionSource = interactionSource,
                                     contentPadding = ButtonDefaults.TextButtonContentPadding
@@ -1119,7 +1131,8 @@ fun ModuleItemPreview() {
         hasActionScript = false,
         dirId = "dirId",
         size = 12345678L,
-        banner = ""
+        banner = "",
+        zygiskRequired = false
     )
     ModuleItem(EmptyDestinationsNavigator, module, "", {}, {}, {}, {}, {}, false, {})
 }
