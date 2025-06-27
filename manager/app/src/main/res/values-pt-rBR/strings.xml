@@ -19,6 +19,7 @@
     <string name="home_superuser_count">SuperUsuários: %d</string>
     <string name="home_module_count">Módulos: %d</string>
     <string name="home_module_update_count">Atualizações: %d</string>
+    <string name="module_update_available">Atualizar</string>
     <string name="home_failure">Assinatura KernelSU Next v2 não encontrada no kernel! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Peça ao seu desenvolvedor de kernel para integrar o KernelSU Next!</string>
     <string name="home_kernel">Versão do kernel</string>
@@ -211,6 +212,7 @@
     <string name="settings_disable_su">Desativar compatibilidade su</string>
     <string name="settings_disable_su_summary">Desative temporariamente a capacidade de qualquer app obter privilégios root por meio do comando ⁠su (processos root existentes não serão afetados).</string>
     <string name="settings_language">Idioma</string>
+    <string name="system_default">Padrão do sistema</string>
     <string name="settings_legacyui">Usar IU antiga</string>
     <string name="settings_legacyui_summary">Mude para o estilo de interface do usuário anterior.</string>
     <string name="settings_banner">Ativar banners</string>
@@ -222,4 +224,5 @@
     <string name="customization">Personalização</string>
     <string name="developer">Desenvolvedor</string>
     <string name="sucompat_disabled">SUCOMPAT DESATIVADO</string>
+    <string name="zygisk_required">Zygisk necessário</string>
 </resources>

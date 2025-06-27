@@ -56,7 +56,7 @@
     <string name="reboot">Reboot</string>
     <string name="uninstalled">Uninstalled</string>
     <string name="settings">Settings</string>
-    <string name="reboot_userspace">Soft Reboot</string>
+    <string name="reboot_userspace">Soft reboot</string>
     <string name="reboot_recovery">Reboot to Recovery</string>
     <string name="reboot_bootloader">Reboot to Bootloader</string>
     <string name="reboot_download">Reboot to Download</string>
@@ -112,7 +112,7 @@
     <string name="home_next_kernelsu_body">Next experimental branch. Check it out on GitHub!</string>
     <string name="home_experimental_kernelsu">⚠️ Experimental development warning!</string>
     <string name="home_experimental_kernelsu_repo">127.0.0.1</string>
-    <string name="home_experimental_kernelsu_body">KernelSU Next is a non-official version that is always under active experimental development. It is provided as-is, with no guarantees of stability, performance, or reliability.</string>
+    <string name="home_experimental_kernelsu_body">KernelSU Next is a non-official version that is always under active experimental development. It\'s provided as-is, with no guarantees of stability, performance, or reliability.</string>
     <string name="home_experimental_kernelsu_body_point_1"> • Use at your own risk: crashes, unexpected behavior, or system issues may occur.</string>
     <string name="home_experimental_kernelsu_body_point_2"> • No warranty: the developers aren\'t responsible for any data loss, system damage, or other consequences resulting from its use.</string>
     <string name="home_experimental_kernelsu_body_point_3"> • For testing purposes only: intended for users who understand the risks and are comfortable troubleshooting issues.</string>
@@ -213,7 +213,7 @@
     <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
     <string name="settings_language">Language</string>
     <string name="system_default">System default</string>
-    <string name="settings_legacyui">Use Legacy UI</string>
+    <string name="settings_legacyui">Use legacy UI</string>
     <string name="settings_legacyui_summary">Switch to the previous user interface style.</string>
     <string name="settings_banner">Enable banners</string>
     <string name="settings_banner_summary">Show background banners for modules.</string>
@@ -224,5 +224,5 @@
     <string name="customization">Customization</string>
     <string name="developer">Developer</string>
     <string name="sucompat_disabled">SUCOMPAT DISABLED</string>
-    <string name="zygisk_required">Zygisk Required</string>
+    <string name="zygisk_required">Zygisk required</string>
 </resources>
