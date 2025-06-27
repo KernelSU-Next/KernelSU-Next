@@ -89,5 +89,3 @@ If you’d like to support the project:
 - [Diamorphine](https://github.com/m0nad/Diamorphine) – Rootkit techniques  
 - [KernelSU](https://github.com/tiann/KernelSU) – The foundation for KernelSU Next  
 - [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs) – 💜 to 5ec1cff for keeping KernelSU alive
-
----
