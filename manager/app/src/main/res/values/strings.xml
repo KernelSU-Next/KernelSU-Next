@@ -224,4 +224,5 @@
     <string name="customization">Customization</string>
     <string name="developer">Developer</string>
     <string name="sucompat_disabled">SUCOMPAT DISABLED</string>
+    <string name="zygisk_required">Zygisk Required</string>
 </resources>

@@ -23,6 +23,8 @@ import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.ui.util.HanziToPinyin
 import com.rifsxd.ksunext.ui.util.listModules
 import com.rifsxd.ksunext.ui.util.getModuleSize
+import com.rifsxd.ksunext.ui.util.zygiskRequired
+import com.rifsxd.ksunext.ui.util.zygiskAvailable
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -48,7 +50,8 @@ class ModuleViewModel : ViewModel() {
         val hasActionScript: Boolean,
         val dirId: String,
         val size: Long,
-        val banner: String
+        val banner: String,
+        val zygiskRequired: Boolean
     )
 
     data class ModuleUpdateInfo(
@@ -139,6 +142,7 @@ class ModuleViewModel : ViewModel() {
                             val dirId = obj.getString("dir_id")
                             val moduleDir = File("/data/adb/modules/$dirId")
                             val size = getModuleSize(moduleDir)
+                            val zygiskRequired = zygiskRequired(moduleDir)
 
                             ModuleInfo(
                                 id,
@@ -155,7 +159,8 @@ class ModuleViewModel : ViewModel() {
                                 obj.optBoolean("action"),
                                 dirId,
                                 size,
-                                obj.optString("banner")
+                                obj.optString("banner"),
+                                zygiskRequired
                             )
                         }.toList()
                     isNeedRefresh = false
