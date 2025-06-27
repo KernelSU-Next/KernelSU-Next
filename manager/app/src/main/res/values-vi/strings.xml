@@ -149,7 +149,7 @@
     <string name="close">Đóng</string>
     <string name="force_stop_app">Buộc dừng</string>
     <string name="restart_app">Khởi động lại</string>
-    <string name="settings_amoled_mode">Chế độ AMOLED</string>
+    <string name="settings_amoled_mode">Chế độ OLED</string>
     <string name="settings_amoled_mode_summary">Bật chủ đề màu đen tuyền hữu ích cho màn hình OLED để giảm mỏi mắt và tiết kiệm pin</string>
     <string name="restart_required">Yêu cầu khởi động lại</string>
     <string name="restart_app_message">Cần khởi động lại app để thay đổi này có hiệu lực</string>
