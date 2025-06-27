@@ -224,4 +224,5 @@
     <string name="customization">Tùy biến</string>
     <string name="developer">Nhà phát triển</string>
     <string name="sucompat_disabled">SUCOMPAT ĐÃ TẮT</string>
+    <string name="zygisk_required">Yêu cầu Zygisk</string>
 </resources>
