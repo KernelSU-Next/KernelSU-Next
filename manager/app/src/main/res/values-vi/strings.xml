@@ -154,7 +154,7 @@
     <string name="restart_required">Yêu cầu khởi động lại</string>
     <string name="restart_app_message">Cần khởi động lại app để thay đổi này có hiệu lực</string>
     <string name="failed_to_update_sepolicy">Cập nhật quy tắc SELinux cho %s thất bại</string>
-    <string name="su_not_allowed">Quyền SU cho %s chưa được cấp</string>
+    <string name="su_not_allowed">Không được phép cấp quyền SU cho %s</string>
     <string name="module_changelog">Changelog</string>
     <string name="settings_profile_template">Mẫu Hồ sơ ứng dụng</string>
     <string name="settings_profile_template_summary">Quản lý mẫu cục bộ và trực tuyến của Hồ sơ ứng dụng</string>
