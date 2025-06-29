@@ -44,7 +44,7 @@
     <string name="module_failed_to_disable">Failed to disable module: %s</string>
     <string name="module_empty">No module installed</string>
     <string name="module">Module</string>
-    <string name="module_install_prompt_with_name">The following module(s) will be installed: %1$s</string>
+    <string name="module_install_prompt_with_name">The following modules will be installed: %1$s</string>
     <string name="module_sort_a_to_z">Sort (A → Z)</string>
     <string name="module_sort_z_to_a">Sort (Z → A)</string>
     <string name="module_size_low_to_high">Sort (Low → High)</string>
@@ -76,7 +76,7 @@
     <string name="module_update_json_empty">Empty</string>
     <string name="enable_developer_options">Enable developer options</string>
     <string name="enable_developer_options_summary">Show hidden settings and debug info relevant only for developers.</string>
-    <string name="module_overlay_fs_not_available">Modules are unavailable as OverlayFS is disabled by the kernel.</string>
+    <string name="module_overlay_fs_not_available">Modules are unavailable as OverlayFS is disabled by the kernel!</string>
     <string name="refresh">Refresh</string>
     <string name="show_system_apps">Show system apps</string>
     <string name="hide_system_apps">Hide system apps</string>
@@ -153,10 +153,10 @@
     <string name="settings_amoled_mode_summary">Enable a pure black theme useful for AMOLED screens to reduce eye strain and save battery.</string>
     <string name="restart_required">Restart required</string>
     <string name="restart_app_message">The app needs to restart for this change to take effect.</string>
-    <string name="failed_to_update_sepolicy">Failed to update SELinux rules for: %s</string>
-    <string name="su_not_allowed">Granting superuser isn\'t allowed for: %s</string>
+    <string name="failed_to_update_sepolicy">Failed to update SELinux rules for %s</string>
+    <string name="su_not_allowed">Couldn\'t grant Superuser access to %s</string>
     <string name="module_changelog">Changelog</string>
-    <string name="settings_profile_template">App Profile Template</string>
+    <string name="settings_profile_template">App Profile template</string>
     <string name="settings_profile_template_summary">Manage local and online template of App Profile</string>
     <string name="app_profile_template_create">Create template</string>
     <string name="app_profile_template_edit">Edit template</string>
@@ -178,8 +178,8 @@
     <string name="app_profile_template_save_failed">Failed to save template</string>
     <string name="app_profile_template_import_empty">Clipboard is empty!</string>
     <string name="module_changelog_failed">Fetch changelog failed: %s</string>
-    <string name="settings_check_update">Check update</string>
-    <string name="settings_check_update_summary">Automatically check for updates when opening the app.</string>
+    <string name="settings_check_update">Check for updates</string>
+    <string name="settings_check_update_summary">Automatically check for updates when opening the app</string>
     <string name="grant_root_failed">Failed to grant root!</string>
     <string name="action">Action</string>
     <string name="webui">WebUI</string>
@@ -210,7 +210,7 @@
     <string name="log_saved">Logs saved</string>
     <string name="send_log">Share logs</string>
     <string name="settings_disable_su">Disable su compatibility</string>
-    <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
+    <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (Existing root processes won\'t be affected).</string>
     <string name="settings_language">Language</string>
     <string name="system_default">System default</string>
     <string name="settings_legacyui">Use legacy UI</string>
