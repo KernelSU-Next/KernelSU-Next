@@ -209,7 +209,7 @@
     <string name="save_log">保存日志</string>
     <string name="log_saved">日志已保存</string>
     <string name="send_log">分享日志</string>
-    <string name="settings_disable_su">禁用超级用户指令</string>
+    <string name="settings_disable_su">禁用 SU 兼容</string>
     <string name="settings_disable_su_summary">临时禁止任何应用通过 su 命令获取 root 权限（正在运行的 root 进程不受影响）。</string>
     <string name="settings_language">语言</string>
     <string name="system_default">系统默认</string>
@@ -223,6 +223,6 @@
     <string name="use_webuix_eruda_summary">使用 WebUI X 时注入控制台以便于调试，需要启用 WebView 调试功能。</string>
     <string name="customization">界面设置</string>
     <string name="developer">开发者选项</string>
-    <string name="sucompat_disabled">SUCOMPAT 已禁用</string>
+    <string name="sucompat_disabled">SU 兼容被禁用</string>
     <string name="zygisk_required">需要 Zygisk</string>
 </resources>
