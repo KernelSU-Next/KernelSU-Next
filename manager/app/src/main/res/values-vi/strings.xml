@@ -23,10 +23,10 @@
     <string name="home_failure_tip">Yêu cầu nhà phát triển Kernel của bạn tích hợp KernelSU Next!</string>
     <string name="home_kernel">Phiên bản Kernel</string>
     <string name="hook_mode">Chế độ móc</string>
-    <string name="enable">Bật</string>
-    <string name="disable">Tắt</string>
-    <string name="enabled">Đã bật</string>
-    <string name="disabled">Đã tắt</string>
+    <string name="enable">Kích hoạt</string>
+    <string name="disable">Vô hiệu hoá</string>
+    <string name="enabled">Đã kích hoạt</string>
+    <string name="disabled">Đã vô hiệu hoá</string>
     <string name="susfs_supported">Hỗ trợ</string>
     <string name="home_susfs">SuSFS: %s</string>
     <string name="home_susfs_version">Phiên bản SuSFS</string>
@@ -223,6 +223,6 @@
     <string name="use_webuix_eruda_summary">Nhúng trình gỡ lỗi vào WebUI X để việc gỡ lỗi thuận tiện hơn. Yêu cầu gỡ lỗi WebView được bật</string>
     <string name="customization">Tùy biến</string>
     <string name="developer">Nhà phát triển</string>
-    <string name="sucompat_disabled">SUCOMPAT ĐÃ TẮT</string>
+    <string name="sucompat_disabled">ĐÃ VÔ HIỆU HÓA SUCOMPAT</string>
     <string name="zygisk_required">Yêu cầu Zygisk</string>
 </resources>
