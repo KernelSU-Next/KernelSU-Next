@@ -213,8 +213,8 @@
     <string name="settings_disable_su_summary">Vô hiệu hoá khả năng thực thi lệnh SU để lấy quyền root (Những app đã cấp trước đó không bị ảnh hưởng)</string>
     <string name="settings_language">Ngôn ngữ</string>
     <string name="system_default">Mặc định theo hệ thống</string>
-    <string name="settings_legacyui">Sử dụng KSU WebUI</string>
-    <string name="settings_legacyui_summary">Chuyển sang kiểu giao diện người dùng trước đó</string>
+    <string name="settings_legacyui">Sử dụng giao diện cũ</string>
+    <string name="settings_legacyui_summary">Chuyển về kiểu giao diện cũ</string>
     <string name="settings_banner">Hiển thị banner</string>
     <string name="settings_banner_summary">Hiển thị banner cho các module</string>
     <string name="use_webuix">Sử dụng WebUI X</string>
