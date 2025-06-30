@@ -59,6 +59,9 @@ fun KernelSUTheme(
                 surfaceContainerLowest = dynamicScheme.surfaceContainerLowest.blend(AMOLED_BLACK, 0.6f),
                 surfaceContainerHigh = dynamicScheme.surfaceContainerHigh.blend(AMOLED_BLACK, 0.6f),
                 surfaceContainerHighest = dynamicScheme.surfaceContainerHighest.blend(AMOLED_BLACK, 0.6f),
+                primaryContainer = dynamicScheme.primaryContainer.blend(AMOLED_BLACK, 0.6f),
+                secondaryContainer = dynamicScheme.secondaryContainer.blend(AMOLED_BLACK, 0.6f),
+                tertiaryContainer = dynamicScheme.tertiaryContainer.blend(AMOLED_BLACK, 0.6f)
             )
         }
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {

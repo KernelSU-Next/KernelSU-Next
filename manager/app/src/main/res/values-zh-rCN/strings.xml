@@ -3,7 +3,7 @@
     <string name="issue_report_title">遇到问题？</string>
     <string name="issue_report_body">发现错误或者有改进建议？</string>
     <string name="issue_report_body_2">快向我们报告吧！</string>
-    <string name="issue_report_github">在 GitHub 报告</string>
+    <string name="issue_report_github">去 GitHub 报告</string>
     <string name="issue_report_telegram">在 Telegram 获得最新消息</string>
     <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
     <string name="issue_report_telegram_link">https://t.me/ksunext</string>
@@ -58,7 +58,7 @@
     <string name="settings">设置</string>
     <string name="reboot_userspace">软重启</string>
     <string name="reboot_recovery">重启到恢复模式</string>
-    <string name="reboot_bootloader">重启到 Bootloader 模式</string>
+    <string name="reboot_bootloader">重启到 Bootloader</string>
     <string name="reboot_download">重启到下载模式</string>
     <string name="reboot_edl">重启到 EDL 模式</string>
     <string name="about">关于</string>
@@ -209,7 +209,7 @@
     <string name="save_log">保存日志</string>
     <string name="log_saved">日志已保存</string>
     <string name="send_log">分享日志</string>
-    <string name="settings_disable_su">禁用超级用户指令</string>
+    <string name="settings_disable_su">禁用 SU 兼容</string>
     <string name="settings_disable_su_summary">临时禁止任何应用通过 su 命令获取 root 权限（正在运行的 root 进程不受影响）。</string>
     <string name="settings_language">语言</string>
     <string name="system_default">系统默认</string>
@@ -221,7 +221,8 @@
     <string name="use_webuix_summary">使用更完善的 WebUI X 来取代旧有 WebUI，请注意模块开发者可在模块信息中单独覆盖此项设置。</string>
     <string name="use_webuix_eruda">对 WebUI X 注入 Eruda</string>
     <string name="use_webuix_eruda_summary">使用 WebUI X 时注入控制台以便于调试，需要启用 WebView 调试功能。</string>
-    <string name="customization">外观</string>
+    <string name="customization">界面设置</string>
     <string name="developer">开发者选项</string>
-    <string name="sucompat_disabled">SUCOMPAT 已禁用</string>
+    <string name="sucompat_disabled">SU 兼容被禁用</string>
+    <string name="zygisk_required">需要 Zygisk</string>
 </resources>

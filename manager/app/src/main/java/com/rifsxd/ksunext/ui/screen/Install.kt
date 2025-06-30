@@ -43,6 +43,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -88,7 +89,11 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                 showLkmWarning = false
                 navigator.popBackStack()
             },
-            title = { Text(stringResource(R.string.warning)) },
+            title = { Text(
+                text = stringResource(R.string.warning),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold
+            ) },
             text = { Text(stringResource(R.string.lkm_warning_message)) },
             confirmButton = {
                 TextButton(onClick = { showLkmWarning = false }) {
@@ -370,7 +375,11 @@ private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     TopAppBar(
-        title = { Text(stringResource(R.string.install)) }, navigationIcon = {
+        title = { Text(
+                text = stringResource(R.string.install),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Black,
+            ) }, navigationIcon = {
             IconButton(
                 onClick = onBack
             ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }

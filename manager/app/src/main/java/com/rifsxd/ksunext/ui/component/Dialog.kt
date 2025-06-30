@@ -17,6 +17,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
@@ -402,7 +403,11 @@ private fun ConfirmDialog(visuals: ConfirmDialogVisuals, confirm: () -> Unit, di
             dismiss()
         },
         title = {
-            Text(text = visuals.title)
+            Text(
+                text = visuals.title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold
+            )
         },
         text = {
             if (visuals.isMarkdown) {

@@ -9,8 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.dergoogler.mmrl.platform.Platform
-import com.dergoogler.mmrl.platform.TIMEOUT_MILLIS
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -111,21 +109,9 @@ class ModuleViewModel : ViewModel() {
         
         viewModelScope.launch {
 
-            withContext(Dispatchers.Main) {
-                isRefreshing = true
-            }
+            isRefreshing = true
 
             withContext(Dispatchers.IO) {
-                withTimeoutOrNull(TIMEOUT_MILLIS) {
-                    while (!Platform.isAlive) {
-                        delay(500)
-                    }
-                } ?: run {
-                    isRefreshing = false
-                    Log.e(TAG, "Platform is not alive, aborting fetchModuleList")
-                    return@withContext
-                }
-
                 val start = SystemClock.elapsedRealtime()
                 val oldModuleList = modules
 

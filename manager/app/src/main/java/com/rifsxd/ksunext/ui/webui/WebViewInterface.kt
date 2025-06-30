@@ -1,17 +1,16 @@
 package com.rifsxd.ksunext.ui.webui
 
 import android.app.Activity
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
 import android.view.Window
 import android.webkit.JavascriptInterface
+import android.webkit.WebView
 import android.widget.Toast
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.dergoogler.mmrl.webui.interfaces.WXInterface
-import com.dergoogler.mmrl.webui.interfaces.WXOptions
-import com.dergoogler.mmrl.webui.model.JavaScriptInterface
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.ShellUtils
 import com.topjohnwu.superuser.internal.UiThreadHandler
@@ -24,15 +23,10 @@ import java.io.File
 import java.util.concurrent.CompletableFuture
 
 class WebViewInterface(
-    wxOptions: WXOptions,
-) : WXInterface(wxOptions) {
-    override var name: String = "ksu"
-
-    companion object {
-        fun factory() = JavaScriptInterface(WebViewInterface::class.java)
-    }
-
-    private val modDir get() = "/data/adb/modules/${modId.id}"
+    val context: Context,
+    private val webView: WebView,
+    private val modDir: String
+) {
 
     @JavascriptInterface
     fun exec(cmd: String): String {
@@ -65,7 +59,7 @@ class WebViewInterface(
     fun exec(
         cmd: String,
         options: String?,
-        callbackFunc: String,
+        callbackFunc: String
     ) {
         val finalCommand = StringBuilder()
         processOptions(finalCommand, options)
@@ -174,9 +168,9 @@ class WebViewInterface(
         if (context is Activity) {
             Handler(Looper.getMainLooper()).post {
                 if (enable) {
-                    hideSystemUI(activity.window)
+                    hideSystemUI(context.window)
                 } else {
-                    showSystemUI(activity.window)
+                    showSystemUI(context.window)
                 }
             }
         }
@@ -185,7 +179,7 @@ class WebViewInterface(
     @JavascriptInterface
     fun moduleInfo(): String {
         val moduleInfos = JSONArray(listModules())
-        val currentModuleInfo = JSONObject()
+        var currentModuleInfo = JSONObject()
         currentModuleInfo.put("moduleDir", modDir)
         val moduleId = File(modDir).getName()
         for (i in 0 until moduleInfos.length()) {
@@ -195,7 +189,7 @@ class WebViewInterface(
                 continue
             }
 
-            val keys = currentInfo.keys()
+            var keys = currentInfo.keys()
             for (key in keys) {
                 currentModuleInfo.put(key, currentInfo.get(key))
             }
@@ -208,12 +202,8 @@ class WebViewInterface(
 fun hideSystemUI(window: Window) =
     WindowInsetsControllerCompat(window, window.decorView).let { controller ->
         controller.hide(WindowInsetsCompat.Type.systemBars())
-        controller.systemBarsBehavior =
-            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 
 fun showSystemUI(window: Window) =
-    WindowInsetsControllerCompat(
-        window,
-        window.decorView
-    ).show(WindowInsetsCompat.Type.systemBars())
+    WindowInsetsControllerCompat(window, window.decorView).show(WindowInsetsCompat.Type.systemBars())

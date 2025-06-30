@@ -16,8 +16,8 @@
     <string name="lkm_alternative_suggestion">Встановіть ядро GKI або інтегруйте ядра поруч із вашим пристроєм.</string>
     <string name="home_working">Працює</string>
     <string name="home_working_version">Версія драйвера: %d</string>
-    <string name="home_superuser_count">Видано прав: %d</string>
-    <string name="home_module_count">Модулів: %d</string>
+    <string name="home_superuser_count">Видано прав</string>
+    <string name="home_module_count">Модулів</string>
     <string name="home_module_update_count">Оновлення: %d</string>
     <string name="home_failure">Підпис KernelSU Next v2 не знайдено в ядрі! [!KSU_NEXT || != size/hash]</string>
     <string name="home_failure_tip">Попросіть вашого розробника ядра інтегрувати KernelSU Next!</string>
@@ -140,6 +140,7 @@
     <string name="profile_selinux_domain">Домен</string>
     <string name="profile_selinux_rules">Правила</string>
     <string name="module_update">Оновити</string>
+    <string name="module_update_available">Оновити</string>
     <string name="module_updated">Оновлено</string>
     <string name="module_downloading">Завантаження модуля: %s</string>
     <string name="module_start_downloading">Початок завантаження: %s</string>
@@ -211,6 +212,7 @@
     <string name="settings_disable_su">Вимкн. сумісність із su</string>
     <string name="settings_disable_su_summary">Тимчасово вимкнути можливість додаткам отримувати права root через команду su (існуючі процеси з правами root не будуть зачеплені).</string>
     <string name="settings_language">Мова</string>
+    <string name="system_default">Системний</string>
     <string name="settings_legacyui">Використовувати застарілий UI</string>
     <string name="settings_legacyui_summary">Перейти до попереднього стилю інтерфейсу користувача.</string>
     <string name="settings_banner">Увімкнути банери</string>
@@ -222,4 +224,5 @@
     <string name="customization">Кастомізація</string>
     <string name="developer">Для Розробників</string>
     <string name="sucompat_disabled">SUCOMPAT ВИМКНЕНО</string>
+    <string name="zygisk_required">Потрібно Zygisk</string>
 </resources>

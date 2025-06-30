@@ -31,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.text.font.FontWeight
 import com.rifsxd.ksunext.BuildConfig
 import com.rifsxd.ksunext.R
 
@@ -83,8 +84,9 @@ private fun AboutCardContent() {
             Column {
 
                 Text(
-                    stringResource(id = R.string.app_name),
-                    style = MaterialTheme.typography.titleSmall,
+                    text = stringResource(id = R.string.app_name),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 18.sp
                 )
                 Text(

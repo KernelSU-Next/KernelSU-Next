@@ -11,6 +11,7 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.animation.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -54,8 +55,6 @@ import com.rifsxd.ksunext.R
 import com.rifsxd.ksunext.ui.component.rememberConfirmDialog
 import com.rifsxd.ksunext.ui.util.*
 import com.rifsxd.ksunext.ui.util.module.LatestVersionInfo
-import com.rifsxd.ksunext.ui.viewmodel.ModuleViewModel
-import com.rifsxd.ksunext.ui.viewmodel.SuperUserViewModel
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -96,24 +95,23 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             val lkmMode = ksuVersion?.let {
                 if (it >= Natives.MINIMAL_SUPPORTED_KERNEL_LKM && kernelVersion.isGKI()) Natives.isLkmMode else null
             }
-            
-            val superUserViewModel: SuperUserViewModel = viewModel()
-            
-            val moduleViewModel: ModuleViewModel = viewModel()
-
-            LaunchedEffect(Unit) {
-                if (superUserViewModel.appList.isEmpty()) {
-                    superUserViewModel.fetchAppList()
-                }
-
-                if (moduleViewModel.moduleList.isEmpty()) {
-                    moduleViewModel.fetchModuleList()
-                }
-            }
 
             StatusCard(kernelVersion, ksuVersion, lkmMode) {
                 navigator.navigate(InstallScreenDestination)
             }
+
+            if (ksuVersion != null && rootAvailable()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Min),
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    Box(modifier = Modifier.weight(1f)) { SuperuserCard() }
+                    Box(modifier = Modifier.weight(1f)) { ModuleCard() }
+                }
+            }
+
             if (isManager && Natives.requireNewKernel()) {
                 WarningCard(
                     stringResource(id = R.string.require_kernel_version).format(
@@ -137,6 +135,68 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             IssueReportCard()
             //EXperimentalCard()
             Spacer(Modifier)
+        }
+    }
+}
+
+@Composable
+private fun SuperuserCard() {
+    ElevatedCard(
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.home_superuser_count),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = getSuperuserCount().toString(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ModuleCard() {
+    ElevatedCard(
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.home_module_count),
+                    style = MaterialTheme.typography.bodySmall
+                )
+                Text(
+                    text = getModuleCount().toString(),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
         }
     }
 }
@@ -247,7 +307,11 @@ private fun TopBar(
                             rotationZ = rotation
                         }
                 )
-                Text(stringResource(R.string.app_name))
+                Text(
+                    text = stringResource(R.string.app_name),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Black,
+                )
             }
         },
         actions = {
@@ -310,7 +374,7 @@ private fun StatusCard(
 
     ElevatedCard(
         colors = CardDefaults.elevatedCardColors(containerColor = run {
-            if (ksuVersion != null) MaterialTheme.colorScheme.secondaryContainer
+            if (ksuVersion != null) MaterialTheme.colorScheme.primaryContainer
             else MaterialTheme.colorScheme.errorContainer
         })
     ) {
@@ -407,24 +471,14 @@ private fun StatusCard(
                         ) {
                             Text(
                                 text = stringResource(id = R.string.home_working),
-                                style = MaterialTheme.typography.titleMedium
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold
                             )
                         }
 
                         Text(
                             text = stringResource(R.string.home_working_version, ksuVersion),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-
-                        Text(
-                            text = stringResource(
-                                R.string.home_superuser_count, getSuperuserCount()
-                            ), style = MaterialTheme.typography.bodyMedium
-                        )
-
-                        Text(
-                            text = stringResource(R.string.home_module_count, getModuleCount()),
-                            style = MaterialTheme.typography.bodyMedium
+                            style = MaterialTheme.typography.bodySmall
                         )
                     }
                 }
@@ -506,7 +560,7 @@ private fun InfoCard(autoExpand: Boolean = false) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 16.dp)
+                .padding(start = 24.dp, top = 24.dp, end = 24.dp, bottom = 24.dp)
         ) {
             @Composable
             fun InfoCardItem(label: String, content: String, icon: Any? = null) {
@@ -528,11 +582,12 @@ private fun InfoCard(autoExpand: Boolean = false) {
                     Column {
                         Text(
                             text = label,
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
                         )
                         Text(
                             text = content,
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(top = 4.dp)
                         )
                     }
@@ -584,7 +639,7 @@ private fun InfoCard(autoExpand: Boolean = false) {
                 }
 
                 if (!expanded) {
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(16.dp))
                     Row(
                         modifier = Modifier
                             .fillMaxWidth(),
@@ -731,17 +786,18 @@ fun IssueReportCard() {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = stringResource(R.string.issue_report_title),
-                    style = MaterialTheme.typography.titleSmall
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = stringResource(R.string.issue_report_body),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodySmall
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = stringResource(R.string.issue_report_body_2),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

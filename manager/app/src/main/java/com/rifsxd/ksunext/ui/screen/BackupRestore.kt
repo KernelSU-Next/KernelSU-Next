@@ -27,6 +27,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -101,7 +103,11 @@ fun BackupRestoreScreen(navigator: DestinationsNavigator) {
             if (showRebootDialog) {
                 AlertDialog(
                     onDismissRequest = { showRebootDialog = false },
-                    title = { Text(stringResource(R.string.reboot_required)) },
+                    title = { Text(
+                        text = stringResource(R.string.reboot_required),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    ) },
                     text = { Text(stringResource(R.string.reboot_message)) },
                     confirmButton = {
                         TextButton(onClick = {
@@ -128,7 +134,11 @@ fun BackupRestoreScreen(navigator: DestinationsNavigator) {
                         moduleBackup
                     )
                 },
-                headlineContent = { Text(moduleBackup) },
+                headlineContent = { Text(
+                    text = moduleBackup,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                ) },
                 modifier = Modifier.clickable {
                     scope.launch {
                         val result = backupDialog.awaitConfirm(title = moduleBackup, content = backupMessage)
@@ -144,7 +154,11 @@ fun BackupRestoreScreen(navigator: DestinationsNavigator) {
             if (showRebootDialog) {
                 AlertDialog(
                     onDismissRequest = { showRebootDialog = false },
-                    title = { Text(stringResource(R.string.reboot_required)) },
+                    title = { Text(
+                        text = stringResource(R.string.reboot_required),
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.SemiBold
+                    ) },
                     text = { Text(stringResource(R.string.reboot_message)) },
                     confirmButton = {
                         TextButton(onClick = {
@@ -176,13 +190,15 @@ fun BackupRestoreScreen(navigator: DestinationsNavigator) {
                     Icon(
                         Icons.Filled.Restore,
                         moduleRestore,
-                        tint = if (useOverlayFs) androidx.compose.material3.MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) else androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+                        tint = if (useOverlayFs) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) else MaterialTheme.colorScheme.onSurface
                     )
                 },
                 headlineContent = { 
                     Text(
                         moduleRestore,
-                        color = if (useOverlayFs) androidx.compose.material3.MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) else androidx.compose.material3.MaterialTheme.colorScheme.onSurface
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = if (useOverlayFs) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f) else MaterialTheme.colorScheme.onSurface
                     ) 
                 },
                 modifier = Modifier.clickable(
@@ -212,7 +228,11 @@ fun BackupRestoreScreen(navigator: DestinationsNavigator) {
                         allowlistBackup
                     )
                 },
-                headlineContent = { Text(allowlistBackup) },
+                headlineContent = { Text(
+                    text = allowlistBackup,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                ) },
                 modifier = Modifier.clickable {
                     scope.launch {
                         val result = backupDialog.awaitConfirm(title = allowlistBackup, content = allowlistbackupMessage)
@@ -234,7 +254,11 @@ fun BackupRestoreScreen(navigator: DestinationsNavigator) {
                         allowlistRestore
                     )
                 },
-                headlineContent = { Text(allowlistRestore) },
+                headlineContent = { Text(
+                    text = allowlistRestore,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                ) },
                 modifier = Modifier.clickable {
                     scope.launch {
                         val result = restoreDialog.awaitConfirm(title = allowlistRestore, content = allowlistrestoreMessage)
@@ -257,7 +281,11 @@ private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     TopAppBar(
-        title = { Text(stringResource(R.string.backup_restore)) }, navigationIcon = {
+        title = { Text(
+                text = stringResource(R.string.backup_restore),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Black,
+            ) }, navigationIcon = {
             IconButton(
                 onClick = onBack
             ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
