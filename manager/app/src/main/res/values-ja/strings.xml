@@ -25,9 +25,9 @@
     <string name="home_android">Android バージョン</string>
     <string name="home_manager_version">アプリのバージョン</string>
     <string name="home_selinux_status">SELinuxの状態</string>
-    <string name="selinux_status_disabled">無効</string>
-    <string name="selinux_status_enforcing">強制</string>
-    <string name="selinux_status_permissive">許可モード</string>
+    <string name="selinux_status_disabled">Disabled</string>
+    <string name="selinux_status_enforcing">Enforcing</string>
+    <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">不明</string>
     <string name="superuser">スーパーユーザー</string>
     <string name="module_failed_to_enable">モジュールを有効にできませんでした：%s</string>
