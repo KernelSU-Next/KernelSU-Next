@@ -65,7 +65,7 @@ int get_version(void) {
 }
 
 uid_t get_manager_uid() {
-    uid_t manager_uid = (uid_t)-1;
+    uid_t manager_uid = 0;
     ksuctl(CMD_GET_MANAGER_UID, &manager_uid, nullptr);
     return manager_uid;
 }

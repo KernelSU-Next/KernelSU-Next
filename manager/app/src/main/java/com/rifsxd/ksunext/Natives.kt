@@ -59,7 +59,7 @@ object Natives {
 
     /**
      * Get the UID of the current root manager.
-     * @return manager UID, or -1 if unavailable.
+     * @return manager UID, or 0 if unavailable.
      */
     external fun getManagerUid(): Int
 
