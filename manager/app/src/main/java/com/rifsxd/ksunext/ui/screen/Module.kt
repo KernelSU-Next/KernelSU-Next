@@ -603,14 +603,16 @@ private fun ModuleList(
     }
     PullToRefreshBox(
         modifier = boxModifier,
+        isRefreshing = viewModel.isRefreshing,
         onRefresh = {
             viewModel.fetchModuleList()
-        },
-        isRefreshing = viewModel.isRefreshing
+        }
     ) {
         LazyColumn(
             state = listState,
-            modifier = modifier,
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState()).nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = remember {
                 PaddingValues(
@@ -619,7 +621,7 @@ private fun ModuleList(
                     end = 16.dp,
                     bottom = 16.dp
                 )
-            },
+            }
         ) {
             when {
                 viewModel.moduleList.isEmpty() -> {
@@ -635,7 +637,6 @@ private fun ModuleList(
                         }
                     }
                 }
-
                 else -> {
                     items(viewModel.moduleList) { module ->
                         val scope = rememberCoroutineScope()
@@ -708,7 +709,6 @@ private fun ModuleList(
         }
 
         DownloadListener(context, onInstallModule)
-
     }
 }
 
@@ -823,7 +823,7 @@ fun ModuleItem(
                     )
                 }
 
-                val filterZygiskModules = zygiskAvailable() || !module.zygiskRequired
+                val filterZygiskModules = Natives.isZygiskEnabled() || !module.zygiskRequired
 
                 LaunchedEffect(Unit) {
                     developerOptionsEnabled = prefs.getBoolean("enable_developer_options", false)
@@ -867,7 +867,7 @@ fun ModuleItem(
                                         )
                                     )
                                 }
-                                if (!zygiskAvailable() && module.zygiskRequired && !module.remove) {
+                                if (!Natives.isZygiskEnabled() && module.zygiskRequired && !module.remove) {
                                     LabelItem(
                                         text = stringResource(R.string.zygisk_required),
                                         style = LabelItemDefaults.style.copy(

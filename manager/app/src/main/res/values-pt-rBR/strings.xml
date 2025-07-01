@@ -16,10 +16,9 @@
     <string name="lkm_alternative_suggestion">Instale o kernel GKI ou integre o KernelSU Next ao seu dispositivo.</string>
     <string name="home_working">Em execução</string>
     <string name="home_working_version">Versão: %d</string>
-    <string name="home_superuser_count">SuperUsuários: %d</string>
-    <string name="home_module_count">Módulos: %d</string>
+    <string name="home_superuser_count">SuperUsuário(s)</string>
+    <string name="home_module_count">Módulo(s)</string>
     <string name="home_module_update_count">Atualizações: %d</string>
-    <string name="module_update_available">Atualizar</string>
     <string name="home_failure">Assinatura KernelSU Next v2 não encontrada no kernel! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Peça ao seu desenvolvedor de kernel para integrar o KernelSU Next!</string>
     <string name="home_kernel">Versão do kernel</string>
@@ -41,8 +40,8 @@
     <string name="selinux_status_permissive">Permissivo</string>
     <string name="selinux_status_unknown">Desconhecido</string>
     <string name="superuser">SuperUsuário</string>
-    <string name="module_failed_to_enable">Falha ao ativar o módulo %s</string>
-    <string name="module_failed_to_disable">Falha ao desativar o módulo %s</string>
+    <string name="module_failed_to_enable">Não foi possível ativar o módulo %s</string>
+    <string name="module_failed_to_disable">Não foi possível desativar o módulo %s</string>
     <string name="module_empty">Nenhum módulo instalado</string>
     <string name="module">Módulo</string>
     <string name="module_install_prompt_with_name">Os seguintes módulos serão instalados: %1$s</string>
@@ -141,6 +140,7 @@
     <string name="profile_selinux_domain">Domínio</string>
     <string name="profile_selinux_rules">Regras</string>
     <string name="module_update">Atualizar</string>
+    <string name="module_update_available">Atualizar</string>
     <string name="module_updated">Atualizado</string>
     <string name="module_downloading">Baixando módulo %s</string>
     <string name="module_start_downloading">Começando a baixar %s</string>
@@ -154,7 +154,7 @@
     <string name="restart_required">Reinicialização necessária</string>
     <string name="restart_app_message">O app precisa ser reiniciado para que essa alteração tenha efeito.</string>
     <string name="failed_to_update_sepolicy">Falha ao atualizar as regras do SELinux para: %s</string>
-    <string name="su_not_allowed">O acesso de SuperUsuário não é permitido para: %s</string>
+    <string name="su_not_allowed">Não foi possível conceder acesso de SuperUsuário a %s</string>
     <string name="module_changelog">Registro de alterações</string>
     <string name="settings_profile_template">Modelo do Perfil do Aplicativo</string>
     <string name="settings_profile_template_summary">Gerencie o modelo local e online do Perfil do Aplicativo.</string>
@@ -178,7 +178,7 @@
     <string name="app_profile_template_save_failed">Falha ao salvar o modelo</string>
     <string name="app_profile_template_import_empty">A área de transferência está vazia!</string>
     <string name="module_changelog_failed">Falha ao buscar o registro de alterações: %s</string>
-    <string name="settings_check_update">Verificar por atualização</string>
+    <string name="settings_check_update">Verificar por atualizações</string>
     <string name="settings_check_update_summary">Verifique automaticamente se há atualizações ao abrir o app</string>
     <string name="grant_root_failed">Falha ao conceder acesso root!</string>
     <string name="action">Ação</string>
@@ -186,22 +186,22 @@
     <string name="open">Abrir</string>
     <string name="enable_web_debugging">Ativar depuração do WebView</string>
     <string name="enable_web_debugging_summary">Pode ser usado para depurar o WebUI. Por favor, ative somente quando necessário.</string>
-    <string name="direct_install">Instalação direta (recomendada)</string>
+    <string name="direct_install">Instalação direta (Recomendada)</string>
     <string name="select_file">Selecione um arquivo</string>
-    <string name="install_inactive_slot">Instalar no slot inativo (após o OTA)</string>
+    <string name="install_inactive_slot">Instalar no slot inativo (Após o OTA)</string>
     <string name="install_inactive_slot_warning">Seu dispositivo será **FORÇADO** a inicializar no slot inativo atual após uma reinicialização!\nSó use esta opção após a conclusão do OTA.\nDeseja continuar?</string>
     <string name="install_next">Próximo</string>
     <string name="select_file_tip">A imagem da partição %1$s é recomendada</string>
     <string name="select_kmi">Selecionar KMI</string>
     <string name="shrink_sparse_image">Minimizar imagem esparsa</string>
-    <string name="shrink_sparse_image_message">Redimensione a imagem esparsa onde o módulo está localizado para seu tamanho real. Observe que isso pode fazer com que o módulo funcione de forma anormal, portanto, use-o somente quando necessário (como um backup).</string>
+    <string name="shrink_sparse_image_message">Redimensione a imagem esparsa onde o módulo está localizado para seu tamanho real. Observe que isso pode fazer com que o módulo funcione de forma anormal, portanto, use-o somente quando necessário (Como um backup).</string>
     <string name="settings_uninstall">Desinstalar</string>
     <string name="settings_uninstall_temporary">Desinstalar temporariamente</string>
     <string name="settings_uninstall_permanent">Desinstalar permanentemente</string>
     <string name="settings_restore_stock_image">Restaurar imagem de fábrica</string>
     <string name="settings_uninstall_temporary_message">Desinstale temporariamente o KernelSU Next e restaure ao estado original após a próxima reinicialização.</string>
-    <string name="settings_uninstall_permanent_message">Desinstale o KernelSU Next (root e todos os módulos) completamente e permanentemente.</string>
-    <string name="settings_restore_stock_image_message">Restaure a imagem de fábrica (se existir um backup), geralmente usada antes do OTA. Se você precisar desinstalar o KernelSU Next, use \"Desinstalar permanentemente\".</string>
+    <string name="settings_uninstall_permanent_message">Desinstale o KernelSU Next (Root e todos os módulos) completamente e permanentemente.</string>
+    <string name="settings_restore_stock_image_message">Restaure a imagem de fábrica (Se existir um backup), geralmente usada antes do OTA. Se você precisar desinstalar o KernelSU Next, use \"Desinstalar permanentemente\".</string>
     <string name="flashing">Flashando</string>
     <string name="flash_success">Flash bem-sucedido</string>
     <string name="flash_failed">Flash falhou</string>
@@ -210,7 +210,7 @@
     <string name="log_saved">Registros salvos</string>
     <string name="send_log">Compartilhar registros</string>
     <string name="settings_disable_su">Desativar compatibilidade su</string>
-    <string name="settings_disable_su_summary">Desative temporariamente a capacidade de qualquer app obter privilégios root por meio do comando ⁠su (processos root existentes não serão afetados).</string>
+    <string name="settings_disable_su_summary">Desative temporariamente a capacidade de qualquer app obter privilégios root por meio do comando ⁠su (Processos root existentes não serão afetados).</string>
     <string name="settings_language">Idioma</string>
     <string name="system_default">Padrão do sistema</string>
     <string name="settings_legacyui">Usar IU antiga</string>

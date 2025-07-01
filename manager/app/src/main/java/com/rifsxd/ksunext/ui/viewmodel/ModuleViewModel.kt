@@ -22,7 +22,6 @@ import com.rifsxd.ksunext.ui.util.HanziToPinyin
 import com.rifsxd.ksunext.ui.util.listModules
 import com.rifsxd.ksunext.ui.util.getModuleSize
 import com.rifsxd.ksunext.ui.util.zygiskRequired
-import com.rifsxd.ksunext.ui.util.zygiskAvailable
 import org.json.JSONArray
 import org.json.JSONObject
 
