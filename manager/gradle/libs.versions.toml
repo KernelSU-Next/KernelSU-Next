@@ -17,7 +17,7 @@ parcelablelist = "2.0.1"
 libsu = "6.0.0"
 apksign = "1.4"
 cmaker = "1.2"
-mmrl = "2bb00b3c2b"
+mmrl = "v33890"
 
 [plugins]
 agp-app = { id = "com.android.application", version.ref = "agp" }
@@ -74,7 +74,4 @@ markdown = { group = "io.noties.markwon", name = "core", version.ref = "markdown
 
 lsposed-cxx = { module = "org.lsposed.libcxx:libcxx", version = "28.1.13356709" }
 
-mmrl-webui = { group = "com.github.MMRLApp.MMRL", name = "webui", version.ref = "mmrl" }
-mmrl-platform = { group = "com.github.MMRLApp.MMRL", name = "platform", version.ref = "mmrl" }
 mmrl-ui = { group = "com.github.MMRLApp.MMRL", name = "ui", version.ref = "mmrl" }
-mmrl-hidden-api = { group = "com.github.MMRLApp.MMRL", name = "hidden-api", version.ref = "mmrl" }

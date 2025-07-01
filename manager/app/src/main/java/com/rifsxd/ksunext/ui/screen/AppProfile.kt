@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -44,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -186,7 +188,11 @@ private fun AppProfileInner(
     Column(modifier = modifier) {
         AppMenuBox(packageName) {
             ListItem(
-                headlineContent = { Text(appLabel) },
+                headlineContent = { Text(
+                    text = appLabel,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                ) },
                 supportingContent = { Text(packageName) },
                 leadingContent = appIcon,
             )
@@ -272,7 +278,11 @@ private fun TopBar(
 ) {
     TopAppBar(
         title = {
-            Text(stringResource(R.string.profile))
+            Text(
+                text = stringResource(R.string.profile),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Black,
+            )
         },
         navigationIcon = {
             IconButton(
@@ -291,7 +301,11 @@ private fun ProfileBox(
     onModeChange: (Mode) -> Unit,
 ) {
     ListItem(
-        headlineContent = { Text(stringResource(R.string.profile)) },
+        headlineContent = { Text(
+            text = stringResource(R.string.profile),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        ) },
         supportingContent = { Text(mode.text) },
         leadingContent = { Icon(Icons.Filled.AccountCircle, null) },
     )

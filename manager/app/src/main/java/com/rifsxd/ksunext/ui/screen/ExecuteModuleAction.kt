@@ -35,6 +35,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.input.key.Key
@@ -178,7 +179,11 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
 @Composable
 private fun TopBar(isActionRunning: Boolean, onBack: () -> Unit = {}, onSave: () -> Unit = {}) {
     TopAppBar(
-        title = { Text(stringResource(R.string.action)) },
+        title = { Text(
+                text = stringResource(R.string.action),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Black,
+            ) },
         navigationIcon = {
             IconButton(
                 onClick = onBack,

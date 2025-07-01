@@ -15,8 +15,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.webkit.WebViewAssetLoader
-import com.dergoogler.mmrl.platform.model.ModId
-import com.dergoogler.mmrl.webui.interfaces.WXOptions
 import com.topjohnwu.superuser.Shell
 import com.rifsxd.ksunext.ui.util.createRootShell
 import java.io.File
@@ -41,10 +39,9 @@ class WebUIActivity : ComponentActivity() {
         val name = intent.getStringExtra("name")!!
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             @Suppress("DEPRECATION")
-            setTaskDescription(ActivityManager.TaskDescription("KernelSU Next - $name"))
+            setTaskDescription(ActivityManager.TaskDescription("KSUNEXT - $name"))
         } else {
-            val taskDescription =
-                ActivityManager.TaskDescription.Builder().setLabel("KernelSU Next - $name").build()
+            val taskDescription = ActivityManager.TaskDescription.Builder().setLabel("KSUNEXT - $name").build()
             setTaskDescription(taskDescription)
         }
 
@@ -65,7 +62,7 @@ class WebUIActivity : ComponentActivity() {
         val webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(
                 view: WebView,
-                request: WebResourceRequest,
+                request: WebResourceRequest
             ): WebResourceResponse? {
                 return webViewAssetLoader.shouldInterceptRequest(request.url)
             }
@@ -85,9 +82,7 @@ class WebUIActivity : ComponentActivity() {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.allowFileAccess = false
-            webviewInterface = WebViewInterface(
-                WXOptions(this@WebUIActivity, this, ModId(moduleId))
-            )
+            webviewInterface = WebViewInterface(this@WebUIActivity, this, moduleDir)
             addJavascriptInterface(webviewInterface, "ksu")
             setWebViewClient(webViewClient)
             loadUrl("https://mui.kernelsu.org/index.html")

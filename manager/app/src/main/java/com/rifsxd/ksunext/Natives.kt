@@ -28,6 +28,9 @@ object Natives {
     // 12569: support get hook mode
     const val MINIMAL_SUPPORTED_HOOK_MODE = 12569
 
+    // 12750: support get manager UID
+    const val MINIMAL_SUPPORTED_MANAGER_UID = 12751
+
     const val KERNEL_SU_DOMAIN = "u:r:su:s0"
 
     const val ROOT_UID = 0
@@ -55,6 +58,12 @@ object Natives {
     external fun uidShouldUmount(uid: Int): Boolean
 
     /**
+     * Get the UID of the current root manager.
+     * @return manager UID, or 0 if unavailable.
+     */
+    external fun getManagerUid(): Int
+
+    /**
      * Get a string indicating the SU hook mode enabled in kernel.
      * The return values are:
      * - "Manual": Manual hooks was enabled.
@@ -63,6 +72,11 @@ object Natives {
      * @return return hook mode, or null if unavailable.
      */
     external fun getHookMode(): String?
+
+    /**
+     * Check if Zygisk injection is enabled in the environment.
+     */
+    external fun isZygiskEnabled(): Boolean
 
     /**
      * Get the profile of the given package.

@@ -221,7 +221,8 @@
     <string name="use_webuix_summary">使用更爲完善的 WebUI X 而不是 WebUI，請注意模組開發人員能在模組信息中覆寫這個設置。</string>
     <string name="use_webuix_eruda">將 Eruda 注入 WebUI X</string>
     <string name="use_webuix_eruda_summary">在使用 WebUI X 時注入控制台以便於偵錯，需要啟用 WebView 偵錯功能。</string>
-    <string name="customization">自訂外觀</string>
+    <string name="customization">介面選項</string>
     <string name="developer">開發人員設定</string>
-    <string name="sucompat_disabled">SUCOMPAT 已經禁用</string>
+    <string name="sucompat_disabled">SU 兼容被禁用</string>
+    <string name="zygisk_required">需要 Zygisk</string>
 </resources>

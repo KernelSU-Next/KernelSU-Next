@@ -77,6 +77,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -95,7 +101,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.dergoogler.mmrl.platform.Platform
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.ExecuteModuleActionScreenDestination
@@ -126,8 +131,8 @@ import com.rifsxd.ksunext.ui.util.restoreModule
 import com.rifsxd.ksunext.ui.util.zygiskRequired
 import com.rifsxd.ksunext.ui.viewmodel.ModuleViewModel
 import com.rifsxd.ksunext.ui.webui.WebUIActivity
-import com.rifsxd.ksunext.ui.webui.WebUIXActivity
 import com.dergoogler.mmrl.ui.component.LabelItem
+import com.dergoogler.mmrl.ui.component.LabelItemDefaults
 import com.topjohnwu.superuser.io.SuFile
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -166,10 +171,38 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
         contract = ActivityResultContracts.StartActivityForResult()
     ) { viewModel.fetchModuleList() }
 
+    val listState = rememberLazyListState()
+    var showFab by remember { mutableStateOf(true) }
+
+    LaunchedEffect(listState) {
+        var lastIndex = listState.firstVisibleItemIndex
+        var lastOffset = listState.firstVisibleItemScrollOffset
+
+        snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
+            .collect { (currIndex, currOffset) ->
+                val isScrollingDown = currIndex > lastIndex ||
+                    (currIndex == lastIndex && currOffset > lastOffset + 4)
+                val isScrollingUp = currIndex < lastIndex ||
+                    (currIndex == lastIndex && currOffset < lastOffset - 4)
+
+                when {
+                    isScrollingDown && showFab -> showFab = false
+                    isScrollingUp && !showFab -> showFab = true
+                }
+
+                lastIndex = currIndex
+                lastOffset = currOffset
+            }
+    }
+
     Scaffold(
         topBar = {
             SearchAppBar(
-                title = { Text(stringResource(R.string.module)) },
+                title = { Text(
+                    text = stringResource(R.string.module),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Black,
+                ) },
                 searchText = viewModel.search,
                 onSearchTextChange = { viewModel.search = it },
                 onClearClick = { viewModel.search = "" },
@@ -291,46 +324,58 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
         },
         floatingActionButton = {
             if (!hideInstallButton) {
-                val moduleInstall = stringResource(id = R.string.module_install)
-                val selectZipLauncher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.StartActivityForResult()
-                ) { result ->
-                    if (result.resultCode != RESULT_OK) {
-                        return@rememberLauncherForActivityResult
-                    }
-                    val data = result.data ?: return@rememberLauncherForActivityResult
-                    val clipData = data.clipData
-
-                    val uris = mutableListOf<Uri>()
-                    if (clipData != null) {
-                        for (i in 0 until clipData.itemCount) {
-                            clipData.getItemAt(i)?.uri?.let { uris.add(it) }
+                AnimatedVisibility(
+                    visible = showFab,
+                    enter = scaleIn(
+                        animationSpec = tween(200),
+                        initialScale = 0.8f
+                    ) + fadeIn(animationSpec = tween(400)),
+                    exit = scaleOut(
+                        animationSpec = tween(200),
+                        targetScale = 0.8f
+                    ) + fadeOut(animationSpec = tween(400))
+                ) {
+                    val moduleInstall = stringResource(id = R.string.module_install)
+                    val selectZipLauncher = rememberLauncherForActivityResult(
+                        contract = ActivityResultContracts.StartActivityForResult()
+                    ) { result ->
+                        if (result.resultCode != RESULT_OK) {
+                            return@rememberLauncherForActivityResult
                         }
-                    } else {
-                        data.data?.let { uris.add(it) }
+                        val data = result.data ?: return@rememberLauncherForActivityResult
+                        val clipData = data.clipData
+
+                        val uris = mutableListOf<Uri>()
+                        if (clipData != null) {
+                            for (i in 0 until clipData.itemCount) {
+                                clipData.getItemAt(i)?.uri?.let { uris.add(it) }
+                            }
+                        } else {
+                            data.data?.let { uris.add(it) }
+                        }
+
+                        if (uris.isEmpty()) return@rememberLauncherForActivityResult
+
+                        viewModel.updateZipUris(uris)
+
+                        navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(uris)))
+                        viewModel.clearZipUris()
+                        viewModel.markNeedRefresh()
                     }
 
-                    if (uris.isEmpty()) return@rememberLauncherForActivityResult
-
-                    viewModel.updateZipUris(uris)
-
-                    navigator.navigate(FlashScreenDestination(FlashIt.FlashModules(uris)))
-                    viewModel.clearZipUris()
-                    viewModel.markNeedRefresh()
+                    ExtendedFloatingActionButton(
+                        onClick = {
+                            // Select the zip files to install
+                            val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
+                                type = "application/zip"
+                                putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                            }
+                            selectZipLauncher.launch(intent)
+                        },
+                        icon = { Icon(Icons.Filled.Add, moduleInstall) },
+                        text = { Text(text = moduleInstall) },
+                    )
                 }
-
-                ExtendedFloatingActionButton(
-                    onClick = {
-                        // Select the zip files to install
-                        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-                            type = "application/zip"
-                            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-                        }
-                        selectZipLauncher.launch(intent)
-                    },
-                    icon = { Icon(Icons.Filled.Add, moduleInstall) },
-                    text = { Text(text = moduleInstall) },
-                )
             }
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
@@ -363,27 +408,17 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     },
                     onClickModule = { id, name, hasWebUi ->
                         if (hasWebUi) {
-                            val wxEngine = Intent(context, WebUIXActivity::class.java)
-                                .setData("kernelsu://webuix/$id".toUri())
-                                .putExtra("id", id)
-                                .putExtra("name", name)
-
-                            val ksuEngine = Intent(context, WebUIActivity::class.java)
-                                .setData("kernelsu://webui/$id".toUri())
-                                .putExtra("id", id)
-                                .putExtra("name", name)
-
                             webUILauncher.launch(
-                                if (prefs.getBoolean("use_webuix", true) && Platform.isAlive) {
-                                    wxEngine
-                                } else {
-                                    ksuEngine
-                                }
+                                Intent(context, WebUIActivity::class.java)
+                                    .setData(Uri.parse("kernelsu://webui/$id"))
+                                    .putExtra("id", id)
+                                    .putExtra("name", name)
                             )
                         }
                     },
                     context = context,
-                    snackBarHost = snackBarHost
+                    snackBarHost = snackBarHost,
+                    listState = listState
                 )
             }
         }
@@ -401,6 +436,7 @@ private fun ModuleList(
     onClickModule: (id: String, name: String, hasWebUi: Boolean) -> Unit,
     context: Context,
     snackBarHost: SnackbarHostState,
+    listState: LazyListState
 ) {
     val failedEnable = stringResource(R.string.module_failed_to_enable)
     val failedDisable = stringResource(R.string.module_failed_to_disable)
@@ -412,11 +448,13 @@ private fun ModuleList(
     val rebootToApply = stringResource(R.string.reboot_to_apply)
     val moduleStr = stringResource(R.string.module)
     val uninstall = stringResource(R.string.uninstall)
+    val uninstalled = stringResource(R.string.uninstalled)
     val restore = stringResource(R.string.restore)
     val cancel = stringResource(android.R.string.cancel)
     val moduleUninstallConfirm = stringResource(R.string.module_uninstall_confirm)
     val moduleRestoreConfirm = stringResource(R.string.module_restore_confirm)
     val updateText = stringResource(R.string.module_update)
+    val updateLable = stringResource(R.string.module_update_available)
     val changelogText = stringResource(R.string.module_changelog)
     val downloadingText = stringResource(R.string.module_downloading)
     val startDownloadingText = stringResource(R.string.module_start_downloading)
@@ -565,22 +603,25 @@ private fun ModuleList(
     }
     PullToRefreshBox(
         modifier = boxModifier,
+        isRefreshing = viewModel.isRefreshing,
         onRefresh = {
             viewModel.fetchModuleList()
-        },
-        isRefreshing = viewModel.isRefreshing
+        }
     ) {
         LazyColumn(
-            modifier = modifier,
+            state = listState,
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState()).nestedScrollConnection),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = remember {
                 PaddingValues(
                     start = 16.dp,
                     top = 16.dp,
                     end = 16.dp,
-                    bottom = 16.dp + 56.dp + 16.dp + 48.dp + 6.dp /* Scaffold Fab Spacing + Fab container height + SnackBar height */
+                    bottom = 16.dp
                 )
-            },
+            }
         ) {
             when {
                 viewModel.moduleList.isEmpty() -> {
@@ -596,7 +637,6 @@ private fun ModuleList(
                         }
                     }
                 }
-
                 else -> {
                     items(viewModel.moduleList) { module ->
                         val scope = rememberCoroutineScope()
@@ -669,7 +709,6 @@ private fun ModuleList(
         }
 
         DownloadListener(context, onInstallModule)
-
     }
 }
 
@@ -784,7 +823,7 @@ fun ModuleItem(
                     )
                 }
 
-                val filterZygiskModules = zygiskAvailable() || !module.zygiskRequired
+                val filterZygiskModules = Natives.isZygiskEnabled() || !module.zygiskRequired
 
                 LaunchedEffect(Unit) {
                     developerOptionsEnabled = prefs.getBoolean("enable_developer_options", false)
@@ -814,24 +853,24 @@ fun ModuleItem(
                             ) {
                                 LabelItem(
                                     text = formatSize(module.size),
-                                    style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                    style = LabelItemDefaults.style.copy(
                                         containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                         contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 )
                                 if (module.remove) {
                                     LabelItem(
-                                        text = stringResource(R.string.uninstall),
-                                        style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                        text = stringResource(R.string.uninstalled),
+                                        style = LabelItemDefaults.style.copy(
                                             containerColor = MaterialTheme.colorScheme.errorContainer,
                                             contentColor = MaterialTheme.colorScheme.onErrorContainer
                                         )
                                     )
                                 }
-                                if (!zygiskAvailable() && module.zygiskRequired && !module.remove) {
+                                if (!Natives.isZygiskEnabled() && module.zygiskRequired && !module.remove) {
                                     LabelItem(
                                         text = stringResource(R.string.zygisk_required),
-                                        style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                        style = LabelItemDefaults.style.copy(
                                             containerColor = MaterialTheme.colorScheme.errorContainer,
                                             contentColor = MaterialTheme.colorScheme.onErrorContainer
                                         )
@@ -839,8 +878,8 @@ fun ModuleItem(
                                 }
                                 if (updateUrl.isNotEmpty() && !module.remove && !module.update) {
                                     LabelItem(
-                                        text = stringResource(R.string.module_update),
-                                        style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                        text = stringResource(R.string.module_update_available),
+                                        style = LabelItemDefaults.style.copy(
                                             containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                                             contentColor = MaterialTheme.colorScheme.onTertiaryContainer
                                         )
@@ -850,7 +889,7 @@ fun ModuleItem(
                                     if (module.update) {
                                         LabelItem(
                                             text = stringResource(R.string.module_updated),
-                                            style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                            style = LabelItemDefaults.style.copy(
                                                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,
                                                 contentColor = MaterialTheme.colorScheme.onTertiaryContainer
                                             )
@@ -861,7 +900,7 @@ fun ModuleItem(
                                     if (module.hasWebUi && filterZygiskModules) {
                                         LabelItem(
                                             text = stringResource(R.string.webui),
-                                            style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                            style = LabelItemDefaults.style.copy(
                                                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                                                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                             )
@@ -870,7 +909,7 @@ fun ModuleItem(
                                     if (module.hasActionScript && filterZygiskModules) {
                                         LabelItem(
                                             text = stringResource(R.string.action),
-                                            style = com.dergoogler.mmrl.ui.component.LabelItemDefaults.style.copy(
+                                            style = LabelItemDefaults.style.copy(
                                                 containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                                 contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                                             )

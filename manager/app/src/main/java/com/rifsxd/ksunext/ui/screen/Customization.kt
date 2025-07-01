@@ -28,6 +28,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
@@ -37,6 +38,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
@@ -250,7 +252,11 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
             
             ListItem(
                 leadingContent = { Icon(Icons.Filled.Translate, language) },
-                headlineContent = { Text(language) },
+                headlineContent = { Text(
+                    text = language,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                ) },
                 supportingContent = { Text(currentLanguageDisplay) },
                 modifier = Modifier.clickable {
                     languageDialog.show()
@@ -294,7 +300,11 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
                 if (showRestartDialog) {
                     AlertDialog(
                         onDismissRequest = { showRestartDialog = false },
-                        title = { Text(stringResource(R.string.restart_required)) },
+                        title = { Text(
+                            text = stringResource(R.string.restart_required),
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold
+                        ) },
                         text = { Text(stringResource(R.string.restart_app_message)) },
                         confirmButton = {
                             TextButton(onClick = {
@@ -328,7 +338,11 @@ private fun TopBar(
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     TopAppBar(
-        title = { Text(stringResource(R.string.customization)) }, navigationIcon = {
+        title = { Text(
+                text = stringResource(R.string.customization),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Black,
+            ) }, navigationIcon = {
             IconButton(
                 onClick = onBack
             ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
