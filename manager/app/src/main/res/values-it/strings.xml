@@ -16,8 +16,6 @@
     <string name="lkm_alternative_suggestion">Installa il kernel GKI o integra KernelSU Next sul tuo dispositivo.</string>
     <string name="home_working">In esecuzione</string>
     <string name="home_working_version">Versione: %d</string>
-    <string name="home_superuser_count">Super Utente(i)</string>
-    <string name="home_module_count">Moduli</string>
     <string name="home_module_update_count">Aggiornamenti: %d</string>
     <string name="home_failure">Firma KernelSU Next v2 non trovata nel kernel! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Chiedi allo sviluppatore del kernel di integrare KernelSU Next!</string>
@@ -76,7 +74,7 @@
     <string name="module_update_json_empty">Vuoto</string>
     <string name="enable_developer_options">Abilita le opzioni sviluppatore</string>
     <string name="enable_developer_options_summary">Mostra le impostazioni nascoste e le informazioni di debug rilevanti solo per gli sviluppatori.</string>
-    <string name="module_overlay_fs_not_available">I moduli non sono disponibili in quanto overlayFS è disabilitato dal kernel.</string>
+    <string name="module_overlay_fs_not_available">I moduli non sono disponibili in quanto overlayFS è disabilitato dal kernel!</string>
     <string name="refresh">Ricarica</string>
     <string name="show_system_apps">Mostra app di sistema</string>
     <string name="hide_system_apps">Nascondi app di sistema</string>
@@ -154,7 +152,7 @@
     <string name="restart_required">Riavvio richiesto</string>
     <string name="restart_app_message">Affinché la modifica abbia effetto, è necessario riavviare l\'app.</string>
     <string name="failed_to_update_sepolicy">Aggiornamento regole SELinux per %s fallito</string>
-    <string name="su_not_allowed">Non è consentito concedere i privilegi di superutente per: %s</string>
+    <string name="su_not_allowed">Impossibile concedere l\'accesso Superutente a %s</string>
     <string name="module_changelog">Registro aggiornamenti</string>
     <string name="settings_profile_template">Modello App Profile</string>
     <string name="settings_profile_template_summary">Gestisci il modello locale e online di App Profile</string>
@@ -178,8 +176,8 @@
     <string name="app_profile_template_save_failed">Impossibile salvare il modello</string>
     <string name="app_profile_template_import_empty">Gli appunti sono vuoti!</string>
     <string name="module_changelog_failed">Impossibile reperire il changelog: %s</string>
-    <string name="settings_check_update">Controlla aggiornamenti</string>
-    <string name="settings_check_update_summary">Controlla automaticamente gli aggiornamenti all\'apertura dell\'applicazione.</string>
+    <string name="settings_check_update">Controlla gli aggiornamenti</string>
+    <string name="settings_check_update_summary">Controlla automaticamente gli aggiornamenti all\'apertura dell\'applicazione</string>
     <string name="grant_root_failed">Impossibile ottenere l\'accesso root!</string>
     <string name="action">Azione</string>
     <string name="webui">WebUI</string>
@@ -210,7 +208,7 @@
     <string name="log_saved">Registri salvati</string>
     <string name="send_log">Invia log</string>
     <string name="settings_disable_su">Disabilita la compatibilità su</string>
-    <string name="settings_disable_su_summary">Disattiva temporaneamente la possibilità per qualsiasi app di ottenere privilegi di root tramite il comando su (i processi di root esistenti non saranno interessati).</string>
+    <string name="settings_disable_su_summary">Disattiva temporaneamente la possibilità per qualsiasi app di ottenere privilegi di root tramite il comando su (I processi di root esistenti non saranno interessati).</string>
     <string name="settings_language">Lingua</string>
     <string name="system_default">Predefinito del sistema</string>
     <string name="settings_legacyui">Usa Legacy UI</string>
@@ -225,4 +223,13 @@
     <string name="developer">Sviluppatore</string>
     <string name="sucompat_disabled">SUCOMPAT DISATTIVATO</string>
     <string name="zygisk_required">Zygisk richiesto</string>
+    <string name="zygisk_status">Iniezione Zygisk</string>
+    <plurals name="home_superuser_count">
+        <item quantity="one">Superutente</item>
+        <item quantity="other">Superutenti</item>
+    </plurals>
+    <plurals name="home_module_count">
+        <item quantity="one">Modulo</item>
+        <item quantity="other">Moduli</item>
+    </plurals>
 </resources>
