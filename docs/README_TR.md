@@ -29,7 +29,7 @@
 ## 🚀 Özellikler
 
 - Çekirdek tabanlı `su` ve root erişim yönetimi.
-- [Magic Mount](https://topjohnwu.github.io/Magisk/details.html#magic-mount) ve [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS) tabanlı modül sistemi.
+- **[Magic Mount](https://topjohnwu.github.io/Magisk/details.html#magic-mount)** ve **[OverlayFS](https://en.wikipedia.org/wiki/OverlayFS)** tabanlı modül sistemi.
 - [Uygulama Profili](https://kernelsu.org/guide/app-profile.html): Uygulama başına root yetkisini sınırlandırma.
 
 ---
