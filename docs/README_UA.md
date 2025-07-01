@@ -1,4 +1,3 @@
-**Languages**:  
 [English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | [Русский](README_RU.md) | **Українська** | [ภาษาไทย](README_TH.md) | [Tiếng Việt](README_VI.md) | [Italiano](README_IT.md) | [Polski](README_PL.md) | [Български](README_BG.md) | [日本語](README_JA.md)
 
 ---
@@ -37,7 +36,7 @@
 
 ## ✅ Сумісність
 
-KernelSU Next підтримує ядра Android від **4.4 до 6.6**:
+KernelSU Next підтримує ядра Android від **4.4 до 6.6**.
 
 | Версія ядра          | Примітки підтримки                                                                        |
 |----------------------|-------------------------------------------------------------------------------------------|
@@ -63,8 +62,8 @@ KernelSU Next підтримує ядра Android від **4.4 до 6.6**:
 
 ## 📜 Ліцензія
 
-- **Каталог `/kernel`:** [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
-- **Усі інші файли:** [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html)
+- **Каталог `/kernel`:** [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+- **Усі інші файли:** [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ---
 

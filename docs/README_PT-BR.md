@@ -36,7 +36,7 @@
 
 ## ✅ Compatibilidade
 
-O KernelSU Next oferece suporte a kernels Android **4.4 até 6.6**:
+O KernelSU Next oferece suporte a kernels Android **4.4 até 6.6**.
 
 | Versão do kernel     | Notas de suporte                                                              |
 |----------------------|-------------------------------------------------------------------------------|
