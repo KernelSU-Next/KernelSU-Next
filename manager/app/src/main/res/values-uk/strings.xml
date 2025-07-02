@@ -223,7 +223,7 @@
     <string name="developer">Для Розробників</string>
     <string name="sucompat_disabled">SUCOMPAT ВИМКНЕНО</string>
     <string name="zygisk_required">Потрібно Zygisk</string>
-    <string name="zygisk_status">Zygisk-ін'єкція</string>
+    <string name="zygisk_status">Zygisk-інджект</string>
     <plurals name="home_superuser_count">
         <item quantity="one">Суперкористувач</item>
         <item quantity="other">Суперкористувачі</item>
