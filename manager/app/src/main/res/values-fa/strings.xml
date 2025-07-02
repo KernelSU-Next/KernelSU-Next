@@ -12,13 +12,17 @@
     <string name="home">خانه</string>
     <string name="home_not_installed">نصب نشده</string>
     <string name="home_click_to_install">برای نصب کلیک کنید</string>
+    <string name="lkm_mode_deprecated">حالت LKM دیگر پشتیبانی نمی‌شود!</string>
+    <string name="lkm_alternative_suggestion">هسته GKI نصب کنید یا KernelSU Next را با دستگاه خود یکپارچه کنید.</string>
     <string name="home_working">در حال کار</string>
     <string name="home_working_version">نسخه: %d</string>
-    <string name="home_superuser_count">کاربران ویژه: %d</string>
-    <string name="home_module_count">ماژول‌ها: %d</string>
+    <string name="home_module_update_count">به‌روزرسانی‌ها: %d</string>
     <string name="home_failure">امضای KernelSU Next v2 در هسته یافت نشد! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">از توسعه‌دهنده هسته خود بخواهید KernelSU Next را یکپارچه کند!</string>
     <string name="home_kernel">نسخه هسته</string>
+    <string name="hook_mode">حالت قلاب</string>
+    <string name="enable">فعال کردن</string>
+    <string name="disable">غیرفعال کردن</string>
     <string name="enabled">فعال</string>
     <string name="disabled">غیرفعال</string>
     <string name="susfs_supported">پشتیبانی‌شده</string>
@@ -27,8 +31,9 @@
     <string name="home_susfs_sus_su">SuS SU</string>
     <string name="home_android">نسخه اندروید</string>
     <string name="home_manager_version">نسخه مدیر</string>
+    <string name="home_abi">ABI</string>
     <string name="home_selinux_status">وضعیت SELinux</string>
-    <string name="selinux_status_disabled">غیرفعال</string>
+    <string name="selinux_status_disabled"> غیرفعال</string>
     <string name="selinux_status_enforcing">اجباری</string>
     <string name="selinux_status_permissive">مجاز</string>
     <string name="selinux_status_unknown">ناشناخته</string>
@@ -40,11 +45,14 @@
     <string name="module_install_prompt_with_name">ماژول(های) زیر نصب خواهد شد: %1$s</string>
     <string name="module_sort_a_to_z">مرتب‌سازی (الف-ی)</string>
     <string name="module_sort_z_to_a">مرتب‌سازی (ی-الف)</string>
+    <string name="module_size_low_to_high">مرتب‌سازی (کوچک به بزرگ)</string>
+    <string name="module_size_high_to_low">مرتب‌سازی (بزرگ به کوچک)</string>
     <string name="uninstall">حذف نصب</string>
     <string name="restore">بازیابی</string>
     <string name="module_install">نصب</string>
     <string name="install">نصب</string>
     <string name="reboot">راه‌اندازی مجدد</string>
+    <string name="uninstalled">حذف نصب شد</string>
     <string name="settings">تنظیمات</string>
     <string name="reboot_userspace">راه‌اندازی نرم</string>
     <string name="reboot_recovery">راه‌اندازی به حالت ریکاوری</string>
@@ -96,6 +104,7 @@
     <string name="proceed">ادامه</string>
     <string name="cancel">لغو</string>
     <string name="later">بعداً</string>
+    <string name="lkm_warning_message">پچ LKM به اجزای منبع بسته وابسته است. آیا می‌خواهید ادامه دهید؟</string>
     <string name="home_next_kernelsu">🔥 ساخت بعدی</string>
     <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
     <string name="home_next_kernelsu_body">شاخه آزمایشی بعدی. آن را در گیت‌هاب بررسی کنید!</string>
@@ -129,6 +138,8 @@
     <string name="profile_selinux_domain">دامنه</string>
     <string name="profile_selinux_rules">قوانین</string>
     <string name="module_update">به‌روزرسانی</string>
+    <string name="module_update_available">به‌روزرسانی</string>
+    <string name="module_updated">به‌روزرسانی شد</string>
     <string name="module_downloading">در حال دانلود ماژول: %s</string>
     <string name="module_start_downloading">شروع دانلود: %s</string>
     <string name="new_version_available">نسخه جدید %s در دسترس است، برای ارتقا کلیک کنید.</string>
@@ -136,6 +147,10 @@
     <string name="close">بستن</string>
     <string name="force_stop_app">توقف اجباری</string>
     <string name="restart_app">راه‌اندازی مجدد</string>
+    <string name="settings_amoled_mode">حالت AMOLED</string>
+    <string name="settings_amoled_mode_summary">فعال‌سازی پوسته سیاه کامل برای نمایشگرهای AMOLED جهت کاهش خستگی چشم و صرفه‌جویی در باتری.</string>
+    <string name="restart_required">نیاز به راه‌اندازی مجدد</string>
+    <string name="restart_app_message">برای اعمال این تغییر، برنامه نیاز به راه‌اندازی مجدد دارد.</string>
     <string name="failed_to_update_sepolicy">به‌روزرسانی قوانین SELinux برای %s شکست خورد</string>
     <string name="su_not_allowed">اعطای دسترسی ویژه برای %s مجاز نیست</string>
     <string name="module_changelog">تغییرات</string>
@@ -165,6 +180,7 @@
     <string name="settings_check_update_summary">بررسی خودکار به‌روزرسانی‌ها هنگام باز کردن برنامه.</string>
     <string name="grant_root_failed">اعطای دسترسی ریشه شکست خورد!</string>
     <string name="action">اقدام</string>
+    <string name="webui">رابط وب</string>
     <string name="open">باز کردن</string>
     <string name="enable_web_debugging">فعال‌سازی اشکال‌زدایی وب‌ویو</string>
     <string name="enable_web_debugging_summary">می‌تواند برای اشکال‌زدایی رابط وب استفاده شود. لطفاً فقط در صورت نیاز فعال کنید.</string>
@@ -194,4 +210,26 @@
     <string name="settings_disable_su">غیرفعال کردن سازگاری su</string>
     <string name="settings_disable_su_summary">غیرفعال کردن موقت توانایی هر برنامه برای کسب دسترسی ریشه از طریق دستور su (فرآیندهای ریشه موجود تحت تأثیر قرار نمی‌گیرند).</string>
     <string name="settings_language">زبان</string>
+    <string name="system_default">پیش‌فرض سیستم</string>
+    <string name="settings_legacyui">استفاده از رابط کاربری قدیمی</string>
+    <string name="settings_legacyui_summary">تغییر به سبک رابط کاربری پیشین.</string>
+    <string name="settings_banner">فعال‌سازی بنرها</string>
+    <string name="settings_banner_summary">نمایش بنرهای پس‌زمینه برای ماژول‌ها.</string>
+    <string name="use_webuix">استفاده از WebUI X</string>
+    <string name="use_webuix_summary">استفاده از WebUI X به جای WebUI که از APIهای بیشتری پشتیبانی می‌کند.</string>
+    <string name="use_webuix_eruda">تزریق Eruda به WebUI X</string>
+    <string name="use_webuix_eruda_summary">تزریق کنسول اشکال‌زدایی به WebUI X برای آسان‌تر کردن اشکال‌زدایی. نیاز به فعال بودن اشکال‌زدایی وب دارد.</string>
+    <string name="customization">سفارشی‌سازی</string>
+    <string name="developer">توسعه‌دهنده</string>
+    <string name="sucompat_disabled">سازگاری SU غیرفعال است</string>
+    <string name="zygisk_required">نیاز به Zygisk</string>
+    <string name="zygisk_status">تزریق Zygisk</string>
+    <plurals name="home_superuser_count">
+        <item quantity="one">کاربر ویژه</item>
+        <item quantity="other">کاربران ویژه</item>
+    </plurals>
+    <plurals name="home_module_count">
+        <item quantity="one">ماژول</item>
+        <item quantity="other">ماژول‌ها</item>
+    </plurals>
 </resources>
