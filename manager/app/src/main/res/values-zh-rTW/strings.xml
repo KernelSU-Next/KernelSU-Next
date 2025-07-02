@@ -16,8 +16,6 @@
     <string name="lkm_alternative_suggestion">請使用 GKI 內核或手動將 KernelSU Next 整合到你的裝置。</string>
     <string name="home_working">工作中</string>
     <string name="home_working_version">版本: %d</string>
-    <string name="home_superuser_count">超級使用者數: %d</string>
-    <string name="home_module_count">模組數: %d</string>
     <string name="home_module_update_count">可升級模組: %d</string>
     <string name="home_failure">內核中未找到 KernelSU Next v2 簽名！ [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">請讓你的內核開發人員整合 KernelSU Next！</string>
@@ -225,4 +223,13 @@
     <string name="developer">開發人員設定</string>
     <string name="sucompat_disabled">SU 兼容被禁用</string>
     <string name="zygisk_required">需要 Zygisk</string>
+    <string name="zygisk_status">Zygisk 注入</string>
+    <plurals name="home_superuser_count">
+        <item quantity="one">超級使用者</item>
+        <item quantity="other">超級使用者</item>
+    </plurals>
+    <plurals name="home_module_count">
+        <item quantity="one">模組</item>
+        <item quantity="other">模組</item>
+    </plurals>
 </resources>
