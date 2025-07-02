@@ -43,7 +43,8 @@
     <string name="module_install_prompt_with_name">A következő modul(ok) lesznek telepítve: %1$s</string>
     <string name="module_sort_a_to_z">Rendezés (A → Z)</string>
     <string name="module_sort_z_to_a">Rendezés (Z → A)</string>
-    <string name="module_size_high_to_low">Rendezés (Magas → Alacsony)</string>
+    <string name="module_size_low_to_high">Rendezés (Kisebb → Nagyobb)</string>
+    <string name="module_size_high_to_low">Rendezés (Nagyobb → Kisebb)</string>
     <string name="uninstall">Eltávolítás</string>
     <string name="restore">Visszaállítás</string>
     <string name="module_install">Telepítés</string>
@@ -218,4 +219,5 @@
     <string name="use_webuix_eruda">Eruda injektálása a WebUI X-be</string>
     <string name="use_webuix_eruda_summary">Hibakeresési konzol injektálása a WebUI X-be a hibakeresés megkönnyítése érdekében. Ehhez a webes hibakeresést be kell kapcsolni.</string>
     <string name="customization">Testreszabás</string>
+    <string name="developer">Fejlesztői beállítások</string>
 </resources>
