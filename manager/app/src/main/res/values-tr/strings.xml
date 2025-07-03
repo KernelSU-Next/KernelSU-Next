@@ -16,8 +16,6 @@
     <string name="lkm_alternative_suggestion">GKI çekirdeğini kurun veya cihazınıza KernelSU Next entegre edin.</string>
     <string name="home_working">Çalışıyor</string>
     <string name="home_working_version">Sürüm: %d</string>
-    <string name="home_superuser_count">Süper kullanıcılar: %d</string>
-    <string name="home_module_count">Modüller: %d</string>
     <string name="home_module_update_count">Güncellemeler: %d</string>
     <string name="home_failure">Kernel\'de KernelSU Next v2 imzası bulunamadı! [ !KSU_NEXT || != boyut/hash ]</string>
     <string name="home_failure_tip">Kernel geliştiricinizden KernelSU Next\'i entegre etmesini isteyin!</string>
@@ -44,9 +42,11 @@
     <string name="module_failed_to_disable">Modül devre dışı bırakılamadı: %s</string>
     <string name="module_empty">Yüklü modül yok</string>
     <string name="module">Modüller</string>
-    <string name="module_install_prompt_with_name">%1$s modülünü yüklemeye devam etmek istiyor musunuz?</string>
-    <string name="module_sort_a_to_z">Sırala (A-Z)</string>
-    <string name="module_sort_z_to_a">Sırala (Z-A)</string>
+    <string name="module_install_prompt_with_name">Aşağıdaki modüller yüklenecek: %1$s</string>
+    <string name="module_sort_a_to_z">Sırala (A → Z)</string>
+    <string name="module_sort_z_to_a">Sırala (Z → A)</string>
+    <string name="module_size_low_to_high">Sırala (Küçükten → Büyüğe)</string>
+    <string name="module_size_high_to_low">Sırala (Büyükten → Küçüğe)</string>
     <string name="uninstall">Kaldır</string>
     <string name="restore">Geri Yükle</string>
     <string name="module_install">Yükle</string>
@@ -74,7 +74,7 @@
     <string name="module_update_json_empty">Boş</string>
     <string name="enable_developer_options">Geliştirici seçeneklerini etkinleştir</string>
     <string name="enable_developer_options_summary">Yalnızca geliştiriciler için geçerli olan gizli ayarları ve hata ayıklama bilgilerini göster.</string>
-    <string name="module_overlay_fs_not_available">OverlayFS kernel tarafından devre dışı bırakıldığı için modüller kullanılamaz.</string>
+    <string name="module_overlay_fs_not_available">OverlayFS kernel tarafından devre dışı bırakıldığı için modüller kullanılamaz!</string>
     <string name="refresh">Yenile</string>
     <string name="show_system_apps">Sistem uygulamalarını göster</string>
     <string name="hide_system_apps">Sistem uygulamalarını gizle</string>
@@ -138,6 +138,7 @@
     <string name="profile_selinux_domain">Etki Alanı</string>
     <string name="profile_selinux_rules">Kurallar</string>
     <string name="module_update">Güncelle</string>
+    <string name="module_update_available">Güncelle</string>
     <string name="module_updated">Güncellendi</string>
     <string name="module_downloading">Modül indiriliyor: %s</string>
     <string name="module_start_downloading">İndirmeye başla: %s</string>
@@ -209,11 +210,26 @@
     <string name="settings_disable_su">Su uyumluluğunu devre dışı bırak</string>
     <string name="settings_disable_su_summary">Geçici olarak herhangi bir uygulamanın su komutu aracılığıyla kök ayrıcalıkları elde etme yeteneğini devre dışı bırakır (mevcut kök süreçleri etkilenmez).</string>
     <string name="settings_language">Dil</string>
+    <string name="system_default">Sistem varsayılanı</string>
     <string name="settings_legacyui">Eski Arayüzü Kullan</string>
     <string name="settings_legacyui_summary">Önceki kullanıcı arayüzü stiline geç.</string>
+    <string name="settings_banner">Afişleri etkinleştir</string>
+    <string name="settings_banner_summary">Modüller için arka plan afişlerini göster.</string>
     <string name="use_webuix">WebUI X\'i kullanın</string>
     <string name="use_webuix_summary">Daha fazla API\'yi destekleyen WebUI yerine WebUI X kullanın</string>
     <string name="use_webuix_eruda">WebUI X\'e Eruda Enjekte Et</string>
     <string name="use_webuix_eruda_summary">Hata ayıklamayı kolaylaştırmak için WebUI X\'e bir debug konsolu enjekte edin. Web hata ayıklamanın açık olması gerekir.</string>
     <string name="customization">Özelleştirme</string>
+    <string name="developer">Geliştirici</string>
+    <string name="sucompat_disabled">SUCOMPAT DEVRE DIŞI</string>
+    <string name="zygisk_required">Zygisk gerekli</string>
+    <string name="zygisk_status">Zygisk enjeksiyonu</string>
+    <plurals name="home_superuser_count">
+        <item quantity="one">Süper kullanıcı</item>
+        <item quantity="other">Süper kullanıcılar</item>
+    </plurals>
+    <plurals name="home_module_count">
+        <item quantity="one">Modül</item>
+        <item quantity="other">Modüller</item>
+    </plurals>
 </resources>
