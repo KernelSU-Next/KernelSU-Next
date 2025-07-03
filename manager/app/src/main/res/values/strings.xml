@@ -224,6 +224,7 @@
     <string name="sucompat_disabled">SUCOMPAT DISABLED</string>
     <string name="zygisk_required">Zygisk required</string>
     <string name="zygisk_status">Zygisk injection</string>
+    <string name="zygisk_enabled">Enabled</string> 
     <plurals name="home_superuser_count">
         <item quantity="one">Superuser</item>
         <item quantity="other">Superusers</item>
