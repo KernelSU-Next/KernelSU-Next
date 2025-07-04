@@ -33,7 +33,7 @@
     <string name="home_manager_version">Phiên bản trình quản lý</string>
     <string name="home_abi">ABI</string>
     <string name="home_selinux_status">Trạng thái SELinux</string>
-    <string name="selinux_status_disabled">Vô hiệu hoá</string>
+    <string name="selinux_status_disabled">Disabled</string>
     <string name="selinux_status_enforcing">Enforcing</string>
     <string name="selinux_status_permissive">Permissive</string>
     <string name="selinux_status_unknown">Không xác định</string>
@@ -74,7 +74,7 @@
     <string name="module_update_json_empty">Trống</string>
     <string name="enable_developer_options">Tùy chọn nhà phát triển</string>
     <string name="enable_developer_options_summary">Hiển thị các cài đặt ẩn và thông tin gỡ lỗi chỉ dành cho nhà phát triển</string>
-    <string name="module_overlay_fs_not_available">Các module không khả dụng vì OverlayFS bị vô hiệu hóa trên Kernel</string>
+    <string name="module_overlay_fs_not_available">Các module không khả dụng vì OverlayFS bị vô hiệu hóa trên Kernel!</string>
     <string name="refresh">Làm mới</string>
     <string name="show_system_apps">Hiển thị ứng dụng hệ thống</string>
     <string name="hide_system_apps">Ẩn ứng dụng hệ thống</string>
@@ -152,7 +152,7 @@
     <string name="restart_required">Yêu cầu khởi động lại</string>
     <string name="restart_app_message">Cần khởi động lại app để thay đổi này có hiệu lực</string>
     <string name="failed_to_update_sepolicy">Cập nhật quy tắc SELinux cho %s thất bại</string>
-    <string name="su_not_allowed">Không được phép cấp quyền SU cho %s</string>
+    <string name="su_not_allowed">Không thể cấp quyền Superuser cho %s</string>
     <string name="module_changelog">Changelog</string>
     <string name="settings_profile_template">Mẫu Hồ sơ ứng dụng</string>
     <string name="settings_profile_template_summary">Quản lý mẫu cục bộ và trực tuyến của Hồ sơ ứng dụng</string>
@@ -223,4 +223,9 @@
     <string name="developer">Nhà phát triển</string>
     <string name="sucompat_disabled">ĐÃ VÔ HIỆU HÓA SUCOMPAT</string>
     <string name="zygisk_required">Yêu cầu Zygisk</string>
+    <string name="zygisk_status">Tiêm Zygisk</string>
+    <string name="home_superuser_count_singular">Superuser</string>
+    <string name="home_superuser_count_plural">Superusers</string>
+    <string name="home_module_count_singular">Module</string>
+    <string name="home_module_count_plural">Modules</string>
 </resources>
