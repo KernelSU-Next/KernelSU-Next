@@ -16,8 +16,6 @@
     <string name="lkm_alternative_suggestion">Instale o kernel GKI ou integre o KernelSU Next ao seu dispositivo.</string>
     <string name="home_working">Em execução</string>
     <string name="home_working_version">Versão: %d</string>
-    <string name="home_superuser_count">SuperUsuário(s)</string>
-    <string name="home_module_count">Módulo(s)</string>
     <string name="home_module_update_count">Atualizações: %d</string>
     <string name="home_failure">Assinatura KernelSU Next v2 não encontrada no kernel! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Peça ao seu desenvolvedor de kernel para integrar o KernelSU Next!</string>

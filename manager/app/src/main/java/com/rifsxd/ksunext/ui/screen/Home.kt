@@ -159,7 +159,11 @@ private fun SuperuserCard() {
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = pluralStringResource(R.plurals.home_superuser_count, count),
+                    text = if (count <= 1) {
+                        stringResource(R.string.home_superuser_count_singular)
+                    } else {
+                        stringResource(R.string.home_superuser_count_plural)
+                    },
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(
@@ -191,7 +195,11 @@ private fun ModuleCard() {
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = pluralStringResource(R.plurals.home_module_count, count),
+                    text = if (count <= 1) {
+                        stringResource(R.string.home_module_count_singular)
+                    } else {
+                        stringResource(R.string.home_module_count_plural)
+                    },
                     style = MaterialTheme.typography.bodySmall
                 )
                 Text(

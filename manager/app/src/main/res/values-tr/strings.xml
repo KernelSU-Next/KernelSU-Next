@@ -16,8 +16,6 @@
     <string name="lkm_alternative_suggestion">GKI çekirdeğini kurun veya cihazınıza KernelSU Next entegre edin.</string>
     <string name="home_working">Çalışıyor</string>
     <string name="home_working_version">Sürüm: %d</string>
-    <string name="home_superuser_count">Süper kullanıcılar: %d</string>
-    <string name="home_module_count">Modüller: %d</string>
     <string name="home_module_update_count">Güncellemeler: %d</string>
     <string name="home_failure">Kernel\'de KernelSU Next v2 imzası bulunamadı! [ !KSU_NEXT || != boyut/hash ]</string>
     <string name="home_failure_tip">Kernel geliştiricinizden KernelSU Next\'i entegre etmesini isteyin!</string>

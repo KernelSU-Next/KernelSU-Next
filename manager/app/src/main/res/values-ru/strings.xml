@@ -16,8 +16,6 @@
     <string name="lkm_alternative_suggestion">Установите GKI ядро или интегрируйте ядра рядом с вашим устройством.</string>
     <string name="home_working">Работает</string>
     <string name="home_working_version">Версия драйвера: %d</string>
-    <string name="home_superuser_count">Выдано прав</string>
-    <string name="home_module_count">Модулей</string>
     <string name="home_module_update_count">Обновлений: %d</string>
     <string name="home_failure">Подпись KernelSU Next v2 не найдена в ядре! [!KSU_NEXT || != size/hash]</string>
     <string name="home_failure_tip">Попросите вашего разработчика ядра интегрировать KernelSU Next!</string>

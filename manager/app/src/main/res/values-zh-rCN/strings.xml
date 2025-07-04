@@ -16,8 +16,6 @@
     <string name="lkm_alternative_suggestion">请使用 GKI 内核或手动将 KernelSU Next 集成到你的设备。</string>
     <string name="home_working">工作中</string>
     <string name="home_working_version">版本：%d</string>
-    <string name="home_superuser_count">超级用户数：%d</string>
-    <string name="home_module_count">模块数：%d</string>
     <string name="home_module_update_count">%d 个模块可更新！</string>
     <string name="home_failure">内核中未找到 KernelSU Next V2 签名！ [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">请让你的内核开发人员集成 KernelSU Next！</string>
