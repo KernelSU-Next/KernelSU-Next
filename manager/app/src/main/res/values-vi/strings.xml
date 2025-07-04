@@ -16,8 +16,6 @@
     <string name="lkm_alternative_suggestion">Cài đặt Kernel GKI hoặc tự nhúng KernelSU Next vào Kernel của bạn</string>
     <string name="home_working">Đang hoạt động</string>
     <string name="home_working_version">Phiên bản: %d</string>
-    <string name="home_superuser_count">Superuser(s)</string>
-    <string name="home_module_count">Module(s)</string>
     <string name="home_module_update_count">Cập nhật: %d</string>
     <string name="home_failure">Không tìm thấy chữ ký KernelSU Next v2 trong Kernel! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Yêu cầu nhà phát triển Kernel của bạn tích hợp KernelSU Next!</string>

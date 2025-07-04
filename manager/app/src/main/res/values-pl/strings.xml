@@ -16,8 +16,6 @@
     <string name="lkm_alternative_suggestion">Zainstaluj jądro GKI lub zintegruj KernelSU Next ze swoim urządzeniem.</string>
     <string name="home_working">Uruchomiony</string>
     <string name="home_working_version">Wersja: %d</string>
-    <string name="home_superuser_count">Superuserów: %d</string>
-    <string name="home_module_count">Modułów: %d</string>
     <string name="home_module_update_count">Aktualizacji: %d</string>
     <string name="home_failure">Nie znaleziono sygnatury KernelSU Next v2 w jądrze! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Poproś swojego programistę jądra o integrację KernelSU Next!</string>

@@ -15,8 +15,6 @@
     <string name="lkm_alternative_suggestion">Telepíts GKI kernelt, vagy integráld a KernelSU Next-et az eszközödbe.</string>
     <string name="home_working">Működik</string>
     <string name="home_working_version">Verzió: %d</string>
-    <string name="home_superuser_count">Superuserek: %d</string>
-    <string name="home_module_count">Modulok: %d</string>
     <string name="home_module_update_count">Frissítések: %d</string>
     <string name="home_failure">KernelSU Next v2 aláírás nem található a kernelben! [ !KSU_NEXT || != size/hash ]</string>
     <string name="home_failure_tip">Kérje meg kernel fejlesztőjét, hogy integrálja a KernelSU Next-et!</string>

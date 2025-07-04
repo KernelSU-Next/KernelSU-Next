@@ -39,9 +39,9 @@ class WebUIActivity : ComponentActivity() {
         val name = intent.getStringExtra("name")!!
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             @Suppress("DEPRECATION")
-            setTaskDescription(ActivityManager.TaskDescription("KSUNEXT - $name"))
+            setTaskDescription(ActivityManager.TaskDescription("WebUI-Next | $name"))
         } else {
-            val taskDescription = ActivityManager.TaskDescription.Builder().setLabel("KSUNEXT - $name").build()
+            val taskDescription = ActivityManager.TaskDescription.Builder().setLabel("WebUI-Next | $name").build()
             setTaskDescription(taskDescription)
         }
 

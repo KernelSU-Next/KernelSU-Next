@@ -1,6 +1,7 @@
 package com.rifsxd.ksunext.ui.webui;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Log;
 import android.webkit.WebResourceResponse;
 
@@ -15,7 +16,11 @@ import com.topjohnwu.superuser.io.SuFileInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
+
+import com.rifsxd.ksunext.ui.webui.MonetColorsProvider;
 
 /**
  * Handler class to open files from file system by root access
@@ -81,8 +86,11 @@ public final class SuFilePathHandler implements WebViewAssetLoader.PathHandler {
      *                  which files can be loaded.
      * @throws IllegalArgumentException if the directory is not allowed.
      */
+    private final Context mContext;
+
     public SuFilePathHandler(@NonNull Context context, @NonNull File directory, Shell rootShell) {
         try {
+            mContext = context;
             mDirectory = new File(getCanonicalDirPath(directory));
             if (!isAllowedInternalStorageDir(context)) {
                 throw new IllegalArgumentException("The given directory \"" + directory
@@ -130,6 +138,16 @@ public final class SuFilePathHandler implements WebViewAssetLoader.PathHandler {
     @WorkerThread
     @NonNull
     public WebResourceResponse handle(@NonNull String path) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if ("internal/colors.css".equals(path)) {
+                String css = MonetColorsProvider.INSTANCE.getColorsCss(mContext);
+                return new WebResourceResponse(
+                        "text/css",
+                        "utf-8",
+                        new ByteArrayInputStream(css.getBytes(StandardCharsets.UTF_8))
+                );
+            }
+        }
         try {
             File file = getCanonicalFileIfChild(mDirectory, path);
             if (file != null) {

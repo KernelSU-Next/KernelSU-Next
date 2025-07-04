@@ -460,7 +460,7 @@ fun getFileName(context: Context, uri: Uri): String {
 
 fun moduleBackupDir(): String? {
     val shell = getRootShell()
-    val baseBackupDir = "/sdcard/.ksunext/modules"
+    val baseBackupDir = "/data/adb/ksu/backup/modules"
     val resultBase = ShellUtils.fastCmd(shell, "mkdir -p $baseBackupDir").trim()
     if (resultBase.isNotEmpty()) return null
 
@@ -488,7 +488,7 @@ fun moduleBackup(): Boolean {
 
     val tarName = "modules_backup_$timestamp.tar"
     val tarPath = "/data/local/tmp/$tarName"
-    val internalBackupDir = "/sdcard/.ksunext/modules"
+    val internalBackupDir = "/data/adb/ksu/backup/modules"
     val internalBackupPath = "$internalBackupDir/$tarName"
 
     val tarCmd = "$BUSYBOX tar -cpf $tarPath -C /data/adb/modules $(ls /data/adb/modules)"
@@ -508,7 +508,7 @@ fun moduleBackup(): Boolean {
 fun moduleRestore(): Boolean {
     val shell = getRootShell()
 
-    val findTarCmd = "ls -t /sdcard/.ksunext/modules/modules_backup_*.tar 2>/dev/null | head -n 1"
+    val findTarCmd = "ls -t /data/adb/ksu/backup/modules/modules_backup_*.tar 2>/dev/null | head -n 1"
     val tarPath = ShellUtils.fastCmd(shell, findTarCmd).trim()
     if (tarPath.isEmpty()) return false
 
@@ -531,7 +531,7 @@ fun allowlistBackup(): Boolean {
 
     val tarName = "allowlist_backup_$timestamp.tar"
     val tarPath = "/data/local/tmp/$tarName"
-    val internalBackupDir = "/sdcard/.ksunext/allowlist"
+    val internalBackupDir = "/data/adb/ksu/backup/allowlist"
     val internalBackupPath = "$internalBackupDir/$tarName"
 
     val tarCmd = "$BUSYBOX tar -cpf $tarPath -C /data/adb/ksu .allowlist"
@@ -551,8 +551,8 @@ fun allowlistBackup(): Boolean {
 fun allowlistRestore(): Boolean {
     val shell = getRootShell()
 
-    // Find the latest allowlist tar backup in /sdcard/.ksunext/allowlist
-    val findTarCmd = "ls -t /sdcard/.ksunext/allowlist/allowlist_backup_*.tar 2>/dev/null | head -n 1"
+    // Find the latest allowlist tar backup in /data/adb/ksu/backup/allowlist
+    val findTarCmd = "ls -t /data/adb/ksu/backup/allowlist/allowlist_backup_*.tar 2>/dev/null | head -n 1"
     val tarPath = ShellUtils.fastCmd(shell, findTarCmd).trim()
     if (tarPath.isEmpty()) return false
 

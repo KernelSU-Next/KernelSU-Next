@@ -224,12 +224,8 @@
     <string name="sucompat_disabled">SUCOMPAT DISABLED</string>
     <string name="zygisk_required">Zygisk required</string>
     <string name="zygisk_status">Zygisk injection</string>
-    <plurals name="home_superuser_count">
-        <item quantity="one">Superuser</item>
-        <item quantity="other">Superusers</item>
-    </plurals>
-    <plurals name="home_module_count">
-        <item quantity="one">Module</item>
-        <item quantity="other">Modules</item>
-    </plurals>
+    <string name="home_superuser_count_singular">Superuser</string>
+    <string name="home_superuser_count_plural">Superusers</string>
+    <string name="home_module_count_singular">Module</string>
+    <string name="home_module_count_plural">Modules</string>
 </resources>

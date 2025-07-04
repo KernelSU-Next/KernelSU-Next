@@ -80,114 +80,30 @@ int main(int argc, char *argv[]) {
             printf("Invalid\n");
         }
 	} else if (strcmp(argv[1], "features") == 0) {
-		char *enabled_features_buf = malloc(getpagesize() * 2);
-		char *ptr_buf;
-		unsigned long enabled_features;
-		int str_len;
-
-		if (!enabled_features_buf) {
-			perror("malloc");
-			return -ENOMEM;
-		}
-		ptr_buf = enabled_features_buf;
-
-		prctl(KERNEL_SU_OPTION, CMD_SUSFS_SHOW_ENABLED_FEATURES, &enabled_features, NULL, &error);
-		if (!error) {
-			if (enabled_features & (1 << 0)) {
-				str_len = strlen("CONFIG_KSU_SUSFS_SUS_PATH\n");
-				strncpy(ptr_buf, "CONFIG_KSU_SUSFS_SUS_PATH\n", str_len);
-				ptr_buf += str_len;
-			}
-			if (enabled_features & (1 << 1)) {
-				str_len = strlen("CONFIG_KSU_SUSFS_SUS_MOUNT\n");
-				strncpy(ptr_buf, "CONFIG_KSU_SUSFS_SUS_MOUNT\n", str_len);
-				ptr_buf += str_len;
-			}
-			if (enabled_features & (1 << 2)) {
-				str_len = strlen("CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT\n");
-				strncpy(ptr_buf, "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT\n", str_len);
-				ptr_buf += str_len;
-			}
-			if (enabled_features & (1 << 3)) {
-				str_len = strlen("CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT\n");
-				strncpy(ptr_buf, "CONFIG_KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT\n", str_len);
-				ptr_buf += str_len;
-			}
-			if (enabled_features & (1 << 4)) {
-				str_len = strlen("CONFIG_KSU_SUSFS_SUS_KSTAT\n");
-				strncpy(ptr_buf, "CONFIG_KSU_SUSFS_SUS_KSTAT\n", str_len);
-				ptr_buf += str_len;
-			}
-			if (enabled_features & (1 << 5)) {
-				str_len = strlen("CONFIG_KSU_SUSFS_TRY_UMOUNT\n");
-				strncpy(ptr_buf, "CONFIG_KSU_SUSFS_TRY_UMOUNT\n", str_len);
-				ptr_buf += str_len;
-			}
-			if (enabled_features & (1 << 6)) {
-				str_len = strlen("CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT\n");
-				strncpy(ptr_buf, "CONFIG_KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT\n", str_len);
-				ptr_buf += str_len;
-			}
-			if (enabled_features & (1 << 7)) {
-				str_len = strlen("CONFIG_KSU_SUSFS_SPOOF_UNAME\n");
-				strncpy(ptr_buf, "CONFIG_KSU_SUSFS_SPOOF_UNAME\n", str_len);
-				ptr_buf += str_len;
-			}
-			if (enabled_features & (1 << 8)) {
-				str_len = strlen("CONFIG_KSU_SUSFS_ENABLE_LOG\n");
-				strncpy(ptr_buf, "CONFIG_KSU_SUSFS_ENABLE_LOG\n", str_len);
-				ptr_buf += str_len;
-			}
-			if (enabled_features & (1 << 9)) {
-				str_len = strlen("CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS\n");
-				strncpy(ptr_buf, "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS\n", str_len);
-				ptr_buf += str_len;
-			}
-			if (enabled_features & (1 << 10)) {
-				str_len = strlen("CONFIG_KSU_SUSFS_SPOOF_BOOTCONFIG\n");
-				strncpy(ptr_buf, "CONFIG_KSU_SUSFS_SPOOF_BOOTCONFIG\n", str_len);
-				ptr_buf += str_len;
-			}
-			if (enabled_features & (1 << 11)) {
-				str_len = strlen("CONFIG_KSU_SUSFS_OPEN_REDIRECT\n");
-				strncpy(ptr_buf, "CONFIG_KSU_SUSFS_OPEN_REDIRECT\n", str_len);
-				ptr_buf += str_len;
-			}
-			if (enabled_features & (1 << 12)) {
-				str_len = strlen("CONFIG_KSU_SUSFS_SUS_SU\n");
-				strncpy(ptr_buf, "CONFIG_KSU_SUSFS_SUS_SU\n", str_len);
-				ptr_buf += str_len;
-			}
-			if (enabled_features & (1 << 13)) {
-				str_len = strlen("CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT\n");
-				strncpy(ptr_buf, "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT\n", str_len);
-				ptr_buf += str_len;
-			}
-			printf("%s", enabled_features_buf);
-			free(enabled_features_buf);
-		} else {
-			printf("Invalid\n");
-		}
+		char *enabled_features;
+        size_t bufsize = getpagesize() * 2;
+        enabled_features = (char *)malloc(bufsize);
+        if (!enabled_features) {
+            perror("malloc");
+            return -ENOMEM;
+        }
+        prctl(KERNEL_SU_OPTION, CMD_SUSFS_SHOW_ENABLED_FEATURES, enabled_features, bufsize, &error);
+        if (!error) {
+            printf("%s", enabled_features);
+        } else {
+            printf("Invalid\n");
+        }
 	} else if (strcmp(argv[1], "support") == 0) {
-		unsigned long enabled_features;
-		int any_feature_enabled = 0;
-
-		prctl(KERNEL_SU_OPTION, CMD_SUSFS_SHOW_ENABLED_FEATURES, &enabled_features, NULL, &error);
-		if (!error) {
-			if (enabled_features & ((1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) |
-									(1 << 4) | (1 << 5) | (1 << 6) | (1 << 7) |
-									(1 << 8) | (1 << 9) | (1 << 10) | (1 << 11) |
-									(1 << 12) | (1 << 13))) {
-				any_feature_enabled = 1;
-			}
-			if (any_feature_enabled) {
-				printf("Supported\n");
-			} else {
-				printf("Unsupported\n");
-			}
-		} else {
-			printf("Unsupported\n");
-		}
+		char *enabled_features;
+        size_t bufsize = getpagesize() * 2;
+        enabled_features = (char *)malloc(bufsize);
+        if (!enabled_features) {
+            perror("malloc");
+            return -ENOMEM;
+        }
+        prctl(KERNEL_SU_OPTION, CMD_SUSFS_SHOW_ENABLED_FEATURES, enabled_features, bufsize, &error);
+        printf("%s\n", error || !strlen(enabled_features) ? "Unsupported" : "Supported");
+        free(enabled_features);
     } else if (argc == 3 && !strcmp(argv[1], "sus_su")) {
 		int last_working_mode = 0;
 		int target_working_mode;
