@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="issue_report_title">Having trouble?</string>
-  <string name="issue_report_body">Encountered a bug or have feedback?</string>
-  <string name="issue_report_body_2">Report it as soon as possible!</string>
-  <string name="issue_report_github">Report on GitHub</string>
-  <string name="issue_report_telegram">Contact via Telegram</string>
+  <string name="issue_report_title">Haben Sie Schwierigkeiten?</string>
+  <string name="issue_report_body">Ist ein Fehler aufgetreten, oder wollen Sie eine Rückmeldung senden?</string>
+  <string name="issue_report_body_2">Melden Sie es so schnell wie möglich!</string>
+  <string name="issue_report_github">Bericht über GitHub</string>
+  <string name="issue_report_telegram">Kontakt über Telegramm</string>
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
-  <string name="confirm">Confirm</string>
+  <string name="confirm">Bestätigen</string>
   <string name="app_name">KernelSU Next</string>
-  <string name="home">Home</string>
-  <string name="home_not_installed">Not installed</string>
-  <string name="home_click_to_install">Click to install</string>
-  <string name="lkm_mode_deprecated">LKM mode is now deprecated!</string>
-  <string name="lkm_alternative_suggestion">Install GKI kernel or integrate KernelSU Next to your device.</string>
-  <string name="home_working">Working</string>
+  <string name="home">Heim</string>
+  <string name="home_not_installed">Nicht installiert</string>
+  <string name="home_click_to_install">Klicken Sie hier, um zu installieren</string>
+  <string name="lkm_mode_deprecated">Der LKM -Modus ist jetzt veraltet!</string>
+  <string name="lkm_alternative_suggestion">Installieren Sie den GKI Kernel oder integrieren Sie Kernel Next in Ihrem Gerät.</string>
+  <string name="home_working">Arbeitet</string>
   <string name="home_working_version">Version: %d</string>
-  <string name="home_module_update_count">Updates: %d</string>
-  <string name="home_failure">KernelSU Next v2 signature not found in kernel! [ !KSU_NEXT || != size/hash ]</string>
-  <string name="home_failure_tip">Ask your kernel developer to integrate KernelSU Next!</string>
-  <string name="home_kernel">Kernel version</string>
+  <string name="home_module_update_count">Aktualisieren: %d</string>
+  <string name="home_failure">KernelSU Next v2 Signatur nicht gefunden im Kernel [ ! KSU_NEXT || != Größe/Hash ]</string>
+  <string name="home_failure_tip">Fragen Sie Ihren Entwickler KernelSU Next zu integrieren!</string>
+  <string name="home_kernel">Kernel Version</string>
   <string name="hook_mode">Hook mode</string>
   <string name="enable">Enable</string>
   <string name="disable">Disable</string>
