@@ -72,7 +72,7 @@
   <string name="module_version_code">Код версии</string>
   <string name="module_update_json">Json обновления</string>
   <string name="module_update_json_empty">Пусто</string>
-  <string name="enable_developer_options">Включить режим разработчика</string>
+  <string name="enable_developer_options">Режим разработчика</string>
   <string name="enable_developer_options_summary">Показывать скрытые настройки и отладочную информацию, предназначенную для разработчиков.</string>
   <string name="module_overlay_fs_not_available">Модули недоступны из-за отключенного OverlayFS в ядре!</string>
   <string name="refresh">Обновить</string>
