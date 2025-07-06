@@ -114,7 +114,7 @@
   <string name="home_experimental_kernelsu_body_point_2"> • لا ضمان: المطورون غير مسؤولين عن أي خسارة في البيانات أو تلف للنظام، أو أي عواقب أخرى ناجمة عن استخدامها.</string>
   <string name="home_experimental_kernelsu_body_point_3"> • لأغراض الاختبار فقط: موجهة للمستعملين الذين يفهمون المخاطر ويواجهون مشاكل مريحة في استكشاف الأخطاء وإصلاحها.</string>
   <string name="about_source_code">عرض الكود المصدر في %1$s</string>
-  <string name="profile">App Profile</string>
+  <string name="profile">ملف تعريف التطبيق</string>
   <string name="profile_default">الافتراضي</string>
   <string name="profile_template">قالب</string>
   <string name="profile_custom">مخصص</string>
@@ -229,5 +229,5 @@
   <string name="home_superuser_count_plural">مستخدم خارق</string>
   <string name="home_module_count_singular">وحدة</string>
   <string name="home_module_count_plural">وحدات</string>
-  <string name="module_backup_message">Backup currently installed modules.</string>
+  <string name="module_backup_message">نسخ احتياطي للوحدات المثبتة حالياً.</string>
 </resources>
