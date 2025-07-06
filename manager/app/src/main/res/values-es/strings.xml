@@ -20,7 +20,7 @@
   <string name="home_failure">¡Firma v2 de KernelSU Next no encontrada en el kernel! [ !KSU_NEXT || != size/hash ]</string>
   <string name="home_failure_tip">¡Pídele a tu desarrollador de kernel que integre KernelSU Next!</string>
   <string name="home_kernel">Versión del kernel</string>
-  <string name="hook_mode">Modo de gancho</string>
+  <string name="hook_mode">Método de intercepción</string>
   <string name="enable">Habilitar</string>
   <string name="disable">Deshabilitar</string>
   <string name="enabled">Activado</string>
@@ -94,7 +94,6 @@
   <string name="module_restore_message">Restaurar módulos desde una copia de seguridad reciente.</string>
   <string name="backup_restore">Copia de seguridad y Restauración</string>
   <string name="module_backup">Respaldar módulo</string>
-  <string name="module_backup_message">Respaldar los módulos instalados actualmente.</string>
   <string name="allowlist_restore">Restaurar lista de permitidos</string>
   <string name="allowlist_restore_message">Restaurar la lista de permitidos desde una copia de seguridad reciente.</string>
   <string name="allowlist_backup">Respaldar lista de permitidos</string>
@@ -115,7 +114,7 @@
   <string name="home_experimental_kernelsu_body_point_2"> • No hay garantía: los desarrolladores no son responsables de ninguna pérdida de datos, daños al sistema o otras consecuencias resultantes de su uso.</string>
   <string name="home_experimental_kernelsu_body_point_3"> • Solo para fines de prueba: destinado a usuarios que comprendan los riesgos y se sientan cómodos resolviendo problemas.</string>
   <string name="about_source_code">Ver el código fuente en %1$s</string>
-  <string name="profile">App Profile</string>
+  <string name="profile">Perfil de Aplicación</string>
   <string name="profile_default">Predeterminado</string>
   <string name="profile_template">Plantilla</string>
   <string name="profile_custom">Personalizado</string>
@@ -228,4 +227,5 @@
   <string name="home_superuser_count_plural">Superusuarios</string>
   <string name="home_module_count_singular">Módulo</string>
   <string name="home_module_count_plural">Módulos</string>
+  <string name="module_backup_message">Respaldar los módulos actualmente instalados.</string>
 </resources>
