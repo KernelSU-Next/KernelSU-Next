@@ -114,7 +114,7 @@
   <string name="home_experimental_kernelsu_body_point_2"> • 保証はありません。開発者は使用によって生じるデータの損失やシステムの破損、その他の問題についての責任を一切負いません。</string>
   <string name="home_experimental_kernelsu_body_point_3"> • テスト目的のみ。リスクを理解し、問題のトラブルシューティングに慣れているユーザーを対象としています。</string>
   <string name="about_source_code">%1$s でソースコードを見る</string>
-  <string name="profile">App Profile</string>
+  <string name="profile">アプリプロファイル</string>
   <string name="profile_default">デフォルト</string>
   <string name="profile_template">テンプレート</string>
   <string name="profile_custom">カスタム</string>
@@ -227,5 +227,5 @@
   <string name="home_superuser_count_plural">スーパーユーザー</string>
   <string name="home_module_count_singular">モジュール</string>
   <string name="home_module_count_plural">モジュール</string>
-  <string name="module_backup_message">Backup currently installed modules.</string>
+  <string name="module_backup_message">現在インストールされているモジュールをバックアップします。</string>
 </resources>
