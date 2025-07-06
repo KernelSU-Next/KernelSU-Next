@@ -87,7 +87,7 @@
   <string name="home_overlayfs_mount">OverlayFS</string>
   <string name="unavailable">Không khả dụng</string>
   <string name="use_overlay_fs">Sử dụng OverlayFS</string>
-  <string name="use_overlay_fs_summary">Gạt bật/tắt chuyển đổi giữa 2 phương thức OverlayFS và Magic Mount cho hệ thống</string>
+  <string name="use_overlay_fs_summary">Gạt bật/tắt chuyển đổi giữa hai phương thức OverlayFS và Magic Mount cho hệ thống</string>
   <string name="reboot_required">Yêu cầu khởi động lại</string>
   <string name="reboot_message">Thay đổi sẽ có hiệu lực sau khi khởi động lại. Khởi động lại ngay?</string>
   <string name="module_restore">Khôi phục module</string>
@@ -104,13 +104,13 @@
   <string name="cancel">Hủy bỏ</string>
   <string name="later">Để sau</string>
   <string name="lkm_warning_message">Bản vá LKM dựa trên mã nguồn đóng. Bạn có muốn tiếp tục không?</string>
-  <string name="home_next_kernelsu">🔥 Bản dựng tiếp theo</string>
+  <string name="home_next_kernelsu">🔥 Bản dựng Next</string>
   <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
-  <string name="home_next_kernelsu_body">Nhánh thử nghiệm tiếp theo. Hãy xem trên GitHub!</string>
+  <string name="home_next_kernelsu_body">Nhánh thử nghiệm của Next. Hãy xem trên GitHub!</string>
   <string name="home_experimental_kernelsu">⚠️ Cảnh báo nhánh thử nghiệm cho nhà phát triển!</string>
   <string name="home_experimental_kernelsu_repo">127.0.0.1</string>
-  <string name="home_experimental_kernelsu_body">KernelSU Next là một nhánh của KernelSU luôn có những thử nghiệm và cập nhật hàng ngày, nó có thể không ổn định</string>
-  <string name="home_experimental_kernelsu_body_point_1"> • Tự chịu trách nghiệm: crashes, những thứ kì lạ, không vào được một vài ứng dụng (ngân hàng),... có thể xảy ra </string>
+  <string name="home_experimental_kernelsu_body">KernelSU Next là một phiên bản không chính thức dựa trên KernelSU, luôn có những thử nghiệm và cập nhật hàng ngày, nó có thể không ổn định</string>
+  <string name="home_experimental_kernelsu_body_point_1"> • Tự chịu trách nghiệm: crashes, những thứ kì lạ, không vào được một vài ứng dụng (ngân hàng),... có thể xảy ra</string>
   <string name="home_experimental_kernelsu_body_point_2"> • Không bảo hành: Các nhà phát triển KernelSU Next và bên thứ ba sẽ không chịu trách nghiệm cho hardbrick, bootloop, mất dữ liệu,...</string>
   <string name="home_experimental_kernelsu_body_point_3"> • Dùng để thử nghiệm là chính: Chỉ dành cho những người có kỹ năng, kinh nghiệm và trải nghiệm</string>
   <string name="about_source_code">Xem mã nguồn tại %1$s</string>
