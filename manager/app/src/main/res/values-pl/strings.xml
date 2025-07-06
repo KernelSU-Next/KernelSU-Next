@@ -114,7 +114,7 @@
   <string name="home_experimental_kernelsu_body_point_2"> • Brak gwarancji: deweloperzy nie ponoszą odpowiedzialności za utratę danych, uszkodzenie systemu ani inne konsekwencje wynikające z jego użytkowania.</string>
   <string name="home_experimental_kernelsu_body_point_3"> • Tylko dla celów testowych: przeznaczone dla użytkowników, którzy rozumieją ryzyko i mają doświadczenie w rozwiązywaniu problemów.</string>
   <string name="about_source_code">Zobacz kod źródłowy na %1$s</string>
-  <string name="profile">App Profile</string>
+  <string name="profile">Profil aplikacji</string>
   <string name="profile_default">Domyślny</string>
   <string name="profile_template">Szablon</string>
   <string name="profile_custom">Własny</string>
@@ -227,5 +227,5 @@
   <string name="home_superuser_count_plural">Superuserzy</string>
   <string name="home_module_count_singular">Moduł</string>
   <string name="home_module_count_plural">Moduły</string>
-  <string name="module_backup_message">Backup currently installed modules.</string>
+  <string name="module_backup_message">Utwórz kopię zapasową obecnie zainstalowanych modułów.</string>
 </resources>
