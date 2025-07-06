@@ -94,7 +94,6 @@
   <string name="module_restore_message">Restore modules from recent backup.</string>
   <string name="backup_restore">Backup &amp; Restore</string>
   <string name="module_backup">Backup module</string>
-  <string name="module_backup_message">Backup currently installed modules.</string>
   <string name="allowlist_restore">Restore allowlist</string>
   <string name="allowlist_restore_message">Restore allowlist from recent backup.</string>
   <string name="allowlist_backup">Backup allowlist</string>
@@ -228,4 +227,5 @@
   <string name="home_superuser_count_plural">Superusers</string>
   <string name="home_module_count_singular">Module</string>
   <string name="home_module_count_plural">Modules</string>
+  <string name="module_backup_message">Backup currently installed modules.</string>
 </resources>
