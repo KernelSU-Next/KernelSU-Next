@@ -9,7 +9,7 @@
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
   <string name="confirm">Conferma</string>
   <string name="app_name">KernelSU Next</string>
-  <string name="home">Home</string>
+  <string name="home">Casa</string>
   <string name="home_not_installed">Non installato</string>
   <string name="home_click_to_install">Clicca per installare</string>
   <string name="lkm_mode_deprecated">La modalità LKM è ora obsoleta!</string>
