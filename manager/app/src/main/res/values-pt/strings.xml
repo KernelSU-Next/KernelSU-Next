@@ -94,7 +94,6 @@
   <string name="module_restore_message">Restaurar módulos do backup recente.</string>
   <string name="backup_restore">Backup e restaure</string>
   <string name="module_backup">Backup módulo</string>
-  <string name="module_backup_message">Fazer backup dos módulos instalados.</string>
   <string name="allowlist_restore">Restaurar lista de permissão</string>
   <string name="allowlist_restore_message">Restaurar permissões do backup recente.</string>
   <string name="allowlist_backup">Backup de permissões</string>
@@ -116,7 +115,7 @@ Prossiga com cautela.</string>
   <string name="home_experimental_kernelsu_body_point_2"> Sem garantia: os desenvolvedores não se responsabilizam por qualquer perda de dados, danos ao sistema ou outras consequências decorrentes do uso.</string>
   <string name="home_experimental_kernelsu_body_point_3"> Somente para fins de teste: destinado a usuários que entendem os riscos e se sentem confortáveis em solucionar problemas.</string>
   <string name="about_source_code">Ver código-fonte em %1$s</string>
-  <string name="profile">App Profile</string>
+  <string name="profile">Perfil do aplicativo</string>
   <string name="profile_default">Padrão</string>
   <string name="profile_template">Templete</string>
   <string name="profile_custom">Customizado</string>
@@ -229,4 +228,5 @@ Prossiga com cautela.</string>
   <string name="home_superuser_count_plural">Superusuários</string>
   <string name="home_module_count_singular">Módulo</string>
   <string name="home_module_count_plural">Módulos</string>
+  <string name="module_backup_message">Fazer backup dos módulos instalados.</string>
 </resources>
