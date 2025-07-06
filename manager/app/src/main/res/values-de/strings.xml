@@ -208,7 +208,7 @@
   <string name="log_saved">Protokolle gespeichert</string>
   <string name="send_log">Protokolle teilen</string>
   <string name="settings_disable_su">Kompatibilität für SU deaktivieren</string>
-  <string name="settings_disable_su_summary">Deaktivieren Sie vorübergehend die Fähigkeit einer App, über den Befehl ⁠SU Stammberechtigungen zu erhalten (vorhandene Stammprozesse sind nicht betroffen).</string>
+  <string name="settings_disable_su_summary">Deaktivieren Sie vorübergehend die Fähigkeit einer App, über den Befehl ⁠SU Stammberechtigungen zu erhalten (vorhandene Stammprozesse sind nicht betroffen). </string>
   <string name="settings_language">Sprache</string>
   <string name="system_default">System Standard</string>
   <string name="settings_legacyui">Verwenden Sie die ältere Benutzeroberfläche</string>
@@ -218,11 +218,11 @@
   <string name="use_webuix">Verwende WebUI X</string>
   <string name="use_webuix_summary">Verwende WebUI X anstelle von WebUI, das mehr APIs unterstützt.</string>
   <string name="use_webuix_eruda">Injizieren Sie Eruda in WebUI X</string>
-  <string name="use_webuix_eruda_summary">Injiziere eine debug Konsole in WebUI X, um das Debuggen zu erleichtern. Erfordert Web -Debugging.</string>
+  <string name="use_webuix_eruda_summary">Injiziere eine debug Konsole in WebUI X, um das Debuggen zu erleichtern. Erfordert Web -Debugging</string>
   <string name="customization">Anpassung</string>
   <string name="developer">Entwickler</string>
   <string name="sucompat_disabled">SUCOMPAT DEAKTIVIERT</string>
-  <string name="zygisk_required">Zygisk erforderlich</string>
+  <string name="zygisk_required">Zygisk erforderlich!</string>
   <string name="zygisk_status">Zygisk Injektion</string>
   <string name="home_superuser_count_singular">Superuser</string>
   <string name="home_superuser_count_plural">Superusers</string>
