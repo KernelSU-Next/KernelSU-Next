@@ -10,7 +10,7 @@
   <string name="confirm">تأكيد</string>
   <string name="app_name">KernelSU Next</string>
   <string name="home">الصفحة الرئيسية</string>
-  <string name="home_not_installed">لم يتم التثبيت</string>
+  <string name="home_not_installed">غير مثبت</string>
   <string name="home_click_to_install">إضغط للتثبيت</string>
   <string name="lkm_mode_deprecated">وضع LKM قد تم إهماله!</string>
   <string name="lkm_alternative_suggestion">قم بتثبيت نواة GKI أو دمج KernelSU Next في جهازك.</string>
@@ -52,7 +52,7 @@
   <string name="module_install">تثبيت</string>
   <string name="install">تثبيت</string>
   <string name="reboot">إعادة التشغيل</string>
-  <string name="uninstalled">تم الغاء التثبيت</string>
+  <string name="uninstalled">غير مثبت</string>
   <string name="settings">الإعدادت</string>
   <string name="reboot_userspace">إعادة تشغيل سريع</string>
   <string name="reboot_recovery">الاقلاع في وضع الاسترداد</string>
@@ -91,28 +91,27 @@
   <string name="reboot_required">مطلوب إعادة التشغيل</string>
   <string name="reboot_message">ستصبح التغييرات سارية المفعول بعد إعادة تشغيل النظام. هل تريد إعادة التشغيل الآن؟</string>
   <string name="module_restore">استعادة الوحدة</string>
-  <string name="module_restore_message">استعادة الوحدات النمطية من النسخة الاحتياطية الأخيرة.</string>
+  <string name="module_restore_message">استعادة الوحدات من النسخة الاحتياطية الأخيرة.</string>
   <string name="backup_restore">النسخ الاحتياطي والاستعادة</string>
   <string name="module_backup">نسخ احتياطي للوحدات</string>
-  <string name="module_backup_message">النسخ الاحتياطي للوحدات المثبتة حاليا.</string>
-  <string name="allowlist_restore">استعادة قائمة المسموح بها</string>
+  <string name="allowlist_restore">استعادة القائمة البيضاء</string>
   <string name="allowlist_restore_message">استعادة الوحدات النمطية من النسخة الاحتياطية الأخيرة.</string>
-  <string name="allowlist_backup">نسخ احتياطي لقائمة المسموح بها</string>
-  <string name="allowlist_backup_message">النسخ الاحتياطي لقائمة السماح المكونة حاليا.</string>
+  <string name="allowlist_backup">نسخ احتياطي للقائمة البيضاء</string>
+  <string name="allowlist_backup_message">النسخ الاحتياطي للقائمة البيضاء المُعدة حاليا.</string>
   <string name="warning">تحذير</string>
   <string name="warning_message">هذه الميزة لا تزال في المرحلة التجريبية و قيد التطوير. الرجاء التأكد من النسخ الاحتياطي لوحداتك قبل المتابعة. استخدم هذه الميزة فقط إذا كنت تفهم المخاطر المحتملة. المتابعة بحذر.</string>
   <string name="proceed">متابعة</string>
   <string name="cancel">إلغاء</string>
   <string name="later">لاحقاً</string>
-  <string name="lkm_warning_message">تصحيح LKM يعتمد على مكونات المصدر المغلقة. هل تريد الاستمرار؟</string>
+  <string name="lkm_warning_message">تصحيح LKM يعتمد على مكونات مغلقة المصدر. هل تريد الاستمرار؟</string>
   <string name="home_next_kernelsu">🔥 الاصدار التالي</string>
   <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
   <string name="home_next_kernelsu_body">الفرع التجريبي التالي. تحقق من ذلك على GitHub!</string>
   <string name="home_experimental_kernelsu">⚠️ تحذير التطوير التجريبي!</string>
   <string name="home_experimental_kernelsu_repo">127.0.0.1</string>
-  <string name="home_experimental_kernelsu_body">KernelSU Nextهي نسخة غير رسمية تخضع دائماً للتطوير التجريبي النشط. وهي تقدم كما هو، بدون ضمانات للاستقرار، أو الأداء، أو الموثوقية.</string>
-  <string name="home_experimental_kernelsu_body_point_1"> • استخدام على مسؤوليتك الخاصة: قد تحدث أعطال، أو سلوك غير متوقع، أو مشاكل في النظام.</string>
-  <string name="home_experimental_kernelsu_body_point_2"> • لا ضمان: لا يكون المطورون مسؤولين عن أي خسارة في البيانات أو تلف للنظام، أو أي عواقب أخرى ناجمة عن استخدامها.</string>
+  <string name="home_experimental_kernelsu_body">KernelSU Next هي نسخة غير رسمية تخضع دائماً للتطوير التجريبي النشط. وهي تقدم كما هي، بدون ضمانات للاستقرار، أو الأداء، أو الموثوقية.</string>
+  <string name="home_experimental_kernelsu_body_point_1"> • استخدمه على مسؤوليتك الخاصة: قد تحدث أعطال، أو سلوك غير متوقع، أو مشاكل في النظام.</string>
+  <string name="home_experimental_kernelsu_body_point_2"> • لا ضمان: المطورون غير مسؤولين عن أي خسارة في البيانات أو تلف للنظام، أو أي عواقب أخرى ناجمة عن استخدامها.</string>
   <string name="home_experimental_kernelsu_body_point_3"> • لأغراض الاختبار فقط: موجهة للمستعملين الذين يفهمون المخاطر ويواجهون مشاكل مريحة في استكشاف الأخطاء وإصلاحها.</string>
   <string name="about_source_code">عرض الكود المصدر في %1$s</string>
   <string name="profile">App Profile</string>
@@ -120,9 +119,9 @@
   <string name="profile_template">قالب</string>
   <string name="profile_custom">مخصص</string>
   <string name="profile_name">اسم ملف التعريف</string>
-  <string name="profile_namespace">تركيب مساحة الاسم</string>
-  <string name="profile_namespace_inherited">ورّث</string>
-  <string name="profile_namespace_global">عالمي</string>
+  <string name="profile_namespace">تحميل ال namespace</string>
+  <string name="profile_namespace_inherited">متوارث</string>
+  <string name="profile_namespace_global">عام</string>
   <string name="profile_namespace_individual">فردي</string>
   <string name="profile_groups">مجموعات</string>
   <string name="profile_capabilities">المُؤَهّلات</string>
@@ -140,10 +139,10 @@
   <string name="module_update">تحديث</string>
   <string name="module_update_available">تحديث</string>
   <string name="module_updated">محدث</string>
-  <string name="module_downloading">جاري تحميل الوحدة: %s</string>
+  <string name="module_downloading">جاري تنزيل الوحدة: %s</string>
   <string name="module_start_downloading">بدء التنزيل: %s</string>
   <string name="new_version_available">الإصدار الجديد: %s متاح ، انقر للتحديث.</string>
-  <string name="launch_app">البدء</string>
+  <string name="launch_app">تشغيل</string>
   <string name="close">إغلاق</string>
   <string name="force_stop_app">ايقاف اجباري</string>
   <string name="restart_app">إعادة تشغيل</string>
@@ -187,7 +186,7 @@
   <string name="direct_install">تثبيت مباشر (مستحسن)</string>
   <string name="select_file">اختر ملفا</string>
   <string name="install_inactive_slot">تثبيت إلى خانة غير نشطة (بعد OTA)</string>
-  <string name="install_inactive_slot_warning">سيتم **إجبار** جهازك على التمهيد إلى الفتحة غير النشطة الحالية بعد إعادة التشغيل!
+  <string name="install_inactive_slot_warning">سيتم **إجبار** جهازك على الاقلاع إلى الفتحة غير النشطة الحالية بعد إعادة التشغيل!
 \nاستخدم هذا الخيار فقط بعد انتهاء التحديث.
 \nأستمرار؟</string>
   <string name="install_next">التالي</string>
@@ -226,8 +225,9 @@
   <string name="sucompat_disabled">تعطيل العرض</string>
   <string name="zygisk_required">Zygisk مطلوب</string>
   <string name="zygisk_status">حقن Zygisk</string>
-  <string name="home_superuser_count_singular">مستخدم خارق</string>
+  <string name="home_superuser_count_singular">مستخدمون خارقون</string>
   <string name="home_superuser_count_plural">مستخدم خارق</string>
   <string name="home_module_count_singular">وحدة</string>
   <string name="home_module_count_plural">وحدات</string>
+  <string name="module_backup_message">Backup currently installed modules.</string>
 </resources>
