@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="issue_report_title">Schwierigkeiten haben?</string>
+  <string name="issue_report_title">Haben Sie Probleme?</string>
   <string name="issue_report_body">Ist ein Fehler aufgetreten, oder wollen Sie eine Rückmeldung senden?</string>
   <string name="issue_report_body_2">Melden Sie es so schnell wie möglich!</string>
   <string name="issue_report_github">Bericht über GitHub</string>
@@ -94,7 +94,6 @@
   <string name="module_restore_message">Stellen Sie Module aus jüngster Sicherung wieder her.</string>
   <string name="backup_restore">Sicherung &amp; Wiederherstellen</string>
   <string name="module_backup">Module sichern</string>
-  <string name="module_backup_message">Sicherung derzeit installierte Module.</string>
   <string name="allowlist_restore">Wiederherstellung der Zulassungsliste</string>
   <string name="allowlist_restore_message">Wiederherstellung der Zulassungsliste aus jüngster Sicherung.</string>
   <string name="allowlist_backup">Sicherung Zulassungsliste</string>
@@ -115,7 +114,7 @@
   <string name="home_experimental_kernelsu_body_point_2"> • Keine Garantie: Die Entwickler sind nicht verantwortlich für Datenverluste, Systemschäden oder andere Konsequenzen, die sich aus ihrer Verwendung ergeben.</string>
   <string name="home_experimental_kernelsu_body_point_3"> • Nur zu Testzwecken: für Benutzer, die die Risiken verstehen und Probleme mit der Fehlerbehebung beheben können.</string>
   <string name="about_source_code">Quellcode anzeigen unter %1$s</string>
-  <string name="profile">App Profile</string>
+  <string name="profile">App Profil</string>
   <string name="profile_default">Standard</string>
   <string name="profile_template">Vorlage</string>
   <string name="profile_custom">Maßgeschneidert</string>
@@ -187,7 +186,7 @@
   <string name="direct_install">Direktinstallation (empfohlen)</string>
   <string name="select_file">Wählen Sie eine Datei aus</string>
   <string name="install_inactive_slot">Installieren Sie in den inaktiven Steckplatz (nach OTA)</string>
-  <string name="install_inactive_slot_warning">Ihr Gerät wird **erzwungen** um nach einem Neustart auf den aktuellen inaktiven Steckplatz zu starten!\n Verwenden Sie diese Option nur nach Abschluss von OTA. \nContinue? </string>
+  <string name="install_inactive_slot_warning">Ihr Gerät wird **erzwungen** um nach einem Neustart auf den aktuellen inaktiven Steckplatz zu starten!\n Verwenden Sie diese Option nur nach Abschluss von OTA.\nContinue?</string>
   <string name="install_next">Next</string>
   <string name="select_file_tip">%1$s Partitionsabbild wird empfohlen</string>
   <string name="select_kmi">Wählen Sie KMI</string>
@@ -218,7 +217,7 @@
   <string name="use_webuix">Verwende WebUI X</string>
   <string name="use_webuix_summary">Verwende WebUI X anstelle von WebUI, das mehr APIs unterstützt.</string>
   <string name="use_webuix_eruda">Injizieren Sie Eruda in WebUI X</string>
-  <string name="use_webuix_eruda_summary">Injiziere eine debug Konsole in WebUI X, um das Debuggen zu erleichtern. Erfordert Web -Debugging</string>
+  <string name="use_webuix_eruda_summary">Injiziere eine Debug Konsole in WebUI X, um das Debuggen zu erleichtern. Erfordert Web Debugging.</string>
   <string name="customization">Anpassung</string>
   <string name="developer">Entwickler</string>
   <string name="sucompat_disabled">SUCOMPAT DEAKTIVIERT</string>
@@ -228,4 +227,5 @@
   <string name="home_superuser_count_plural">Superusers</string>
   <string name="home_module_count_singular">Modul</string>
   <string name="home_module_count_plural">Module</string>
+  <string name="module_backup_message">Sicherung derzeit installierter Module.</string>
 </resources>
