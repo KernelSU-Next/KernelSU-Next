@@ -94,7 +94,6 @@
   <string name="module_restore_message">Відновлення модулів з останнього бекапу.</string>
   <string name="backup_restore">Бекап &amp; Відновлення</string>
   <string name="module_backup">Бекап модуля</string>
-  <string name="module_backup_message">Бекап поточних встановлених модулів.</string>
   <string name="allowlist_restore">Відновити список дозволів</string>
   <string name="allowlist_restore_message">Відновити список дозволів з останнього бекапу.</string>
   <string name="allowlist_backup">Бекап списку дозволів</string>
@@ -115,7 +114,7 @@
   <string name="home_experimental_kernelsu_body_point_2"> • Попередження: розробники не несуть відповідальності за втрату даних, пошкодження системи або інші наслідки, викликані використанням.</string>
   <string name="home_experimental_kernelsu_body_point_3"> • Лише для тестування: призначено для користувачів, які розуміють ризики і готові вирішувати виникаючі проблеми.</string>
   <string name="about_source_code">Вихідний код на %1$s</string>
-  <string name="profile">App Profile</string>
+  <string name="profile">Профіль додатку</string>
   <string name="profile_default">Дефолт</string>
   <string name="profile_template">Шаблон</string>
   <string name="profile_custom">Налаштувати</string>
@@ -228,4 +227,5 @@
   <string name="home_superuser_count_plural">Суперкористувачі</string>
   <string name="home_module_count_singular">Модуль</string>
   <string name="home_module_count_plural">Модулі</string>
+  <string name="module_backup_message">Бекап поточних встановлених модулів.</string>
 </resources>
