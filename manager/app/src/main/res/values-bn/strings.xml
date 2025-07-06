@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="issue_report_title">কোন সমস্যা আছে?</string>
+  <string name="issue_report_title">সমস্যা হচ্ছে?</string>
   <string name="issue_report_body">কোনো ত্রুটির সম্মুখীন অথবা প্রতিক্রিয়া পেয়েছেন?</string>
   <string name="issue_report_body_2">ইহা দ্রুত রিপোর্ট করুন!</string>
   <string name="issue_report_github">গিটহাবে রিপোর্ট করুন</string>
