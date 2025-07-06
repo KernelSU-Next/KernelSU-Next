@@ -31,7 +31,7 @@
   <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Version d\'Android</string>
   <string name="home_manager_version">Version du gestionnaire</string>
-  <string name="home_abi">IBA (Interface binaire de l\'application)</string>
+  <string name="home_abi">IBA</string>
   <string name="home_selinux_status">Statut de SELinux</string>
   <string name="selinux_status_disabled">Désactivé</string>
   <string name="selinux_status_enforcing">Strict</string>
@@ -94,7 +94,6 @@
   <string name="module_restore_message">Restaurer les modules de la sauvegarde récente.</string>
   <string name="backup_restore">Sauvegarder &amp; Restaurer</string>
   <string name="module_backup">Modules de sauvegarde</string>
-  <string name="module_backup_message">Sauvegarder les modules actuellement installés.</string>
   <string name="allowlist_restore">Restaurer la liste d\'autorisations</string>
   <string name="allowlist_restore_message">Restaurer la liste d\'autorisations à partir de la sauvegarde récente.</string>
   <string name="allowlist_backup">Sauvegarde de la liste d\'autorisations</string>
@@ -230,4 +229,5 @@
   <string name="home_superuser_count_plural">Super-utilisateurs</string>
   <string name="home_module_count_singular">Module</string>
   <string name="home_module_count_plural">Modules</string>
+  <string name="module_backup_message">Sauvegarder les modules actuellement installés.</string>
 </resources>
