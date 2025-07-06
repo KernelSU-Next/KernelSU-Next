@@ -9,11 +9,11 @@
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
   <string name="confirm">Підтвердити</string>
   <string name="app_name">KernelSU Next</string>
-  <string name="home">KernelSU Next</string>
+  <string name="home">Головна</string>
   <string name="home_not_installed">Не встановлено</string>
   <string name="home_click_to_install">Натисніть, щоб встановити</string>
   <string name="lkm_mode_deprecated">Режим LKM тепер застарілий!</string>
-  <string name="lkm_alternative_suggestion">Встановіть ядро GKI або інтегруйте ядра поруч із вашим пристроєм.</string>
+  <string name="lkm_alternative_suggestion">Встановіть ядро GKI або інтегруйте KernelSU Next із вашим пристроєм.</string>
   <string name="home_working">Працює</string>
   <string name="home_working_version">Версія драйвера: %d</string>
   <string name="home_module_update_count">Оновлення: %d</string>
