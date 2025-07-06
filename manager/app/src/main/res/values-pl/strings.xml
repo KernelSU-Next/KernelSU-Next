@@ -87,7 +87,7 @@
   <string name="home_overlayfs_mount">OverlayFS</string>
   <string name="unavailable">Niedostępny</string>
   <string name="use_overlay_fs">Używaj OverlayFS</string>
-  <string name="use_overlay_fs_summary">Przełącz pomiędzy używaniem OverlayFS a Magic Mount jako system montowania KernelSU Next.</string>
+  <string name="use_overlay_fs_summary">Przełącz pomiędzy używaniem OverlayFS zamiast Magic Mount jako system montowania KernelSU Next.</string>
   <string name="reboot_required">Wymagany reboot</string>
   <string name="reboot_message">Zmiany zaczną obowiązywać po restarcie systemu. Czy chcesz teraz uruchomić ponownie system?</string>
   <string name="module_restore">Przywróć moduły z kopii zapasowej</string>
@@ -207,14 +207,14 @@
   <string name="save_log">Zapisz logi</string>
   <string name="log_saved">Logi zapisane</string>
   <string name="send_log">Udostępnij logi</string>
-  <string name="settings_disable_su">Wyłącz funkcjonalność su</string>
+  <string name="settings_disable_su">Wyłącz kompatybilność su</string>
   <string name="settings_disable_su_summary">Tymczasowo wyłącz wszystkim aplikacjom możliwość uzyskiwania uprawnień roota za pomocą polecenia su (Nie będzie to miało wpływu na istniejące procesy roota).</string>
   <string name="settings_language">Język</string>
   <string name="system_default">Domyślny systemowy</string>
   <string name="settings_legacyui">Używaj starszego interfejsu użytkownika</string>
   <string name="settings_legacyui_summary">Przełącz na poprzedni styl interfejsu użytkownika.</string>
   <string name="settings_banner">Włącz banery</string>
-  <string name="settings_banner_summary">Wyświetlaj banery w tle dla modułów.</string>
+  <string name="settings_banner_summary">Wyświetlaj banery modułów w tle.</string>
   <string name="use_webuix">Używaj WebUI X</string>
   <string name="use_webuix_summary">Używaj WebUI X zamiast WebUI, który obsługuje więcej interfejsów API.</string>
   <string name="use_webuix_eruda">Wstrzyknij Eruda do WebUI X</string>
