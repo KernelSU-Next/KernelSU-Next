@@ -17,7 +17,7 @@
   <string name="home_working">Работает</string>
   <string name="home_working_version">Версия драйвера: %d</string>
   <string name="home_module_update_count">Обновлений: %d</string>
-  <string name="home_failure">Подпись KernelSU-Next не найдена в ядре</string>
+  <string name="home_failure">Подпись KernelSU Next v2 не найдена в ядре! [ !KSU_NEXT || != size/hash ]</string>
   <string name="home_failure_tip">Напишите разработчику своего ядра, для интеграции KernelSU Next!</string>
   <string name="home_kernel">Версия ядра</string>
   <string name="hook_mode">Режим хуков</string>
@@ -26,7 +26,7 @@
   <string name="enabled">Включено</string>
   <string name="disabled">Выключено</string>
   <string name="susfs_supported">Доступно</string>
-  <string name="home_susfs">SusFS: %s</string>
+  <string name="home_susfs">SuSFS: %s</string>
   <string name="home_susfs_version">Версия SuSFS</string>
   <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Версия Android</string>
@@ -43,10 +43,10 @@
   <string name="module_empty">Нет установленных модулей</string>
   <string name="module">Модули</string>
   <string name="module_install_prompt_with_name">Следующие модули будут установлены: %1$s</string>
-  <string name="module_sort_a_to_z">Сортировать (А → Я)</string>
-  <string name="module_sort_z_to_a">Сортировать (Я → А)</string>
-  <string name="module_size_low_to_high">Сортировать (Меньше → Больше)</string>
-  <string name="module_size_high_to_low">Сортировать (Больше → Меньше)</string>
+  <string name="module_sort_a_to_z">По имени (А → Я)</string>
+  <string name="module_sort_z_to_a">По имени (Я → А)</string>
+  <string name="module_size_low_to_high">По размеру (1 → 9)</string>
+  <string name="module_size_high_to_low">По размеру (9 → 1)</string>
   <string name="uninstall">Удалить</string>
   <string name="restore">Восстановить</string>
   <string name="module_install">Установить</string>
@@ -72,7 +72,7 @@
   <string name="module_version_code">Код версии</string>
   <string name="module_update_json">Json обновления</string>
   <string name="module_update_json_empty">Пусто</string>
-  <string name="enable_developer_options">Режим разработчика</string>
+  <string name="enable_developer_options">Включить режим разработчика</string>
   <string name="enable_developer_options_summary">Показывать скрытые настройки и отладочную информацию, предназначенную для разработчиков.</string>
   <string name="module_overlay_fs_not_available">Модули недоступны из-за отключенного OverlayFS в ядре!</string>
   <string name="refresh">Обновить</string>
@@ -94,7 +94,6 @@
   <string name="module_restore_message">Восстановить модули из последней резервной копии.</string>
   <string name="backup_restore">Бэкапы и восстановление</string>
   <string name="module_backup">Бэкап модулей</string>
-  <string name="module_backup_message"></string>
   <string name="allowlist_restore">Восстановить списка прав</string>
   <string name="allowlist_restore_message">Восстановить список разрешений из последней резервной копии.</string>
   <string name="allowlist_backup">Бэкап списка прав</string>
@@ -105,7 +104,7 @@
   <string name="cancel">Отмена</string>
   <string name="later">Позже</string>
   <string name="lkm_warning_message">Патч LKM использует компоненты с закрытым исходным кодом. Хотите продолжить?</string>
-  <string name="home_next_kernelsu">🔥Версия Next</string>
+  <string name="home_next_kernelsu">🔥 Версия Next</string>
   <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
   <string name="home_next_kernelsu_body">Next - экспериментальная версия. Проверь её версию на GitHub!</string>
   <string name="home_experimental_kernelsu">⚠️ Предупреждение об экспериментальной разработке!</string>
@@ -115,7 +114,7 @@
   <string name="home_experimental_kernelsu_body_point_2"> • Предупреждение: разработчики не несут ответственности за потерю данных, повреждение системы или другие последствия, вызванные использованием.</string>
   <string name="home_experimental_kernelsu_body_point_3"> • Только для тестирования: предназначено для пользователей, которые понимают риски и готовы решать возникающие проблемы.</string>
   <string name="about_source_code">Исходный код на %1$s</string>
-  <string name="profile">App Profile</string>
+  <string name="profile">Профиль Приложения</string>
   <string name="profile_default">По умолчанию</string>
   <string name="profile_template">Шаблон</string>
   <string name="profile_custom">Настроить</string>
@@ -228,4 +227,5 @@
   <string name="home_superuser_count_plural">Выдано прав</string>
   <string name="home_module_count_singular">Модуль</string>
   <string name="home_module_count_plural">Модулей</string>
+  <string name="module_backup_message">Резервное копирование текущих установленных модулей.</string>
 </resources>
