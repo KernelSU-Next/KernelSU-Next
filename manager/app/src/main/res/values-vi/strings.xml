@@ -20,7 +20,7 @@
   <string name="home_failure">Không tìm thấy chữ ký KernelSU Next v2 trong Kernel! [ !KSU_NEXT || != size/hash ]</string>
   <string name="home_failure_tip">Yêu cầu nhà phát triển Kernel của bạn tích hợp KernelSU Next!</string>
   <string name="home_kernel">Phiên bản Kernel</string>
-  <string name="hook_mode">Chế độ móc</string>
+  <string name="hook_mode">Chế độ Hook</string>
   <string name="enable">Kích hoạt</string>
   <string name="disable">Vô hiệu hoá</string>
   <string name="enabled">Đã kích hoạt</string>
@@ -33,10 +33,10 @@
   <string name="home_manager_version">Phiên bản trình quản lý</string>
   <string name="home_abi">ABI</string>
   <string name="home_selinux_status">Trạng thái SELinux</string>
-  <string name="selinux_status_disabled">Disabled</string>
+  <string name="selinux_status_disabled">Đã vô hiệu hoá</string>
   <string name="selinux_status_enforcing">Enforcing</string>
   <string name="selinux_status_permissive">Permissive</string>
-  <string name="selinux_status_unknown">Unknown</string>
+  <string name="selinux_status_unknown">Không xác định</string>
   <string name="superuser">Superuser</string>
   <string name="module_failed_to_enable">Không thể kích hoạt mô-đun: %s</string>
   <string name="module_failed_to_disable">Không thể vô hiệu hóa mô-đun: %s</string>
@@ -46,7 +46,7 @@
   <string name="module_sort_a_to_z">Sắp xếp (A → Z)</string>
   <string name="module_sort_z_to_a">Sắp xếp (Z → A)</string>
   <string name="module_size_low_to_high">Sắp xếp (Nhỏ → Lớn)</string>
-  <string name="module_size_high_to_low">Sắp xếp (Cao → Nhỏ)</string>
+  <string name="module_size_high_to_low">Sắp xếp (Lớn → Nhỏ)</string>
   <string name="uninstall">Gỡ cài đặt</string>
   <string name="restore">Khôi phục</string>
   <string name="module_install">Cài đặt</string>
@@ -63,7 +63,7 @@
   <string name="module_uninstall_confirm">Bạn có THẬT SỰ muốn gỡ cài đặt module %s không?</string>
   <string name="module_uninstall_success">%s đã được gỡ cài đặt</string>
   <string name="module_uninstall_failed">Gỡ cài đặt thất bại: %s</string>
-  <string name="module_restore_confirm">Bạn có CHẮC CHẮN muốn khôi phục mô-đun %s không?</string>
+  <string name="module_restore_confirm">Bạn có CHẮC CHẮN muốn khôi phục module %s không?</string>
   <string name="module_restore_success">%s đã được khôi phục</string>
   <string name="module_restore_failed">Khôi phục thất bại: %s</string>
   <string name="module_version">Phiên bản</string>
@@ -81,7 +81,7 @@
   <string name="export_log">Xuất nhật ký</string>
   <string name="safe_mode">Chế độ an toàn</string>
   <string name="reboot_to_apply">Khởi động lại để có hiệu lực</string>
-  <string name="module_magisk_conflict">Các mô-đun bị vô hiệu hóa do xung đột với Magisk!</string>
+  <string name="module_magisk_conflict">Các module bị vô hiệu hóa do xung đột với Magisk!</string>
   <string name="home_mount_system">Cơ chế Mount</string>
   <string name="home_magic_mount">Magic Mount</string>
   <string name="home_overlayfs_mount">OverlayFS</string>
@@ -90,11 +90,11 @@
   <string name="use_overlay_fs_summary">Gạt bật/tắt chuyển đổi giữa 2 phương thức OverlayFS và Magic Mount cho hệ thống</string>
   <string name="reboot_required">Yêu cầu khởi động lại</string>
   <string name="reboot_message">Thay đổi sẽ có hiệu lực sau khi khởi động lại, khởi động ngay?</string>
-  <string name="module_restore">Khôi phục mô-đun</string>
-  <string name="module_restore_message">Khôi phục các mô-đun từ bản sao lưu gần nhất</string>
+  <string name="module_restore">Khôi phục module</string>
+  <string name="module_restore_message">Khôi phục các module từ bản sao lưu gần nhất</string>
   <string name="backup_restore">Sao lưu &amp; Khôi phục</string>
-  <string name="module_backup">Sao lưu mô-đun</string>
-  <string name="module_backup_message">Sao lưu các mô-đun hiện đang được cài đặt</string>
+  <string name="module_backup">Sao lưu module</string>
+  <string name="module_backup_message">Sao lưu các module hiện đang được cài đặt</string>
   <string name="allowlist_restore">Khôi phục danh sách cho phép</string>
   <string name="allowlist_restore_message">Khôi phục danh sách cho phép từ bản sao lưu gần nhất</string>
   <string name="allowlist_backup">Sao lưu danh sách cho phép</string>
@@ -107,7 +107,7 @@
   <string name="lkm_warning_message">Bản vá LKM dựa trên mã nguồn đóng. Bạn có muốn tiếp tục không?</string>
   <string name="home_next_kernelsu">🔥 Bản dựng tiếp theo</string>
   <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
-  <string name="home_next_kernelsu_body">Nhánh thử nghiệm của tiếp theo. Hãy xem trên GitHub!</string>
+  <string name="home_next_kernelsu_body">Nhánh thử nghiệm tiếp theo. Hãy xem trên GitHub!</string>
   <string name="home_experimental_kernelsu">⚠️ Cảnh báo nhánh thử nghiệm cho nhà phát triển!</string>
   <string name="home_experimental_kernelsu_repo">127.0.0.1</string>
   <string name="home_experimental_kernelsu_body">KernelSU Next là một nhánh của KernelSU luôn có những thử nghiệm và cập nhật hàng ngày, nó có thể không ổn định</string>
@@ -140,7 +140,7 @@
   <string name="module_update">Cập nhật</string>
   <string name="module_update_available">Cập nhật</string>
   <string name="module_updated">Đã cập nhật</string>
-  <string name="module_downloading">Đang tải xuống mô-đun: %s</string>
+  <string name="module_downloading">Đang tải xuống module: %s</string>
   <string name="module_start_downloading">Bắt đầu tải xuống: %s</string>
   <string name="new_version_available">Phiên bản mới %s đã có sẵn, nhấn để cập nhật</string>
   <string name="launch_app">Khởi chạy</string>
