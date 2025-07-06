@@ -94,7 +94,6 @@
   <string name="module_restore_message">從最近的備份中復原模組。</string>
   <string name="backup_restore">備份 &amp; 復原</string>
   <string name="module_backup">備份模組</string>
-  <string name="module_backup_message">備份當前已安裝的模組。</string>
   <string name="allowlist_restore">復原超級使用者列表</string>
   <string name="allowlist_restore_message">從最近的備份中復原超級使用者列表。</string>
   <string name="allowlist_backup">備份超級使用者列表</string>
@@ -115,7 +114,7 @@
   <string name="home_experimental_kernelsu_body_point_2"> • 無擔保：開發人員不對因使用而產生的任何數據丟失、系統損壞或其他後果負責。</string>
   <string name="home_experimental_kernelsu_body_point_3"> • 僅用於測試目的：它適用於了解風險並能輕鬆解決問題的使用者。</string>
   <string name="about_source_code">在 %1$s 查看原始碼</string>
-  <string name="profile">App Profile</string>
+  <string name="profile">應用程式設定檔</string>
   <string name="profile_default">預設</string>
   <string name="profile_template">模板</string>
   <string name="profile_custom">自訂</string>
@@ -219,7 +218,7 @@
   <string name="use_webuix_summary">使用更多受支持 API 的 WebUI X 而非 WebUI。</string>
   <string name="use_webuix_eruda">將 Eruda 注入到 WebUI X</string>
   <string name="use_webuix_eruda_summary">將除錯控制臺注入至 WebUI X 以方便除錯。需要啓用 Web 調試。</string>
-  <string name="customization">個人化</string>
+  <string name="customization">介面選項</string>
   <string name="developer">開發者</string>
   <string name="sucompat_disabled">SU 相容被禁用</string>
   <string name="zygisk_required">需要 Zygisk</string>
@@ -228,4 +227,5 @@
   <string name="home_superuser_count_plural">超級使用者</string>
   <string name="home_module_count_singular">模組</string>
   <string name="home_module_count_plural">模組</string>
+  <string name="module_backup_message">備份當前已安裝的模組。</string>
 </resources>
