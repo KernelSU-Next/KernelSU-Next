@@ -17,7 +17,7 @@
   <string name="home_working">Funktioniert</string>
   <string name="home_working_version">Version: %d</string>
   <string name="home_module_update_count">Aktualisierungen: %d</string>
-  <string name="home_failure">KernelSU Next v2 Signatur nicht gefunden im Kernel [ ! KSU_NEXT || != Größe/Hash ]</string>
+  <string name="home_failure">KernelSU Next v2 Signatur nicht gefunden im Kernel! [!KSU_NEXT || != Größe/Hash]</string>
   <string name="home_failure_tip">Fragen Sie Ihren Entwickler KernelSU Next zu integrieren!</string>
   <string name="home_kernel">Kernel Version</string>
   <string name="hook_mode">Hook Modus</string>
@@ -122,7 +122,7 @@
   <string name="profile_namespace">Einhängen namespace</string>
   <string name="profile_namespace_inherited">Geerbt</string>
   <string name="profile_namespace_global">Global</string>
-  <string name="profile_namespace_individual">Individual</string>
+  <string name="profile_namespace_individual">Individuell</string>
   <string name="profile_groups">Gruppen</string>
   <string name="profile_capabilities">Fähigkeiten</string>
   <string name="profile_selinux_context">SELinux Kontext</string>
@@ -131,7 +131,7 @@
   <string name="require_kernel_version">Der aktuelle KernelSU Next Version %1$d ist zu niedrig, als dass der Manager ordnungsgemäß funktioniert. Bitte aktualisieren Sie auf Version %2$d oder höher!</string>
   <string name="settings_umount_modules_default">Module aushängen</string>
   <string name="settings_umount_modules_default_summary">Der globale Standardwert für \"Module aushängen\" im App Profil. Wenn es aktiviert ist, werden alle Moduländerungen für Apps mit einem Profilsatz an das System entfernt.</string>
-  <string name="settings_susfs_toggle">Verstecken kprobes hook</string>
+  <string name="settings_susfs_toggle">Kprobes Hook ausblenden</string>
   <string name="settings_susfs_toggle_summary">Diese Option deaktiviert den von KSU erstellten KPROBES-Hook und aktiviert stattdessen den eingebetteten Nicht-K-Probes-Hook und implementiert die gleiche Funktionalität, die auf einen Nicht-GKI-Kernel angewendet wird, der KPROBE nicht unterstützt.</string>
   <string name="profile_umount_modules_summary">Durch Aktivieren dieser Option, wird zugelassen, dass KernelSU Next beliebig modifizierte Dateien durch die Module für diese App wiederherstellt.</string>
   <string name="profile_selinux_domain">Domain</string>
@@ -186,7 +186,7 @@
   <string name="direct_install">Direktinstallation (empfohlen)</string>
   <string name="select_file">Wählen Sie eine Datei aus</string>
   <string name="install_inactive_slot">Installieren Sie in den inaktiven Steckplatz (nach OTA)</string>
-  <string name="install_inactive_slot_warning">Ihr Gerät wird **erzwungen** um nach einem Neustart auf den aktuellen inaktiven Steckplatz zu starten!\n Verwenden Sie diese Option nur nach Abschluss von OTA.\nContinue?</string>
+  <string name="install_inactive_slot_warning">Ihr Gerät wird **gezwungen** nach einem Neustart auf den aktuellen inaktiven Steckplatz zu starten!\nVerwenden Sie diese Option nur nach Abschluss von OTA.\nWeitermachen?</string>
   <string name="install_next">Next</string>
   <string name="select_file_tip">%1$s Partitionsabbild wird empfohlen</string>
   <string name="select_kmi">Wählen Sie KMI</string>
