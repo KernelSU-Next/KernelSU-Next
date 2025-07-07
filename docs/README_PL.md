@@ -1,4 +1,4 @@
-[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | [Русский](README_RU.md) | [Українська](README_UA.md) | [ภาษาไทย](README_TH.md) | [Tiếng Việt](README_VI.md) | [Italiano](README_IT.md) | **Polski** | [Български](README_BG.md) | [日本語](README_JA.md)
+[English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | [Русский](README_RU.md) | [Українська](README_UA.md) | [ภาษาไทย](README_TH.md) | [Tiếng Việt](README_VI.md) | [Italiano](README_IT.md) | **Polski** | [Български](README_BG.md) | [日本語](README_JA.md) | [Español](README_ES.md)
 
 ---
 
@@ -87,3 +87,4 @@ Jeśli chciałbyś wesprzeć projekt:
 - [Diamorphine](https://github.com/m0nad/Diamorphine) – Techniki rootkit
 - [KernelSU](https://github.com/tiann/KernelSU) – Oryginalna baza, która umożliwiła powstanie KernelSU Next
 - [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs) – 💜 dla 5ec1cff za utrzymanie KernelSU przy życiu
+- [Crowdin Translators](https://crowdin.com/project/kernelsu-next/members) – 💬 Podziękowania dla wszystkich za pomoc w uczynieniu KernelSU Next wielojęzycznym!
