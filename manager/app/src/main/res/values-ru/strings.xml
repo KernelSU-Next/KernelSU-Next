@@ -45,8 +45,8 @@
   <string name="module_install_prompt_with_name">Следующие модули будут установлены: %1$s</string>
   <string name="module_sort_a_to_z">По имени (А → Я)</string>
   <string name="module_sort_z_to_a">По имени (Я → А)</string>
-  <string name="module_size_low_to_high">По размеру (1 → 9)</string>
-  <string name="module_size_high_to_low">По размеру (9 → 1)</string>
+  <string name="module_size_low_to_high">Сортировать (Меньше → Больше)</string>
+  <string name="module_size_high_to_low">Сортировать (Больше → Меньше)</string>
   <string name="uninstall">Удалить</string>
   <string name="restore">Восстановить</string>
   <string name="module_install">Установить</string>
@@ -223,8 +223,8 @@
   <string name="sucompat_disabled">SUCOMPAT ОТКЛЮЧЕН</string>
   <string name="zygisk_required">Требуется Zygisk</string>
   <string name="zygisk_status">Инжект Zygisk</string>
-  <string name="home_superuser_count_singular">Выдано право суперпользователя</string>
-  <string name="home_superuser_count_plural">Выданы права суперпользователей</string>
+  <string name="home_superuser_count_singular">Выдано право</string>
+  <string name="home_superuser_count_plural">Выдано прав</string>
   <string name="home_module_count_singular">Модуль</string>
   <string name="home_module_count_plural">Модулей</string>
   <string name="module_backup_message">Резервное копирование текущих установленных модулей.</string>
