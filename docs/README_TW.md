@@ -51,13 +51,14 @@ KernelSU Next 正式支持大多數從 **4.4 到 6.6** 的 Android 內核
 
 ## 📦 用法
 
-請遵循[安裝説明](https://kernelsu-next.github.io/webpage/pages/installation.html)進行操作
+請遵循[安裝説明](https://kernelsu-next.github.io/webpage/pages/installation.html)進行操作。
 
 ---
 
-## 🔐 安全性
+## 🏅 貢獻
 
-有關報告 KernelSU Next 漏洞的信息，請參閱 [SECURITY.md](/SECURITY.md)
+- 前往我們的 [Crowdin](https://crowdin.com/project/kernelsu-next) 為管理器提交翻譯！
+- 有關報告 KernelSU Next 漏洞的信息，請參閱 [SECURITY.md](/SECURITY.md)。
 
 ---
 
@@ -80,8 +81,8 @@ KernelSU Next 正式支持大多數從 **4.4 到 6.6** 的 Android 內核
 
 ## 🙏 鳴謝
 
-- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/)：KernelSU 的靈感.
-- [Magisk](https://github.com/topjohnwu/Magisk)：強大的 Root 工具.
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/)：KernelSU 的靈感。
+- [Magisk](https://github.com/topjohnwu/Magisk)：強大的 Root 工具。
 - [genuine](https://github.com/brevent/genuine/)：APK v2 簽名驗證。
 - [Diamorphine](https://github.com/m0nad/Diamorphine)：一些 Rootkit 技巧。
 - [KernelSU](https://github.com/tiann/KernelSU)：感謝 tiann，否則 KernelSU Next 根本不會存在。
