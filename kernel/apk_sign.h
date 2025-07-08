@@ -3,6 +3,6 @@
 
 #include <linux/types.h>
 
-bool is_manager_apk(char *path);
+bool ksu_is_manager_apk(char *path);
 
 #endif
