@@ -45,8 +45,8 @@
   <string name="module_install_prompt_with_name">将安装以下模块：%1$s</string>
   <string name="module_sort_a_to_z">按 A - Z 排序</string>
   <string name="module_sort_z_to_a">按 Z - A 排序</string>
-  <string name="module_size_low_to_high">按模块从小到大排序</string>
-  <string name="module_size_high_to_low">按模块从大到小排序</string>
+  <string name="module_size_low_to_high">按模块大小正序排序</string>
+  <string name="module_size_high_to_low">按模块大小倒序排序</string>
   <string name="uninstall">卸载</string>
   <string name="restore">还原</string>
   <string name="module_install">安装</string>
@@ -166,7 +166,7 @@
   <string name="app_profile_template_view">查看模板</string>
   <string name="app_profile_template_readonly">只读</string>
   <string name="app_profile_template_id_exist">模版 ID 已存在！</string>
-  <string name="app_profile_import_export">导入/导出</string>
+  <string name="app_profile_import_export">导入 / 导出</string>
   <string name="app_profile_import_from_clipboard">从剪贴板导入</string>
   <string name="app_profile_export_to_clipboard">导出到剪贴板</string>
   <string name="app_profile_template_export_empty">没有本地模板可供导出！</string>
