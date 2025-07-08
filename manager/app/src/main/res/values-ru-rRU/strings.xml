@@ -94,8 +94,8 @@
   <string name="module_restore_message">Восстановить модули из последней резервной копии.</string>
   <string name="backup_restore">Бэкапы и восстановление</string>
   <string name="module_backup">Бэкап модулей</string>
-  <string name="allowlist_restore">Восстановить списка прав</string>
-  <string name="allowlist_restore_message">Восстановить список разрешений из последней резервной копии.</string>
+  <string name="allowlist_restore">Восстановить список прав</string>
+  <string name="allowlist_restore_message">Восстановить список прав из последней резервной копии.</string>
   <string name="allowlist_backup">Бэкап списка разрешений</string>
   <string name="allowlist_backup_message">Резервное копирование текущего списка разрешений.</string>
   <string name="warning">Предупреждение</string>
@@ -223,7 +223,7 @@
   <string name="sucompat_disabled">SUCOMPAT ОТКЛЮЧЕН</string>
   <string name="zygisk_required">Требуется Zygisk</string>
   <string name="zygisk_status">Инжект Zygisk</string>
-  <string name="home_superuser_count_singular">Выдано прав</string>
+  <string name="home_superuser_count_singular">Выдано право</string>
   <string name="home_superuser_count_plural">Выдано прав</string>
   <string name="home_module_count_singular">Модуль</string>
   <string name="home_module_count_plural">Модулей</string>
