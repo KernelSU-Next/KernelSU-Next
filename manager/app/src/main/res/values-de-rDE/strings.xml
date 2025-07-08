@@ -56,9 +56,9 @@
   <string name="settings">Einstellungen</string>
   <string name="reboot_userspace">Schneller Neustart</string>
   <string name="reboot_recovery">Neustart ins Recovery</string>
-  <string name="reboot_bootloader">Neustart zum Bootloader</string>
+  <string name="reboot_bootloader">Neustart in den Bootloader</string>
   <string name="reboot_download">Neustart in den Download-Modus</string>
-  <string name="reboot_edl">Neustart zum Notfall-Download-Modus (EDL)</string>
+  <string name="reboot_edl">Neustart in den Notfall-Download-Modus (EDL)</string>
   <string name="about">Über</string>
   <string name="module_uninstall_confirm">Möchten Sie das Modul %s wirklich deinstallieren?</string>
   <string name="module_uninstall_success">%s deinstalliert</string>
@@ -82,7 +82,7 @@
   <string name="safe_mode">Abgesicherter Modus</string>
   <string name="reboot_to_apply">Neu starten, um wirksam zu werden</string>
   <string name="module_magisk_conflict">Module sind aufgrund eines Konflikts mit Magisk nicht verfügbar!</string>
-  <string name="home_mount_system">Einhäng Methode</string>
+  <string name="home_mount_system">Einhäng-Methode</string>
   <string name="home_magic_mount">Magic einhängen</string>
   <string name="home_overlayfs_mount">OverlayFS</string>
   <string name="unavailable">Nicht verfügbar</string>
@@ -114,7 +114,7 @@
   <string name="home_experimental_kernelsu_body_point_2"> • Keine Garantie: Die Entwickler sind nicht verantwortlich für Datenverluste, Systemschäden oder andere Folgen, die sich aus der Nutzung ergeben.</string>
   <string name="home_experimental_kernelsu_body_point_3"> • Nur zu Testzwecken: für Benutzer, die sich der Risiken bewusst sind und mit der Behebung von Problemen vertraut sind.</string>
   <string name="about_source_code">Quellcode anzeigen unter %1$s</string>
-  <string name="profile">App Profil</string>
+  <string name="profile">App-Profil</string>
   <string name="profile_default">Standard</string>
   <string name="profile_template">Vorlage</string>
   <string name="profile_custom">Benutzerdefiniert</string>
@@ -186,7 +186,7 @@
   <string name="direct_install">Direkte Installation (empfohlen)</string>
   <string name="select_file">Datei wählen</string>
   <string name="install_inactive_slot">Auf inaktive Partition installieren (nach OTA)</string>
-  <string name="install_inactive_slot_warning">Ihr Gerät wird **gezwungen**, nach einem Neustart in die aktuell inaktive Partition zu booten!\n Verwenden Sie diese Option nur, nachdem OTA abgeschlossen ist.\nFortfahren?</string>
+  <string name="install_inactive_slot_warning">Ihr Gerät wird **gezwungen**, nach einem Neustart in die aktuell inaktive Partition zu booten!\nVerwenden Sie diese Option nur, nachdem OTA abgeschlossen ist.\nFortfahren?</string>
   <string name="install_next">Weiter</string>
   <string name="select_file_tip">%1$s Partitionsabbild wird empfohlen</string>
   <string name="select_kmi">Wählen Sie KMI</string>
