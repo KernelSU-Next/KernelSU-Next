@@ -132,7 +132,7 @@
   <string name="settings_umount_modules_default">Umount modules</string>
   <string name="settings_umount_modules_default_summary">Giá trị mặc định chung cho \"Umount modules\" trong Hồ sơ ứng dụng. Nếu được bật, mọi thay đổi hệ thống do các module gây ra sẽ bị gỡ bỏ khỏi hệ thống và các ứng dụng chưa thiết lập hồ sơ</string>
   <string name="settings_susfs_toggle">Ẩn kprobes hook</string>
-  <string name="settings_susfs_toggle_summary">Tùy chọn này vô hiệu hoá kprobes hook do KernelSU tạo ra và thay vào đó sẽ kích hoạt nhúng non-kprobes hook, đảm bảo những Kernel Non-GKI(EOL) hoạt động ổn định</string>
+  <string name="settings_susfs_toggle_summary">Tùy chọn này sẽ vô hiệu hoá kprobes hook do KernelSU tạo ra và thay vào đó sẽ kích hoạt nhúng non-kprobes hook, đảm bảo những Kernel Non-GKI(EOL) hoạt động ổn định</string>
   <string name="profile_umount_modules_summary">Bật tùy chọn này sẽ cho phép KernelSU Next khôi phục mọi file đã được các module sửa đổi trong ứng dụng này</string>
   <string name="profile_selinux_domain">Tên miền</string>
   <string name="profile_selinux_rules">Quy tắc</string>
