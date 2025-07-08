@@ -363,7 +363,7 @@ module_param_cb(expected_manager_hash, &expected_hash_ops, &expected_manager_has
 
 #endif
 
-bool is_manager_apk(char *path)
+bool ksu_is_manager_apk(char *path)
 {
 	int tries = 0;
 
