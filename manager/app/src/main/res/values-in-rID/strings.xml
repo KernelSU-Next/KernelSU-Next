@@ -30,9 +30,9 @@
   <string name="home_susfs_version">Versi SuSFS</string>
   <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Versi android</string>
-  <string name="home_manager_version">Versi manager</string>
+  <string name="home_manager_version">Versi manajer</string>
   <string name="home_abi">ABI</string>
-  <string name="home_selinux_status">Status SElinux</string>
+  <string name="home_selinux_status">Status SELinu</string>
   <string name="selinux_status_disabled">Nonaktif</string>
   <string name="selinux_status_enforcing">Enforcing</string>
   <string name="selinux_status_permissive">Permissive</string>
