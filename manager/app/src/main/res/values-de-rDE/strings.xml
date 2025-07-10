@@ -3,7 +3,7 @@
   <string name="issue_report_title">Haben Sie Schwierigkeiten?</string>
   <string name="issue_report_body">Sind Sie auf einen Fehler gestoßen, oder wollen Sie eine Rückmeldung geben?</string>
   <string name="issue_report_body_2">Melden Sie es so schnell wie möglich!</string>
-  <string name="issue_report_github">Bericht über GitHub</string>
+  <string name="issue_report_github">Meldung über GitHub</string>
   <string name="issue_report_telegram">Kontakt über Telegram</string>
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
@@ -12,7 +12,7 @@
   <string name="home">Hauptseite</string>
   <string name="home_not_installed">Nicht installiert</string>
   <string name="home_click_to_install">Klicke zum Installieren</string>
-  <string name="lkm_mode_deprecated">Der LKM -Modus ist jetzt veraltet!</string>
+  <string name="lkm_mode_deprecated">Der LKM-Modus ist jetzt veraltet!</string>
   <string name="lkm_alternative_suggestion">Installieren Sie den GKI Kernel oder integrieren Sie KernelSU Next in Ihrem Gerät.</string>
   <string name="home_working">Funktioniert</string>
   <string name="home_working_version">Version: %d</string>
@@ -222,7 +222,7 @@
   <string name="developer">Entwickler</string>
   <string name="sucompat_disabled">SUCOMPAT DEAKTIVIERT</string>
   <string name="zygisk_required">Zygisk erforderlich</string>
-  <string name="zygisk_status">Zygisk Einbindung</string>
+  <string name="zygisk_status">Zygisk-Einbindung</string>
   <string name="home_superuser_count_singular">Superuser</string>
   <string name="home_superuser_count_plural">Superusers</string>
   <string name="home_module_count_singular">Modul</string>
