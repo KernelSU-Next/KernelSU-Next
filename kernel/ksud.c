@@ -201,7 +201,8 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 					first_arg, p, sizeof(first_arg));
 				pr_info("/system/bin/init first arg: %s\n",
 					first_arg);
-				if (!strcmp(first_arg, "second_stage")) {
+				if (!strcmp(first_arg, "second_stage") || 
+				    (argc == 2 && !strcmp(first_arg, ""))) {
 					pr_info("/system/bin/init second_stage executed\n");
 					apply_kernelsu_rules();
 					init_second_stage_executed = true;
