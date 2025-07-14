@@ -229,4 +229,7 @@
   <string name="home_module_count_singular">Modul</string>
   <string name="home_module_count_plural">Modul</string>
   <string name="module_backup_message">Cadangkan modul yang terinstal saat ini.</string>
+  <string name="module_sort_enabled_first">Urutkan (Diaktifkan lebih dulu)</string>
+  <string name="module_sort_action_first">Urutkan (Aksi lebih dulu)</string>
+  <string name="module_sort_webui_first">Urutkan (WebUI lebih dulu)</string>
 </resources>
