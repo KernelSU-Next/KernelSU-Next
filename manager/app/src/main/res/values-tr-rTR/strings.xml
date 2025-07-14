@@ -228,4 +228,7 @@
   <string name="home_module_count_singular">Modül</string>
   <string name="home_module_count_plural">Modüller</string>
   <string name="module_backup_message">Şu anda kurulu olan modülleri yedekleyin.</string>
+  <string name="module_sort_enabled_first">Sırala (Önce Etkin)</string>
+  <string name="module_sort_action_first">Sırala (Önce Eylem)</string>
+  <string name="module_sort_webui_first">Sırala (Önce WebUI)</string>
 </resources>
