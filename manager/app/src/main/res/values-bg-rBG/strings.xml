@@ -228,4 +228,7 @@
   <string name="home_module_count_singular">Модул</string>
   <string name="home_module_count_plural">Модули</string>
   <string name="module_backup_message">Архивиране на текущо инсталираните модули.</string>
+  <string name="module_sort_enabled_first">Сортиране (първо активирани)</string>
+  <string name="module_sort_action_first">Сортиране (първо действие)</string>
+  <string name="module_sort_webui_first">Сортиране (първо WebUI)</string>
 </resources>
