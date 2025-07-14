@@ -45,8 +45,8 @@
   <string name="module_install_prompt_with_name">即將安裝以下模組：%1$s</string>
   <string name="module_sort_a_to_z">按 A - Z 排序</string>
   <string name="module_sort_z_to_a">按 Z - A 排序</string>
-  <string name="module_size_low_to_high">按模組大小正序排序</string>
-  <string name="module_size_high_to_low">按模組大小倒序排序</string>
+  <string name="module_size_low_to_high">依模組大小正向排序</string>
+  <string name="module_size_high_to_low">依模組大小反向排序</string>
   <string name="uninstall">卸載</string>
   <string name="restore">還原</string>
   <string name="module_install">安裝</string>
@@ -228,4 +228,7 @@
   <string name="home_module_count_singular">模組</string>
   <string name="home_module_count_plural">模組</string>
   <string name="module_backup_message">備份當前已安裝的模組。</string>
+  <string name="module_sort_enabled_first">依啟用狀態優先排序</string>
+  <string name="module_sort_action_first">依支援執行腳本的模組優先排序</string>
+  <string name="module_sort_webui_first">依具備 WebUI 的模組優先排序</string>
 </resources>
