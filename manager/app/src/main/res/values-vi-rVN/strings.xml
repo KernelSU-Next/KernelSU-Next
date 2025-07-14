@@ -228,4 +228,7 @@
   <string name="home_module_count_singular">Module</string>
   <string name="home_module_count_plural">Modules</string>
   <string name="module_backup_message">Sao lưu các module hiện đang được cài đặt</string>
+  <string name="module_sort_enabled_first">Sắp xếp (Bật trước)</string>
+  <string name="module_sort_action_first">Sắp xếp (Khởi chạy trước)</string>
+  <string name="module_sort_webui_first">Sắp xếp (WebUI trước)</string>
 </resources>
