@@ -228,4 +228,7 @@
   <string name="home_module_count_singular">Modulo</string>
   <string name="home_module_count_plural">Moduli</string>
   <string name="module_backup_message">Esegue il backup dei moduli attualmente esistenti.</string>
+  <string name="module_sort_enabled_first">Ordina (prima Abilitato)</string>
+  <string name="module_sort_action_first">Ordina (prima Azione)</string>
+  <string name="module_sort_webui_first">Ordina (prima WebUI)</string>
 </resources>
