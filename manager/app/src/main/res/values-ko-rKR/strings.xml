@@ -228,4 +228,7 @@
   <string name="home_module_count_singular">모듈</string>
   <string name="home_module_count_plural">모듈</string>
   <string name="module_backup_message">현재 설치된 모듈을 백업</string>
+  <string name="module_sort_enabled_first">정렬 (활성화됨 우선)</string>
+  <string name="module_sort_action_first">정렬 (동작 우선)</string>
+  <string name="module_sort_webui_first">정렬 (WebUI 우선)</string>
 </resources>
