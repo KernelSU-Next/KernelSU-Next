@@ -228,4 +228,7 @@
   <string name="home_module_count_singular">Moduł</string>
   <string name="home_module_count_plural">Moduły</string>
   <string name="module_backup_message">Utwórz kopię zapasową obecnie zainstalowanych modułów.</string>
+  <string name="module_sort_enabled_first">Sort (Enabled first)</string>
+  <string name="module_sort_action_first">Sort (Action first)</string>
+  <string name="module_sort_webui_first">Sort (WebUI first)</string>
 </resources>
