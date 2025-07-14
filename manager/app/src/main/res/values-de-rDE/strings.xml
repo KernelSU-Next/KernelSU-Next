@@ -178,7 +178,7 @@
   <string name="settings_check_update">Nach Aktualisierungen suchen</string>
   <string name="settings_check_update_summary">Automatische Suche nach Updates beim Öffnen der App</string>
   <string name="grant_root_failed">Root-Zugriff konnte nicht gewährt werden!</string>
-  <string name="action">Aktivität</string>
+  <string name="action">Aktion</string>
   <string name="webui">WebUI</string>
   <string name="open">Öffnen</string>
   <string name="enable_web_debugging">WebView-Debugging einschalten</string>
@@ -228,4 +228,7 @@
   <string name="home_module_count_singular">Modul</string>
   <string name="home_module_count_plural">Module</string>
   <string name="module_backup_message">Sicherung der aktuell installierten Module.</string>
+  <string name="module_sort_enabled_first">Sortierung (aktivierte zuerst)</string>
+  <string name="module_sort_action_first">Sortierung (Aktion zuerst)</string>
+  <string name="module_sort_webui_first">Sortierung (WebUI zuerst)</string>
 </resources>
