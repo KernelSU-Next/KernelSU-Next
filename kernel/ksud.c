@@ -197,7 +197,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			const char __user *p = get_user_arg_ptr(*argv, 1);
 			if (p && !IS_ERR(p)) {
 				char first_arg[16];
-				ksu_strncpy_from_user_nofault(
+				ksu_strncpy_from_user_retry(
 					first_arg, p, sizeof(first_arg));
 				pr_info("/system/bin/init first arg: %s\n",
 					first_arg);
@@ -223,7 +223,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 			const char __user *p = get_user_arg_ptr(*argv, 1);
 			if (p && !IS_ERR(p)) {
 				char first_arg[16];
-				ksu_strncpy_from_user_nofault(
+				ksu_strncpy_from_user_retry(
 					first_arg, p, sizeof(first_arg));
 				pr_info("/init first arg: %s\n", first_arg);
 				if (!strcmp(first_arg, "--second-stage")) {
@@ -248,7 +248,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 					}
 					char env[256];
 					// Reading environment variable strings from user space
-					if (ksu_strncpy_from_user_nofault(
+					if (ksu_strncpy_from_user_retry(
 						    env, p, sizeof(env)) < 0)
 						continue;
 					// Parsing environment variable names and values
