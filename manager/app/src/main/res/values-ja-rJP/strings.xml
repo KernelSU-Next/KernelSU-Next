@@ -228,4 +228,7 @@
   <string name="home_module_count_singular">モジュール</string>
   <string name="home_module_count_plural">モジュール</string>
   <string name="module_backup_message">現在インストールされているモジュールをバックアップします。</string>
+  <string name="module_sort_enabled_first">並べ替え (有効を優先)</string>
+  <string name="module_sort_action_first">並べ替え (実行可能を優先)</string>
+  <string name="module_sort_webui_first">並べ替え (WebUIを優先)</string>
 </resources>
