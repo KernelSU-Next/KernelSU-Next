@@ -228,4 +228,7 @@
   <string name="home_module_count_singular">Модуль</string>
   <string name="home_module_count_plural">Модулі</string>
   <string name="module_backup_message">Бекап поточних встановлених модулів.</string>
+  <string name="module_sort_enabled_first">За статусом (Спочатку включені)</string>
+  <string name="module_sort_action_first">За статусом (Спочатку зі скриптом)</string>
+  <string name="module_sort_webui_first">За статусом (Спочатку з WebUI)</string>
 </resources>
