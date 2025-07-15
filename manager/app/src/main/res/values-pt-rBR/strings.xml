@@ -228,7 +228,7 @@
   <string name="home_module_count_singular">Módulo</string>
   <string name="home_module_count_plural">Módulos</string>
   <string name="module_backup_message">Fazer backup dos módulos instalados.</string>
-  <string name="module_sort_enabled_first">Sort (Enabled first)</string>
-  <string name="module_sort_action_first">Sort (Action first)</string>
-  <string name="module_sort_webui_first">Sort (WebUI first)</string>
+  <string name="module_sort_enabled_first">Ordenar (Habilitado primeiro)</string>
+  <string name="module_sort_action_first">Ordenar (exceto primeiro)</string>
+  <string name="module_sort_webui_first">Ordenar (WebUI primeiro)</string>
 </resources>
