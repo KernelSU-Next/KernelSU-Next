@@ -45,8 +45,8 @@
   <string name="module_install_prompt_with_name">Następujące moduły zostaną zainstalowane: %1$s</string>
   <string name="module_sort_a_to_z">Sortuj (A → Z)</string>
   <string name="module_sort_z_to_a">Sortuj (Z → A)</string>
-  <string name="module_size_low_to_high">Sortuj (Najmniejszy → Największy)</string>
-  <string name="module_size_high_to_low">Sortuj (Największy → Najmniejszy)</string>
+  <string name="module_size_low_to_high">Sortuj (Małe → Duże)</string>
+  <string name="module_size_high_to_low">Sortuj (Duże → Małe)</string>
   <string name="uninstall">Odinstaluj</string>
   <string name="restore">Przywróć</string>
   <string name="module_install">Zainstaluj</string>
@@ -228,7 +228,7 @@
   <string name="home_module_count_singular">Moduł</string>
   <string name="home_module_count_plural">Moduły</string>
   <string name="module_backup_message">Utwórz kopię zapasową obecnie zainstalowanych modułów.</string>
-  <string name="module_sort_enabled_first">Sort (Enabled first)</string>
-  <string name="module_sort_action_first">Sort (Action first)</string>
-  <string name="module_sort_webui_first">Sort (WebUI first)</string>
+  <string name="module_sort_enabled_first">Sortuj (najpierw włączone)</string>
+  <string name="module_sort_action_first">Sortuj (najpierw z Akcją)</string>
+  <string name="module_sort_webui_first">Sortuj (najpierw z WebUI)</string>
 </resources>
