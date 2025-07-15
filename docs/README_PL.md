@@ -27,7 +27,7 @@
 
 ---
 
-## 🚀 Funkcjonalności
+## 🚀 Funkcjonalność
 
 - Oparte na jądrze `su` i zarządzanie dostępem do roota.
 - System modułów oparty na [Magic Mount](https://topjohnwu.github.io/Magisk/details.html#magic-mount) i [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
