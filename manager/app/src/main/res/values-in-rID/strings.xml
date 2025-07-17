@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="issue_report_title">Ada kendala?</string>
+  <string name="issue_report_title">Memiliki masalah?</string>
   <string name="issue_report_body">Menemukan bug atau memiliki umpan balik?</string>
   <string name="issue_report_body_2">Laporkan sesegera mungkin!</string>
   <string name="issue_report_github">Laporkan di GitHub</string>
@@ -32,7 +32,7 @@
   <string name="home_android">Versi android</string>
   <string name="home_manager_version">Versi manajer</string>
   <string name="home_abi">ABI</string>
-  <string name="home_selinux_status">Status SELinu</string>
+  <string name="home_selinux_status">SELinux status</string>
   <string name="selinux_status_disabled">Nonaktif</string>
   <string name="selinux_status_enforcing">Enforcing</string>
   <string name="selinux_status_permissive">Permissive</string>
