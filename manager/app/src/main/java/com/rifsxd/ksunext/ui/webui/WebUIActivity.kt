@@ -96,7 +96,21 @@ class WebUIActivity : ComponentActivity() {
                     view: WebView,
                     request: WebResourceRequest
                 ): WebResourceResponse? {
-                    return webViewAssetLoader.shouldInterceptRequest(request.url)
+                    val url = request.url
+                    if (url.scheme.equals("ksu", ignoreCase = true) && url.host.equals("icon", ignoreCase = true)) {
+                        val packageName = url.path?.substring(1) 
+                        if (!packageName.isNullOrEmpty()) {
+                            val icon = AppIconUtil.loadAppIconSync(this@WebUIActivity, packageName, 512)
+                            if (icon != null) {
+                                val stream = java.io.ByteArrayOutputStream()
+                                icon.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+                                val inputStream = java.io.ByteArrayInputStream(stream.toByteArray())
+                                return WebResourceResponse("image/png", null, inputStream)
+                            }
+                        }
+                    }
+            
+                    return webViewAssetLoader.shouldInterceptRequest(url)
                 }
                 override fun onPageFinished(view: WebView?, url: String?) {
                     super.onPageFinished(view, url)
