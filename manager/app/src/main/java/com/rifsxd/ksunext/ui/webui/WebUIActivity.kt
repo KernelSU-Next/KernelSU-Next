@@ -97,6 +97,8 @@ class WebUIActivity : ComponentActivity() {
                     request: WebResourceRequest
                 ): WebResourceResponse? {
                     val url = request.url
+                    
+                    //POC: Handle ksu://icon/[packageName] to serve app icon via WebView
                     if (url.scheme.equals("ksu", ignoreCase = true) && url.host.equals("icon", ignoreCase = true)) {
                         val packageName = url.path?.substring(1) 
                         if (!packageName.isNullOrEmpty()) {
