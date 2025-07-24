@@ -231,4 +231,6 @@
   <string name="module_sort_enabled_first">정렬 (활성화됨 우선)</string>
   <string name="module_sort_action_first">정렬 (동작 우선)</string>
   <string name="module_sort_webui_first">정렬 (WebUI 우선)</string>
+  <string name="settings_global_namespace_mode">Global Namespace Mode</string>
+  <string name="settings_global_namespace_mode_summary">All root sessions use the global mount namespace</string>
 </resources>
