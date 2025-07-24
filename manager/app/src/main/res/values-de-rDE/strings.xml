@@ -231,4 +231,6 @@
   <string name="module_sort_enabled_first">Sortierung (aktivierte zuerst)</string>
   <string name="module_sort_action_first">Sortierung (Aktion zuerst)</string>
   <string name="module_sort_webui_first">Sortierung (WebUI zuerst)</string>
+  <string name="settings_global_namespace_mode">Globaler Namensraum-Modus</string>
+  <string name="settings_global_namespace_mode_summary">Alle Root-Sitzungen verwenden den globalen Mount-Namespace</string>
 </resources>
