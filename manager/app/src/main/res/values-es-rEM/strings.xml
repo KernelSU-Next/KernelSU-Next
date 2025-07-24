@@ -119,7 +119,7 @@
   <string name="profile_template">Plantilla</string>
   <string name="profile_custom">Personalizado</string>
   <string name="profile_name">Nombre de perfil</string>
-  <string name="profile_namespace">Espacio de nombres de montaje</string>
+  <string name="profile_namespace">Espacio de montaje aislado</string>
   <string name="profile_namespace_inherited">Heredado</string>
   <string name="profile_namespace_global">Global</string>
   <string name="profile_namespace_individual">Individual</string>
@@ -231,4 +231,6 @@
   <string name="module_sort_enabled_first">Ordenar (Activados Primero)</string>
   <string name="module_sort_action_first">Ordenar (Accionables primero)</string>
   <string name="module_sort_webui_first">Ordenar (WrbUI primero)</string>
+  <string name="settings_global_namespace_mode">Usar el Espacio de Montaje Aislado Global</string>
+  <string name="settings_global_namespace_mode_summary">Todas las sesiones root usan el espacio de montaje aislado global</string>
 </resources>
