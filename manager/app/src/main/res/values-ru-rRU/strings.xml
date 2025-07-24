@@ -100,7 +100,7 @@
   <string name="allowlist_backup_message">Резервное копирование текущего списка разрешений.</string>
   <string name="warning">Предупреждение</string>
   <string name="warning_message">Эта функция всё ещё находится в стадии бета-тестирования. Пожалуйста, убедитесь, что вы создали резервные копии модулей перед использованием. Используйте это только если понимаете возможные риски. Будьте осторожны.</string>
-  <string name="proceed">В процессе</string>
+  <string name="proceed">Продолжить</string>
   <string name="cancel">Отмена</string>
   <string name="later">Позже</string>
   <string name="lkm_warning_message">Патч LKM использует компоненты с закрытым исходным кодом. Хотите продолжить?</string>
@@ -117,7 +117,7 @@
   <string name="profile">Профиль Приложения</string>
   <string name="profile_default">По умолчанию</string>
   <string name="profile_template">Шаблон</string>
-  <string name="profile_custom">Настроить</string>
+  <string name="profile_custom">Пользовательский</string>
   <string name="profile_name">Имя профиля</string>
   <string name="profile_namespace">Пространство монтирования</string>
   <string name="profile_namespace_inherited">Унаследованный</string>
@@ -126,14 +126,14 @@
   <string name="profile_groups">Группы</string>
   <string name="profile_capabilities">Возможности</string>
   <string name="profile_selinux_context">Контекст SELinux</string>
-  <string name="profile_umount_modules">Отключить модули</string>
+  <string name="profile_umount_modules">Размонтировать модули</string>
   <string name="failed_to_update_app_profile">Не удалось обновить Профиль Приложения для %s</string>
   <string name="require_kernel_version">Текущая версия KernelSU Next %1$d слишком низкая для корректной работы менеджера. Пожалуйста, обновитесь до версии %2$d или выше!</string>
-  <string name="settings_umount_modules_default">Отключить модули</string>
-  <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Отключить модули\" в Профиле Приложения. Если включено, это удалит все модификации системы модулями для приложений без установленного профиля.</string>
+  <string name="settings_umount_modules_default">Размонтировать модули</string>
+  <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для опции \"Размонтировать модули\" в Шаблонах доступа. Если эта настройка включена, то все модификации, внесённые модулями, будут удалены для приложений без включённого root-доступа.</string>
   <string name="settings_susfs_toggle">Скрыть хук kprobes</string>
   <string name="settings_susfs_toggle_summary">Эта опция отключает хук kprobes, созданный ksu, и вместо него активирует встроенный хук без использования kprobes, реализующий ту же функциональность, которая применяется к ядрам без GKI, не поддерживающим kprobe.</string>
-  <string name="profile_umount_modules_summary">Включение этой опции позволит KernelSU Next восстанавливать любые изменённые модулями файлы для этого приложения.</string>
+  <string name="profile_umount_modules_summary">Если эта настройка включена, то все модификации, внесённые модулями, будут удалены для данного приложения.</string>
   <string name="profile_selinux_domain">Домен</string>
   <string name="profile_selinux_rules">Правила</string>
   <string name="module_update">Обновить</string>
@@ -153,8 +153,8 @@
   <string name="failed_to_update_sepolicy">Не удалось обновить правила SELinux для %s</string>
   <string name="su_not_allowed">Предоставление прав суперпользователя запрещено для: %s</string>
   <string name="module_changelog">Журнал изменений</string>
-  <string name="settings_profile_template">Шаблон Профиля Приложений</string>
-  <string name="settings_profile_template_summary">Управление локальными и онлайн шаблонами профилей приложений.</string>
+  <string name="settings_profile_template">Шаблоны доступа</string>
+  <string name="settings_profile_template_summary">Управление локальными и онлайн шаблонами root-доступа.</string>
   <string name="app_profile_template_create">Создать шаблон</string>
   <string name="app_profile_template_edit">Изменить шаблон</string>
   <string name="app_profile_template_id">ID</string>
@@ -231,4 +231,6 @@
   <string name="module_sort_enabled_first">По статусу (Сначала включённые)</string>
   <string name="module_sort_action_first">По статусу (Сначала со скриптом)</string>
   <string name="module_sort_webui_first">По статусу (Сначала с WebUI)</string>
+  <string name="settings_global_namespace_mode">Общее пространство имён</string>
+  <string name="settings_global_namespace_mode_summary">Все сессии пользователя root будут использовать общее пространство имён</string>
 </resources>
