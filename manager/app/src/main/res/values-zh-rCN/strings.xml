@@ -231,4 +231,6 @@
   <string name="module_sort_enabled_first">已启用优先</string>
   <string name="module_sort_action_first">可执行优先</string>
   <string name="module_sort_webui_first">支持 WebUI 优先</string>
+  <string name="settings_global_namespace_mode">Global Namespace Mode</string>
+  <string name="settings_global_namespace_mode_summary">All root sessions use the global mount namespace</string>
 </resources>
