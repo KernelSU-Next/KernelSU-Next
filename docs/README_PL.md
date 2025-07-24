@@ -87,5 +87,4 @@ Jeśli chciałbyś wesprzeć projekt:
 - [Genuine](https://github.com/brevent/genuine/) – Walidacja podpisu APK v2
 - [Diamorphine](https://github.com/m0nad/Diamorphine) – Techniki rootkit
 - [KernelSU](https://github.com/tiann/KernelSU) – Oryginalna baza, która umożliwiła powstanie KernelSU Next
-- [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs) – 💜 dla 5ec1cff za utrzymanie KernelSU przy życiu
-- [Crowdin Translators](https://crowdin.com/project/kernelsu-next/members) – 💬 Podziękowania dla wszystkich za pomoc w uczynieniu KernelSU Next wielojęzycznym!
+- [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs) – Za obsługę Magic Mount
