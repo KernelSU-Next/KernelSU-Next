@@ -231,4 +231,6 @@
   <string name="module_sort_enabled_first">並べ替え (有効を優先)</string>
   <string name="module_sort_action_first">並べ替え (実行可能を優先)</string>
   <string name="module_sort_webui_first">並べ替え (WebUIを優先)</string>
+  <string name="settings_global_namespace_mode">グローバル名前空間モード</string>
+  <string name="settings_global_namespace_mode_summary">すべての root セッションがグローバルマウント名前空間を使用します</string>
 </resources>
