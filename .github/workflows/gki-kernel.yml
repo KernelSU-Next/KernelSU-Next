@@ -199,7 +199,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/android-kernel/common
           echo "[+] Patch Kernel"
-          curl -L https://github.com/KernelSU-Next/kernel_patches/raw/main/syscall_hook/min_scope_syscall_hooks_v1.4.patch | patch -p1
+          curl -L https://github.com/KernelSU-Next/kernel_patches/raw/main/syscall_hook/min_scope_syscall_hooks_v1.4.patch | patch -p1 --fuzz=3
           echo "[+] Set Config"
           echo "CONFIG_KSU=y" >> ./arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_KPROBES_HOOK=n" >> ./arch/arm64/configs/gki_defconfig
