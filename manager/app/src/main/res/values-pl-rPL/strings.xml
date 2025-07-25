@@ -231,6 +231,6 @@
   <string name="module_sort_enabled_first">Sortuj (najpierw włączone)</string>
   <string name="module_sort_action_first">Sortuj (najpierw z Akcją)</string>
   <string name="module_sort_webui_first">Sortuj (najpierw z WebUI)</string>
-  <string name="settings_global_namespace_mode">Global Namespace Mode</string>
-  <string name="settings_global_namespace_mode_summary">All root sessions use the global mount namespace</string>
+  <string name="settings_global_namespace_mode">Tryb globalnej przestrzeni nazw</string>
+  <string name="settings_global_namespace_mode_summary">Wszystkie sesje roota używają globalnej przestrzeni nazw montowania</string>
 </resources>
