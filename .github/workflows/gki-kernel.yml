@@ -195,7 +195,8 @@ jobs:
             sed -i 's/needs unknown symbol/Dont abort when unknown symbol/g' build/kernel/*.sh || echo "No unknown symbol scripts found"
           fi
 
-      - name: Setup Syscall Hooks 
+      - name: Setup Syscall Hooks
+        if: ${{ inputs.build_lkm == false }}
         run: |
           cd $GITHUB_WORKSPACE/android-kernel/common
           echo "[+] Patch Kernel"
