@@ -231,6 +231,6 @@
   <string name="module_sort_enabled_first">Sırala (Önce etkin)</string>
   <string name="module_sort_action_first">Sırala (Önce eylem)</string>
   <string name="module_sort_webui_first">Sırala (Önce WebUI)</string>
-  <string name="settings_global_namespace_mode">Global Namespace Mode</string>
-  <string name="settings_global_namespace_mode_summary">All root sessions use the global mount namespace</string>
+  <string name="settings_global_namespace_mode">Küresel Ad Alanı Modu</string>
+  <string name="settings_global_namespace_mode_summary">Tüm kök oturumları genel bağlama ad alanını kullanır</string>
 </resources>
