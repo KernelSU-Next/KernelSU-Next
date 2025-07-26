@@ -231,6 +231,6 @@
   <string name="module_sort_enabled_first">依啟用狀態優先排序</string>
   <string name="module_sort_action_first">依支援執行優先排序</string>
   <string name="module_sort_webui_first">依具備 WebUI 優先排序</string>
-  <string name="settings_global_namespace_mode">Global Namespace Mode</string>
-  <string name="settings_global_namespace_mode_summary">All root sessions use the global mount namespace</string>
+  <string name="settings_global_namespace_mode">全域命名空間模式</string>
+  <string name="settings_global_namespace_mode_summary">所有 Root 工作階段皆使用全域掛載命名空間</string>
 </resources>
