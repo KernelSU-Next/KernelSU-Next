@@ -31,7 +31,7 @@
   <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Android 版本</string>
   <string name="home_manager_version">管理器版本</string>
-  <string name="home_abi">接口</string>
+  <string name="home_abi">ABI 类型</string>
   <string name="home_selinux_status">SELinux 状态</string>
   <string name="selinux_status_disabled">禁用</string>
   <string name="selinux_status_enforcing">严格模式</string>
@@ -232,5 +232,5 @@
   <string name="module_sort_action_first">排序 (可执行优先)</string>
   <string name="module_sort_webui_first">排序 (支持 WebUI 优先)</string>
   <string name="settings_global_namespace_mode">全局命名空间模式</string>
-  <string name="settings_global_namespace_mode_summary">所有 Root 会话均使用全局挂载命名空间</string>
+  <string name="settings_global_namespace_mode_summary">所有 Root 会话均使用全局挂载命名空间。</string>
 </resources>
