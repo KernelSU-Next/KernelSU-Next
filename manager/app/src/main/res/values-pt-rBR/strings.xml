@@ -53,7 +53,7 @@
   <string name="install">Instalar</string>
   <string name="reboot">Reiniciar</string>
   <string name="uninstalled">Desinstalado</string>
-  <string name="settings">Configurações</string>
+  <string name="settings">Ajustes</string>
   <string name="reboot_userspace">Reiniciar</string>
   <string name="reboot_recovery">Reiniciar em modo Recovery</string>
   <string name="reboot_bootloader">Reiniciar em modo Bootloader</string>
