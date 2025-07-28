@@ -216,13 +216,13 @@
   <string name="settings_banner_summary">Wyświetlaj banery modułów w tle.</string>
   <string name="use_webuix">Używaj WebUI X</string>
   <string name="use_webuix_summary">Używaj WebUI X zamiast WebUI, który obsługuje więcej interfejsów API.</string>
-  <string name="use_webuix_eruda">Wstrzyknij Eruda do WebUI X</string>
+  <string name="use_webuix_eruda">Wstrzykiwanie Eruda do WebUI X</string>
   <string name="use_webuix_eruda_summary">Wstrzyknij konsolę debugowania do WebUI X, aby ułatwić debugowanie. Wymagane jest aktywne debugowanie WebView.</string>
   <string name="customization">Personalizacja</string>
   <string name="developer">Programista</string>
   <string name="sucompat_disabled">SUCOMPAT NIEAKTYWNY</string>
   <string name="zygisk_required">Wymagany Zygisk</string>
-  <string name="zygisk_status">Wstrzyknięcie Zygisk</string>
+  <string name="zygisk_status">Wstrzykiwanie Zygisk</string>
   <string name="home_superuser_count_singular">Superuser</string>
   <string name="home_superuser_count_plural">Superuserzy</string>
   <string name="home_module_count_singular">Moduł</string>
