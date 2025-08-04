@@ -20,7 +20,7 @@
   <string name="home_failure">Firma v2 di KernelSU Next non trovata nel kernel! [ !KSU_NEXT || != size/hash ]</string>
   <string name="home_failure_tip">Chiedi allo sviluppatore del kernel d\'integrare KernelSU Next!</string>
   <string name="home_kernel">Versione kernel</string>
-  <string name="hook_mode">Modalità Hook</string>
+  <string name="hook_mode">Modalità hook</string>
   <string name="enable">Abilita</string>
   <string name="disable">Disabilita</string>
   <string name="enabled">Abilitato</string>
@@ -30,7 +30,7 @@
   <string name="home_susfs_version">Versione SuSFS</string>
   <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Versione Android</string>
-  <string name="home_manager_version">Versione Manager</string>
+  <string name="home_manager_version">Versione manager</string>
   <string name="home_abi">ABI</string>
   <string name="home_selinux_status">Stato SELinux</string>
   <string name="selinux_status_disabled">Disabilitato</string>
@@ -103,7 +103,7 @@
   <string name="proceed">Procedi</string>
   <string name="cancel">Annulla</string>
   <string name="later">Più tardi</string>
-  <string name="lkm_warning_message">La patch LKM si basa su codici vuoi continuare?</string>
+  <string name="lkm_warning_message">La patch LKM si basa su componenti closed source. Vuoi continuare?</string>
   <string name="home_next_kernelsu">🔥 Prossima build</string>
   <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
   <string name="home_next_kernelsu_body">Prossimo branch sperimentale. Provalo su GitHub!</string>
@@ -176,8 +176,8 @@
   <string name="app_profile_template_import_empty">Gli appunti sono vuoti!</string>
   <string name="module_changelog_failed">Recupero del changelog non riuscito: %s</string>
   <string name="settings_check_update">Controlla aggiornamenti</string>
-  <string name="settings_check_update_summary">Cerca automaticamente gli aggiornamenti all\'apertura dell\'applicazione.</string>
-  <string name="grant_root_failed">Impossibile concedere i permessi root! </string>
+  <string name="settings_check_update_summary">Cerca automaticamente gli aggiornamenti all\'apertura dell\'applicazione</string>
+  <string name="grant_root_failed">Impossibile concedere i permessi root!</string>
   <string name="action">Azione</string>
   <string name="webui">WebUI</string>
   <string name="open">Apri</string>
