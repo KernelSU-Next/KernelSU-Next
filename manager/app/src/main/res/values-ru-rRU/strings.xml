@@ -232,5 +232,5 @@
   <string name="module_sort_action_first">По статусу (Сначала со скриптом)</string>
   <string name="module_sort_webui_first">По статусу (Сначала с WebUI)</string>
   <string name="settings_global_namespace_mode">Общее пространство имён</string>
-  <string name="settings_global_namespace_mode_summary">Все сессии пользователя root будут использовать общее пространство имён</string>
+  <string name="settings_global_namespace_mode_summary">Все сессии пользователя root будут использовать общее пространство имён.</string>
 </resources>
