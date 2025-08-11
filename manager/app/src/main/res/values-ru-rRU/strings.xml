@@ -96,7 +96,7 @@
   <string name="module_backup">Бэкап модулей</string>
   <string name="allowlist_restore">Восстановить список прав</string>
   <string name="allowlist_restore_message">Восстановить список прав из последней резервной копии.</string>
-  <string name="allowlist_backup">Бэкап списка разрешений</string>
+  <string name="allowlist_backup">Бэкап списка прав</string>
   <string name="allowlist_backup_message">Резервное копирование текущего списка разрешений.</string>
   <string name="warning">Предупреждение</string>
   <string name="warning_message">Эта функция всё ещё находится в стадии бета-тестирования. Пожалуйста, убедитесь, что вы создали резервные копии модулей перед использованием. Используйте это только если понимаете возможные риски. Будьте осторожны.</string>
@@ -117,7 +117,7 @@
   <string name="profile">Профиль Приложения</string>
   <string name="profile_default">По умолчанию</string>
   <string name="profile_template">Шаблон</string>
-  <string name="profile_custom">Задать</string>
+  <string name="profile_custom">Настроить</string>
   <string name="profile_name">Имя профиля</string>
   <string name="profile_namespace">Пространство монтирования</string>
   <string name="profile_namespace_inherited">Унаследованный</string>
@@ -130,7 +130,7 @@
   <string name="failed_to_update_app_profile">Не удалось обновить Профиль Приложения для %s</string>
   <string name="require_kernel_version">Текущая версия KernelSU Next %1$d слишком низкая для корректной работы менеджера. Пожалуйста, обновитесь до версии %2$d или выше!</string>
   <string name="settings_umount_modules_default">Размонтировать модули</string>
-  <string name="settings_umount_modules_default_summary">Значение по умолчанию для параметра \"Размонтировать модули\" в профиле приложения. Если этот параметр включен, то все изменения, внесённые модулями, будут скрыты для приложений без заданного профиля или root-доступа.</string>
+  <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для параметра \"Размонтировать модули\" в Профиле Приложения. Если этот параметр включён, то все изменения, внесённые модулями, будут скрыты для приложений для приложений без установленного профиля.</string>
   <string name="settings_susfs_toggle">Скрыть хук kprobes</string>
   <string name="settings_susfs_toggle_summary">Эта опция отключает хук kprobes, созданный ksu, и вместо него активирует встроенный хук без использования kprobes, реализующий ту же функциональность, которая применяется к ядрам без GKI, не поддерживающим kprobe.</string>
   <string name="profile_umount_modules_summary">Если этот параметр включен, то все модификации, внесённые модулями, будут скрыты для данного приложения.</string>
@@ -153,7 +153,7 @@
   <string name="failed_to_update_sepolicy">Не удалось обновить правила SELinux для %s</string>
   <string name="su_not_allowed">Предоставление прав суперпользователя запрещено для: %s</string>
   <string name="module_changelog">Журнал изменений</string>
-  <string name="settings_profile_template">Шаблоны доступа</string>
+  <string name="settings_profile_template">Шаблон Профиля Приложений</string>
   <string name="settings_profile_template_summary">Управление локальными и онлайн шаблонами root-доступа.</string>
   <string name="app_profile_template_create">Создать шаблон</string>
   <string name="app_profile_template_edit">Изменить шаблон</string>
@@ -206,7 +206,7 @@
   <string name="save_log">Сохранить\nлоги</string>
   <string name="log_saved">Логи сохранены</string>
   <string name="send_log">Поделиться\nлогами</string>
-  <string name="settings_disable_su">Отключить совместимость с su</string>
+  <string name="settings_disable_su">Откл. совместимость с su</string>
   <string name="settings_disable_su_summary">Временно отключить возможность приложениям получать права root через команду su (существующие процессы с правами root не будут затронуты).</string>
   <string name="settings_language">Язык</string>
   <string name="system_default">Системный</string>
@@ -231,6 +231,6 @@
   <string name="module_sort_enabled_first">По статусу (Сначала включённые)</string>
   <string name="module_sort_action_first">По статусу (Сначала со скриптом)</string>
   <string name="module_sort_webui_first">По статусу (Сначала с WebUI)</string>
-  <string name="settings_global_namespace_mode">Общее пространство имён</string>
-  <string name="settings_global_namespace_mode_summary">Все сессии пользователя root будут использовать общее пространство имён.</string>
+  <string name="settings_global_namespace_mode">Общее пространство монтирования</string>
+  <string name="settings_global_namespace_mode_summary">Все сессии root используют одну файловую систему.</string>
 </resources>
