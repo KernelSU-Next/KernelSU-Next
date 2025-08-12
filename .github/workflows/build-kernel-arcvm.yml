@@ -66,7 +66,7 @@ jobs:
           sudo ln -s --force /usr/bin/clang++-$LLVM_VERSION /usr/bin/clang++
 
       - name: Checkout KernelSU-Next
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: KernelSU-Next
           fetch-depth: 0
