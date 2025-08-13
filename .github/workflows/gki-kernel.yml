@@ -82,7 +82,8 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
 
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v5
         with:
           path: KernelSU-Next
           fetch-depth: 0
@@ -96,7 +97,7 @@ jobs:
             echo "UPLOAD=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Setup kernel source
+      - name: Setup Kernel Source
         run: |
           echo "Free space:"
           df -h
@@ -148,7 +149,7 @@ jobs:
           repo status
           echo "[+] KernelSU-Next setup done."
 
-      - name: Symbol magic
+      - name: Symbol Magic
         run: |
           echo "[+] Export all symbol from abi_gki_aarch64.xml"
           COMMON_ROOT=$GITHUB_WORKSPACE/android-kernel/common
@@ -159,7 +160,7 @@ jobs:
           echo "[+] Add KernelSU-Next symbols"
           cat $KSU_ROOT/kernel/export_symbol.txt | awk '{sub("[ \t]+","");print "  "$0}' >> $SYMBOL_LIST
 
-      - name: Setup ccache
+      - name: Setup Ccache
         if: inputs.use_cache == true
         uses: hendrikmuhs/ccache-action@v1
         with:
@@ -207,7 +208,7 @@ jobs:
           echo "[+] Disable Config Check"
           sed -i 's/check_defconfig//' ./build.config.gki
 
-      - name: Make working directory clean to avoid dirty
+      - name: Make Working Directory Clean to Avoid Dirty
         working-directory: android-kernel
         run: |
           if [ -f ./common/BUILD.bazel ]; then
@@ -232,7 +233,7 @@ jobs:
             tools/bazel run --disk_cache=/home/runner/.cache/bazel --config=fast --config=stamp --lto=thin //common:kernel_aarch64_dist -- --dist_dir=dist
           fi
 
-      - name: Prepare artifacts
+      - name: Prepare Artifacts
         id: prepareArtifacts
         run: |
           OUTDIR=android-kernel/out/${{ inputs.version }}/dist

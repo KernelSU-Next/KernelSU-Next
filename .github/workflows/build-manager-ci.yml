@@ -26,11 +26,11 @@ jobs:
       cache-key: ${{ steps.generate-cache-key.outputs.cache-key }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      - name: Generate cache key from source files
+      - name: Generate Cache Key From Source Files
         id: generate-cache-key
         run: |
           # Calculate hash of all files except manager directory
@@ -42,7 +42,7 @@ jobs:
           echo "cache-key=artifacts-$HASH" >> $GITHUB_OUTPUT
           echo "Generated cache key: artifacts-$HASH"
 
-      - name: Check for cached artifacts
+      - name: Check for Cached Artifacts
         id: cache-artifacts
         uses: actions/cache@v4
         with:
@@ -91,27 +91,27 @@ jobs:
     if: needs.check-cache.outputs.cache-hit != 'true'
     runs-on: ubuntu-latest
     steps:
-      - name: Download susfsd artifacts
-        uses: actions/download-artifact@v4
+      - name: Download susfsd Artifacts
+        uses: actions/download-artifact@v5
         with:
           name: susfsd-linux-android
           path: cached-artifacts/susfsd
 
-      - name: Download ksud_overlayfs artifacts
-        uses: actions/download-artifact@v4
+      - name: Download ksud_overlayfs Artifacts
+        uses: actions/download-artifact@v5
         with:
           pattern: ksud_overlayfs-*
           path: cached-artifacts/ksud_overlayfs
           merge-multiple: true
 
-      - name: Download ksud_magic artifacts
-        uses: actions/download-artifact@v4
+      - name: Download ksud_magic Artifacts
+        uses: actions/download-artifact@v5
         with:
           pattern: ksud_magic-*
           path: cached-artifacts/ksud_magic
           merge-multiple: true
 
-      - name: Cache artifacts
+      - name: Cache Artifacts
         uses: actions/cache/save@v4
         with:
           path: |
@@ -130,7 +130,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -165,7 +165,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       # Restore cached artifacts if cache hit
-      - name: Restore cached artifacts
+      - name: Restore Cached Artifacts
         if: needs.check-cache.outputs.cache-hit == 'true'
         uses: actions/cache/restore@v4
         with:
@@ -178,7 +178,7 @@ jobs:
       # Download fresh artifacts if cache miss
       - name: Download susfsd
         if: needs.check-cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: susfsd-linux-android
           path: .
@@ -186,42 +186,42 @@ jobs:
       # Download fresh ksud artifacts if cache miss
       - name: Download arm64 ksud_overlayfs
         if: needs.check-cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ksud_overlayfs-aarch64-linux-android
           path: ksud_overlayfs
-          
+
       - name: Download arm ksud_overlayfs
         if: needs.check-cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ksud_overlayfs-armv7-linux-androideabi
           path: ksud_overlayfs
 
       - name: Download x86_64 ksud_overlayfs
         if: needs.check-cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ksud_overlayfs-x86_64-linux-android
           path: ksud_overlayfs
 
       - name: Download arm64 ksud_magic
         if: needs.check-cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ksud_magic-aarch64-linux-android
           path: ksud_magic
-          
+
       - name: Download arm ksud_magic
         if: needs.check-cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ksud_magic-armv7-linux-androideabi
           path: ksud_magic
-        
+
       - name: Download x86_64 ksud_magic
         if: needs.check-cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ksud_magic-x86_64-linux-android
           path: ksud_magic
@@ -232,7 +232,7 @@ jobs:
           mkdir -p app/src/main/jniLibs/arm64-v8a
           mkdir -p app/src/main/jniLibs/armeabi-v7a
           mkdir -p app/src/main/jniLibs/x86_64
-          
+
           if [ "${{ needs.check-cache.outputs.cache-hit }}" == "true" ]; then
             # Copy from cached artifacts
             cp -f ../cached-artifacts/susfsd/arm64-v8a/susfsd ../manager/app/src/main/jniLibs/arm64-v8a/libsusfsd.so

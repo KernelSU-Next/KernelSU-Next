@@ -1,4 +1,4 @@
-name: Clippy check
+name: Clippy Check
 
 on:
   push:

@@ -1,4 +1,5 @@
 name: Build SU
+
 on:
   push:
     branches: [ "next" ]
@@ -12,12 +13,14 @@ on:
       - 'userspace/su/**'
 jobs:
   build-su:
-    name: Build userspace su
+    name: Build userspace SU
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout Repository
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
+
     - name: Setup need_upload
       id: need_upload
       run: |
@@ -26,9 +29,11 @@ jobs:
         else
           echo "UPLOAD=false" >> $GITHUB_OUTPUT
         fi
-    - name: Build su
+
+    - name: Build SU
       working-directory: ./userspace/su
       run: $ANDROID_NDK/ndk-build
+
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v4
       with:

@@ -1,4 +1,5 @@
 name: Build Kernel - WSA
+
 on:
   push:
     branches: ["next"]

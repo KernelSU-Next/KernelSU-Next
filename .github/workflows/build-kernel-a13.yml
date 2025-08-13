@@ -1,4 +1,5 @@
 name: Build Kernel - Android 13
+
 on:
   push:
     branches: [ "next" ]
@@ -42,6 +43,9 @@ jobs:
           - version: "5.10"
             sub_level: 236
             os_patch_level: 2025-05
+          - version: "5.10"
+            sub_level: 238
+            os_patch_level: 2025-07
           - version: "5.15"
             sub_level: 149
             os_patch_level: 2024-07
@@ -63,6 +67,9 @@ jobs:
           - version: "5.15"
             sub_level: 180
             os_patch_level: 2025-05
+          - version: "5.15"
+            sub_level: 185
+            os_patch_level: 2025-07
     uses: ./.github/workflows/gki-kernel.yml
     secrets: inherit
     with:
@@ -84,19 +91,20 @@ jobs:
       COMMIT_URL: ${{ github.event.head_commit.url }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
+      - name: Download Artifacts
+        uses: actions/download-artifact@v5
 
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v5
         with:
           path: KernelSU-Next
           fetch-depth: 0
 
-      - name: List artifacts
+      - name: List Artifacts
         run: |
           tree
 
-      - name: Download prebuilt toolchain
+      - name: Download Prebuilt Toolchain
         run: |
           AOSP_MIRROR=https://android.googlesource.com
           BRANCH=main-kernel-build-2024
@@ -105,7 +113,7 @@ jobs:
           git clone $AOSP_MIRROR/platform/system/tools/mkbootimg -b $BRANCH --depth 1
           pip3 install telethon
 
-      - name: Set boot sign key
+      - name: Set Boot Sign Key
         env:
           BOOT_SIGN_KEY: ${{ secrets.BOOT_SIGN_KEY }}
         run: |
@@ -113,7 +121,7 @@ jobs:
             echo "$BOOT_SIGN_KEY" > ./kernel-build-tools/linux-x86/share/avb/testkey_rsa2048.pem
           fi
 
-      - name: Bot session cache
+      - name: Bot Session Cache
         id: bot_session_cache
         uses: actions/cache@v4
         if: false
@@ -121,7 +129,7 @@ jobs:
           path: scripts/ksunextbot.session
           key: ${{ runner.os }}-bot-session
 
-      - name: Build boot images
+      - name: Build Boot Images
         run: |
           export AVBTOOL=$GITHUB_WORKSPACE/kernel-build-tools/linux-x86/bin/avbtool
           export GZIP=$GITHUB_WORKSPACE/build-tools/path/linux-x86/gzip
@@ -134,10 +142,10 @@ jobs:
           cd -
           bash $GITHUB_WORKSPACE/KernelSU-Next/.github/scripts/build_a13.sh
 
-      - name: Display structure of boot files
+      - name: Display Structure of Boot Files
         run: ls -R
 
-      - name: Upload images artifact
+      - name: Upload Images Artifact
         uses: actions/upload-artifact@v4
         with:
           name: boot-images-android13
@@ -149,11 +157,11 @@ jobs:
       matrix:
         include:
           - version: "5.10"
-            sub_level: 236
-            os_patch_level: 2025-05
+            sub_level: 238
+            os_patch_level: 2025-07
           - version: "5.15"
-            sub_level: 180
-            os_patch_level: 2025-05
+            sub_level: 185
+            os_patch_level: 2025-07
     uses: ./.github/workflows/gki-kernel.yml
     with:
       version: android13-${{ matrix.version }}

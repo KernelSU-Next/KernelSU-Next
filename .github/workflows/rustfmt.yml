@@ -1,4 +1,4 @@
-name: Rustfmt check
+name: Rustfmt Check
 
 on:
   push:
@@ -23,18 +23,22 @@ jobs:
   format:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v5
 
-      - uses: dtolnay/rust-toolchain@nightly
+      - name: Setup Rustfmt
+        uses: dtolnay/rust-toolchain@nightly
         with:
           components: rustfmt
 
-      - uses: LoliGothick/rustfmt-check@master
+      - name: Rustfmt Check on ksud_magic
+        uses: LoliGothick/rustfmt-check@master
         with:
           token: ${{ github.token }}
           working-directory: userspace/ksud_magic
 
-      - uses: LoliGothick/rustfmt-check@master
+      - name: Rustfmt Check on ksud_overlayfs
+        uses: LoliGothick/rustfmt-check@master
         with:
           token: ${{ github.token }}
           working-directory: userspace/ksud_overlayfs

@@ -17,15 +17,17 @@ jobs:
     name: Build userspace susfsd
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout Repository
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
+
     - name: Build susfsd
       working-directory: ./userspace/susfsd
       run: $ANDROID_NDK/ndk-build
+
     - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: susfsd-linux-android
         path: ./userspace/susfsd/libs
-    
