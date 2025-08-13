@@ -310,7 +310,8 @@ pub fn restore(
 
     let skip_init = kmi.starts_with("android12-");
 
-    let (bootimage, bootdevice) = find_boot_image(&image, skip_init, false, false, workdir, &magiskboot)?;
+    let (bootimage, bootdevice) =
+        find_boot_image(&image, skip_init, false, false, workdir, &magiskboot)?;
 
     println!("- Unpacking boot image");
     let status = Command::new(&magiskboot)
@@ -573,8 +574,14 @@ fn do_patch(
 
     let skip_init = kmi.starts_with("android12-");
 
-    let (bootimage, bootdevice) =
-        find_boot_image(&image, skip_init, ota, is_replace_kernel, workdir, &magiskboot)?;
+    let (bootimage, bootdevice) = find_boot_image(
+        &image,
+        skip_init,
+        ota,
+        is_replace_kernel,
+        workdir,
+        &magiskboot,
+    )?;
 
     let bootimage = bootimage.display().to_string();
 
@@ -938,7 +945,11 @@ fn find_boot_image(
         }
 
         // try vendor_boot/vendor_ramdisk/init_boot.cpio
-        if selected_partition == &boot_partition && !is_replace_kernel && vendor_boot_exist && !skip_init {
+        if selected_partition == &boot_partition
+            && !is_replace_kernel
+            && vendor_boot_exist
+            && !skip_init
+        {
             if unpack_and_check_init(
                 magiskboot,
                 workdir,
@@ -951,7 +962,11 @@ fn find_boot_image(
         }
 
         // try vendor_boot/vendor_ramdisk/ramdisk.cpio
-        if selected_partition == &boot_partition && !is_replace_kernel && vendor_boot_exist && !skip_init {
+        if selected_partition == &boot_partition
+            && !is_replace_kernel
+            && vendor_boot_exist
+            && !skip_init
+        {
             if unpack_and_check_init(
                 magiskboot,
                 workdir,
