@@ -41,7 +41,7 @@
   <string name="module_failed_to_enable">Não foi possível ativar o módulo %s</string>
   <string name="module_failed_to_disable">Não foi possível desativar o módulo %s</string>
   <string name="module_empty">Nenhum módulo instalado</string>
-  <string name="module">Módulo</string>
+  <string name="module">Módulos</string>
   <string name="module_install_prompt_with_name">Os seguintes módulos serão instalados: %1$s</string>
   <string name="module_sort_a_to_z">Ordenar (A → Z)</string>
   <string name="module_sort_z_to_a">Organizar (Z → A)</string>
@@ -73,7 +73,7 @@
   <string name="module_update_json">UpdateJson</string>
   <string name="module_update_json_empty">Vazio</string>
   <string name="enable_developer_options">Ativar opções do desenvolvedor</string>
-  <string name="enable_developer_options_summary">Exibe as configurações ocultas e informações de depuração relevantes apenas para desenvolvedores.</string>
+  <string name="enable_developer_options_summary">Exibe ajustes ocultos e informações de depuração relevantes apenas para desenvolvedores.</string>
   <string name="module_overlay_fs_not_available">Os módulos estão indisponíveis porque OverlayFS está desabilitado pelo kernel!</string>
   <string name="refresh">Atualizar</string>
   <string name="show_system_apps">Mostrar apps do sistema</string>
@@ -97,7 +97,7 @@
   <string name="allowlist_restore">Restaurar lista de permissões</string>
   <string name="allowlist_restore_message">Restaure a lista de permissões de um backup recente.</string>
   <string name="allowlist_backup">Backup da lista de permissões</string>
-  <string name="allowlist_backup_message">Faça backup da lista de permissões configurada atualmente.</string>
+  <string name="allowlist_backup_message">Faça backup da lista de permissões atual.</string>
   <string name="warning">Aviso</string>
   <string name="warning_message">Este recurso ainda está em beta e em desenvolvimento. Certifique-se de fazer backup de seus módulos antes de continuar. Use esse recurso somente se você compreender os riscos potenciais. Proceda com cautela.</string>
   <string name="proceed">Prosseguir</string>
@@ -231,6 +231,6 @@
   <string name="module_sort_enabled_first">Ordenar (Habilitado primeiro)</string>
   <string name="module_sort_action_first">Ordenar (exceto primeiro)</string>
   <string name="module_sort_webui_first">Ordenar (WebUI primeiro)</string>
-  <string name="settings_global_namespace_mode">Global Namespace Mode</string>
-  <string name="settings_global_namespace_mode_summary">All root sessions use the global mount namespace</string>
+  <string name="settings_global_namespace_mode">Modo de namespace global</string>
+  <string name="settings_global_namespace_mode_summary">Todas as sessões raiz usam o namespace de montagem global</string>
 </resources>
