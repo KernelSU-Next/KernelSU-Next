@@ -74,6 +74,7 @@ Jeśli chciałbyś wesprzeć projekt:
 
 - **USDT (BEP20, ERC20)**: `0x12b5224b7aca0121c2f003240a901e1d064371c1`
 - **USDT (TRC20)**: `TYUVMWGTcnR5svnDoX85DWHyqUAeyQcdjh`
+- **USDT (SOL)**: `A4wqBXYd6Ey4nK4SJ2bmjeMgGyaLKT9TwDLh8BEo8Zu6`
 - **ETH (ERC20)**: `0x12b5224b7aca0121c2f003240a901e1d064371c1`
 - **LTC**: `Ld238uYBuRQdZB5YwdbkuU6ektBAAUByoL`
 - **BTC**: `19QgifcjMjSr1wB2DJcea5cxitvWVcXMT6`
