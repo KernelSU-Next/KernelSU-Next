@@ -170,7 +170,7 @@
   <string name="app_profile_import_from_clipboard">Nhập từ bộ nhớ tạm</string>
   <string name="app_profile_export_to_clipboard">Xuất vào bộ nhớ tạm</string>
   <string name="app_profile_template_export_empty">Không tìm thấy mẫu cục bộ để xuất!</string>
-  <string name="app_profile_template_import_success">Nhập thành công</string>
+  <string name="app_profile_template_import_success">Đã nhập thành công</string>
   <string name="app_profile_template_sync">Đồng bộ hoá các mẫu trực tuyến</string>
   <string name="app_profile_template_save_failed">Lưu mẫu thất bại</string>
   <string name="app_profile_template_import_empty">Bộ nhớ tạm đang trống!</string>
@@ -186,7 +186,7 @@
   <string name="direct_install">Cài đặt trực tiếp (Khuyến nghị)</string>
   <string name="select_file">Chọn file</string>
   <string name="install_inactive_slot">Cài đặt vào phân vùng không hoạt động (Sau OTA)</string>
-  <string name="install_inactive_slot_warning">Thiết bị của bạn sẽ **BUỘC** phải khởi động vào phân vùng không hoạt động hiện tại sau khi khởi động lại!\nChỉ sử dụng tùy chọn này sau khi OTA hoàn tất.\nTiếp tục?</string>
+  <string name="install_inactive_slot_warning">Thiết bị của bạn sẽ **BUỘC** phải khởi động vào phân vùng không hoạt động hiện tại sau khi khởi động lại!\nChỉ sử dụng tùy chọn này sau khi cập nhật OTA hoàn tất.\nTiếp tục?</string>
   <string name="install_next">Tiếp tục</string>
   <string name="select_file_tip">Phân vùng image %1$s được khuyến nghị</string>
   <string name="select_kmi">Chọn KMI</string>
