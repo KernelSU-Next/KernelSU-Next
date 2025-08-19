@@ -82,7 +82,7 @@
   <string name="safe_mode">Güvenli mod</string>
   <string name="reboot_to_apply">Etkili olması için yeniden başlatın</string>
   <string name="module_magisk_conflict">Magisk ile yaşanan bir çakışma nedeniyle modüller kullanılamıyor!</string>
-  <string name="home_mount_system">Montaj sistemi</string>
+  <string name="home_mount_system">Bağlantı sistemi</string>
   <string name="home_magic_mount">Magic Mount</string>
   <string name="home_overlayfs_mount">OverlayFS</string>
   <string name="unavailable">Mevcut değil</string>
