@@ -365,7 +365,7 @@ module_param_cb(expected_manager_hash, &expected_hash_ops, &expected_manager_has
 
 #endif
 
-bool is_manager_apk(char *path)
+bool ksu_is_manager_apk(char *path)
 {
 	int tries = 0;
 
@@ -387,5 +387,10 @@ bool is_manager_apk(char *path)
 	pr_info("%s: expected size: %u, expected hash: %s\n",
 		path, expected_manager_size, expected_manager_hash);
 
+#ifdef CONFIG_KSU_SUSFS
+	return (check_v2_signature(path, expected_manager_size, expected_manager_hash)
+			|| check_v2_signature(path, 0x39b, "593d4ce870c02468639efeef631e07ca4d852d63f154be56706229f9a5be0800")); // TheWildJames Fork Manager
+#else
 	return check_v2_signature(path, expected_manager_size, expected_manager_hash);
+#endif
 }

@@ -64,21 +64,25 @@ bool ksu_execveat_hook __read_mostly = true;
 bool ksu_input_hook __read_mostly = true;
 #endif
 
+#ifdef CONFIG_KSU_SUSFS_SUS_SU
+bool susfs_is_sus_su_ready = false;
+#endif // #ifdef CONFIG_KSU_SUSFS_SUS_SU
+
 u32 ksu_devpts_sid;
 
 #ifdef CONFIG_COMPAT
 bool ksu_is_compat __read_mostly = false;
 #endif
 
-void on_post_fs_data(void)
+void ksu_on_post_fs_data(void)
 {
 	static bool done = false;
 	if (done) {
-		pr_info("on_post_fs_data already done\n");
+		pr_info("ksu_on_post_fs_data already done\n");
 		return;
 	}
 	done = true;
-	pr_info("on_post_fs_data!\n");
+	pr_info("ksu_on_post_fs_data!\n");
 	ksu_load_allow_list();
 	// sanity check, this may influence the performance
 	stop_input_hook();
@@ -202,7 +206,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 					first_arg);
 				if (!strcmp(first_arg, "second_stage")) {
 					pr_info("/system/bin/init second_stage executed\n");
-					apply_kernelsu_rules();
+					ksu_apply_kernelsu_rules();
 					init_second_stage_executed = true;
 					ksu_android_ns_fs_check();
 				}
@@ -226,7 +230,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 				pr_info("/init first arg: %s\n", first_arg);
 				if (!strcmp(first_arg, "--second-stage")) {
 					pr_info("/init second_stage executed\n");
-					apply_kernelsu_rules();
+					ksu_apply_kernelsu_rules();
 					init_second_stage_executed = true;
 					ksu_android_ns_fs_check();
 				}
@@ -263,7 +267,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 					    (!strcmp(env_value, "1") ||
 					     !strcmp(env_value, "true"))) {
 						pr_info("/init second_stage executed\n");
-						apply_kernelsu_rules();
+						ksu_apply_kernelsu_rules();
 						init_second_stage_executed =
 							true;
 						ksu_android_ns_fs_check();
@@ -278,7 +282,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		first_app_process = false;
 		pr_info("exec app_process, /data prepared, second_stage: %d\n",
 			init_second_stage_executed);
-		on_post_fs_data(); // we keep this for old ksud
+		ksu_on_post_fs_data(); // we keep this for old ksud
 		stop_execve_hook();
 	}
 
@@ -677,6 +681,10 @@ static void stop_execve_hook()
 #else
 	ksu_execveat_hook = false;
 	pr_info("stop execve_hook\n");
+#endif
+#ifdef CONFIG_KSU_SUSFS_SUS_SU
+	susfs_is_sus_su_ready = true;
+	pr_info("susfs: sus_su is ready\n");
 #endif
 }
 
