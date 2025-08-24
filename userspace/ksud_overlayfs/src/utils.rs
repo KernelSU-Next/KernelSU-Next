@@ -194,28 +194,13 @@ fn is_ok_empty(dir: &str) -> bool {
 
 fn find_temp_path() -> String {
     use std::result::Result::Ok;
-
-    if is_ok_empty(defs::TEMP_DIR) {
-        return defs::TEMP_DIR.to_string();
-    }
-
-    // Try to create a random directory in /dev/
-    let r = tempfile::tempdir_in("/dev/");
-    match r {
-        Ok(tmp_dir) => {
-            if let Some(path) = tmp_dir.keep().to_str() {
-                return path.to_string();
-            }
-        }
-        Err(_e) => {}
-    }
-
+    
     let dirs = [
-        defs::TEMP_DIR,
         "/patch_hw",
         "/oem",
         "/root",
         defs::TEMP_DIR_LEGACY,
+        defs::TEMP_DIR,
     ];
 
     // find empty directory
