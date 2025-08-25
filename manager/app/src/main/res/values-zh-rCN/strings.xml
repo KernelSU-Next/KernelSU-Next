@@ -132,7 +132,7 @@
   <string name="settings_umount_modules_default">默认卸载模块</string>
   <string name="settings_umount_modules_default_summary">应用配置中“卸载模块”的全局默认值。如果启用，将会为没有设置应用配置的应用移除所有模块针对系统的修改。</string>
   <string name="settings_susfs_toggle">隐藏 kprobes 钩子</string>
-  <string name="settings_susfs_toggle_summary">禁用由 KSU 创建的 Kprobes 钩子，并用非 Kprobes 的内联钩子代替，实现方式类似于不支持 Kprobe 的非 GKI 内核。</string>
+  <string name="settings_susfs_toggle_summary">此选项禁用由 ksu 创建的 kprobes 钩子，而是激活嵌入的非 kprobes 钩子，实现与不支持 kprobe 的非 GKI 内核相同的功能。</string>
   <string name="profile_umount_modules_summary">启用后将允许 KernelSU Next 为本应用还原被模块修改过的文件。</string>
   <string name="profile_selinux_domain">域</string>
   <string name="profile_selinux_rules">规则</string>
