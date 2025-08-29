@@ -9,11 +9,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import java.text.Collator
 import java.util.Locale
@@ -73,13 +71,13 @@ class ModuleViewModel : ViewModel() {
 
     val moduleList by derivedStateOf {
         val comparator = when {
-            sortWebUiFirst -> compareByDescending<ModuleInfo> { it.hasWebUi }
-            sortEnabledFirst -> compareByDescending<ModuleInfo> { it.enabled }
-            sortActionFirst -> compareByDescending<ModuleInfo> { it.hasActionScript }
-            sortAToZ -> compareBy<ModuleInfo> { it.name.lowercase() }
-            sortZToA -> compareByDescending<ModuleInfo> { it.name.lowercase() }
-            sortSizeLowToHigh -> compareBy<ModuleInfo> { it.size }
-            sortSizeHighToLow -> compareByDescending<ModuleInfo> { it.size }
+            sortWebUiFirst -> compareByDescending { it.hasWebUi }
+            sortEnabledFirst -> compareByDescending { it.enabled }
+            sortActionFirst -> compareByDescending { it.hasActionScript }
+            sortAToZ -> compareBy { it.name.lowercase() }
+            sortZToA -> compareByDescending { it.name.lowercase() }
+            sortSizeLowToHigh -> compareBy { it.size }
+            sortSizeHighToLow -> compareByDescending { it.size }
             else -> compareBy<ModuleInfo> { it.dirId }
         }.thenBy(Collator.getInstance(Locale.getDefault()), ModuleInfo::id)
 

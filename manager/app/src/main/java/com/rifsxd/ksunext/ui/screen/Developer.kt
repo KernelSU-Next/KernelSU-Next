@@ -2,7 +2,6 @@ package com.rifsxd.ksunext.ui.screen
 
 import android.content.Context
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.only
@@ -27,7 +26,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -37,18 +35,16 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
-import kotlinx.coroutines.launch
 import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.R
 import com.rifsxd.ksunext.ui.component.SwitchItem
 import com.rifsxd.ksunext.ui.util.LocalSnackbarHost
-import com.rifsxd.ksunext.ui.util.*
 
 /**
  * @author rifsxd
@@ -98,7 +94,7 @@ fun DeveloperScreen(navigator: DestinationsNavigator) {
                     summary = stringResource(id = R.string.enable_developer_options_summary),
                     checked = developerOptionsEnabled
                 ) {
-                    prefs.edit().putBoolean("enable_developer_options", it).apply()
+                    prefs.edit { putBoolean("enable_developer_options", it) }
                     developerOptionsEnabled = it
                 }
             }
@@ -116,7 +112,7 @@ fun DeveloperScreen(navigator: DestinationsNavigator) {
                     summary = stringResource(id = R.string.enable_web_debugging_summary),
                     checked = enableWebDebugging
                 ) {
-                    prefs.edit().putBoolean("enable_web_debugging", it).apply()
+                    prefs.edit { putBoolean("enable_web_debugging", it) }
                     enableWebDebugging = it
                 }
             }

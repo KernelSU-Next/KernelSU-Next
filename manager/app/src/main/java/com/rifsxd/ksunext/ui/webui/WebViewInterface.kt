@@ -8,6 +8,7 @@ import android.util.Base64
 import android.app.Activity
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
@@ -15,6 +16,7 @@ import android.view.Window
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
+import androidx.core.graphics.createBitmap
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.topjohnwu.superuser.CallbackList
@@ -28,6 +30,7 @@ import org.json.JSONObject
 import java.io.File
 import java.util.concurrent.CompletableFuture
 
+@Suppress("unused")
 class WebViewInterface(
     val context: Context,
     private val webView: WebView,
@@ -185,7 +188,7 @@ class WebViewInterface(
     @JavascriptInterface
     fun moduleInfo(): String {
         val moduleInfos = JSONArray(listModules())
-        var currentModuleInfo = JSONObject()
+        val currentModuleInfo = JSONObject()
         currentModuleInfo.put("moduleDir", modDir)
         val moduleId = File(modDir).getName()
         for (i in 0 until moduleInfos.length()) {
@@ -195,7 +198,7 @@ class WebViewInterface(
                 continue
             }
 
-            var keys = currentInfo.keys()
+            val keys = currentInfo.keys()
             for (key in keys) {
                 currentModuleInfo.put(key, currentInfo.get(key))
             }
@@ -265,9 +268,11 @@ class WebViewInterface(
                 val pkg = pm.getPackageInfo(pkgName, 0)
                 val appInfo = pkg.applicationInfo
                 val obj = JSONObject()
+                @Suppress("DEPRECATION")
+                val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) pkg.longVersionCode else pkg.versionCode
                 obj.put("packageName", pkg.packageName)
                 obj.put("versionName", pkg.versionName ?: "")
-                obj.put("versionCode", pkg.longVersionCode)
+                obj.put("versionCode", versionCode)
                 obj.put("appLabel", if (appInfo != null) pm.getApplicationLabel(appInfo).toString() else "")
                 obj.put("isSystem", appInfo != null && (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0)
                 obj.put("uid", appInfo?.uid ?: JSONObject.NULL)
@@ -343,7 +348,7 @@ fun drawableToBitmap(drawable: Drawable, size: Int): Bitmap {
     if (drawable is BitmapDrawable && drawable.bitmap.width == size && drawable.bitmap.height == size) {
         return drawable.bitmap
     }
-    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val bitmap = createBitmap(size, size)
     val canvas = Canvas(bitmap)
     drawable.setBounds(0, 0, size, size)
     drawable.draw(canvas)

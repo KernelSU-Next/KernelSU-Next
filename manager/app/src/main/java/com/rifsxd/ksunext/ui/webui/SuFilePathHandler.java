@@ -20,8 +20,6 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 
-import com.rifsxd.ksunext.ui.webui.MonetColorsProvider;
-
 /**
  * Handler class to open files from file system by root access
  * For more information about android storage please refer to

@@ -2,7 +2,6 @@ package com.rifsxd.ksunext.ui.util
 
 import android.content.ContentResolver
 import android.content.Context
-import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
 import android.os.Environment
@@ -31,11 +30,11 @@ private const val TAG = "KsuCli"
 private const val BUSYBOX = "/data/adb/ksu/bin/busybox"
 
 private fun ksuDaemonMagicPath(): String {
-    return ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksud_magic.so"
+    return "${ksuApp.applicationInfo.nativeLibraryDir}${File.separator}libksud_magic.so"
 }
 
 private fun ksuDaemonOverlayfsPath(): String {
-    return ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksud_overlayfs.so"
+    return "${ksuApp.applicationInfo.nativeLibraryDir}${File.separator}libksud_overlayfs.so"
 }
 
 fun readMountSystemFile(): Boolean {
@@ -650,7 +649,7 @@ fun currentMountSystem(): String {
 
 fun getModuleSize(dir: File): Long {
     val shell = getRootShell()
-    val cmd = "$BUSYBOX du -sb '${dir.absolutePath}' | awk '{print \$1}'"
+    val cmd = "$BUSYBOX du -sb '${dir.absolutePath}' | awk '{print $1}'"
     val result = ShellUtils.fastCmd(shell, cmd).trim()
     return result.toLongOrNull() ?: 0L
 }

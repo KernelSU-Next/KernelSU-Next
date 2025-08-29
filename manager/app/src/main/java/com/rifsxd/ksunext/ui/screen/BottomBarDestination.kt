@@ -14,7 +14,7 @@ import com.rifsxd.ksunext.R
 
 enum class BottomBarDestination(
     val direction: DirectionDestinationSpec,
-    @StringRes val label: Int,
+    @param:StringRes val label: Int,
     val iconSelected: ImageVector,
     val iconNotSelected: ImageVector,
     val rootRequired: Boolean,

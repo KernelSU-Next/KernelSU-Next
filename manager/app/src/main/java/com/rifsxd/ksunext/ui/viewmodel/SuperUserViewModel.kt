@@ -10,7 +10,6 @@ import android.os.IBinder
 import android.os.Parcelable
 import android.os.SystemClock
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,8 +25,6 @@ import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.ui.KsuService
 import com.rifsxd.ksunext.ui.util.HanziToPinyin
 import com.rifsxd.ksunext.ui.util.KsuCli
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withTimeoutOrNull
 import java.text.Collator
 import java.util.*
 import kotlin.coroutines.resume

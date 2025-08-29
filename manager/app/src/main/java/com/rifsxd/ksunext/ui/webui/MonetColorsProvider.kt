@@ -2,6 +2,8 @@ package com.rifsxd.ksunext.ui.webui
 
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Build
+import androidx.annotation.RequiresApi
 
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -17,6 +19,7 @@ import com.rifsxd.ksunext.ui.theme.AMOLED_BLACK
  * @date 2025/6/2.
  */
 object MonetColorsProvider {
+    @RequiresApi(Build.VERSION_CODES.S)
     fun getColorsCss(context: Context): String {
 
         val isDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES

@@ -44,6 +44,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.edit
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.maxkeppeker.sheets.core.models.base.Header
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
@@ -61,8 +62,6 @@ import com.rifsxd.ksunext.ui.component.rememberCustomDialog
 import com.rifsxd.ksunext.ui.component.SwitchItem
 import com.rifsxd.ksunext.ui.util.LocaleHelper
 import com.rifsxd.ksunext.ui.util.LocalSnackbarHost
-import com.rifsxd.ksunext.ui.util.*
-import java.util.Locale
 
 /**
  * @author rifsxd
@@ -162,7 +161,7 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
                                 if (testString != defaultString || locale.language == "en") {
                                     locales.add(locale)
                                 }
-                            } catch (e: Exception) {
+                            } catch (_: Exception) {
                                 // Skip unsupported locales
                             }
                         }
@@ -211,7 +210,7 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
                             onFinishedRequest = {
                                 if (selectedIndex >= 0 && selectedIndex < allOptions.size) {
                                     val newLocale = allOptions[selectedIndex].first
-                                    prefs.edit().putString("app_locale", newLocale).apply()
+                                    prefs.edit { putString("app_locale", newLocale) }
                                     
                                     // Update local state immediately
                                     currentAppLocale = LocaleHelper.getCurrentAppLocale(context)
@@ -275,7 +274,7 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
                     summary = stringResource(id = R.string.settings_banner_summary),
                     checked = useBanner
                 ) {
-                    prefs.edit().putBoolean("use_banner", it).apply()
+                    prefs.edit { putBoolean("use_banner", it) }
                     useBanner = it
                 }
             }
@@ -293,7 +292,7 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
                     summary = stringResource(id = R.string.settings_amoled_mode_summary),
                     checked = enableAmoled
                 ) { checked ->
-                    prefs.edit().putBoolean("enable_amoled", checked).apply()
+                    prefs.edit { putBoolean("enable_amoled", checked) }
                     enableAmoled = checked
                     showRestartDialog = true
                 }

@@ -97,7 +97,7 @@ private fun AboutCardContent() {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                val annotatedString = AnnotatedString.Companion.fromHtml(
+                val annotatedString = AnnotatedString.fromHtml(
                     htmlString = stringResource(
                         id = R.string.about_source_code,
                         "<b><a href=\"https://github.com/KernelSU-Next/KernelSU-Next\">GitHub</a></b>"

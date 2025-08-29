@@ -7,7 +7,6 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,7 +22,6 @@ import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
@@ -92,6 +90,7 @@ import com.rifsxd.ksunext.ui.util.isGlobalNamespaceEnabled
 import com.rifsxd.ksunext.ui.util.setGlobalNamespaceEnabled
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import androidx.core.content.edit
 
 /**
  * @author weishu
@@ -244,7 +243,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         } else {
                             susfsSUS_SU_0()
                         }
-                        prefs.edit().putBoolean("enable_sus_su", it).apply()
+                        prefs.edit { putBoolean("enable_sus_su", it) }
                         isEnabled = it
                     }
                 }
@@ -269,7 +268,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     summary = stringResource(id = R.string.use_overlay_fs_summary),
                     checked = useOverlayFs
                 ) {
-                    prefs.edit().putBoolean("use_overlay_fs", it).apply()
+                    prefs.edit { putBoolean("use_overlay_fs", it) }
                     useOverlayFs = it
                     if (useOverlayFs) {
                         moduleBackup()
@@ -320,7 +319,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 summary = stringResource(id = R.string.settings_check_update_summary),
                 checked = checkUpdate
             ) {
-                prefs.edit().putBoolean("check_update", it).apply()
+                prefs.edit { putBoolean("check_update", it) }
                 checkUpdate = it
             }
 

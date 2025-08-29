@@ -5,7 +5,6 @@ import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,7 +14,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -37,13 +35,11 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Wysiwyg
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
@@ -53,7 +49,6 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -64,7 +59,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberTopAppBarState
@@ -92,13 +86,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -128,7 +121,6 @@ import com.rifsxd.ksunext.ui.util.reboot
 import com.rifsxd.ksunext.ui.util.toggleModule
 import com.rifsxd.ksunext.ui.util.uninstallModule
 import com.rifsxd.ksunext.ui.util.restoreModule
-import com.rifsxd.ksunext.ui.util.zygiskRequired
 import com.rifsxd.ksunext.ui.viewmodel.ModuleViewModel
 import com.rifsxd.ksunext.ui.webui.WebUIActivity
 import com.dergoogler.mmrl.ui.component.LabelItem
@@ -153,7 +145,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
         viewModel.sortEnabledFirst = prefs.getBoolean("module_sort_enabled_first", false)
         viewModel.sortActionFirst = prefs.getBoolean("module_sort_action_first", false)
         viewModel.sortWebUiFirst = prefs.getBoolean("module_sort_webui_first", false)
-        
+
         if (viewModel.moduleList.isEmpty() || viewModel.isNeedRefresh) {
             viewModel.fetchModuleList()
         }
@@ -240,15 +232,15 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                     viewModel.sortEnabledFirst = false
                                     viewModel.sortActionFirst = false
                                     viewModel.sortWebUiFirst = false
-                                    prefs.edit()
-                                        .putBoolean("module_sort_a_to_z", viewModel.sortAToZ)
-                                        .putBoolean("module_sort_z_to_a", false)
-                                        .putBoolean("module_sort_size_low_to_high", false)
-                                        .putBoolean("module_sort_size_high_to_low", false)
-                                        .putBoolean("module_sort_enabled_first", false)
-                                        .putBoolean("module_sort_action_first", false)
-                                        .putBoolean("module_sort_webui_first", false)
-                                        .apply()
+                                    prefs.edit {
+                                        putBoolean("module_sort_a_to_z", viewModel.sortAToZ)
+                                        putBoolean("module_sort_z_to_a", false)
+                                        putBoolean("module_sort_size_low_to_high", false)
+                                        putBoolean("module_sort_size_high_to_low", false)
+                                        putBoolean("module_sort_enabled_first", false)
+                                        putBoolean("module_sort_action_first", false)
+                                        putBoolean("module_sort_webui_first", false)
+                                    }
                                     scope.launch {
                                         viewModel.fetchModuleList()
                                     }
@@ -270,15 +262,15 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                     viewModel.sortEnabledFirst = false
                                     viewModel.sortActionFirst = false
                                     viewModel.sortWebUiFirst = false
-                                    prefs.edit()
-                                        .putBoolean("module_sort_z_to_a", viewModel.sortZToA)
-                                        .putBoolean("module_sort_a_to_z", false)
-                                        .putBoolean("module_sort_size_low_to_high", false)
-                                        .putBoolean("module_sort_size_high_to_low", false)
-                                        .putBoolean("module_sort_enabled_first", false)
-                                        .putBoolean("module_sort_action_first", false)
-                                        .putBoolean("module_sort_webui_first", false)
-                                        .apply()
+                                    prefs.edit {
+                                        putBoolean("module_sort_z_to_a", viewModel.sortZToA)
+                                        putBoolean("module_sort_a_to_z", false)
+                                        putBoolean("module_sort_size_low_to_high", false)
+                                        putBoolean("module_sort_size_high_to_low", false)
+                                        putBoolean("module_sort_enabled_first", false)
+                                        putBoolean("module_sort_action_first", false)
+                                        putBoolean("module_sort_webui_first", false)
+                                    }
                                     scope.launch {
                                         viewModel.fetchModuleList()
                                     }
@@ -300,15 +292,15 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                     viewModel.sortEnabledFirst = false
                                     viewModel.sortActionFirst = false
                                     viewModel.sortWebUiFirst = false
-                                    prefs.edit()
-                                        .putBoolean("module_sort_size_low_to_high", viewModel.sortSizeLowToHigh)
-                                        .putBoolean("module_sort_a_to_z", false)
-                                        .putBoolean("module_sort_z_to_a", false)
-                                        .putBoolean("module_sort_size_high_to_low", false)
-                                        .putBoolean("module_sort_enabled_first", false)
-                                        .putBoolean("module_sort_action_first", false)
-                                        .putBoolean("module_sort_webui_first", false)
-                                        .apply()
+                                    prefs.edit {
+                                        putBoolean("module_sort_size_low_to_high", viewModel.sortSizeLowToHigh)
+                                        putBoolean("module_sort_a_to_z", false)
+                                        putBoolean("module_sort_z_to_a", false)
+                                        putBoolean("module_sort_size_high_to_low", false)
+                                        putBoolean("module_sort_enabled_first", false)
+                                        putBoolean("module_sort_action_first", false)
+                                        putBoolean("module_sort_webui_first", false)
+                                    }
                                     scope.launch {
                                         viewModel.fetchModuleList()
                                     }
@@ -330,15 +322,15 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                     viewModel.sortEnabledFirst = false
                                     viewModel.sortActionFirst = false
                                     viewModel.sortWebUiFirst = false
-                                    prefs.edit()
-                                        .putBoolean("module_sort_size_high_to_low", viewModel.sortSizeHighToLow)
-                                        .putBoolean("module_sort_a_to_z", false)
-                                        .putBoolean("module_sort_z_to_a", false)
-                                        .putBoolean("module_sort_size_low_to_high", false)
-                                        .putBoolean("module_sort_enabled_first", false)
-                                        .putBoolean("module_sort_action_first", false)
-                                        .putBoolean("module_sort_webui_first", false)
-                                        .apply()
+                                    prefs.edit {
+                                        putBoolean("module_sort_size_high_to_low", viewModel.sortSizeHighToLow)
+                                        putBoolean("module_sort_a_to_z", false)
+                                        putBoolean("module_sort_z_to_a", false)
+                                        putBoolean("module_sort_size_low_to_high", false)
+                                        putBoolean("module_sort_enabled_first", false)
+                                        putBoolean("module_sort_action_first", false)
+                                        putBoolean("module_sort_webui_first", false)
+                                    }
                                     scope.launch {
                                         viewModel.fetchModuleList()
                                     }
@@ -359,15 +351,15 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                     viewModel.sortSizeHighToLow = false
                                     viewModel.sortActionFirst = false
                                     viewModel.sortWebUiFirst = false
-                                    prefs.edit()
-                                        .putBoolean("module_sort_enabled_first", viewModel.sortEnabledFirst)
-                                        .putBoolean("module_sort_a_to_z", false)
-                                        .putBoolean("module_sort_z_to_a", false)
-                                        .putBoolean("module_sort_size_low_to_high", false)
-                                        .putBoolean("module_sort_size_high_to_low", false)
-                                        .putBoolean("module_sort_action_first", false)
-                                        .putBoolean("module_sort_webui_first", false)
-                                        .apply()
+                                    prefs.edit {
+                                        putBoolean("module_sort_enabled_first", viewModel.sortEnabledFirst)
+                                        putBoolean("module_sort_a_to_z", false)
+                                        putBoolean("module_sort_z_to_a", false)
+                                        putBoolean("module_sort_size_low_to_high", false)
+                                        putBoolean("module_sort_size_high_to_low", false)
+                                        putBoolean("module_sort_action_first", false)
+                                        putBoolean("module_sort_webui_first", false)
+                                    }
                                     scope.launch {
                                         viewModel.fetchModuleList()
                                     }
@@ -388,15 +380,15 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                     viewModel.sortSizeHighToLow = false
                                     viewModel.sortEnabledFirst = false
                                     viewModel.sortWebUiFirst = false
-                                    prefs.edit()
-                                        .putBoolean("module_sort_action_first", viewModel.sortActionFirst)
-                                        .putBoolean("module_sort_a_to_z", false)
-                                        .putBoolean("module_sort_z_to_a", false)
-                                        .putBoolean("module_sort_size_low_to_high", false)
-                                        .putBoolean("module_sort_size_high_to_low", false)
-                                        .putBoolean("module_sort_enabled_first", false)
-                                        .putBoolean("module_sort_webui_first", false)
-                                        .apply()
+                                    prefs.edit {
+                                        putBoolean("module_sort_action_first", viewModel.sortActionFirst)
+                                        putBoolean("module_sort_a_to_z", false)
+                                        putBoolean("module_sort_z_to_a", false)
+                                        putBoolean("module_sort_size_low_to_high", false)
+                                        putBoolean("module_sort_size_high_to_low", false)
+                                        putBoolean("module_sort_enabled_first", false)
+                                        putBoolean("module_sort_webui_first", false)
+                                    }
                                     scope.launch {
                                         viewModel.fetchModuleList()
                                     }
@@ -417,15 +409,15 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                                     viewModel.sortSizeHighToLow = false
                                     viewModel.sortEnabledFirst = false
                                     viewModel.sortActionFirst = false
-                                    prefs.edit()
-                                        .putBoolean("module_sort_webui_first", viewModel.sortWebUiFirst)
-                                        .putBoolean("module_sort_a_to_z", false)
-                                        .putBoolean("module_sort_z_to_a", false)
-                                        .putBoolean("module_sort_size_low_to_high", false)
-                                        .putBoolean("module_sort_size_high_to_low", false)
-                                        .putBoolean("module_sort_enabled_first", false)
-                                        .putBoolean("module_sort_action_first", false)
-                                        .apply()
+                                    prefs.edit {
+                                        putBoolean("module_sort_webui_first", viewModel.sortWebUiFirst)
+                                        putBoolean("module_sort_a_to_z", false)
+                                        putBoolean("module_sort_z_to_a", false)
+                                        putBoolean("module_sort_size_low_to_high", false)
+                                        putBoolean("module_sort_size_high_to_low", false)
+                                        putBoolean("module_sort_enabled_first", false)
+                                        putBoolean("module_sort_action_first", false)
+                                    }
                                     scope.launch {
                                         viewModel.fetchModuleList()
                                     }
@@ -525,7 +517,7 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                         if (hasWebUi) {
                             webUILauncher.launch(
                                 Intent(context, WebUIActivity::class.java)
-                                    .setData(Uri.parse("kernelsu://webui/$id"))
+                                    .setData("kernelsu://webui/$id".toUri())
                                     .putExtra("id", id)
                                     .putExtra("name", name)
                             )
@@ -894,7 +886,7 @@ fun ModuleItem(
                             try {
                                 val file = SuFile("/data/adb/modules/${module.id}/${module.banner}")
                                 file.newInputStream().use { it.readBytes() }
-                            } catch (e: Exception) {
+                            } catch (_: Exception) {
                                 null
                             }
                         }
@@ -1260,9 +1252,9 @@ fun formatSize(size: Long): String {
     val mb = kb * 1024
     val gb = mb * 1024
     return when {
-        size >= gb -> String.format("%.2f GB", size.toDouble() / gb)
-        size >= mb -> String.format("%.2f MB", size.toDouble() / mb)
-        size >= kb -> String.format("%.2f KB", size.toDouble() / kb)
+        size >= gb -> "%.2f GB".format(size.toDouble() / gb)
+        size >= mb -> "%.2f MB".format(size.toDouble() / mb)
+        size >= kb -> "%.2f KB".format(size.toDouble() / kb)
         else -> "$size B"
     }
 }

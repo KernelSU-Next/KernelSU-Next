@@ -87,7 +87,7 @@ class MainActivity : ComponentActivity() {
 
         val zipUri: Uri? = when (intent?.action) {
             Intent.ACTION_VIEW, Intent.ACTION_SEND -> {
-                val uri = intent.data ?: intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+                val uri = intent.data ?: intent.getParcelableExtra(Intent.EXTRA_STREAM)
                 uri?.let {
                     val name = when (it.scheme) {
                         "file" -> it.lastPathSegment ?: ""
@@ -111,7 +111,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             // Read AMOLED mode preference
-            val prefs = getSharedPreferences("settings", Context.MODE_PRIVATE)
+            val prefs = getSharedPreferences("settings", MODE_PRIVATE)
             val amoledMode = prefs.getBoolean("enable_amoled", false)
 
             val moduleViewModel: ModuleViewModel = viewModel()
@@ -125,7 +125,7 @@ class MainActivity : ComponentActivity() {
             ) {
                 val navController = rememberNavController()
                 val snackBarHostState = remember { SnackbarHostState() }
-                val currentDestination = navController.currentBackStackEntryAsState()?.value?.destination
+                val currentDestination = navController.currentBackStackEntryAsState().value?.destination
 
                 val navigator = navController.rememberDestinationsNavigator()
 
