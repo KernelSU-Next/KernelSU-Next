@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
-        val isManager = Natives.becomeManager(ksuApp.packageName)
+        val isManager = Natives.becomeManager(packageName)
         if (isManager) install()
 
         val zipUri: Uri? = when (intent?.action) {
