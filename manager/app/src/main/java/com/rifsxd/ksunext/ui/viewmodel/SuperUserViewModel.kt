@@ -24,7 +24,6 @@ import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.ui.KsuService
 import com.rifsxd.ksunext.ui.util.HanziToPinyin
-import com.rifsxd.ksunext.ui.util.KsuCli
 import java.text.Collator
 import java.util.*
 import kotlin.coroutines.resume
@@ -135,8 +134,7 @@ class SuperUserViewModel : ViewModel() {
             Shell.EXECUTOR,
             connection,
         )
-        val shell = KsuCli.SHELL
-        task?.let { it1 -> shell.execTask(it1) }
+        task?.let { it1 -> Shell.getShell().execTask(it1) }
     }
 
     private fun stopKsuService() {
