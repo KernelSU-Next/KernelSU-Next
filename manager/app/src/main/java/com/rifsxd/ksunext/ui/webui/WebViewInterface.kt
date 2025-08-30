@@ -1,17 +1,17 @@
 package com.rifsxd.ksunext.ui.webui
 
+import android.app.Activity
+import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.util.Base64
-import android.app.Activity
-import android.content.Context
-import android.content.pm.ApplicationInfo
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
+import android.util.Base64
 import android.view.Window
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
@@ -19,12 +19,12 @@ import android.widget.Toast
 import androidx.core.graphics.createBitmap
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.topjohnwu.superuser.CallbackList
-import com.topjohnwu.superuser.ShellUtils
-import com.topjohnwu.superuser.internal.UiThreadHandler
 import com.rifsxd.ksunext.ui.util.createRootShell
 import com.rifsxd.ksunext.ui.util.listModules
 import com.rifsxd.ksunext.ui.util.withNewRootShell
+import com.topjohnwu.superuser.CallbackList
+import com.topjohnwu.superuser.ShellUtils
+import com.topjohnwu.superuser.internal.UiThreadHandler
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File

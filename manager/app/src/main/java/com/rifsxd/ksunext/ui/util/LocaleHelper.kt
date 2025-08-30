@@ -8,7 +8,7 @@ import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import java.util.Locale
+import java.util.*
 
 object LocaleHelper {
     

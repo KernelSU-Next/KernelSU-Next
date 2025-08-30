@@ -11,7 +11,7 @@ import me.zhanghai.android.appiconloader.coil.AppIconKeyer
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import java.io.File
-import java.util.Locale
+import java.util.*
 
 lateinit var ksuApp: KernelSUApplication
 

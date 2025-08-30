@@ -3,10 +3,10 @@ package com.rifsxd.ksunext.ui.util
 import android.content.Context
 import android.os.Build
 import android.system.Os
-import com.topjohnwu.superuser.ShellUtils
 import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.ui.screen.getManagerVersion
 import com.topjohnwu.superuser.Shell
+import com.topjohnwu.superuser.ShellUtils
 import java.io.File
 import java.io.FileWriter
 import java.io.PrintWriter
