@@ -139,11 +139,9 @@ fun listModules(): String {
 }
 
 fun getModuleCount(): Int {
-    val result = listModules()
-    runCatching {
-        val array = JSONArray(result)
-        return array.length()
-    }.getOrElse { return 0 }
+    return runCatching {
+        JSONArray(listModules()).length()
+    }.getOrDefault(0)
 }
 
 fun getSuperuserCount(): Int {
