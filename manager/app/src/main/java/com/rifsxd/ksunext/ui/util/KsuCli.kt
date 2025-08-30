@@ -15,11 +15,14 @@ import com.rifsxd.ksunext.ksuApp
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
+import com.topjohnwu.superuser.io.SuFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import org.json.JSONArray
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * @author weishu
@@ -45,7 +48,7 @@ fun readMountSystemFile(): Boolean {
 // Get the path based on the user's choice
 fun getKsuDaemonPath(): String {
     val useOverlayFs = readMountSystemFile()
-    
+
     return if (useOverlayFs) {
         ksuDaemonOverlayfsPath
     } else {
@@ -378,14 +381,13 @@ fun hasMagisk(): Boolean {
 }
 
 fun isGlobalNamespaceEnabled(): Boolean {
-    val result =
-        ShellUtils.fastCmd("nsenter --mount=/proc/1/ns/mnt cat ${Natives.GLOBAL_NAMESPACE_FILE}")
+    val result = ShellUtils.fastCmd("cat ${Natives.GLOBAL_NAMESPACE_FILE}")
     Log.i(TAG, "is global namespace enabled: $result")
     return result == "1"
 }
 
 fun setGlobalNamespaceEnabled(value: String) {
-    Shell.cmd("nsenter --mount=/proc/1/ns/mnt echo $value > ${Natives.GLOBAL_NAMESPACE_FILE}")
+    Shell.cmd("echo $value > ${Natives.GLOBAL_NAMESPACE_FILE}")
         .submit { result ->
             Log.i(TAG, "setGlobalNamespaceEnabled result: ${result.isSuccess} [${result.out}]")
         }
@@ -443,28 +445,21 @@ fun getFileName(context: Context, uri: Uri): String {
 
 fun moduleBackupDir(): String? {
     val baseBackupDir = "/data/adb/ksu/backup/modules"
-    val resultBase = ShellUtils.fastCmd("mkdir -p $baseBackupDir").trim()
-    if (resultBase.isNotEmpty()) return null
 
-    val timestamp = ShellUtils.fastCmd("date +%Y%m%d_%H%M%S").trim()
-    if (timestamp.isEmpty()) return null
+    if (!SuFile(baseBackupDir).mkdirs()) return null
+
+    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
 
     val newBackupDir = "$baseBackupDir/$timestamp"
-    val resultNewDir = ShellUtils.fastCmd("mkdir -p $newBackupDir").trim()
 
-    if (resultNewDir.isEmpty()) return newBackupDir
+    if (SuFile(newBackupDir).mkdirs()) return newBackupDir
     return null
 }
 
 fun moduleBackup(): Boolean {
-    val checkEmptyCommand = "if [ -z \"$(ls -A /data/adb/modules)\" ]; then echo 'empty'; fi"
-    val resultCheckEmpty = ShellUtils.fastCmd(checkEmptyCommand).trim()
-    if (resultCheckEmpty == "empty") {
-        return false
-    }
+    if (SuFile("/data/adb/modules").listFiles()?.isEmpty() ?: true) return false
 
-    val timestamp = ShellUtils.fastCmd("date +%Y%m%d_%H%M%S").trim()
-    if (timestamp.isEmpty()) return false
+    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
 
     val tarName = "modules_backup_$timestamp.tar"
     val tarPath = "/data/local/tmp/$tarName"
@@ -472,15 +467,15 @@ fun moduleBackup(): Boolean {
     val internalBackupPath = "$internalBackupDir/$tarName"
 
     val tarCmd = "$BUSYBOX tar -cpf $tarPath -C /data/adb/modules $(ls /data/adb/modules)"
-    val tarResult = ShellUtils.fastCmd(tarCmd).trim()
-    if (tarResult.isNotEmpty()) return false
+    val tarResult = ShellUtils.fastCmdResult(tarCmd)
+    if (!tarResult) return false
 
-    ShellUtils.fastCmd("mkdir -p $internalBackupDir")
+    if (!SuFile(internalBackupDir).mkdirs()) return false
 
-    val cpResult = ShellUtils.fastCmd("cp $tarPath $internalBackupPath").trim()
-    if (cpResult.isNotEmpty()) return false
+    val cpResult = ShellUtils.fastCmdResult("cp $tarPath $internalBackupPath")
+    if (!cpResult) return false
 
-    ShellUtils.fastCmd( "rm -f $tarPath")
+    SuFile(tarPath).delete()
 
     return true
 }
@@ -491,19 +486,13 @@ fun moduleRestore(): Boolean {
     if (tarPath.isEmpty()) return false
 
     val extractCmd = "$BUSYBOX tar -xpf $tarPath -C /data/adb/modules_update"
-    val extractResult = ShellUtils.fastCmd(extractCmd).trim()
-    return extractResult.isEmpty()
+    return ShellUtils.fastCmdResult(extractCmd)
 }
 
 fun allowlistBackup(): Boolean {
-    val checkEmptyCommand = "if [ -z \"$(ls -A /data/adb/ksu/.allowlist)\" ]; then echo 'empty'; fi"
-    val resultCheckEmpty = ShellUtils.fastCmd(checkEmptyCommand).trim()
-    if (resultCheckEmpty == "empty") {
-        return false
-    }
+    if (!SuFile("/data/adb/ksu/.allowlist").exists()) return false
 
-    val timestamp = ShellUtils.fastCmd("date +%Y%m%d_%H%M%S").trim()
-    if (timestamp.isEmpty()) return false
+    val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
 
     val tarName = "allowlist_backup_$timestamp.tar"
     val tarPath = "/data/local/tmp/$tarName"
@@ -511,15 +500,15 @@ fun allowlistBackup(): Boolean {
     val internalBackupPath = "$internalBackupDir/$tarName"
 
     val tarCmd = "$BUSYBOX tar -cpf $tarPath -C /data/adb/ksu .allowlist"
-    val tarResult = ShellUtils.fastCmd(tarCmd).trim()
-    if (tarResult.isNotEmpty()) return false
+    val tarResult = ShellUtils.fastCmdResult(tarCmd)
+    if (!tarResult) return false
 
-    ShellUtils.fastCmd("mkdir -p $internalBackupDir")
+    if (!SuFile(internalBackupDir).mkdirs()) return false
 
-    val cpResult = ShellUtils.fastCmd("cp $tarPath $internalBackupPath").trim()
-    if (cpResult.isNotEmpty()) return false
+    val cpResult = ShellUtils.fastCmdResult("cp $tarPath $internalBackupPath")
+    if (!cpResult) return false
 
-    ShellUtils.fastCmd("rm -f $tarPath")
+    SuFile(tarPath).delete()
 
     return true
 }
@@ -532,15 +521,12 @@ fun allowlistRestore(): Boolean {
 
     // Extract the tar to /data/adb/ksu (restores .allowlist folder with permissions)
     val extractCmd = "$BUSYBOX tar -xpf $tarPath -C /data/adb/ksu"
-    val extractResult = ShellUtils.fastCmd(extractCmd).trim()
-    return extractResult.isEmpty()
+    return ShellUtils.fastCmdResult(extractCmd)
 }
 
 fun moduleMigration(): Boolean {
     val command = "cp -rp /data/adb/modules/* /data/adb/modules_update"
-    val result = ShellUtils.fastCmd(command).trim()
-
-    return result.isEmpty()
+    return ShellUtils.fastCmdResult(command)
 }
 
 private val suSFSDaemonPath by lazy {
@@ -552,8 +538,7 @@ fun getSuSFS(): String {
 }
 
 fun getSuSFSVersion(): String {
-    val result = ShellUtils.fastCmd("$suSFSDaemonPath version")
-    return result
+    return ShellUtils.fastCmd("$suSFSDaemonPath version")
 }
 
 fun getSuSFSVariant(): String {
@@ -595,10 +580,7 @@ fun isSuCompatDisabled(): Boolean {
 }
 
 fun zygiskRequired(dir: File): Boolean {
-    val zygiskLib = "${dir.absolutePath}/zygisk"
-    val cmd = "ls \"$zygiskLib\""
-    val result = ShellUtils.fastCmdResult(cmd)
-    return result
+    return (SuFile(dir, "zygisk").listFiles()?.size ?: 0) > 0
 }
 
 fun setAppProfileTemplate(id: String, template: String): Boolean {
