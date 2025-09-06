@@ -12,8 +12,6 @@
     <string name="home">Home</string>
     <string name="home_not_installed">Not installed</string>
     <string name="home_click_to_install">Click to install</string>
-    <string name="lkm_mode_deprecated">LKM mode is now deprecated!</string>
-    <string name="lkm_alternative_suggestion">Install GKI kernel or integrate KernelSU Next to your device</string>
     <string name="home_working">Working</string>
     <string name="home_working_version">Version: %d</string>
     <string name="home_module_update_count">Updates: %d</string>
@@ -211,14 +209,8 @@
     <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (Existing root processes won\'t be affected)</string>
     <string name="settings_language">Language</string>
     <string name="system_default">System default</string>
-    <string name="settings_legacyui">Use legacy UI</string>
-    <string name="settings_legacyui_summary">Switch to the previous user interface style</string>
     <string name="settings_banner">Enable banners</string>
     <string name="settings_banner_summary">Show background banners for modules</string>
-    <string name="use_webuix">Use WebUI X</string>
-    <string name="use_webuix_summary">Use WebUI X instead of WebUI, which supports more APIs</string>
-    <string name="use_webuix_eruda">Inject Eruda into WebUI X</string>
-    <string name="use_webuix_eruda_summary">Inject a debug console into WebUI X to make debugging easier. Requires web debugging to be on</string>
     <string name="customization">Customization</string>
     <string name="developer">Developer</string>
     <string name="sucompat_disabled">SUCOMPAT DISABLED</string>
