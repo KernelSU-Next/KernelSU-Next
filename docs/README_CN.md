@@ -1,4 +1,4 @@
-[English](README.md) | **简体中文** | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | [Русский](README_RU.md) | [Український](README_UA.md) | [ภาษาไทย](README_TH.md) | [Tiếng Việt](README_VI.md) | [Italiano](README_IT.md) | [Polski](README_PL.md) | [Български](README_BG.md) | [日本語](README_JA.md)
+[English](README.md) | **简体中文** | [繁體中文](README_TW.md) | [Türkçe](README_TR.md) | [Português (Brasil)](README_PT-BR.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Bahasa Indonesia](README_ID.md) | [Русский](README_RU.md) | [Українська](README_UA.md) | [ภาษาไทย](README_TH.md) | [Tiếng Việt](README_VI.md) | [Italiano](README_IT.md) | [Polski](README_PL.md) | [Български](README_BG.md) | [日本語](README_JA.md) | [Español](README_ES.md)
 
 ---
 
@@ -21,6 +21,7 @@
     <a href="/LICENSE">
       <img src="https://img.shields.io/github/license/KernelSU-Next/KernelSU-Next?logo=gnu" alt="GitHub License">
     </a>
+    <a title="Crowdin" target="_blank" href="https://crowdin.com/project/kernelsu-next"><img src="https://badges.crowdin.net/kernelsu-next/localized.svg"></a>
   </p>
 </div>
 
@@ -72,11 +73,12 @@ KernelSU Next 支持从 **4.4 到 6.6** 的大多数安卓内核。
 
 如果你喜欢这个项目还请支持：
 
-- **USDT (BEP20, ERC20)**：`0x12b5224b7aca0121c2f003240a901e1d064371c1`
-- **USDT (TRC20)**：`TYUVMWGTcnR5svnDoX85DWHyqUAeyQcdjh`
-- **ETH (ERC20)**：`0x12b5224b7aca0121c2f003240a901e1d064371c1`
-- **LTC**：`Ld238uYBuRQdZB5YwdbkuU6ektBAAUByoL`
-- **BTC**：`19QgifcjMjSr1wB2DJcea5cxitvWVcXMT6`
+- **USDT (BEP20, ERC20)**: `0x12b5224b7aca0121c2f003240a901e1d064371c1`
+- **USDT (TRC20)**: `TYUVMWGTcnR5svnDoX85DWHyqUAeyQcdjh`
+- **USDT (SOL)**: `A4wqBXYd6Ey4nK4SJ2bmjeMgGyaLKT9TwDLh8BEo8Zu6`
+- **ETH (ERC20)**: `0x12b5224b7aca0121c2f003240a901e1d064371c1`
+- **LTC**: `Ld238uYBuRQdZB5YwdbkuU6ektBAAUByoL`
+- **BTC**: `19QgifcjMjSr1wB2DJcea5cxitvWVcXMT6`
 
 ---
 
@@ -84,7 +86,7 @@ KernelSU Next 支持从 **4.4 到 6.6** 的大多数安卓内核。
 
 - [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/) – KernelSU 的灵感
 - [Magisk](https://github.com/topjohnwu/Magisk) – 强大的 Root 工具
-- [genuine](https://github.com/brevent/genuine/) – APK v2 签名验证
+- [Genuine](https://github.com/brevent/genuine/) – APK v2 签名验证
 - [Diamorphine](https://github.com/m0nad/Diamorphine) – 一些 Rootkit 技巧
 - [KernelSU](https://github.com/tiann/KernelSU) – 感谢 tiann，否则 KernelSU Next 根本不会存在
 - [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs) – 💜 5ec1cff 为了拯救 KernelSU！

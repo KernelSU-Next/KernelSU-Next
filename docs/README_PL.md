@@ -42,7 +42,7 @@ KernelSU Next obsługuje jądra Androida od wersji **4.4 do 6.6**:
 | Wersja jądra         | Informacje techniczne                                                                     |
 |----------------------|-------------------------------------------------------------------------------------------|
 | 5.10+ (GKI 2.0)      | Obsługuje wstępnie skompilowane obrazy i LKM/KMI                                          |
-| 4.19 – 5.4 (GKI 1.0) | Wymaga wbudowania sterownika KernelSU                                                     | 
+| 4.19 – 5.4 (GKI 1.0) | Wymaga wbudowania sterownika KernelSU                                                     |
 | < 4.14 (EOL)         | Wymaga sterownika KernelSU (obsługa 3.18+ jest eksperymentalna i może wymagać backportów) |
 
 **Obsługiwane architektury:** `arm64-v8a`, `armeabi-v7a` i `x86_64`
@@ -55,7 +55,7 @@ Instrukcje dotyczące instalacji można znaleźć w przewodniku [Instalacja](htt
 
 ---
 
-## 🔐 Bezpieczeństwo
+## 🏅 Bezpieczeństwo
 
 Aby zgłosić problemy związane z bezpieczeństwem, zapoznaj się z [SECURITY.md](/SECURITY.md).
 
