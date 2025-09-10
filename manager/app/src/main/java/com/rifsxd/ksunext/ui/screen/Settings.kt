@@ -7,55 +7,28 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.only
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.Text
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarScrollBehavior
-import androidx.compose.material3.rememberTopAppBarState
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
+import androidx.core.content.edit
 import com.maxkeppeker.sheets.core.models.base.Header
 import com.maxkeppeker.sheets.core.models.base.IconSource
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
@@ -64,30 +37,18 @@ import com.maxkeppeler.sheets.list.models.ListOption
 import com.maxkeppeler.sheets.list.models.ListSelection
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
-import com.ramcosta.composedestinations.generated.destinations.AppProfileTemplateScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.BackupRestoreScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.CustomizationScreenDestination
-import com.ramcosta.composedestinations.generated.destinations.DeveloperScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.*
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
+import com.rifsxd.ksunext.BuildConfig
+import com.rifsxd.ksunext.Natives
+import com.rifsxd.ksunext.R
+import com.rifsxd.ksunext.ksuApp
+import com.rifsxd.ksunext.ui.component.*
+import com.rifsxd.ksunext.ui.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import com.rifsxd.ksunext.BuildConfig
-import com.rifsxd.ksunext.Natives
-import com.rifsxd.ksunext.ksuApp
-import com.rifsxd.ksunext.R
-import com.rifsxd.ksunext.ui.component.AboutDialog
-import com.rifsxd.ksunext.ui.component.ConfirmResult
-import com.rifsxd.ksunext.ui.component.DialogHandle
-import com.rifsxd.ksunext.ui.component.SwitchItem
-import com.rifsxd.ksunext.ui.component.rememberConfirmDialog
-import com.rifsxd.ksunext.ui.component.rememberCustomDialog
-import com.rifsxd.ksunext.ui.component.rememberLoadingDialog
-import com.rifsxd.ksunext.ui.util.LocalSnackbarHost
-import com.rifsxd.ksunext.ui.util.getBugreportFile
-import com.rifsxd.ksunext.ui.util.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -101,6 +62,8 @@ import java.time.format.DateTimeFormatter
 fun SettingScreen(navigator: DestinationsNavigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
     val snackBarHost = LocalSnackbarHost.current
+    var isGlobalNamespaceEnabled by rememberSaveable { mutableStateOf(false) }
+    isGlobalNamespaceEnabled = isGlobalNamespaceEnabled()
 
     val isManager = Natives.becomeManager(ksuApp.packageName)
     val ksuVersion = if (isManager) Natives.version else null
@@ -196,14 +159,31 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         }
                     }
                 }
+                
+                SwitchItem(
+                    icon = Icons.Filled.Engineering,
+                    title = stringResource(id = R.string.settings_global_namespace_mode),
+                    summary = stringResource(id = R.string.settings_global_namespace_mode_summary),
+                    checked = isGlobalNamespaceEnabled,
+                    onCheckedChange = {
+                        setGlobalNamespaceEnabled(
+                            if (isGlobalNamespaceEnabled) {
+                                "0"
+                            } else {
+                                "1"
+                            }
+                        )
+                        isGlobalNamespaceEnabled = it
+                    }
+                )
             }
 
             val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
             val suSFS = getSuSFS()
-            val isSUS_SU = getSuSFSFeatures()
+            val isSUS_SU = hasSuSFs_SUS_SU() == "Supported"
             if (suSFS == "Supported") {
-                if (isSUS_SU == "CONFIG_KSU_SUSFS_SUS_SU") {
+                if (isSUS_SU) {
                     var isEnabled by rememberSaveable {
                         mutableStateOf(susfsSUS_SU_Mode() == "2")
                     }
@@ -223,7 +203,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                         } else {
                             susfsSUS_SU_0()
                         }
-                        prefs.edit().putBoolean("enable_sus_su", it).apply()
+                        prefs.edit { putBoolean("enable_sus_su", it) }
                         isEnabled = it
                     }
                 }
@@ -248,7 +228,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     summary = stringResource(id = R.string.use_overlay_fs_summary),
                     checked = useOverlayFs
                 ) {
-                    prefs.edit().putBoolean("use_overlay_fs", it).apply()
+                    prefs.edit { putBoolean("use_overlay_fs", it) }
                     useOverlayFs = it
                     if (useOverlayFs) {
                         moduleBackup()
@@ -299,7 +279,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 summary = stringResource(id = R.string.settings_check_update_summary),
                 checked = checkUpdate
             ) {
-                prefs.edit().putBoolean("check_update", it).apply()
+                prefs.edit { putBoolean("check_update", it) }
                 checkUpdate = it
             }
 

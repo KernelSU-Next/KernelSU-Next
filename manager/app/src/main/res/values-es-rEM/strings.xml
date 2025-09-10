@@ -17,7 +17,7 @@
   <string name="home_working">Funcionando</string>
   <string name="home_working_version">Versión: %d</string>
   <string name="home_module_update_count">Actualizaciones: %d</string>
-  <string name="home_failure">¡No se encontró la firma de KernelSU Next v2 en el kernel! [ !KSU_NEXT || != size/hash ]</string>
+  <string name="home_failure">¡Firma v2 de KernelSU Next no encontrada en el kernel! [ !KSU_NEXT || != size/hash ]</string>
   <string name="home_failure_tip">¡Pídele a tu desarrollador de kernel que integre KernelSU Next!</string>
   <string name="home_kernel">Versión del kernel</string>
   <string name="hook_mode">Método de intercepción</string>
@@ -119,7 +119,7 @@
   <string name="profile_template">Plantilla</string>
   <string name="profile_custom">Personalizado</string>
   <string name="profile_name">Nombre de perfil</string>
-  <string name="profile_namespace">Espacio de nombres de montaje</string>
+  <string name="profile_namespace">Espacio de montaje aislado</string>
   <string name="profile_namespace_inherited">Heredado</string>
   <string name="profile_namespace_global">Global</string>
   <string name="profile_namespace_individual">Individual</string>
@@ -228,4 +228,9 @@
   <string name="home_module_count_singular">Módulo</string>
   <string name="home_module_count_plural">Módulos</string>
   <string name="module_backup_message">Respaldar los módulos actualmente instalados.</string>
+  <string name="module_sort_enabled_first">Ordenar (Activados Primero)</string>
+  <string name="module_sort_action_first">Ordenar (Accionables primero)</string>
+  <string name="module_sort_webui_first">Ordenar (WrbUI primero)</string>
+  <string name="settings_global_namespace_mode">Usar el Espacio de Montaje Aislado Global</string>
+  <string name="settings_global_namespace_mode_summary">Todas las sesiones root usan el espacio de montaje aislado global</string>
 </resources>

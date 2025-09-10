@@ -15,15 +15,17 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.webkit.WebViewAssetLoader
-import com.topjohnwu.superuser.Shell
 import com.rifsxd.ksunext.ui.util.createRootShell
 import java.io.File
 
 @SuppressLint("SetJavaScriptEnabled")
 class WebUIActivity : ComponentActivity() {
-    private lateinit var webviewInterface: WebViewInterface
+    private val rootShell by lazy { createRootShell(true) }
+    private var webView = null as WebView?
 
-    private var rootShell: Shell? = null
+    fun erudaConsole(context: android.content.Context): String {
+        return context.assets.open("eruda.min.js").bufferedReader().use { it.readText() }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -35,8 +37,8 @@ class WebUIActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
 
-        val moduleId = intent.getStringExtra("id")!!
-        val name = intent.getStringExtra("name")!!
+        val moduleId = intent.getStringExtra("id") ?: finishAndRemoveTask().let { return }
+        val name = intent.getStringExtra("name") ?: finishAndRemoveTask().let { return }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             @Suppress("DEPRECATION")
             setTaskDescription(ActivityManager.TaskDescription("WebUI-Next | $name"))
@@ -46,11 +48,13 @@ class WebUIActivity : ComponentActivity() {
         }
 
         val prefs = getSharedPreferences("settings", MODE_PRIVATE)
-        WebView.setWebContentsDebuggingEnabled(prefs.getBoolean("enable_web_debugging", false))
+        val developerOptionsEnabled = prefs.getBoolean("enable_developer_options", false)
+        val enableWebDebugging = prefs.getBoolean("enable_web_debugging", false)
+
+        WebView.setWebContentsDebuggingEnabled(developerOptionsEnabled && enableWebDebugging)
 
         val moduleDir = "/data/adb/modules/${moduleId}"
         val webRoot = File("${moduleDir}/webroot")
-        val rootShell = createRootShell(true).also { this.rootShell = it }
         val webViewAssetLoader = WebViewAssetLoader.Builder()
             .setDomain("mui.kernelsu.org")
             .addPathHandler(
@@ -59,16 +63,9 @@ class WebUIActivity : ComponentActivity() {
             )
             .build()
 
-        val webViewClient = object : WebViewClient() {
-            override fun shouldInterceptRequest(
-                view: WebView,
-                request: WebResourceRequest
-            ): WebResourceResponse? {
-                return webViewAssetLoader.shouldInterceptRequest(request.url)
-            }
-        }
-
         val webView = WebView(this).apply {
+            webView = this
+
             ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
                 val inset = insets.getInsets(WindowInsetsCompat.Type.systemBars())
                 view.updateLayoutParams<MarginLayoutParams> {
@@ -82,9 +79,41 @@ class WebUIActivity : ComponentActivity() {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.allowFileAccess = false
-            webviewInterface = WebViewInterface(this@WebUIActivity, this, moduleDir)
-            addJavascriptInterface(webviewInterface, "ksu")
-            setWebViewClient(webViewClient)
+            addJavascriptInterface(WebViewInterface(this@WebUIActivity, this, moduleDir), "ksu")
+            setWebViewClient(object : WebViewClient() {
+                override fun shouldInterceptRequest(
+                    view: WebView,
+                    request: WebResourceRequest
+                ): WebResourceResponse? {
+                    val url = request.url
+                    
+                    //POC: Handle ksu://icon/[packageName] to serve app icon via WebView
+                    if (url.scheme.equals("ksu", ignoreCase = true) && url.host.equals("icon", ignoreCase = true)) {
+                        val packageName = url.path?.substring(1) 
+                        if (!packageName.isNullOrEmpty()) {
+                            val icon = AppIconUtil.loadAppIconSync(this@WebUIActivity, packageName, 512)
+                            if (icon != null) {
+                                val stream = java.io.ByteArrayOutputStream()
+                                icon.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, stream)
+                                val inputStream = java.io.ByteArrayInputStream(stream.toByteArray())
+                                return WebResourceResponse("image/png", null, inputStream)
+                            }
+                        }
+                    }
+            
+                    return webViewAssetLoader.shouldInterceptRequest(url)
+                }
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    super.onPageFinished(view, url)
+                    if (developerOptionsEnabled && enableWebDebugging) {
+                        view?.evaluateJavascript(
+                            erudaConsole(this@WebUIActivity),
+                            null
+                        )
+                        view?.evaluateJavascript("eruda.init();", null)
+                    }
+                }
+            })
             loadUrl("https://mui.kernelsu.org/index.html")
         }
 
@@ -92,7 +121,13 @@ class WebUIActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        rootShell.runCatching { close() }
+        webView?.apply {
+            stopLoading()
+            removeAllViews()
+            destroy()
+            webView = null
+        }
         super.onDestroy()
-        runCatching { rootShell?.close() }
     }
 }

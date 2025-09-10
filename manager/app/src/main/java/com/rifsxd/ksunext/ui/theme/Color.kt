@@ -13,3 +13,8 @@ val AMOLED_BLACK = Color(0xFF000000)      // Pure black for AMOLED
 
 val DARK_PURPLE = Color(0xFF6E6CB6)       // Catppuccin Mauve (dark purple)
 val DARK_GREY = Color(0xFF363A4F)         // Catppuccin Surface (dark grey)
+
+val GREEN = Color(0xFF4CAF50)             // Green
+val RED = Color(0xFFF44336)               // Red
+val YELLOW = Color(0xFFFFEB3B)            // Yellow
+val ORANGE = Color(0xFFFF9800)            // Orange

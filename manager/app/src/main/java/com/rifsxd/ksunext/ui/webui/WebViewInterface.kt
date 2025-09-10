@@ -1,33 +1,36 @@
 package com.rifsxd.ksunext.ui.webui
 
+import android.app.Activity
+import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
-import android.util.Base64
-import android.app.Activity
-import android.content.Context
-import android.content.pm.ApplicationInfo
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.text.TextUtils
+import android.util.Base64
 import android.view.Window
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.widget.Toast
+import androidx.core.graphics.createBitmap
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.topjohnwu.superuser.CallbackList
-import com.topjohnwu.superuser.ShellUtils
-import com.topjohnwu.superuser.internal.UiThreadHandler
 import com.rifsxd.ksunext.ui.util.createRootShell
 import com.rifsxd.ksunext.ui.util.listModules
 import com.rifsxd.ksunext.ui.util.withNewRootShell
+import com.topjohnwu.superuser.CallbackList
+import com.topjohnwu.superuser.ShellUtils
+import com.topjohnwu.superuser.internal.UiThreadHandler
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.util.concurrent.CompletableFuture
 
+@Suppress("unused")
 class WebViewInterface(
     val context: Context,
     private val webView: WebView,
@@ -67,56 +70,57 @@ class WebViewInterface(
         options: String?,
         callbackFunc: String
     ) {
-        val finalCommand = StringBuilder()
-        processOptions(finalCommand, options)
-        finalCommand.append(cmd)
+        val finalCommand = buildString {
+            processOptions(this, options)
+            append(cmd)
+        }
 
         val result = withNewRootShell(true) {
-            newJob().add(finalCommand.toString()).to(ArrayList(), ArrayList()).exec()
+            newJob().add(finalCommand).to(ArrayList(), ArrayList()).exec()
         }
         val stdout = result.out.joinToString(separator = "\n")
         val stderr = result.err.joinToString(separator = "\n")
 
         val jsCode =
-            "javascript: (function() { try { ${callbackFunc}(${result.code}, ${
+            "(function() { try { ${callbackFunc}(${result.code}, ${
                 JSONObject.quote(
                     stdout
                 )
             }, ${JSONObject.quote(stderr)}); } catch(e) { console.error(e); } })();"
         webView.post {
-            webView.loadUrl(jsCode)
+            webView.evaluateJavascript(jsCode, null)
         }
     }
 
     @JavascriptInterface
     fun spawn(command: String, args: String, options: String?, callbackFunc: String) {
-        val finalCommand = StringBuilder()
+        val finalCommand = buildString {
+            processOptions(this, options)
 
-        processOptions(finalCommand, options)
-
-        if (!TextUtils.isEmpty(args)) {
-            finalCommand.append(command).append(" ")
-            JSONArray(args).let { argsArray ->
-                for (i in 0 until argsArray.length()) {
-                    finalCommand.append(argsArray.getString(i))
-                    finalCommand.append(" ")
+            if (!TextUtils.isEmpty(args)) {
+                append(command).append(" ")
+                JSONArray(args).let { argsArray ->
+                    for (i in 0 until argsArray.length()) {
+                        append(argsArray.getString(i))
+                        append(" ")
+                    }
                 }
+            } else {
+                append(command)
             }
-        } else {
-            finalCommand.append(command)
         }
 
         val shell = createRootShell(true)
 
         val emitData = fun(name: String, data: String) {
             val jsCode =
-                "javascript: (function() { try { ${callbackFunc}.${name}.emit('data', ${
+                "(function() { try { ${callbackFunc}.${name}.emit('data', ${
                     JSONObject.quote(
                         data
                     )
                 }); } catch(e) { console.error('emitData', e); } })();"
             webView.post {
-                webView.loadUrl(jsCode)
+                webView.evaluateJavascript(jsCode, null)
             }
         }
 
@@ -139,14 +143,14 @@ class WebViewInterface(
 
         completableFuture.thenAccept { result ->
             val emitExitCode =
-                "javascript: (function() { try { ${callbackFunc}.emit('exit', ${result.code}); } catch(e) { console.error(`emitExit error: \${e}`); } })();"
+                "(function() { try { ${callbackFunc}.emit('exit', ${result.code}); } catch(e) { console.error(`emitExit error: \${e}`); } })();"
             webView.post {
-                webView.loadUrl(emitExitCode)
+                webView.evaluateJavascript(emitExitCode, null)
             }
 
             if (result.code != 0) {
                 val emitErrCode =
-                    "javascript: (function() { try { var err = new Error(); err.exitCode = ${result.code}; err.message = ${
+                    "(function() { try { var err = new Error(); err.exitCode = ${result.code}; err.message = ${
                         JSONObject.quote(
                             result.err.joinToString(
                                 "\n"
@@ -154,7 +158,7 @@ class WebViewInterface(
                         )
                     };${callbackFunc}.emit('error', err); } catch(e) { console.error('emitErr', e); } })();"
                 webView.post {
-                    webView.loadUrl(emitErrCode)
+                    webView.evaluateJavascript(emitErrCode, null)
                 }
             }
         }.whenComplete { _, _ ->
@@ -185,7 +189,7 @@ class WebViewInterface(
     @JavascriptInterface
     fun moduleInfo(): String {
         val moduleInfos = JSONArray(listModules())
-        var currentModuleInfo = JSONObject()
+        val currentModuleInfo = JSONObject()
         currentModuleInfo.put("moduleDir", modDir)
         val moduleId = File(modDir).getName()
         for (i in 0 until moduleInfos.length()) {
@@ -195,7 +199,7 @@ class WebViewInterface(
                 continue
             }
 
-            var keys = currentInfo.keys()
+            val keys = currentInfo.keys()
             for (key in keys) {
                 currentModuleInfo.put(key, currentInfo.get(key))
             }
@@ -265,9 +269,11 @@ class WebViewInterface(
                 val pkg = pm.getPackageInfo(pkgName, 0)
                 val appInfo = pkg.applicationInfo
                 val obj = JSONObject()
+                @Suppress("DEPRECATION")
+                val versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) pkg.longVersionCode else pkg.versionCode
                 obj.put("packageName", pkg.packageName)
                 obj.put("versionName", pkg.versionName ?: "")
-                obj.put("versionCode", pkg.longVersionCode)
+                obj.put("versionCode", versionCode)
                 obj.put("appLabel", if (appInfo != null) pm.getApplicationLabel(appInfo).toString() else "")
                 obj.put("isSystem", appInfo != null && (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0)
                 obj.put("uid", appInfo?.uid ?: JSONObject.NULL)
@@ -343,7 +349,7 @@ fun drawableToBitmap(drawable: Drawable, size: Int): Bitmap {
     if (drawable is BitmapDrawable && drawable.bitmap.width == size && drawable.bitmap.height == size) {
         return drawable.bitmap
     }
-    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val bitmap = createBitmap(size, size)
     val canvas = Canvas(bitmap)
     drawable.setBounds(0, 0, size, size)
     drawable.draw(canvas)

@@ -36,7 +36,7 @@
 
 ## ✅ Compatibilidade
 
-O KernelSU Next oferece suporte a kernels Android **4.4 até 6.6**:
+O KernelSU Next oferece suporte a kernels Android **4.4 até 6.6**.
 
 | Versão do kernel     | Notas de suporte                                                              |
 |----------------------|-------------------------------------------------------------------------------|
@@ -87,3 +87,4 @@ Se você quiser apoiar o projeto:
 - [Diamorphine](https://github.com/m0nad/Diamorphine) – Técnicas de rootkit
 - [KernelSU](https://github.com/tiann/KernelSU) – A base original que tornou o KernelSU Next possível
 - [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs) – 💜 para 5ec1cff por manter o KernelSU vivo
+- [Tradutores do Crowdin](https://crowdin.com/project/kernelsu-next/members) – 💬 Obrigado a todos por ajudar a tornar o KernelSU Next multilíngue!

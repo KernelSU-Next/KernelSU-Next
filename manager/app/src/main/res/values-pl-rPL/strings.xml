@@ -45,8 +45,8 @@
   <string name="module_install_prompt_with_name">Następujące moduły zostaną zainstalowane: %1$s</string>
   <string name="module_sort_a_to_z">Sortuj (A → Z)</string>
   <string name="module_sort_z_to_a">Sortuj (Z → A)</string>
-  <string name="module_size_low_to_high">Sortuj (Najmniejszy → Największy)</string>
-  <string name="module_size_high_to_low">Sortuj (Największy → Najmniejszy)</string>
+  <string name="module_size_low_to_high">Sortuj (Małe → Duże)</string>
+  <string name="module_size_high_to_low">Sortuj (Duże → Małe)</string>
   <string name="uninstall">Odinstaluj</string>
   <string name="restore">Przywróć</string>
   <string name="module_install">Zainstaluj</string>
@@ -216,16 +216,21 @@
   <string name="settings_banner_summary">Wyświetlaj banery modułów w tle.</string>
   <string name="use_webuix">Używaj WebUI X</string>
   <string name="use_webuix_summary">Używaj WebUI X zamiast WebUI, który obsługuje więcej interfejsów API.</string>
-  <string name="use_webuix_eruda">Wstrzyknij Eruda do WebUI X</string>
+  <string name="use_webuix_eruda">Wstrzykiwanie Eruda do WebUI X</string>
   <string name="use_webuix_eruda_summary">Wstrzyknij konsolę debugowania do WebUI X, aby ułatwić debugowanie. Wymagane jest aktywne debugowanie WebView.</string>
   <string name="customization">Personalizacja</string>
   <string name="developer">Programista</string>
   <string name="sucompat_disabled">SUCOMPAT NIEAKTYWNY</string>
   <string name="zygisk_required">Wymagany Zygisk</string>
-  <string name="zygisk_status">Wstrzyknięcie Zygisk</string>
+  <string name="zygisk_status">Wstrzykiwanie Zygisk</string>
   <string name="home_superuser_count_singular">Superuser</string>
   <string name="home_superuser_count_plural">Superuserzy</string>
   <string name="home_module_count_singular">Moduł</string>
   <string name="home_module_count_plural">Moduły</string>
   <string name="module_backup_message">Utwórz kopię zapasową obecnie zainstalowanych modułów.</string>
+  <string name="module_sort_enabled_first">Sortuj (najpierw włączone)</string>
+  <string name="module_sort_action_first">Sortuj (najpierw z Akcją)</string>
+  <string name="module_sort_webui_first">Sortuj (najpierw z WebUI)</string>
+  <string name="settings_global_namespace_mode">Tryb globalnej przestrzeni nazw</string>
+  <string name="settings_global_namespace_mode_summary">Wszystkie sesje roota używają globalnej przestrzeni nazw montowania</string>
 </resources>

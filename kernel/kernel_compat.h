@@ -23,6 +23,9 @@
 extern long ksu_strncpy_from_user_nofault(char *dst,
 					  const void __user *unsafe_addr,
 					  long count);
+extern long ksu_strncpy_from_user_retry(char *dst,
+					  const void __user *unsafe_addr,
+					  long count);
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) || defined(CONFIG_IS_HW_HISI) || defined(CONFIG_KSU_ALLOWLIST_WORKAROUND)
 extern struct key *init_session_keyring;

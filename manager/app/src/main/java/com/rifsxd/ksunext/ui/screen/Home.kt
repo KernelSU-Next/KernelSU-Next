@@ -3,45 +3,37 @@ package com.rifsxd.ksunext.ui.screen
 import android.content.Context
 import android.os.Build
 import android.os.PowerManager
-import android.os.Handler
-import android.os.Looper
 import android.system.Os
 import android.widget.Toast
 import androidx.annotation.StringRes
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.intl.Locale
-import androidx.compose.ui.text.toUpperCase
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.pm.PackageInfoCompat
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dergoogler.mmrl.ui.component.LabelItem
 import com.dergoogler.mmrl.ui.component.LabelItemDefaults
 import com.dergoogler.mmrl.ui.component.text.TextRow
@@ -49,13 +41,13 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.InstallScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import com.rifsxd.ksunext.*
 import com.rifsxd.ksunext.R
 import com.rifsxd.ksunext.ui.component.rememberConfirmDialog
 import com.rifsxd.ksunext.ui.util.*
 import com.rifsxd.ksunext.ui.util.module.LatestVersionInfo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -622,12 +614,20 @@ private fun InfoCard(autoExpand: Boolean = false) {
                     icon = painterResource(R.drawable.ic_ksu_next),
                 )
 
-                if (Natives.version >= Natives.MINIMAL_SUPPORTED_HOOK_MODE) {
+                if (ksuVersion != null &&
+                    Natives.version >= Natives.MINIMAL_SUPPORTED_HOOK_MODE) {
+
+                    val hookMode =
+                        Natives.getHookMode()
+                            .takeUnless { it.isNullOrBlank() }
+                            ?: stringResource(R.string.unavailable)
+
                     Spacer(Modifier.height(16.dp))
+
                     InfoCardItem(
-                        label = stringResource(R.string.hook_mode),
-                        content = Natives.getHookMode() ?: stringResource(R.string.unavailable),
-                        icon = Icons.Filled.Phishing,
+                        label   = stringResource(R.string.hook_mode),
+                        content = hookMode,
+                        icon    = Icons.Filled.Phishing,
                     )
                 }
 
@@ -642,7 +642,7 @@ private fun InfoCard(autoExpand: Boolean = false) {
 
                     val suSFS = getSuSFS()
                     if (suSFS == "Supported") {
-                        val isSUS_SU = getSuSFSFeatures() == "CONFIG_KSU_SUSFS_SUS_SU"
+                        val isSUS_SU = hasSuSFs_SUS_SU() == "Supported"
                         val susSUMode = if (isSUS_SU) {
                             val mode = susfsSUS_SU_Mode()
                             val modeString =

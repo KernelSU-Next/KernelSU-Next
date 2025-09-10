@@ -33,7 +33,7 @@
   <string name="home_manager_version">Phiên bản trình quản lý</string>
   <string name="home_abi">ABI</string>
   <string name="home_selinux_status">Trạng thái SELinux</string>
-  <string name="selinux_status_disabled">Đã vô hiệu hoá</string>
+  <string name="selinux_status_disabled">Vô hiệu hoá</string>
   <string name="selinux_status_enforcing">Enforcing</string>
   <string name="selinux_status_permissive">Permissive</string>
   <string name="selinux_status_unknown">Không xác định</string>
@@ -132,7 +132,7 @@
   <string name="settings_umount_modules_default">Umount modules</string>
   <string name="settings_umount_modules_default_summary">Giá trị mặc định chung cho \"Umount modules\" trong Hồ sơ ứng dụng. Nếu được bật, mọi thay đổi hệ thống do các module gây ra sẽ bị gỡ bỏ khỏi hệ thống và các ứng dụng chưa thiết lập hồ sơ</string>
   <string name="settings_susfs_toggle">Ẩn kprobes hook</string>
-  <string name="settings_susfs_toggle_summary">Tùy chọn này vô hiệu hoá kprobes hook do KernelSU tạo ra và thay vào đó sẽ kích hoạt nhúng non-kprobes hook, đảm bảo những Kernel Non-GKI(EOL) hoạt động ổn định</string>
+  <string name="settings_susfs_toggle_summary">Tùy chọn này sẽ vô hiệu hoá kprobes hook do KernelSU tạo ra và thay vào đó sẽ kích hoạt nhúng non-kprobes hook, đảm bảo những Kernel Non-GKI(EOL) hoạt động ổn định</string>
   <string name="profile_umount_modules_summary">Bật tùy chọn này sẽ cho phép KernelSU Next khôi phục mọi file đã được các module sửa đổi trong ứng dụng này</string>
   <string name="profile_selinux_domain">Tên miền</string>
   <string name="profile_selinux_rules">Quy tắc</string>
@@ -170,7 +170,7 @@
   <string name="app_profile_import_from_clipboard">Nhập từ bộ nhớ tạm</string>
   <string name="app_profile_export_to_clipboard">Xuất vào bộ nhớ tạm</string>
   <string name="app_profile_template_export_empty">Không tìm thấy mẫu cục bộ để xuất!</string>
-  <string name="app_profile_template_import_success">Nhập thành công</string>
+  <string name="app_profile_template_import_success">Đã nhập thành công</string>
   <string name="app_profile_template_sync">Đồng bộ hoá các mẫu trực tuyến</string>
   <string name="app_profile_template_save_failed">Lưu mẫu thất bại</string>
   <string name="app_profile_template_import_empty">Bộ nhớ tạm đang trống!</string>
@@ -186,7 +186,7 @@
   <string name="direct_install">Cài đặt trực tiếp (Khuyến nghị)</string>
   <string name="select_file">Chọn file</string>
   <string name="install_inactive_slot">Cài đặt vào phân vùng không hoạt động (Sau OTA)</string>
-  <string name="install_inactive_slot_warning">Thiết bị của bạn sẽ **BUỘC** phải khởi động vào phân vùng không hoạt động hiện tại sau khi khởi động lại!\nChỉ sử dụng tùy chọn này sau khi OTA hoàn tất.\nTiếp tục?</string>
+  <string name="install_inactive_slot_warning">Thiết bị của bạn sẽ **BUỘC** phải khởi động vào phân vùng không hoạt động hiện tại sau khi khởi động lại!\nChỉ sử dụng tùy chọn này sau khi cập nhật OTA hoàn tất.\nTiếp tục?</string>
   <string name="install_next">Tiếp tục</string>
   <string name="select_file_tip">Phân vùng image %1$s được khuyến nghị</string>
   <string name="select_kmi">Chọn KMI</string>
@@ -222,10 +222,15 @@
   <string name="developer">Nhà phát triển</string>
   <string name="sucompat_disabled">Vô hiệu hoá lệnh SU</string>
   <string name="zygisk_required">Yêu cầu Zygisk</string>
-  <string name="zygisk_status">Zygisk Inject</string>
+  <string name="zygisk_status">Triển khai Zygisk</string>
   <string name="home_superuser_count_singular">Superuser</string>
   <string name="home_superuser_count_plural">Superusers</string>
   <string name="home_module_count_singular">Module</string>
   <string name="home_module_count_plural">Modules</string>
   <string name="module_backup_message">Sao lưu các module hiện đang được cài đặt</string>
+  <string name="module_sort_enabled_first">Sắp xếp (Bật trước)</string>
+  <string name="module_sort_action_first">Sắp xếp (Khởi chạy trước)</string>
+  <string name="module_sort_webui_first">Sắp xếp (WebUI trước)</string>
+  <string name="settings_global_namespace_mode">Chế độ Namespace chung</string>
+  <string name="settings_global_namespace_mode_summary">Tất cả các phiên root đều sử dụng mount namespace chung</string>
 </resources>

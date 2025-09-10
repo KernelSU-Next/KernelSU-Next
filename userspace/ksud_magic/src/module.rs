@@ -258,7 +258,7 @@ pub fn prune_modules() -> Result<()> {
             let uninstaller = module.join("uninstall.sh");
             if uninstaller.exists() {
                 if let Err(e) = exec_script(uninstaller, true) {
-                    warn!("Failed to exec uninstaller: {}", e);
+                    warn!("Failed to exec uninstaller: {e}");
                 }
             }
 
@@ -301,9 +301,6 @@ pub fn install_module(zip: &str) -> Result<()> {
     fn inner(zip: &str) -> Result<()> {
         ensure_boot_completed()?;
 
-        // print banner
-        println!(include_str!("banner"));
-
         assets::ensure_binaries(false).with_context(|| "Failed to extract assets")?;
 
         // first check if working dir is usable
@@ -323,7 +320,7 @@ pub fn install_module(zip: &str) -> Result<()> {
                 module_prop.insert(k, v);
             },
         )?;
-        info!("module prop: {:?}", module_prop);
+        info!("module prop: {module_prop:?}");
 
         let Some(module_id) = module_prop.get("id") else {
             bail!("module id not found in module.prop!");
@@ -401,7 +398,7 @@ pub fn restore_module(id: &str) -> Result<()> {
 }
 
 pub fn run_action(id: &str) -> Result<()> {
-    let action_script_path = format!("/data/adb/modules/{}/action.sh", id);
+    let action_script_path = format!("/data/adb/modules/{id}/action.sh");
     exec_script(&action_script_path, true)
 }
 

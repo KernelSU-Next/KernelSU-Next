@@ -228,4 +228,9 @@
     <string name="home_superuser_count_plural">Superusers</string>
     <string name="home_module_count_singular">Module</string>
     <string name="home_module_count_plural">Modules</string>
+    <string name="module_sort_enabled_first">Sort (Enabled first)</string>
+    <string name="module_sort_action_first">Sort (Action first)</string>
+    <string name="module_sort_webui_first">Sort (WebUI first)</string>
+    <string name="settings_global_namespace_mode">Global Namespace Mode</string>
+    <string name="settings_global_namespace_mode_summary">All root sessions use the global mount namespace</string>
 </resources>

@@ -40,4 +40,11 @@ config KSU_LSM_SECURITY_HOOKS
 	  Disabling this is mostly only useful for kernel 4.1 and older.
 	  Make sure to implement manual hooks on security/security.c.
 
+config KSU_SWITCH_MANAGER
+	bool "KernelSU switch manager support"
+	depends on KSU
+	default n
+	help
+	  Enable KernelSU switch manager support.
+
 endmenu
