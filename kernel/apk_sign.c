@@ -334,9 +334,8 @@ bool ksu_is_manager_apk(char *path)
 	}
 
 #ifdef CONFIG_KSU_SUSFS
-	return (check_v2_signature(path, EXPECTED_NEXT_SIZE, EXPECTED_NEXT_HASH) ||
-			check_v2_signature(path, 384, "7e0c6d7278a3bb8e364e0fcba95afaf3666cf5ff3c245a3b63c8833bd0445cc4")); // 5ec1cff
-#else
-	return check_v2_signature(path, EXPECTED_NEXT_SIZE, EXPECTED_NEXT_HASH);
+	return (check_v2_signature(path, EXPECTED_NEXT_SIZE, EXPECTED_NEXT_HASH) /* Dynamic */
+		|| check_v2_signature(path, 0x33b, "c371061b19d8c7d7d6133c6a9bafe198fa944e50c1b31c9d8daa8d7f1fc2d2d6") /* KernelSU Manager */
+		|| check_v2_signature(path, 0x39b, "593d4ce870c02468639efeef631e07ca4d852d63f154be56706229f9a5be0800")); /* WKSU Manager */
 #endif
 }
