@@ -60,8 +60,9 @@ body:
         value: |
           - Device:
           - OS Version:
-          - KernelSU Version:
           - Kernel Version:
+          - KSUN Driver Version:
+          - KSUN Manager Version:
     validations:
         required: true
 

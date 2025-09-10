@@ -110,12 +110,12 @@ pub fn is_safe_mode() -> bool {
         || getprop("ro.sys.safemode")
             .filter(|prop| prop == "1")
             .is_some();
-    log::info!("safemode: {}", safemode);
+    log::info!("safemode: {safemode}");
     if safemode {
         return true;
     }
     let safemode = ksucalls::check_kernel_safemode();
-    log::info!("kernel_safemode: {}", safemode);
+    log::info!("kernel_safemode: {safemode}");
     safemode
 }
 
@@ -194,28 +194,13 @@ fn is_ok_empty(dir: &str) -> bool {
 
 fn find_temp_path() -> String {
     use std::result::Result::Ok;
-
-    if is_ok_empty(defs::TEMP_DIR) {
-        return defs::TEMP_DIR.to_string();
-    }
-
-    // Try to create a random directory in /dev/
-    let r = tempfile::tempdir_in("/dev/");
-    match r {
-        Ok(tmp_dir) => {
-            if let Some(path) = tmp_dir.keep().to_str() {
-                return path.to_string();
-            }
-        }
-        Err(_e) => {}
-    }
-
+    
     let dirs = [
-        defs::TEMP_DIR,
         "/patch_hw",
         "/oem",
         "/root",
         defs::TEMP_DIR_LEGACY,
+        defs::TEMP_DIR,
     ];
 
     // find empty directory
@@ -240,7 +225,7 @@ pub fn get_tmp_path() -> &'static str {
 
     CHOSEN_TMP_PATH.get_or_init(|| {
         let r = find_temp_path();
-        log::info!("Chosen temp_path: {}", r);
+        log::info!("Chosen temp_path: {r}");
         r
     })
 }
@@ -367,7 +352,7 @@ fn copy_xattrs(src_path: impl AsRef<Path>, dest_path: impl AsRef<Path>) -> Resul
         if let Err(e) =
             extattr::lsetxattr(dest_path.as_ref(), &xattr, &value, extattr::Flags::empty())
         {
-            log::warn!("Failed to set xattr: {}", e);
+            log::warn!("Failed to set xattr: {e}");
         }
     }
     Ok(())
@@ -400,7 +385,7 @@ pub fn copy_module_files(source: impl AsRef<Path>, destination: impl AsRef<Path>
                 std::fs::remove_file(&dest_path).context("Failed to remove file")?;
             }
             let target = std::fs::read_link(entry.path()).context("Failed to read symlink")?;
-            log::info!("Symlink: {:?} -> {:?}", dest_path, target);
+            log::info!("Symlink: {dest_path:?} -> {target:?}");
             std::os::unix::fs::symlink(target, &dest_path).context("Failed to create symlink")?;
             copy_xattrs(&source_path, &dest_path)?;
         } else if entry.file_type().is_dir() {

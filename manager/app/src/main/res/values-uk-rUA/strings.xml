@@ -222,10 +222,15 @@
   <string name="developer">Для Розробників</string>
   <string name="sucompat_disabled">SUCOMPAT ВИМКНЕНО</string>
   <string name="zygisk_required">Потрібно Zygisk</string>
-  <string name="zygisk_status">Zygisk-інджект</string>
-  <string name="home_superuser_count_singular">Суперкористувач</string>
-  <string name="home_superuser_count_plural">Суперкористувачі</string>
+  <string name="zygisk_status">Інжект Zygisk</string>
+  <string name="home_superuser_count_singular">Видано право</string>
+  <string name="home_superuser_count_plural">Видано прав</string>
   <string name="home_module_count_singular">Модуль</string>
   <string name="home_module_count_plural">Модулі</string>
   <string name="module_backup_message">Бекап поточних встановлених модулів.</string>
+  <string name="module_sort_enabled_first">За статусом (Спочатку включені)</string>
+  <string name="module_sort_action_first">За статусом (Спочатку зі скриптом)</string>
+  <string name="module_sort_webui_first">За статусом (Спочатку з WebUI)</string>
+  <string name="settings_global_namespace_mode">Загальний простір імен</string>
+  <string name="settings_global_namespace_mode_summary">Усі сесії користувача root будуть використовувати спільний простір імен</string>
 </resources>

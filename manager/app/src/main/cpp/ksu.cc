@@ -30,8 +30,9 @@
 #define CMD_IS_UID_SHOULD_UMOUNT 13
 #define CMD_IS_SU_ENABLED 14
 #define CMD_ENABLE_SU 15
-#define CMD_HOOK_MODE 16
-#define CMD_GET_MANAGER_UID 17
+#define CMD_GET_MANAGER_UID 16
+
+#define CMD_HOOK_MODE 0xC0DEAD1A
 
 static bool ksuctl(int cmd, void* arg1, void* arg2) {
     int32_t result = 0;

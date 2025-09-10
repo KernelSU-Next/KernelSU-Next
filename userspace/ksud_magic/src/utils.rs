@@ -104,12 +104,12 @@ pub fn is_safe_mode() -> bool {
         || getprop("ro.sys.safemode")
             .filter(|prop| prop == "1")
             .is_some();
-    log::info!("safemode: {}", safemode);
+    log::info!("safemode: {safemode}");
     if safemode {
         return true;
     }
     let safemode = ksucalls::check_kernel_safemode();
-    log::info!("kernel_safemode: {}", safemode);
+    log::info!("kernel_safemode: {safemode}");
     safemode
 }
 

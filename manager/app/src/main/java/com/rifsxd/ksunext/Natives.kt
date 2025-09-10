@@ -16,11 +16,12 @@ object Natives {
     // 10946: add capabilities
     // 10977: change groups_count and groups to avoid overflow write
     // 11071: Fix the issue of failing to set a custom SELinux type.
-    const val MINIMAL_SUPPORTED_KERNEL = 11071
+    // 12797: zygisk query and get manager uid.
+    const val MINIMAL_SUPPORTED_KERNEL = 12797
 
     // 11640: Support query working mode, LKM or GKI
     // when MINIMAL_SUPPORTED_KERNEL > 11640, we can remove this constant.
-    const val MINIMAL_SUPPORTED_KERNEL_LKM = 11648
+    const val MINIMAL_SUPPORTED_KERNEL_LKM = 12797
 
     // 12404: Support disable sucompat mode
     const val MINIMAL_SUPPORTED_SU_COMPAT = 12404
@@ -118,6 +119,9 @@ object Natives {
     fun requireNewKernel(): Boolean {
         return version < MINIMAL_SUPPORTED_KERNEL
     }
+
+    val KSU_WORK_DIR = "/data/adb/ksu/"
+    val GLOBAL_NAMESPACE_FILE = KSU_WORK_DIR + ".global_mnt"
 
     @Immutable
     @Parcelize

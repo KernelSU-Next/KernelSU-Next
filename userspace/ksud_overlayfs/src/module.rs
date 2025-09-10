@@ -274,7 +274,7 @@ pub fn prune_modules() -> Result<()> {
         let uninstaller = module.join("uninstall.sh");
         if uninstaller.exists() {
             if let Err(e) = exec_script(uninstaller, true) {
-                warn!("Failed to exec uninstaller: {}", e);
+                warn!("Failed to exec uninstaller: {e}");
             }
         }
 
@@ -324,9 +324,6 @@ fn create_module_image(image: &str, image_size: u64) -> Result<()> {
 fn _install_module(zip: &str) -> Result<()> {
     ensure_boot_completed()?;
 
-    // print banner
-    println!(include_str!("banner"));
-
     assets::ensure_binaries(false).with_context(|| "Failed to extract assets")?;
 
     // first check if workding dir is usable
@@ -346,7 +343,7 @@ fn _install_module(zip: &str) -> Result<()> {
             module_prop.insert(k, v);
         },
     )?;
-    info!("module prop: {:?}", module_prop);
+    info!("module prop: {module_prop:?}");
 
     let Some(module_id) = module_prop.get("id") else {
         bail!("module id not found in module.prop!");
@@ -401,7 +398,7 @@ fn _install_module(zip: &str) -> Result<()> {
     }
     fn get_sparse_image_size() -> u64 {
         let default_size = 6 << 30; // 6GB
-        let custom_size_file = "/data/adb/ksu/custom_sparse_size";
+        let custom_size_file = "/data/adb/ksu/.custom_sparse_size";
         match fs::read_to_string(custom_size_file) {
             Ok(contents) => match parse_size(&contents) {
                 Ok(size) => size,
@@ -475,13 +472,13 @@ fn _install_module(zip: &str) -> Result<()> {
 
     let _dontdrop = mount::AutoMountExt4::try_new(tmp_module_img, module_update_tmp_dir, true)?;
 
-    info!("mounted {} to {}", tmp_module_img, module_update_tmp_dir);
+    info!("mounted {tmp_module_img} to {module_update_tmp_dir}");
 
     setsyscon(module_update_tmp_dir)?;
 
     let module_dir = format!("{module_update_tmp_dir}/{module_id}");
     ensure_clean_dir(&module_dir)?;
-    info!("module dir: {}", module_dir);
+    info!("module dir: {module_dir}");
 
     // unzip the image and move it to modules_update/<id> dir
     let file = File::open(zip)?;
@@ -673,7 +670,7 @@ pub fn restore_module(id: &str) -> Result<()> {
 }
 
 pub fn run_action(id: &str) -> Result<()> {
-    let action_script_path = format!("/data/adb/modules/{}/action.sh", id);
+    let action_script_path = format!("/data/adb/modules/{id}/action.sh");
     exec_script(&action_script_path, true)
 }
 

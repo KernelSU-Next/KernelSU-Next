@@ -104,48 +104,73 @@ int main(int argc, char *argv[]) {
         prctl(KERNEL_SU_OPTION, CMD_SUSFS_SHOW_ENABLED_FEATURES, enabled_features, bufsize, &error);
         printf("%s\n", error || !strlen(enabled_features) ? "Unsupported" : "Supported");
         free(enabled_features);
-    } else if (argc == 3 && !strcmp(argv[1], "sus_su")) {
-		int last_working_mode = 0;
-		int target_working_mode;
-		char* endptr;
+    } else if (argc >= 2 && !strcmp(argv[1], "sus_su")) {
+        if (argc == 3 && strcmp(argv[2], "support") == 0) {
+            char *enabled_features;
+            size_t bufsize = getpagesize() * 2;
+            enabled_features = (char *)malloc(bufsize);
+            if (!enabled_features) {
+                perror("malloc");
+                return -ENOMEM;
+            }
+            prctl(KERNEL_SU_OPTION, CMD_SUSFS_SHOW_ENABLED_FEATURES, enabled_features, bufsize, &error);
+            if (!error && strstr(enabled_features, "CONFIG_KSU_SUSFS_SUS_SU")) {
+                printf("Supported\n");
+            } else {
+                printf("Unsupported\n");
+            }
+            free(enabled_features);
+            return 0;
+        } else if (argc == 3) {
+            int last_working_mode = 0;
+            int target_working_mode;
+            char *endptr;
 
-		prctl(KERNEL_SU_OPTION, CMD_SUSFS_SHOW_SUS_SU_WORKING_MODE, &last_working_mode, NULL, &error);
-		if (error)
-			return error;
-		if (!strcmp(argv[2], "mode")) {
-			printf("%d\n", last_working_mode);
-			return 0;
-		}
-		target_working_mode = strtol(argv[2], &endptr, 10);
-		if (*endptr != '\0') {
-			return 1;
-		}
-		if (target_working_mode == SUS_SU_WITH_HOOKS) {
-			bool is_sus_su_ready;
-			prctl(KERNEL_SU_OPTION, CMD_SUSFS_IS_SUS_SU_READY, &is_sus_su_ready, NULL, &error);
-			if (error)
-				return error;
-			if (!is_sus_su_ready) {
-                printf("[-] sus_su mode %d has to be run during or after service stage\n", SUS_SU_WITH_HOOKS);
-				return 1;
-			}
-			if (last_working_mode == SUS_SU_DISABLED) {
-				error = enable_sus_su(last_working_mode, SUS_SU_WITH_HOOKS);
-			} else if (last_working_mode == SUS_SU_WITH_HOOKS) {
-                printf("[-] sus_su is already in mode %d\n", last_working_mode);
-				return 1;
-			} else {
-				error = enable_sus_su(last_working_mode, SUS_SU_DISABLED);
-				if (!error)
-					error = enable_sus_su(last_working_mode, SUS_SU_WITH_HOOKS);
-			}
-		} else if (target_working_mode == SUS_SU_DISABLED) {
-			if (last_working_mode == SUS_SU_DISABLED) {
-                printf("[-] sus_su is already in mode %d\n", last_working_mode);
-				return 1;
-			}
-			error = enable_sus_su(last_working_mode, SUS_SU_DISABLED);
-		}
+            prctl(KERNEL_SU_OPTION, CMD_SUSFS_SHOW_SUS_SU_WORKING_MODE, &last_working_mode, NULL, &error);
+            if (error)
+                return error;
+
+            if (!strcmp(argv[2], "mode")) {
+                printf("%d\n", last_working_mode);
+                return 0;
+            }
+
+            target_working_mode = strtol(argv[2], &endptr, 10);
+            if (*endptr != '\0') {
+                return 1;
+            }
+
+            if (target_working_mode == SUS_SU_WITH_HOOKS) {
+                bool is_sus_su_ready;
+                prctl(KERNEL_SU_OPTION, CMD_SUSFS_IS_SUS_SU_READY, &is_sus_su_ready, NULL, &error);
+                if (error)
+                    return error;
+                if (!is_sus_su_ready) {
+                    printf("[-] sus_su mode %d has to be run during or after service stage\n", SUS_SU_WITH_HOOKS);
+                    return 1;
+                }
+
+                if (last_working_mode == SUS_SU_DISABLED) {
+                    error = enable_sus_su(last_working_mode, SUS_SU_WITH_HOOKS);
+                } else if (last_working_mode == SUS_SU_WITH_HOOKS) {
+                    printf("[-] sus_su is already in mode %d\n", last_working_mode);
+                    return 1;
+                } else {
+                    error = enable_sus_su(last_working_mode, SUS_SU_DISABLED);
+                    if (!error)
+                        error = enable_sus_su(last_working_mode, SUS_SU_WITH_HOOKS);
+                }
+            } else if (target_working_mode == SUS_SU_DISABLED) {
+                if (last_working_mode == SUS_SU_DISABLED) {
+                    printf("[-] sus_su is already in mode %d\n", last_working_mode);
+                    return 1;
+                }
+                error = enable_sus_su(last_working_mode, SUS_SU_DISABLED);
+            }
+        } else {
+            fprintf(stderr, "Usage: %s sus_su <0|2|mode|support>\n", argv[0]);
+            return 1;
+        }
     } else {
         fprintf(stderr, "Invalid argument: %s\n", argv[1]);
         return 1;

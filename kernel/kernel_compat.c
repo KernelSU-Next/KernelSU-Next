@@ -173,3 +173,26 @@ long ksu_strncpy_from_user_nofault(char *dst, const void __user *unsafe_addr,
 	return ret;
 }
 #endif
+
+static inline int ksu_access_ok(const void *addr, unsigned long size)
+{
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0)
+	return access_ok(addr, size);
+#else
+	return access_ok(VERIFY_READ, addr, size);
+#endif
+}
+
+long ksu_strncpy_from_user_retry(char *dst, const void __user *unsafe_addr,
+				   long count)
+{
+	long ret = ksu_strncpy_from_user_nofault(dst, unsafe_addr, count);
+	if (likely(ret >= 0))
+		return ret;
+
+	// we faulted! fallback to slow path
+	if (unlikely(!ksu_access_ok(unsafe_addr, count)))
+		return -EFAULT;
+
+	return strncpy_from_user(dst, unsafe_addr, count);
+}

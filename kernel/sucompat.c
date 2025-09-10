@@ -179,23 +179,8 @@ int ksu_handle_execve_sucompat(int *fd, const char __user **filename_user,
 	if (unlikely(!filename_user))
 		return 0;
 
-	// nofault variant fails probably due to pagefault_disable
-	// some cpus dont really have that good speculative execution
-	// substitute set_fs, check if pointer is valid
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5,0,0)
-	if (!access_ok(VERIFY_READ, *filename_user, sizeof(path)))
-		return 0;
-#else
-	if (!access_ok(*filename_user, sizeof(path)))
-		return 0;
-#endif
-	// success = returns number of bytes and should be less than path
-	long len = strncpy_from_user(path, *filename_user, sizeof(path));
-	if (len <= 0 || len > sizeof(path))
-		return 0;
-
-	// strncpy_from_user_nofault does this too
-	path[sizeof(path) - 1] = '\0';
+	memset(path, 0, sizeof(path));
+	ksu_strncpy_from_user_retry(path, *filename_user, sizeof(path));
 
 	if (likely(memcmp(path, su, sizeof(su))))
 		return 0;
@@ -344,7 +329,8 @@ void ksu_sucompat_init()
 void ksu_sucompat_exit()
 {
 #ifdef CONFIG_KSU_KPROBES_HOOK
-	for (int i = 0; i < ARRAY_SIZE(su_kps); i++) {
+	int i;
+	for (i = 0; i < ARRAY_SIZE(su_kps); i++) {
 		destroy_kprobe(&su_kps[i]);
 	}
 #else

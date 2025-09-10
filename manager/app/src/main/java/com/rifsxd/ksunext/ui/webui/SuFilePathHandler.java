@@ -4,23 +4,19 @@ import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 import android.webkit.WebResourceResponse;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 import androidx.webkit.WebViewAssetLoader;
-
 import com.topjohnwu.superuser.Shell;
 import com.topjohnwu.superuser.io.SuFile;
 import com.topjohnwu.superuser.io.SuFileInputStream;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
-
-import com.rifsxd.ksunext.ui.webui.MonetColorsProvider;
 
 /**
  * Handler class to open files from file system by root access

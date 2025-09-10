@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="issue_report_title">Ada kendala?</string>
-  <string name="issue_report_body">Menemukan bug atau memiliki umpan balik?</string>
-  <string name="issue_report_body_2">Laporkan sesegera mungkin!</string>
+  <string name="issue_report_title">Memiliki kendala?</string>
+  <string name="issue_report_body">Mengalami kesalahan atau memiliki umpan balik?</string>
+  <string name="issue_report_body_2">Laporkan secepatnya!</string>
   <string name="issue_report_github">Laporkan di GitHub</string>
   <string name="issue_report_telegram">Hubungi melalui Telegram</string>
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
-  <string name="confirm">Konfirmasi</string>
+  <string name="confirm">Ya</string>
   <string name="app_name">KernelSU Next</string>
   <string name="home">Beranda</string>
-  <string name="home_not_installed">Tidak terpasang</string>
-  <string name="home_click_to_install">Klik untuk memasang</string>
+  <string name="home_not_installed">Tidak terinstal</string>
+  <string name="home_click_to_install">Klik untuk menginstal</string>
   <string name="lkm_mode_deprecated">Mode LKM sekarang sudah tidak digunakan lagi!</string>
   <string name="lkm_alternative_suggestion">Pasang kernel GKI atau integrasikan KernelSU Next ke perangkat anda.</string>
   <string name="home_working">Berfungsi</string>
@@ -30,9 +30,9 @@
   <string name="home_susfs_version">Versi SuSFS</string>
   <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Versi android</string>
-  <string name="home_manager_version">Versi manager</string>
+  <string name="home_manager_version">Versi manajer</string>
   <string name="home_abi">ABI</string>
-  <string name="home_selinux_status">Status SElinux</string>
+  <string name="home_selinux_status">SELinux status</string>
   <string name="selinux_status_disabled">Nonaktif</string>
   <string name="selinux_status_enforcing">Enforcing</string>
   <string name="selinux_status_permissive">Permissive</string>
@@ -42,7 +42,7 @@
   <string name="module_failed_to_disable">Gagal menonaktifkan modul: %s</string>
   <string name="module_empty">Tidak ada modul yang terpasang</string>
   <string name="module">Modul</string>
-  <string name="module_install_prompt_with_name">Modul berikut akan dipasang: %1$s</string>
+  <string name="module_install_prompt_with_name">Modul yang akan diinstal: %1$s</string>
   <string name="module_sort_a_to_z">Urutkan (A → Z)</string>
   <string name="module_sort_z_to_a">Urutkan (Z → A)</string>
   <string name="module_size_low_to_high">Urutkan (Kecil → Besar)</string>
@@ -229,4 +229,9 @@
   <string name="home_module_count_singular">Modul</string>
   <string name="home_module_count_plural">Modul</string>
   <string name="module_backup_message">Cadangkan modul yang terinstal saat ini.</string>
+  <string name="module_sort_enabled_first">Urutkan (Diaktifkan lebih dulu)</string>
+  <string name="module_sort_action_first">Urutkan (Aksi lebih dulu)</string>
+  <string name="module_sort_webui_first">Urutkan (WebUI lebih dulu)</string>
+  <string name="settings_global_namespace_mode">Mode Namespace Universal</string>
+  <string name="settings_global_namespace_mode_summary">Semua sesi root menggunakan mount namespace universal</string>
 </resources>

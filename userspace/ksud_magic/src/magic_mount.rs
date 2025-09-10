@@ -416,14 +416,14 @@ fn do_magic_mount<P: AsRef<Path>, WP: AsRef<Path>>(
 
 pub fn magic_mount() -> Result<()> {
     if let Some(root) = collect_module_files()? {
-        log::debug!("collected: {:#?}", root);
+        log::debug!("collected: {root:#?}");
         let tmp_dir = PathBuf::from(MAGIC_MOUNT_WORK_DIR);
         ensure_dir_exists(&tmp_dir)?;
         mount(KSU_MOUNT_SOURCE, &tmp_dir, "tmpfs", MountFlags::empty(), "").context("mount tmp")?;
         mount_change(&tmp_dir, MountPropagationFlags::PRIVATE).context("make tmp private")?;
         let result = do_magic_mount("/", &tmp_dir, root, false);
         if let Err(e) = unmount(&tmp_dir, UnmountFlags::DETACH) {
-            log::error!("failed to unmount tmp {}", e);
+            log::error!("failed to unmount tmp {e}");
         }
         fs::remove_dir(tmp_dir).ok();
         result
