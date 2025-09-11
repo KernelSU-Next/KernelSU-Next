@@ -26,7 +26,7 @@ jobs:
       cache-key: ${{ steps.generate-cache-key.outputs.cache-key }}
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -92,20 +92,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download susfsd artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: susfsd-linux-android
           path: cached-artifacts/susfsd
 
       - name: Download ksud_overlayfs artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: ksud_overlayfs-*
           path: cached-artifacts/ksud_overlayfs
           merge-multiple: true
 
       - name: Download ksud_magic artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: ksud_magic-*
           path: cached-artifacts/ksud_magic
@@ -130,7 +130,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -156,7 +156,7 @@ jobs:
           fi
 
       - name: Setup Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
@@ -178,7 +178,7 @@ jobs:
       # Download fresh artifacts if cache miss
       - name: Download susfsd
         if: needs.check-cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: susfsd-linux-android
           path: .
@@ -186,42 +186,42 @@ jobs:
       # Download fresh ksud artifacts if cache miss
       - name: Download arm64 ksud_overlayfs
         if: needs.check-cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ksud_overlayfs-aarch64-linux-android
           path: ksud_overlayfs
           
       - name: Download arm ksud_overlayfs
         if: needs.check-cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ksud_overlayfs-armv7-linux-androideabi
           path: ksud_overlayfs
 
       - name: Download x86_64 ksud_overlayfs
         if: needs.check-cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ksud_overlayfs-x86_64-linux-android
           path: ksud_overlayfs
 
       - name: Download arm64 ksud_magic
         if: needs.check-cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ksud_magic-aarch64-linux-android
           path: ksud_magic
           
       - name: Download arm ksud_magic
         if: needs.check-cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ksud_magic-armv7-linux-androideabi
           path: ksud_magic
         
       - name: Download x86_64 ksud_magic
         if: needs.check-cache.outputs.cache-hit != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ksud_magic-x86_64-linux-android
           path: ksud_magic
