@@ -194,7 +194,6 @@ fn is_ok_empty(dir: &str) -> bool {
 
 fn find_temp_path() -> String {
     use std::result::Result::Ok;
-    
     let dirs = [
         "/patch_hw",
         "/oem",
