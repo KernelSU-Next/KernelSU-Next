@@ -191,14 +191,11 @@
   <string name="select_file_tip">Рекомендуется образ раздела %1$s</string>
   <string name="select_kmi">Выберите KMI</string>
   <string name="shrink_sparse_image">Уменьшить modules.img образ</string>
-  <string name="shrink_sparse_image_message">Измените размер modules.img образа, в котором находятся модули, до его фактического размера. Обратите внимание, что это может вызвать ненормальную работу модулей, поэтому используйте только при необходимости (например, для резервного копирования).</string>
   <string name="settings_uninstall">Удаление</string>
   <string name="settings_uninstall_temporary">Временное удаление</string>
   <string name="settings_uninstall_permanent">Полное удаление</string>
   <string name="settings_restore_stock_image">Восстановить стоковый образ</string>
   <string name="settings_uninstall_temporary_message">Временно удалите KernelSU Next, восстановив исходное состояние после следующей перезагрузки.</string>
-  <string name="settings_uninstall_permanent_message">Полное и окончательное удаление KernelSU Next (Root и всех модулей).</string>
-  <string name="settings_restore_stock_image_message">Восстановление стандартного заводского образа (если есть резервная копия), обычно используется перед OTA; если необходимо удалить KernelSU Next, используйте \"Полное удаление\".</string>
   <string name="flashing">Прошивка</string>
   <string name="flash_success">Прошивка выполнена успешно</string>
   <string name="flash_failed">Ошибка прошивки</string>
@@ -207,7 +204,6 @@
   <string name="log_saved">Логи сохранены</string>
   <string name="send_log">Поделиться\nлогами</string>
   <string name="settings_disable_su">Откл. совместимость с su</string>
-  <string name="settings_disable_su_summary">Временно отключить возможность приложениям получать права root через команду su (существующие процессы с правами root не будут затронуты).</string>
   <string name="settings_language">Язык</string>
   <string name="system_default">Системный</string>
   <string name="settings_legacyui">Использовать старый UI</string>
@@ -231,6 +227,10 @@
   <string name="module_sort_enabled_first">По статусу (Сначала включённые)</string>
   <string name="module_sort_action_first">По статусу (Сначала со скриптом)</string>
   <string name="module_sort_webui_first">По статусу (Сначала с WebUI)</string>
-  <string name="settings_global_namespace_mode">Общее пространство имён</string>
   <string name="settings_global_namespace_mode_summary">Все сессии root используют единое пространство имён.</string>
+  <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup).</string>
+  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU Next (root and all modules) completely and permanently.</string>
+  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU Next, please use \"Uninstall permanently\".</string>
+  <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
+  <string name="settings_global_namespace_mode">Global namespace mode</string>
 </resources>
