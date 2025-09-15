@@ -9,7 +9,7 @@ edition = "2024"
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 const_format = "0.2"
-zip = { version = "3",  features = [
+zip = { version = "5",  features = [
     "deflate",
     "deflate64",
     "time",
@@ -52,7 +52,7 @@ rustix = { git = "https://github.com/KernelSU-Next/rustix.git", branch = "main",
 ] }
 # some android specific dependencies which compiles under unix are also listed here for convenience of coding
 android-properties = { version = "0.2", features = ["bionic-deprecated"] }
-procfs = "0.17"
+procfs = "0.18"
 loopdev = { git = "https://github.com/KernelSU-Next/loopdev" }
 
 [target.'cfg(target_os = "android")'.dependencies]
