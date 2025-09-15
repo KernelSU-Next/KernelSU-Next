@@ -191,14 +191,11 @@
   <string name="select_file_tip">建议选择 %1$s 分区镜像</string>
   <string name="select_kmi">选择 KMI</string>
   <string name="shrink_sparse_image">最小化稀疏文件</string>
-  <string name="shrink_sparse_image_message">将模块所在的稀疏文件镜像调整为其实际大小，注意这可能导致模块工作异常，所以请仅在必要时（如备份）使用。</string>
   <string name="settings_uninstall">卸载</string>
   <string name="settings_uninstall_temporary">临时卸载</string>
   <string name="settings_uninstall_permanent">永久卸载</string>
   <string name="settings_restore_stock_image">恢复原厂镜像</string>
   <string name="settings_uninstall_temporary_message">临时卸载 KernelSU Next，下次重启后恢复。</string>
-  <string name="settings_uninstall_permanent_message">彻底移除 KernelSU Next，将丢失 Root 权限及所有已安装的模块。</string>
-  <string name="settings_restore_stock_image_message">恢复原厂镜像（若存在备份），一般在 OTA 前使用；如需卸载请使用“完全卸载”。</string>
   <string name="flashing">刷写中</string>
   <string name="flash_success">刷写成功</string>
   <string name="flash_failed">刷写失败</string>
@@ -207,7 +204,6 @@
   <string name="log_saved">日志已保存</string>
   <string name="send_log">分享日志</string>
   <string name="settings_disable_su">禁用 SU 兼容</string>
-  <string name="settings_disable_su_summary">临时禁止任何应用通过 su 命令获得 root 权限（正在运行的 root 进程不受影响）。</string>
   <string name="settings_language">语言</string>
   <string name="system_default">系统默认</string>
   <string name="settings_legacyui">使用旧界面</string>
@@ -231,6 +227,10 @@
   <string name="module_sort_enabled_first">排序（已启用优先）</string>
   <string name="module_sort_action_first">排序（可执行优先）</string>
   <string name="module_sort_webui_first">排序（支持 WebUI 优先）</string>
-  <string name="settings_global_namespace_mode">全局命名空间模式</string>
   <string name="settings_global_namespace_mode_summary">所有 Root 会话均使用全局挂载命名空间。</string>
+  <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup).</string>
+  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU Next (root and all modules) completely and permanently.</string>
+  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU Next, please use \"Uninstall permanently\".</string>
+  <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
+  <string name="settings_global_namespace_mode">Global namespace mode</string>
 </resources>
