@@ -191,14 +191,11 @@
   <string name="select_file_tip">%1$s Partitionsabbild wird empfohlen</string>
   <string name="select_kmi">Wählen Sie KMI</string>
   <string name="shrink_sparse_image">Sparse-Image minimieren</string>
-  <string name="shrink_sparse_image_message">Ändern Sie die Größe des Sparse-Images, in dem sich das Modul befindet, auf seine tatsächliche Größe. Beachten Sie, dass dies dazu führen kann, dass das Modul nicht ordnungsgemäß funktioniert, und verwenden Sie es daher nur, wenn es notwendig ist (z. B. zur Sicherung).</string>
   <string name="settings_uninstall">Deinstallieren</string>
   <string name="settings_uninstall_temporary">Vorübergehend deinstallieren</string>
   <string name="settings_uninstall_permanent">Dauerhaft deinstallieren</string>
   <string name="settings_restore_stock_image">Werksabbild wiederherstellen</string>
   <string name="settings_uninstall_temporary_message">Vorübergehende Deinstallation von KernelSU Next, Wiederherstellung des ursprünglichen Zustands nach dem nächsten Neustart.</string>
-  <string name="settings_uninstall_permanent_message">KernelSU Next (Root und alle Module) vollständig und dauerhaft deinstallieren.</string>
-  <string name="settings_restore_stock_image_message">Stellen Sie das Werksabbild wieder her (wenn ein Backup vorhanden ist), das normalerweise vor OTA verwendet wird; Wenn Sie KernelSU Next deinstallieren müssen, verwenden Sie bitte „Dauerhaft deinstallieren“.</string>
   <string name="flashing">Schreiben</string>
   <string name="flash_success">Schreiben erfolgreich</string>
   <string name="flash_failed">Schreiben fehlgeschlagen</string>
@@ -207,7 +204,6 @@
   <string name="log_saved">Protokolle gespeichert</string>
   <string name="send_log">Protokolle teilen</string>
   <string name="settings_disable_su">su-Kompatibilität deaktivieren</string>
-  <string name="settings_disable_su_summary">Deaktivieren Sie vorübergehend die Fähigkeit jeder Anwendung, über den Befehl su Root-Rechte zu erlangen (bestehende Root-Prozesse sind davon nicht betroffen).</string>
   <string name="settings_language">Sprache</string>
   <string name="system_default">Systemvorgabe</string>
   <string name="settings_legacyui">Alte Benutzeroberfläche verwenden</string>
@@ -231,6 +227,10 @@
   <string name="module_sort_enabled_first">Sortierung (aktivierte zuerst)</string>
   <string name="module_sort_action_first">Sortierung (Aktion zuerst)</string>
   <string name="module_sort_webui_first">Sortierung (WebUI zuerst)</string>
-  <string name="settings_global_namespace_mode">Globaler Namensraum-Modus</string>
   <string name="settings_global_namespace_mode_summary">Alle Root-Sitzungen verwenden den globalen Mount-Namespace</string>
+  <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup).</string>
+  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU Next (root and all modules) completely and permanently.</string>
+  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU Next, please use \"Uninstall permanently\".</string>
+  <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
+  <string name="settings_global_namespace_mode">Global namespace mode</string>
 </resources>
