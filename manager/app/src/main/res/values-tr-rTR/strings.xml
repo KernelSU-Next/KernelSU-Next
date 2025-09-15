@@ -191,14 +191,11 @@
   <string name="select_file_tip">%1$s bölüm imajı önerilir</string>
   <string name="select_kmi">KMI seçin</string>
   <string name="shrink_sparse_image">Sparse imajını küçültün</string>
-  <string name="shrink_sparse_image_message">Modülün bulunduğu sparse imajını gerçek boyutuna yeniden boyutlandırın. Bunun modülün anormal çalışmasına neden olabileceğini unutmayın, bu nedenle lütfen yalnızca gerekli olduğunda kullanın (Yedekleme gibi).</string>
   <string name="settings_uninstall">Kaldır</string>
   <string name="settings_uninstall_temporary">Geçici olarak kaldır</string>
   <string name="settings_uninstall_permanent">Kalıcı olarak kaldır</string>
   <string name="settings_restore_stock_image">Stok imajı geri yükle</string>
   <string name="settings_uninstall_temporary_message">KernelSU\'yu geçici olarak kaldırın, bir sonraki yeniden başlatmadan sonra orijinal duruma geri dönün.</string>
-  <string name="settings_uninstall_permanent_message">KernelSU Next\'i (Kök ve tüm modüller) tamamen ve kalıcı olarak kaldırın.</string>
-  <string name="settings_restore_stock_image_message">Stok fabrika imajını geri yükler (eğer yedek varsa), genellikle OTA\'dan önce kullanılır; KernelSU\'yu kaldırmanız gerekiyorsa, lütfen \"Kalıcı olarak kaldır\" seçeneğini kullanın.</string>
   <string name="flashing">Kuruluyor</string>
   <string name="flash_success">Kurulum başarılı</string>
   <string name="flash_failed">Kurulum başarısız</string>
@@ -207,7 +204,6 @@
   <string name="log_saved">Günlükler kaydedildi</string>
   <string name="send_log">Günlükleri paylaş</string>
   <string name="settings_disable_su">Su uyumluluğunu devre dışı bırak</string>
-  <string name="settings_disable_su_summary">Geçici olarak uygulamaların su komutu ile kök erişimi kazanmasını devre dışı bırakın (Zaten kök erişimi bulunan işlemler etkilenmez).</string>
   <string name="settings_language">Dil</string>
   <string name="system_default">Sistem varsayılanı</string>
   <string name="settings_legacyui">Eski Kullanıcı Arayüzünü Kullan</string>
@@ -231,6 +227,10 @@
   <string name="module_sort_enabled_first">Sırala (Önce etkin)</string>
   <string name="module_sort_action_first">Sırala (Önce eylem)</string>
   <string name="module_sort_webui_first">Sırala (Önce WebUI)</string>
-  <string name="settings_global_namespace_mode">Küresel Ad Alanı Modu</string>
   <string name="settings_global_namespace_mode_summary">Tüm kök oturumları genel bağlama ad alanını kullanır</string>
+  <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup).</string>
+  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU Next (root and all modules) completely and permanently.</string>
+  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU Next, please use \"Uninstall permanently\".</string>
+  <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
+  <string name="settings_global_namespace_mode">Global namespace mode</string>
 </resources>
