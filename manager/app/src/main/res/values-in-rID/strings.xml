@@ -192,14 +192,11 @@
   <string name="select_file_tip">%1$s partisi image direkomendasikan</string>
   <string name="select_kmi">Pilih KMI</string>
   <string name="shrink_sparse_image">Minimalkan sparse image</string>
-  <string name="shrink_sparse_image_message">Ubah ukuran sparse image tempat modul berada ke ukuran sebenarnya. Harap diperhatikan bahwa hal ini dapat menyebabkan modul bekerja secara tidak normal, harap gunakan hanya bila diperlukan (misalnya untuk pencadangan).</string>
   <string name="settings_uninstall">Hapus</string>
   <string name="settings_uninstall_temporary">Hapus sementara</string>
   <string name="settings_uninstall_permanent">Hapus permanen</string>
   <string name="settings_restore_stock_image">Pulihkan image bawaan</string>
   <string name="settings_uninstall_temporary_message">Hapus sementara KernelSU Next, mengembalikan ke kondisi asal setelah reboot berikutnya.</string>
-  <string name="settings_uninstall_permanent_message">Hapus permanen KernelSU Next (root dan modul).</string>
-  <string name="settings_restore_stock_image_message">Mengembalikan image bawaan ROM (jika cadangan tersedia), umumnya dilakukan sebelum OTA; jika ingin menghapus KernelSU Next, gunakan fungsi \"Hapus permanen\".</string>
   <string name="flashing">Pasang</string>
   <string name="flash_success">Pemasangan Berhasil</string>
   <string name="flash_failed">Pemasangan gagal</string>
@@ -208,7 +205,6 @@
   <string name="log_saved">Log disimpan</string>
   <string name="send_log">Bagikan log</string>
   <string name="settings_disable_su">Nonaktifkan kompatibilitas su</string>
-  <string name="settings_disable_su_summary">Nonaktifkan sementara kemampuan aplikasi apa pun untuk mendapatkan hak akses root melalui perintah ⁠su (Proses root yang ada tidak akan terpengaruh).</string>
   <string name="settings_language">Bahasa</string>
   <string name="system_default">Sistem bawaan</string>
   <string name="settings_legacyui">Gunakan tampilan lama</string>
@@ -232,6 +228,10 @@
   <string name="module_sort_enabled_first">Urutkan (Diaktifkan lebih dulu)</string>
   <string name="module_sort_action_first">Urutkan (Aksi lebih dulu)</string>
   <string name="module_sort_webui_first">Urutkan (WebUI lebih dulu)</string>
-  <string name="settings_global_namespace_mode">Mode Namespace Universal</string>
   <string name="settings_global_namespace_mode_summary">Semua sesi root menggunakan mount namespace universal</string>
+  <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup).</string>
+  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU Next (root and all modules) completely and permanently.</string>
+  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU Next, please use \"Uninstall permanently\".</string>
+  <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
+  <string name="settings_global_namespace_mode">Global namespace mode</string>
 </resources>
