@@ -191,14 +191,11 @@
   <string name="select_file_tip">Рекомендовано образ розділу %1$s</string>
   <string name="select_kmi">Виберіть KMI</string>
   <string name="shrink_sparse_image">Мінімізувати розріджене зображення</string>
-  <string name="shrink_sparse_image_message">Змініть розмір розрідженого зображення, де розташований модуль, до його фактичного розміру. Зверніть увагу, що це може призвести до неправильної роботи модуля, тому використовуйте його лише за необхідності (наприклад, для бекапу).</string>
   <string name="settings_uninstall">Видалення</string>
   <string name="settings_uninstall_temporary">Тимчасове видалення</string>
   <string name="settings_uninstall_permanent">Повне видалення</string>
   <string name="settings_restore_stock_image">Відновити стандартний образ</string>
   <string name="settings_uninstall_temporary_message">Тимчасово видаліть KernelSU Next, відновивши початковий стан після наступного перезавантаження.</string>
-  <string name="settings_uninstall_permanent_message">Повне та остаточне видалення KernelSU Next (Root та всіх модулів).</string>
-  <string name="settings_restore_stock_image_message">Відновлення стандартного заводського образу (якщо є бекап), зазвичай використовується перед OTA; якщо потрібно видалити KernelSU Next, використовуйте \"Повне видалення\".</string>
   <string name="flashing">Прошивка</string>
   <string name="flash_success">Прошивка виконана успішно</string>
   <string name="flash_failed">Помилка прошивки</string>
@@ -207,7 +204,6 @@
   <string name="log_saved">Логи збережено</string>
   <string name="send_log">Поділитися логами</string>
   <string name="settings_disable_su">Вимкн. сумісність із su</string>
-  <string name="settings_disable_su_summary">Тимчасово вимкнути можливість додаткам отримувати права root через команду su (процеси з правами root не будуть зачеплені).</string>
   <string name="settings_language">Мова</string>
   <string name="system_default">Системний</string>
   <string name="settings_legacyui">Використовувати застарілий UI</string>
@@ -231,6 +227,10 @@
   <string name="module_sort_enabled_first">За статусом (Спочатку включені)</string>
   <string name="module_sort_action_first">За статусом (Спочатку зі скриптом)</string>
   <string name="module_sort_webui_first">За статусом (Спочатку з WebUI)</string>
-  <string name="settings_global_namespace_mode">Загальний простір імен</string>
   <string name="settings_global_namespace_mode_summary">Усі сесії користувача root будуть використовувати спільний простір імен</string>
+  <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup).</string>
+  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU Next (root and all modules) completely and permanently.</string>
+  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU Next, please use \"Uninstall permanently\".</string>
+  <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
+  <string name="settings_global_namespace_mode">Global namespace mode</string>
 </resources>
