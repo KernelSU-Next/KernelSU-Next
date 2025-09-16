@@ -119,9 +119,9 @@
   <string name="profile_template">Bản mẫu</string>
   <string name="profile_custom">Tuỳ chỉnh</string>
   <string name="profile_name">Tên hồ sơ</string>
-  <string name="profile_namespace">Mount namespace</string>
+  <string name="profile_namespace">Không gian tên gắn kết</string>
   <string name="profile_namespace_inherited">Thừa hưởng</string>
-  <string name="profile_namespace_global">Chung</string>
+  <string name="profile_namespace_global">Toàn cục</string>
   <string name="profile_namespace_individual">Riêng biệt</string>
   <string name="profile_groups">Nhóm</string>
   <string name="profile_capabilities">Tính tương thích</string>
@@ -227,10 +227,10 @@
   <string name="module_sort_enabled_first">Sắp xếp (Bật trước)</string>
   <string name="module_sort_action_first">Sắp xếp (Khởi chạy trước)</string>
   <string name="module_sort_webui_first">Sắp xếp (WebUI trước)</string>
-  <string name="settings_global_namespace_mode_summary">Tất cả các phiên root đều sử dụng mount namespace chung</string>
-  <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup).</string>
-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU Next (root and all modules) completely and permanently.</string>
-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU Next, please use \"Uninstall permanently\".</string>
-  <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
-  <string name="settings_global_namespace_mode">Global namespace mode</string>
+  <string name="settings_global_namespace_mode_summary">Tất cả các phiên root đều sử dụng không gian tên gắn kết toàn cục</string>
+  <string name="shrink_sparse_image_message">Thay đổi kích thước sparse image nơi lưu trữ module về kích thước thực tế của nó. Lưu ý rằng điều này có thể khiến module hoạt động không bình thường, vì vậy vui lòng chỉ sử dụng khi cần thiết (chẳng hạn như để sao lưu)</string>
+  <string name="settings_uninstall_permanent_message">Gỡ cài đặt KernelSU Next (root và tất cả các module) sạch hoàn toàn, trả về trạng thái ban đầu</string>
+  <string name="settings_restore_stock_image_message">Khôi phục lại image gốc (nếu có bản sao lưu), thường được sử dụng trước OTA; nếu bạn cần gỡ hẳn KernelSU Next, hãy sử dụng \"Gỡ cài đặt vĩnh viễn\"</string>
+  <string name="settings_disable_su_summary">Vô hiệu hoá khả năng thực thi lệnh SU để lấy quyền root (những app đã cấp trước đó không bị ảnh hưởng)</string>
+  <string name="settings_global_namespace_mode">Chế độ không gian tên toàn cục</string>
 </resources>
