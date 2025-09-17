@@ -228,9 +228,9 @@
   <string name="module_sort_action_first">依支援執行優先排序</string>
   <string name="module_sort_webui_first">依具備 WebUI 優先排序</string>
   <string name="settings_global_namespace_mode_summary">所有 Root 工作階段皆使用全域掛載命名空間</string>
-  <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup).</string>
-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU Next (root and all modules) completely and permanently.</string>
-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU Next, please use \"Uninstall permanently\".</string>
-  <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
-  <string name="settings_global_namespace_mode">Global namespace mode</string>
+  <string name="shrink_sparse_image_message">將模組所在的稀疏檔案映像調整為其實際大小，注意這可能會導致模組工作異常，請僅在必要時（如備份）使用。</string>
+  <string name="settings_uninstall_permanent_message">完全永久卸載 KernelSU Next，將丟失 Root 權限及所有已安裝的模組。</string>
+  <string name="settings_restore_stock_image_message">復原原廠鏡像 (若存在備份)，一般在OTA前使用；如果你需要卸載 KernelSU Next, 請使用“永久卸載”。</string>
+  <string name="settings_disable_su_summary">暫時禁止任何應用通過 su 命令獲取 root 權限 (現有的 root 進程不受影響)。</string>
+  <string name="settings_global_namespace_mode">全域命名空間模式</string>
 </resources>
