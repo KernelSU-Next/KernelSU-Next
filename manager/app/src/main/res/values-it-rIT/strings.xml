@@ -228,9 +228,9 @@
   <string name="module_sort_action_first">Ordina (prima Azione)</string>
   <string name="module_sort_webui_first">Ordina (prima WebUI)</string>
   <string name="settings_global_namespace_mode_summary">Tutte le sessioni root usano lo spazio di montaggio globale</string>
-  <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup).</string>
-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU Next (root and all modules) completely and permanently.</string>
-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU Next, please use \"Uninstall permanently\".</string>
-  <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
-  <string name="settings_global_namespace_mode">Global namespace mode</string>
+  <string name="shrink_sparse_image_message">Ridimensiona l\'immagine sparse in cui si trova il modulo alle sue dimensioni reali. Tieni presente che questo potrebbe causare un funzionamento anomalo del modulo, quindi utilizzalo solo quando necessario (ad esempio per il backup).</string>
+  <string name="settings_uninstall_permanent_message">Disinstallazione completa e permanente di KernelSU Next (root e tutti i moduli).</string>
+  <string name="settings_restore_stock_image_message">Ripristinare l\'immagine di fabbrica (se esiste un backup), solitamente utilizzata prima dell\'OTA; se è necessario disinstallare KernelSU Next, utilizzare \"Disinstalla definitivamente\".</string>
+  <string name="settings_disable_su_summary">Disattiva temporaneamente la possibilità per qualsiasi app di ottenere privilegi di root tramite il comando ⁠su (i processi di root esistenti non saranno interessati).</string>
+  <string name="settings_global_namespace_mode">Modalità Namespace globale</string>
 </resources>
