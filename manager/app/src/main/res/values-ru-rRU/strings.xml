@@ -190,12 +190,12 @@
   <string name="install_next">Далее</string>
   <string name="select_file_tip">Рекомендуется образ раздела %1$s</string>
   <string name="select_kmi">Выберите KMI</string>
-  <string name="shrink_sparse_image">Уменьшить modules.img образ</string>
+  <string name="shrink_sparse_image">Сжать разреженный образ (modules.img)</string>
   <string name="settings_uninstall">Удаление</string>
   <string name="settings_uninstall_temporary">Временное удаление</string>
   <string name="settings_uninstall_permanent">Полное удаление</string>
-  <string name="settings_restore_stock_image">Восстановить стоковый образ</string>
-  <string name="settings_uninstall_temporary_message">Временно удалите KernelSU Next, восстановив исходное состояние после следующей перезагрузки.</string>
+  <string name="settings_restore_stock_image">Восстановить исходный образ</string>
+  <string name="settings_uninstall_temporary_message">Временно удаляет KernelSU Next, восстановив исходное состояние после следующей перезагрузки.</string>
   <string name="flashing">Прошивка</string>
   <string name="flash_success">Прошивка выполнена успешно</string>
   <string name="flash_failed">Ошибка прошивки</string>
@@ -228,9 +228,9 @@
   <string name="module_sort_action_first">По статусу (Сначала со скриптом)</string>
   <string name="module_sort_webui_first">По статусу (Сначала с WebUI)</string>
   <string name="settings_global_namespace_mode_summary">Все сессии root используют единое пространство имён.</string>
-  <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup).</string>
-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU Next (root and all modules) completely and permanently.</string>
-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU Next, please use \"Uninstall permanently\".</string>
-  <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
-  <string name="settings_global_namespace_mode">Global namespace mode</string>
+  <string name="shrink_sparse_image_message">Изменяет (сжимает) размер разреженного образа, в котором находится модуль, до его фактического размера. Может привести к проблемам с работой модуля. Пожалуйста, используйте только в случае необходимости, например, при создании резервной копии.</string>
+  <string name="settings_uninstall_permanent_message">Полностью и навсегда удаляет KernelSU Next, включая все модули.</string>
+  <string name="settings_restore_stock_image_message">Восстанавливает исходный образ, если резервная копия доступна. Обычно используется перед OTA-обновлением. Если Вы хотите удалить KernelSU Next, пожалуйста, воспользуйтесь опцией \"Полное удаление\".</string>
+  <string name="settings_disable_su_summary">Временно отключить возможность приложениям получать root доступ через команду su (запущенные процессы не будут затронуты).</string>
+  <string name="settings_global_namespace_mode">Режим общего пространства имён</string>
 </resources>
