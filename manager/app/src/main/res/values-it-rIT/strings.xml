@@ -92,7 +92,7 @@
   <string name="reboot_message">Le modifiche verranno applicate dopo il riavvio del sistema. Vuoi riavviare ora?</string>
   <string name="module_restore">Ripristina moduli</string>
   <string name="module_restore_message">Ripristina i moduli da un backup.</string>
-  <string name="backup_restore">Backup &amp; Ripristina</string>
+  <string name="backup_restore">Backup &amp; Ripristino</string>
   <string name="module_backup">Backup moduli</string>
   <string name="allowlist_restore">Ripristina la lista consentita</string>
   <string name="allowlist_restore_message">Ripristina la lista consentita da un backup.</string>
@@ -177,7 +177,7 @@
   <string name="module_changelog_failed">Recupero del changelog non riuscito: %s</string>
   <string name="settings_check_update">Controlla aggiornamenti</string>
   <string name="settings_check_update_summary">Cerca automaticamente gli aggiornamenti all\'apertura dell\'applicazione</string>
-  <string name="grant_root_failed">Impossibile concedere i permessi root!</string>
+  <string name="grant_root_failed">Impossibile concedere il root! Tocca per riavviare il processo del manager.</string>
   <string name="action">Azione</string>
   <string name="webui">WebUI</string>
   <string name="open">Apri</string>
