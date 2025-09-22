@@ -70,7 +70,7 @@
   <string name="module_author">Geliştirici</string>
   <string name="module_id">Kimlik</string>
   <string name="module_version_code">Kod</string>
-  <string name="module_update_json">Güncelleme Json\'u</string>
+  <string name="module_update_json">Json\'u güncelle</string>
   <string name="module_update_json_empty">Boş</string>
   <string name="enable_developer_options">Geliştirici seçeneklerini etkinleştir</string>
   <string name="enable_developer_options_summary">Yalnızca geliştiricilere yönelik gizli ayarları ve hata ayıklama bilgilerini göster.</string>
@@ -177,7 +177,7 @@
   <string name="module_changelog_failed">Değişiklik günlüğü alınamadı: %s</string>
   <string name="settings_check_update">Güncellemeleri kontrol et</string>
   <string name="settings_check_update_summary">Uygulamayı açarken güncellemeleri otomatik denetle</string>
-  <string name="grant_root_failed">Kök izni verilemedi!</string>
+  <string name="grant_root_failed">Root izni verilemedi!</string>
   <string name="action">Eylem</string>
   <string name="webui">WebUI</string>
   <string name="open">Aç</string>
@@ -227,10 +227,10 @@
   <string name="module_sort_enabled_first">Sırala (Önce etkin)</string>
   <string name="module_sort_action_first">Sırala (Önce eylem)</string>
   <string name="module_sort_webui_first">Sırala (Önce WebUI)</string>
-  <string name="settings_global_namespace_mode_summary">Tüm kök oturumları genel bağlama ad alanını kullanır</string>
-  <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup).</string>
-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU Next (root and all modules) completely and permanently.</string>
-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU Next, please use \"Uninstall permanently\".</string>
-  <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
-  <string name="settings_global_namespace_mode">Global namespace mode</string>
+  <string name="settings_global_namespace_mode_summary">Tüm root oturumları genel bağlama ad alanını kullanır</string>
+  <string name="shrink_sparse_image_message">Modülün bulunduğu seyrek görüntünün boyutunu gerçek boyutuna ayarlayın. Bu işlemin modülün anormal çalışmasına neden olabileceğini unutmayın, bu nedenle lütfen yalnızca gerekli olduğunda (örneğin yedekleme için) kullanın.</string>
+  <string name="settings_uninstall_permanent_message">KernelSU Next\'i (root ve tüm modülleri) tamamen ve kalıcı olarak kaldır.</string>
+  <string name="settings_restore_stock_image_message">Stok fabrika imajını geri yükleyin (yedekleme varsa), genellikle OTA\'dan önce kullanılır; KernelSU\'yu kaldırmanız gerekirse, lütfen \"Kalıcı olarak kaldır\"ı kullanın.</string>
+  <string name="settings_disable_su_summary">Herhangi bir uygulamanın ⁠su komutu aracılığıyla root ayrıcalıkları elde etme yeteneğini geçici olarak devre dışı bırakın (mevcut root işlemleri etkilenmeyecektir).</string>
+  <string name="settings_global_namespace_mode">Küresel ad alanı modu</string>
 </resources>
