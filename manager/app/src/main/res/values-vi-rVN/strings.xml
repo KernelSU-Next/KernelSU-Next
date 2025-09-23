@@ -30,7 +30,7 @@
   <string name="home_susfs_version">Phiên bản SuSFS</string>
   <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Phiên bản Android</string>
-  <string name="home_manager_version">Phiên bản trình quản lý</string>
+  <string name="home_manager_version">Phiên bản Trình quản lý</string>
   <string name="home_abi">ABI</string>
   <string name="home_selinux_status">Trạng thái SELinux</string>
   <string name="selinux_status_disabled">Vô hiệu hoá</string>
@@ -177,7 +177,7 @@
   <string name="module_changelog_failed">Lấy nhật ký thay đổi thất bại: %s</string>
   <string name="settings_check_update">Kiểm tra cập nhật</string>
   <string name="settings_check_update_summary">Tự động kiểm tra cập nhật khi mở ứng dụng</string>
-  <string name="grant_root_failed">Cấp quyền root thất bại!</string>
+  <string name="grant_root_failed">Cấp quyền root thất bại! Nhấn để khởi động lại Trình quản lý</string>
   <string name="action">Khởi chạy</string>
   <string name="webui">WebUI</string>
   <string name="open">Mở</string>
