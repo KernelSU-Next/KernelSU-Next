@@ -31,7 +31,7 @@
   <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Android version</string>
   <string name="home_manager_version">Manager version</string>
-  <string name="home_abi">ABI</string>
+  <string name="home_abi">ABI list</string>
   <string name="home_selinux_status">SELinux status</string>
   <string name="selinux_status_disabled">Disabled</string>
   <string name="selinux_status_enforcing">Enforcing</string>
