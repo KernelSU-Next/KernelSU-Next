@@ -15,7 +15,7 @@
   <string name="lkm_mode_deprecated">LKM मोड अब अप्रचलित हो गया है!</string>
   <string name="lkm_alternative_suggestion">GKI कर्नल अधिष्ठापित करें या KernelSU Next को अपने डिवाइस पर इन्स्टॉल करें।</string>
   <string name="home_working">काम कर रहा है</string>
-  <string name="home_working_version">वर्जन: %d</string>
+  <string name="home_working_version">वर्जन: %s (%d)</string>
   <string name="home_module_update_count">अपडेट्स: %d</string>
   <string name="home_failure">KernelSU Next v2 सिग्नेचर कर्नेल में नहीं मिला!
 [ !KSU_NEXT || != size/hash ]</string>
