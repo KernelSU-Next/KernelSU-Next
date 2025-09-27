@@ -177,7 +177,7 @@
   <string name="module_changelog_failed">Fetch changelog failed: %s</string>
   <string name="settings_check_update">Check for updates</string>
   <string name="settings_check_update_summary">Automatically check for updates when opening the app</string>
-  <string name="grant_root_failed">Failed to grant root! Tap to restart manager process.</string>
+  <string name="grant_root_failed">Failed to grant root!</string>
   <string name="action">Action</string>
   <string name="webui">WebUI</string>
   <string name="open">Open</string>
