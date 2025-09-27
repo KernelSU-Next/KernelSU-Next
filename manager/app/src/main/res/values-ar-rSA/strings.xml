@@ -15,7 +15,7 @@
   <string name="lkm_mode_deprecated">وضع LKM قد تم إهماله!</string>
   <string name="lkm_alternative_suggestion">قم بتثبيت نواة GKI أو دمج KernelSU Next في جهازك.</string>
   <string name="home_working">جارِ العمل</string>
-  <string name="home_working_version">الإصدار: %d</string>
+  <string name="home_working_version">الإصدار: %s (%d)</string>
   <string name="home_module_update_count">تحديثات: %d</string>
   <string name="home_failure">لم يتم العثور على توقيع KernelSU Next v2 في النواة ! [ !KSU_NEXT &lt;unk&gt; != الحجم/الهاش ]</string>
   <string name="home_failure_tip">اطلب من مطور kernel الخاص بك دمج KernelSU Next!</string>
