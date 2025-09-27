@@ -15,7 +15,7 @@
   <string name="lkm_mode_deprecated">Der LKM-Modus ist jetzt veraltet!</string>
   <string name="lkm_alternative_suggestion">Installieren Sie den GKI-Kernel oder integrieren Sie KernelSU Next in Ihrem Gerät.</string>
   <string name="home_working">Funktioniert</string>
-  <string name="home_working_version">Version: %d</string>
+  <string name="home_working_version">Version: %s (%d)</string>
   <string name="home_module_update_count">Aktualisierungen: %d</string>
   <string name="home_failure">KernelSU Next v2 Signatur nicht gefunden im Kernel! [!KSU_NEXT || != Größe/Hash]</string>
   <string name="home_failure_tip">Bitten Sie Ihren Kernel-Entwickler KernelSU Next zu integrieren!</string>
