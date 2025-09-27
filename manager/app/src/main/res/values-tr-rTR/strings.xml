@@ -15,7 +15,7 @@
   <string name="lkm_mode_deprecated">LKM modu artık kullanımdan kaldırıldı!</string>
   <string name="lkm_alternative_suggestion">GKI çekirdeğini yükleyin veya KernelSU Next\'i cihazınıza entegre edin.</string>
   <string name="home_working">Çalışıyor</string>
-  <string name="home_working_version">Sürüm: %d</string>
+  <string name="home_working_version">Sürüm: %s (%d)</string>
   <string name="home_module_update_count">Güncellemeler: %d</string>
   <string name="home_failure">KernelSU Next v2 imzası çekirdekte bulunamadı! [ !KSU_NEXT || != size/hash ]</string>
   <string name="home_failure_tip">Kernel geliştiricinizden KernelSU Next\'i entegre etmelerini isteyin!</string>
