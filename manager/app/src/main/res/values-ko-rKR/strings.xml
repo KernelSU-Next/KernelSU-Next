@@ -15,7 +15,7 @@
   <string name="lkm_mode_deprecated">이제 LKM 모드는 지원되지 않습니다!</string>
   <string name="lkm_alternative_suggestion">GKI Kernel 혹은 KernelSU Next를 설치하세요.</string>
   <string name="home_working">처리 중</string>
-  <string name="home_working_version">Version: %d</string>
+  <string name="home_working_version">Version: %s (%d)</string>
   <string name="home_module_update_count">Updates: %d</string>
   <string name="home_failure">Kernel에 KernelSU Next v2 signature가 없습니다! !KSU_NEXT || != size/hash ]</string>
   <string name="home_failure_tip">Kernel 개발자에게 KernelSU Next를 지원하도록 요청하세요!</string>
