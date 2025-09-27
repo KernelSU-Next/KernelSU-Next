@@ -15,7 +15,7 @@
   <string name="lkm_mode_deprecated">LKM মোড এখন অকার্যকর!</string>
   <string name="lkm_alternative_suggestion">GKI কার্নেল ইন্সটল করুন অথবা KernelSU ইন্টিগ্রেড করুন।.</string>
   <string name="home_working">কার্যরত</string>
-  <string name="home_working_version">Version: %d</string>
+  <string name="home_working_version">Version: %s (%d)</string>
   <string name="home_module_update_count">আপডেটস: %d</string>
   <string name="home_failure">KernelSU Next v2 signature পাওয়া যায়নি কার্নেলে! [ !KSU_NEXT || != size/hash ]</string>
   <string name="home_failure_tip">আপনার কার্নেল ডেভেলপারকে বলুন KernelSU Next ইন্টিগ্রেট করতে!</string>
