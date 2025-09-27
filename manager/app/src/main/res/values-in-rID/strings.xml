@@ -15,7 +15,7 @@
   <string name="lkm_mode_deprecated">Mode LKM sekarang sudah tidak digunakan lagi!</string>
   <string name="lkm_alternative_suggestion">Pasang kernel GKI atau integrasikan KernelSU Next ke perangkat anda.</string>
   <string name="home_working">Berfungsi</string>
-  <string name="home_working_version">Versi: %d</string>
+  <string name="home_working_version">Versi: %s (%d)</string>
   <string name="home_module_update_count">Pembaruan: %d</string>
   <string name="home_failure">Tandatangan KernelSU Next v2 tidak ditemukan pada kernel! [ !KSU_NEXT || != size/hash ]</string>
   <string name="home_failure_tip">Minta pengembang kernel Anda untuk mengintegrasikan KernelSU Next!</string>
@@ -31,7 +31,7 @@
   <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Versi android</string>
   <string name="home_manager_version">Versi manajer</string>
-  <string name="home_abi">ABI</string>
+  <string name="home_abi">Daftar ABI</string>
   <string name="home_selinux_status">SELinux status</string>
   <string name="selinux_status_disabled">Nonaktif</string>
   <string name="selinux_status_enforcing">Enforcing</string>
