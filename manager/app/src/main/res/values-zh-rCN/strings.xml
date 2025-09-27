@@ -15,7 +15,7 @@
   <string name="lkm_mode_deprecated">LKM 模式已弃用！</string>
   <string name="lkm_alternative_suggestion">安装 GKI 内核或集成 KernelSU 到你的设备。</string>
   <string name="home_working">工作中</string>
-  <string name="home_working_version">版本: %d</string>
+  <string name="home_working_version">版本: %s (%d)</string>
   <string name="home_module_update_count">%d 个模块可更新！</string>
   <string name="home_failure">无法在内核中找到 KernelSU Next v2 签名！[ !KSU_NEXT || != size/hash ]</string>
   <string name="home_failure_tip">请让你的内核开发人员集成 KernelSU Next！</string>
@@ -43,10 +43,10 @@
   <string name="module_empty">未安装任何模块</string>
   <string name="module">模块</string>
   <string name="module_install_prompt_with_name">将安装以下模块: %1$s</string>
-  <string name="module_sort_a_to_z">排序 (A → Z)</string>
-  <string name="module_sort_z_to_a">排序 (Z → A)</string>
-  <string name="module_size_low_to_high">排序 (按模块从小到大)</string>
-  <string name="module_size_high_to_low">排序 (按模块从大到小)</string>
+  <string name="module_sort_a_to_z">排序 (A -&gt; Z)</string>
+  <string name="module_sort_z_to_a">排序 (Z -&gt; A)</string>
+  <string name="module_size_low_to_high">排序 (按占用空间从小到大)</string>
+  <string name="module_size_high_to_low">排序 (按占用空间从大到小)</string>
   <string name="uninstall">卸载</string>
   <string name="restore">还原</string>
   <string name="module_install">安装</string>
