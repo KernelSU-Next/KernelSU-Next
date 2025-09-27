@@ -15,7 +15,7 @@
   <string name="lkm_mode_deprecated">Режимът LKM вече е остарял!</string>
   <string name="lkm_alternative_suggestion">Инсталирайте GKI ядро или интегрирайте KernelSU Next към вашето устройство.</string>
   <string name="home_working">Работи</string>
-  <string name="home_working_version">Версия: %d</string>
+  <string name="home_working_version">Версия: %s (%d)</string>
   <string name="home_module_update_count">Актуализации: %d</string>
   <string name="home_failure">Подписът на KernelSU Next v2 не е намерен в ядрото! [ !KSU_NEXT || != size/hash ]</string>
   <string name="home_failure_tip">Помолете разработчика на вашето ядро да интегрира KernelSU Next!</string>
