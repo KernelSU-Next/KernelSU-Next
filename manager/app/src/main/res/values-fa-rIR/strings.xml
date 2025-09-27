@@ -15,7 +15,7 @@
   <string name="lkm_mode_deprecated">حالت LKM اکنون منسوخ شده است!</string>
   <string name="lkm_alternative_suggestion">کرنل GKI نصب کنید یا KernelSU را به صورت دستی بسازید.</string>
   <string name="home_working">درحال کارکردن</string>
-  <string name="home_working_version">نسخه: %d</string>
+  <string name="home_working_version">نسخه: %s (%d)</string>
   <string name="home_module_update_count">بروزرسانی ها: %d</string>
   <string name="home_failure">امضای KernelSU Next v2 در کرنل یافت نشد!
 [KSU_NEXT || != size/hash!]</string>
