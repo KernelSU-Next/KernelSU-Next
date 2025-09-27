@@ -15,7 +15,7 @@
   <string name="lkm_mode_deprecated">LKM режим устарел!</string>
   <string name="lkm_alternative_suggestion">Установите GKI ядро или интегрируйте KernelSU Next с вашим устройством.</string>
   <string name="home_working">Работает</string>
-  <string name="home_working_version">Версия драйвера: %d</string>
+  <string name="home_working_version">Версия драйвера: %s (%d)</string>
   <string name="home_module_update_count">Обновлений: %d</string>
   <string name="home_failure">Подпись KernelSU Next v2 не найдена в ядре! [ !KSU_NEXT || != size/hash ]</string>
   <string name="home_failure_tip">Напишите разработчику своего ядра, для интеграции KernelSU Next!</string>
