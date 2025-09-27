@@ -15,7 +15,7 @@
   <string name="lkm_mode_deprecated">¡El modo LKM está obsoleto!</string>
   <string name="lkm_alternative_suggestion">Instale un kernel GKI o integre KernelSU Next a su dispositivo.</string>
   <string name="home_working">Funcionando</string>
-  <string name="home_working_version">Versión: %d</string>
+  <string name="home_working_version">Versión %s (%d)</string>
   <string name="home_module_update_count">Actualizaciones: %d</string>
   <string name="home_failure">¡Firma v2 de KernelSU Next no encontrada en el kernel! [ !KSU_NEXT || != size/hash ]</string>
   <string name="home_failure_tip">¡Pídele a tu desarrollador de kernel que integre KernelSU Next!</string>
