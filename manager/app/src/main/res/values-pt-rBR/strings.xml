@@ -97,7 +97,7 @@
   <string name="allowlist_restore">Restaurar lista de permissões</string>
   <string name="allowlist_restore_message">Restaure a lista de permissões de um backup recente.</string>
   <string name="allowlist_backup">Backup da lista de permissões</string>
-  <string name="allowlist_backup_message">Faça backup da lista de permissões configurada atualmente.</string>
+  <string name="allowlist_backup_message">Fazer backup da lista de permissões atual.</string>
   <string name="warning">Aviso</string>
   <string name="warning_message">Este recurso ainda está em beta e em desenvolvimento. Certifique-se de fazer backup de seus módulos antes de continuar. Use esse recurso somente se você compreender os riscos potenciais. Proceda com cautela.</string>
   <string name="proceed">Prosseguir</string>
