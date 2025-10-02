@@ -188,7 +188,7 @@
   <string name="install_inactive_slot">تثبيت إلى خانة غير نشطة (بعد OTA)</string>
   <string name="install_inactive_slot_warning">سيتم **إجبار** جهازك على الاقلاع إلى الفتحة الحالية الغير نشطة بعد إعادة التشغيل!
 \nاستخدم هذا الخيار فقط بعد انتهاء التحديث الهوائي (OTA).
-\nأستمرار؟</string>
+\nإستمرار؟</string>
   <string name="install_next">التالي</string>
   <string name="select_file_tip">يوصي بصورة القسم %1$s</string>
   <string name="select_kmi">تحديد KMI</string>
@@ -221,8 +221,8 @@
   <string name="sucompat_disabled">توافق الروت معطّل (SUCOMPAT)</string>
   <string name="zygisk_required">Zygisk مطلوب</string>
   <string name="zygisk_status">حقن Zygisk</string>
-  <string name="home_superuser_count_singular">مستخدمخارق</string>
-  <string name="home_superuser_count_plural">المستخدمين الخارقين</string>
+  <string name="home_superuser_count_singular">المستخدم الخارق</string>
+  <string name="home_superuser_count_plural">المستخدمون الخارقون</string>
   <string name="home_module_count_singular">وحدة</string>
   <string name="home_module_count_plural">وحدات</string>
   <string name="module_backup_message">نسخ احتياطي للوحدات المثبتة حالياً.</string>
