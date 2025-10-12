@@ -190,7 +190,7 @@ jobs:
             sub_level: 192
             os_patch_level: 2025-10
           - version: "6.1"
-            sub_level: 155
+            sub_level: 145
             os_patch_level: 2025-09
     uses: ./.github/workflows/gki-kernel.yml
     with:
