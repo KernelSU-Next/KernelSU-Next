@@ -96,7 +96,7 @@ jobs:
             os_patch_level: 2025-07
           - version: "6.1"
             sub_level: 145
-            os_patch_level: 2025-08
+            os_patch_level: 2025-09
           - version: "6.1"
             sub_level: 145
             os_patch_level: 2025-09
