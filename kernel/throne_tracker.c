@@ -22,7 +22,7 @@ static uid_t locked_manager_uid = KSU_INVALID_UID;
 static atomic_t pkg_lock = ATOMIC_INIT(0);
 static atomic_t scan_lock = ATOMIC_INIT(0);
 
-#define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list.tmp"
+#define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"
 #define USER_DATA_PATH "/data/user_de/0"
 #define USER_DATA_PATH_LEN 288
 
