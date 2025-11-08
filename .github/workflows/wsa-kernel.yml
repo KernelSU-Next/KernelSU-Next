@@ -36,7 +36,7 @@ jobs:
           key: llvm-12.0.1
 
       - name: Setup LLVM
-        uses: KyleMayes/install-llvm-action@v1
+        uses: KyleMayes/install-llvm-action@v2
         with:
           version: "12.0.1"
           force-version: true
@@ -100,7 +100,7 @@ jobs:
           echo "file_path=WSA-Linux-Kernel/arch/${ARCH_MAP_FILE[${{ inputs.arch }}]}/boot/${FILE_NAME[${{ inputs.arch }}]}" >> $GITHUB_ENV
 
       - name: Upload kernel-${{ inputs.arch }}-${{ inputs.version }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: kernel-WSA-${{ inputs.arch }}-${{ inputs.version }}
           path: "${{ env.file_path }}"

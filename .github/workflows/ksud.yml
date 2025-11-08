@@ -27,7 +27,7 @@ jobs:
         fetch-depth: 0
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
 
     - name: Prepare LKM Files
       if: ${{ inputs.pack_lkm }}
@@ -72,13 +72,13 @@ jobs:
         CROSS_NO_WARNINGS=0 cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud_magic/Cargo.toml
 
     - name: Upload ksud_overlayfs artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: ksud_overlayfs-${{ inputs.target }}
         path: userspace/ksud_overlayfs/target/**/release/ksud*
 
     - name: Upload ksud_magic artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: ksud_magic-${{ inputs.target }}
         path: userspace/ksud_magic/target/**/release/ksud*

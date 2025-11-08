@@ -132,7 +132,7 @@ jobs:
           echo "file_path=android-kernel/$NAME" >> $GITHUB_ENV
 
       - name: Upload Kernel
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: kernel-${{ inputs.arch }}-avd-${{ inputs.version_name }}-${{ env.kernelsu_version }}
           path: "${{ env.file_path }}"
