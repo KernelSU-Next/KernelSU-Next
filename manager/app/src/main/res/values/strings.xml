@@ -72,7 +72,7 @@
     <string name="module_version_code">Code</string>
     <string name="module_update_json">UpdateJson</string>
     <string name="module_update_json_empty">Empty</string>
-    <string name="enable_developer_options">Enable developer options</string>
+    <string name="enable_developer_options">Developer options</string>
     <string name="enable_developer_options_summary">Show hidden settings and debug info relevant only for developers.</string>
     <string name="module_overlay_fs_not_available">Modules are unavailable as OverlayFS is disabled by the kernel!</string>
     <string name="refresh">Refresh</string>
@@ -142,7 +142,7 @@
     <string name="module_updated">Updated</string>
     <string name="module_downloading">Downloading module: %s</string>
     <string name="module_start_downloading">Start downloading: %s</string>
-    <string name="new_version_available">New version %1$s (%2$d) is available, click to upgrade.</string>
+    <string name="new_version_available">New version %1$s (%2$d) is available, click to upgrade!</string>
     <string name="launch_app">Launch</string>
     <string name="close">Close</string>
     <string name="force_stop_app">Force stop</string>
@@ -155,7 +155,7 @@
     <string name="su_not_allowed">Couldn\'t grant Superuser access to %s</string>
     <string name="module_changelog">Changelog</string>
     <string name="settings_profile_template">App Profile template</string>
-    <string name="settings_profile_template_summary">Manage local and online template of App Profile</string>
+    <string name="settings_profile_template_summary">Manage local and online template of App Profile.</string>
     <string name="app_profile_template_create">Create template</string>
     <string name="app_profile_template_edit">Edit template</string>
     <string name="app_profile_template_id">ID</string>
@@ -177,14 +177,14 @@
     <string name="app_profile_template_import_empty">Clipboard is empty!</string>
     <string name="module_changelog_failed">Fetch changelog failed: %s</string>
     <string name="settings_check_update">Check for updates</string>
-    <string name="settings_check_update_summary">Automatically check for updates when opening the app</string>
+    <string name="settings_check_update_summary">Automatically check for updates when opening the app.</string>
     <string name="grant_root_failed">Failed to grant root! Tap to restart manager process.</string>
     <string name="action">Action</string>
     <string name="webui">WebUI</string>
     <string name="open">Open</string>
-    <string name="enable_web_debugging">Enable WebView debugging</string>
+    <string name="enable_web_debugging">WebView debugging</string>
     <string name="enable_web_debugging_summary">Can be used to debug WebUI. Please enable only when needed.</string>
-    <string name="direct_install">Direct install (Recommended)</string>
+    <string name="direct_install">Direct install (Recommended).</string>
     <string name="select_file">Select a file</string>
     <string name="install_inactive_slot">Install to inactive slot (After OTA)</string>
     <string name="install_inactive_slot_warning">Your device will be **FORCED** to boot to the current inactive slot after a reboot!\nOnly use this option after OTA is done.\nContinue?</string>
@@ -210,7 +210,7 @@
     <string name="settings_disable_su">Disable su compatibility</string>
     <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
     <string name="settings_language">Language</string>
-    <string name="system_default">System default</string>
+    <string name="system_default">System default.</string>
     <string name="settings_legacyui">Use legacy UI</string>
     <string name="settings_legacyui_summary">Switch to the previous user interface style.</string>
     <string name="settings_banner">Enable banners</string>
@@ -232,5 +232,5 @@
     <string name="module_sort_action_first">Sort (Action first)</string>
     <string name="module_sort_webui_first">Sort (WebUI first)</string>
     <string name="settings_global_namespace_mode">Global namespace mode</string>
-    <string name="settings_global_namespace_mode_summary">All root sessions use the global mount namespace</string>
+    <string name="settings_global_namespace_mode_summary">All root sessions use the global mount namespace.</string>
 </resources>
