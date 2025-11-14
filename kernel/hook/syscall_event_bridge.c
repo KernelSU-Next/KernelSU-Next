@@ -45,79 +45,78 @@ static int ksu_handle_init_mark_tracker(const char __user **filename_user)
         ksu_clear_task_tracepoint_flag_if_needed(current);
     }
 
-    return 0;
+	return 0;
 }
 
 long __nocfi ksu_hook_newfstatat(int orig_nr, const struct pt_regs *regs)
 {
-    if (!ksu_su_compat_enabled)
-        return ksu_syscall_table[orig_nr](regs);
+	if (!static_branch_likely(&ksu_su_compat_enabled))
+		return ksu_syscall_table[orig_nr](regs);
 
-    return ksu_handle_stat_sucompat(orig_nr, (struct pt_regs *)regs);
+	return ksu_handle_stat_sucompat(orig_nr, (struct pt_regs *)regs);
 }
 
 long __nocfi ksu_hook_faccessat(int orig_nr, const struct pt_regs *regs)
 {
-    if (!ksu_su_compat_enabled)
-        return ksu_syscall_table[orig_nr](regs);
+	if (!static_branch_likely(&ksu_su_compat_enabled))
+		return ksu_syscall_table[orig_nr](regs);
 
-    return ksu_handle_faccessat_sucompat(orig_nr, (struct pt_regs *)regs);
+	return ksu_handle_faccessat_sucompat(orig_nr, (struct pt_regs *)regs);
 }
 
 DEFINE_STATIC_KEY_TRUE(ksud_execve_key);
 
 void ksu_stop_ksud_execve_hook()
 {
-    static_branch_disable(&ksud_execve_key);
+	static_branch_disable(&ksud_execve_key);
 }
 
 static long __nocfi ksu_hook_execve_common(int orig_nr, const struct pt_regs *regs, bool execveat)
 {
-    const char __user **filename_user =
-        execveat ? (const char __user **)&PT_REGS_PARM2(regs) : (const char __user **)&PT_REGS_SYSCALL_PARM1(regs);
-    const char __user *const __user *argv_user = execveat ? (const char __user *const __user *)PT_REGS_PARM3(regs) :
-                                                            (const char __user *const __user *)PT_REGS_PARM2(regs);
-    bool current_is_init = is_init(current_cred());
-    struct ksu_sulog_pending_event *pending_root_execve = NULL;
-    long ret;
+	const char __user **filename_user =
+		execveat ? (const char __user **)&PT_REGS_PARM2(regs) : (const char __user **)&PT_REGS_SYSCALL_PARM1(regs);
+	const char __user *const __user *argv_user = execveat ? (const char __user *const __user *)PT_REGS_PARM3(regs) :
+								(const char __user *const __user *)PT_REGS_PARM2(regs);
+	bool current_is_init = is_init(current_cred());
+	struct ksu_sulog_pending_event *pending_root_execve = NULL;
+	long ret;
 
-    if (static_branch_unlikely(&ksud_execve_key)) {
-        if (execveat) {
-            ksu_execveat_hook_ksud(regs);
-        } else {
-            ksu_execve_hook_ksud(regs);
-        }
-    }
+	if (static_branch_unlikely(&ksud_execve_key)) {
+		if (execveat) {
+			ksu_execveat_hook_ksud(regs);
+		} else {
+			ksu_execve_hook_ksud(regs);
+		}
+	}
+	/*
+	 * Newer Android releases' init execs selinux_setup with execveat()
+	 * rather than execve(). Only an AT_EMPTY_PATH exec of an fd has no
+	 * path for preinit to swap.
+	 */
+	if (unlikely(current->pid == 1) && (!execveat || !(PT_REGS_PARM5(regs) & AT_EMPTY_PATH)) &&
+	    ksu_preinit_handle_execve(filename_user, argv_user, orig_nr, (struct pt_regs *)regs, &ret))
+		return ret;
 
-    /*
-     * Newer Android releases' init execs selinux_setup with execveat()
-     * rather than execve(). Only an AT_EMPTY_PATH exec of an fd has no
-     * path for preinit to swap.
-     */
-    if (unlikely(current->pid == 1) && (!execveat || !(PT_REGS_PARM5(regs) & AT_EMPTY_PATH)) &&
-        ksu_preinit_handle_execve(filename_user, argv_user, orig_nr, (struct pt_regs *)regs, &ret))
-        return ret;
+	if (current_euid().val == 0)
+		pending_root_execve = ksu_sulog_capture_root_execve(*filename_user, argv_user, GFP_KERNEL);
 
-    if (current_euid().val == 0)
-        pending_root_execve = ksu_sulog_capture_root_execve(*filename_user, argv_user, GFP_KERNEL);
+	if (current->pid != 1 && current_is_init) {
+		ksu_handle_init_mark_tracker(filename_user);
+		ret = execveat ? ksu_adb_root_handle_execveat((struct pt_regs *)regs) :
+				 ksu_adb_root_handle_execve((struct pt_regs *)regs);
+		if (ret) {
+			pr_err("adb root failed: %ld\n", ret);
+		}
+	} else if (static_branch_likely(&ksu_su_compat_enabled)) {
+		ret = execveat ? ksu_handle_execveat_sucompat(filename_user, orig_nr, (struct pt_regs *)regs) :
+				 ksu_handle_execve_sucompat(filename_user, orig_nr, (struct pt_regs *)regs);
+		ksu_sulog_emit_pending(pending_root_execve, ret, GFP_KERNEL);
+		return ret;
+	}
 
-    if (current->pid != 1 && current_is_init) {
-        ksu_handle_init_mark_tracker(filename_user);
-        ret = execveat ? ksu_adb_root_handle_execveat((struct pt_regs *)regs) :
-                         ksu_adb_root_handle_execve((struct pt_regs *)regs);
-        if (ret) {
-            pr_err("adb root failed: %ld\n", ret);
-        }
-    } else if (ksu_su_compat_enabled) {
-        ret = execveat ? ksu_handle_execveat_sucompat(filename_user, orig_nr, (struct pt_regs *)regs) :
-                         ksu_handle_execve_sucompat(filename_user, orig_nr, (struct pt_regs *)regs);
-        ksu_sulog_emit_pending(pending_root_execve, ret, GFP_KERNEL);
-        return ret;
-    }
-
-    ret = ksu_syscall_table[orig_nr](regs);
-    ksu_sulog_emit_pending(pending_root_execve, ret, GFP_KERNEL);
-    return ret;
+	ret = ksu_syscall_table[orig_nr](regs);
+	ksu_sulog_emit_pending(pending_root_execve, ret, GFP_KERNEL);
+	return ret;
 }
 
 long __nocfi ksu_hook_execve(int orig_nr, const struct pt_regs *regs)
@@ -138,6 +137,10 @@ long __nocfi ksu_hook_setresuid(int orig_nr, const struct pt_regs *regs)
     if (ret < 0)
         return ret;
 
+#ifdef CONFIG_KSU_SUSFS
+    ksu_handle_setresuid(current_uid().val, current_uid().val, current_uid().val);
+#else
     ksu_handle_setresuid(old_uid, current_uid().val);
+#endif
     return ret;
 }

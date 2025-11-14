@@ -9,21 +9,36 @@ kernelsu-objs += feature/module_blacklist.o
 kernelsu-objs += feature/sulog.o
 kernelsu-objs += feature/sucompat.o
 
+# Architecture
+ifneq ($(filter y arm64 aarch64,$(CONFIG_ARM64) $(ARCH)),)
+KSU_ARCH := arm64
+else ifneq ($(filter y x86_64 i386,$(CONFIG_X86_64) $(ARCH)),)
+KSU_ARCH := x86_64
+else ifneq ($(filter y riscv riscv64,$(CONFIG_RISCV) $(ARCH)),)
+KSU_ARCH := riscv64
+endif
+
+# Core utilities ('selinux hide'/hooks)
+ifeq ($(strip $(CONFIG_KPROBES)),y)
 kernelsu-objs += hook/lsm_hook.o
-kernelsu-objs += hook/setuid_hook.o
+ifdef KSU_ARCH
+kernelsu-objs += hook/$(KSU_ARCH)/patch_memory.o
+endif
+endif
+
+# Hooks (excluded for SuSFS)
+ifneq ($(strip $(CONFIG_KSU_SUSFS)),y)
+ifeq ($(strip $(CONFIG_KPROBES)),y)
 kernelsu-objs += hook/syscall_event_bridge.o
 kernelsu-objs += hook/syscall_hook_manager.o
 kernelsu-objs += hook/tp_marker.o
-ifeq ($(CONFIG_ARM64),y)
-kernelsu-objs += hook/arm64/patch_memory.o
-kernelsu-objs += hook/arm64/syscall_hook.o
-else ifeq ($(CONFIG_X86_64),y)
-kernelsu-objs += hook/x86_64/patch_memory.o
-kernelsu-objs += hook/x86_64/syscall_hook.o
-else ifeq ($(CONFIG_RISCV),y)
-kernelsu-objs += hook/riscv64/patch_memory.o
-kernelsu-objs += hook/riscv64/syscall_hook.o
+ifdef KSU_ARCH
+kernelsu-objs += hook/$(KSU_ARCH)/syscall_hook.o
 endif
+endif
+endif
+
+kernelsu-objs += hook/setuid_hook.o
 kernelsu-objs += extras.o
 
 kernelsu-objs += infra/file_wrapper.o
@@ -224,4 +239,17 @@ ccflags-y += -DKSU_NEW_DCACHE_FLUSH=$(KSU_NEW_DCACHE_FLUSH)
 ccflags-y += -Wno-strict-prototypes -Wno-int-conversion -Wno-gcc-compat -Wno-missing-prototypes -Wno-missing-declarations
 ccflags-y += -Wno-declaration-after-statement -Wno-unused-function -Wno-unused-variable
 
+## For susfs stuff ##
+ifeq ($(strip $(CONFIG_KSU_SUSFS)),y)
+ifeq ($(shell test -e $(srctree)/fs/susfs.c; echo $$?),0)
+$(eval SUSFS_VERSION=$(shell cat $(srctree)/include/linux/susfs.h | grep -E '^#define SUSFS_VERSION' | cut -d' ' -f3 | sed 's/"//g'))
+$(info )
+$(info -- SUSFS_VERSION: $(SUSFS_VERSION))
+else
+$(info -- You have not integrated susfs in your kernel yet.)
+$(info -- Read: https://gitlab.com/simonpunk/susfs4ksu)
+endif
+endif
+
 # Keep a new line here!! Because someone may append config
+

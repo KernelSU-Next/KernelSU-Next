@@ -128,6 +128,8 @@ void ksu_samsung_kdp_put_cred(const struct cred *cred)
 	}
 	if (kdp_usecount_dec_and_test_fn(mutable_cred))
 		__put_cred(mutable_cred);
+	else
+		put_cred(cred);
 #else
 	put_cred(cred);
 #endif

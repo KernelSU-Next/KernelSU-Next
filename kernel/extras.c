@@ -9,6 +9,12 @@
 #include "runtime/ksud.h"
 #include "infra/seccomp_cache.h"
 
+#include "linux/jump_label.h"
+
+#ifdef CONFIG_KSU_SUSFS
+extern struct static_key_false susfs_is_avc_log_spoofing_enabled;
+#endif
+
 // sorry for the ifdef hell
 // but im too lazy to fragment this out.
 // theres only one feature so far anyway
@@ -23,7 +29,7 @@ static atomic_t disable_spoof = ATOMIC_INIT(1);
 void ksu_avc_spoof_enable();
 void ksu_avc_spoof_disable();
 
-static bool ksu_avc_spoof_enabled = true;
+bool ksu_avc_spoof_enabled = true;
 static bool boot_completed = false;
 
 static int avc_spoof_feature_get(u64 *value)
@@ -35,6 +41,13 @@ static int avc_spoof_feature_get(u64 *value)
 static int avc_spoof_feature_set(u64 value)
 {
 	bool enable = value != 0;
+
+#ifdef CONFIG_KSU_SUSFS
+	if (enable && static_branch_unlikely(&susfs_is_avc_log_spoofing_enabled)) {
+		pr_info("avc_spoof: SuSFS spoof active, skipping ksu toggle\n");
+		return -EBUSY;
+	}
+#endif
 
 	if (enable == ksu_avc_spoof_enabled) {
 		pr_info("avc_spoof: no need to change\n");
@@ -86,6 +99,11 @@ int ksu_handle_slow_avc_audit(u32 *tsid)
 {
 	if (atomic_read(&disable_spoof))
 		return 0;
+
+#ifdef CONFIG_KSU_SUSFS
+	if (static_branch_unlikely(&susfs_is_avc_log_spoofing_enabled))
+		return 0;
+#endif
 
 	// if tsid is su, we just replace it
 	// unsure if its enough, but this is how it is aye?
@@ -163,6 +181,7 @@ static void destroy_kprobe(struct kprobe **kp_ptr)
 
 void ksu_avc_spoof_disable(void)
 {
+	ksu_avc_spoof_enabled = false;
 #ifdef CONFIG_KPROBES
 	pr_info("avc_spoof/exit: unregister slow_avc_audit kprobe!\n");
 	destroy_kprobe(&slow_avc_audit_kp);
@@ -173,6 +192,7 @@ void ksu_avc_spoof_disable(void)
 
 void ksu_avc_spoof_enable(void) 
 {
+	ksu_avc_spoof_enabled = true;
 	int ret = get_sid();
 	if (ret) {
 		pr_info("avc_spoof/init: sid grab fail!\n");

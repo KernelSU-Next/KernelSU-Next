@@ -294,10 +294,12 @@ bool ksu_uid_should_umount(uid_t uid)
 {
     struct app_profile *profile;
     bool res;
+#ifndef CONFIG_KSU_SUSFS
     if (likely(ksu_is_manager_appid_valid()) && unlikely(ksu_get_manager_appid() == uid % PER_USER_RANGE)) {
         // we should not umount on manager!
         return false;
     }
+#endif
 #ifdef CONFIG_KSU_DISABLE_POLICY
     return !__ksu_is_allow_uid(uid);
 #else

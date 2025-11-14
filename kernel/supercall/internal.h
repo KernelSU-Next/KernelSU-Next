@@ -14,6 +14,8 @@ bool allowed_for_su(void);
 long ksu_supercall_handle_ioctl(const struct file *filp, unsigned int cmd, void __user *argp);
 void ksu_supercall_dump_commands(void);
 void ksu_supercall_cleanup_state(void);
+int ksu_handle_toolkit_reboot(int magic2, unsigned int cmd, void __user *arg);
+void ksu_toolkit_uname_reset(void);
 
 extern uint32_t ksuver_override;
 
