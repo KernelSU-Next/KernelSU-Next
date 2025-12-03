@@ -253,6 +253,7 @@ static int ksu_handle_bprm_ksud(const char *filename, const char *argv1, const c
 		if (argv1 && !strcmp(argv1, "second_stage")) {
 			pr_info("%s: /system/bin/init second_stage executed\n", __func__);
 			apply_kernelsu_rules();
+			setup_ksu_cred();
 			init_second_stage_executed = true;
 		}
 	}
