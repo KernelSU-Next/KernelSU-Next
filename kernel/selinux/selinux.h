@@ -46,6 +46,13 @@ static inline taskcred_sec_t *selinux_cred(const struct cred *cred)
 }
 #endif
 
+// TODO: rename to "ksu"
+#define KERNEL_SU_DOMAIN "su"
+#define KERNEL_SU_FILE "ksu_file"
+
+#define KERNEL_SU_CONTEXT "u:r:" KERNEL_SU_DOMAIN ":s0"
+#define KSU_FILE_CONTEXT "u:object_r:" KERNEL_SU_FILE ":s0"
+
 void setup_selinux(const char *);
 
 void setenforce(bool);
