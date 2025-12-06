@@ -7,12 +7,13 @@
 #include <cstring>
 #include <cstdio>
 #include <unistd.h>
-#include <climits>
 #include <utility>
 #include <android/log.h>
 #include <dirent.h>
 #include <cstdlib>
 
+#include <unistd.h>
+#include <climits>
 #include <sys/syscall.h>
 #include "ksu.h"
 
@@ -79,7 +80,6 @@ struct ksu_get_info_cmd get_info() {
     if (!g_version.version) {
         ksuctl(KSU_IOCTL_GET_INFO, &g_version);
     }
-
     return g_version;
 }
 
@@ -93,7 +93,6 @@ bool get_allow_list(struct ksu_get_allow_list_cmd *cmd) {
 }
 
 bool is_safe_mode() {
-
     struct ksu_check_safemode_cmd cmd = {};
     ksuctl(KSU_IOCTL_CHECK_SAFEMODE, &cmd);
     return cmd.in_safe_mode;
@@ -186,16 +185,6 @@ bool is_kernel_umount_enabled() {
         return false;
     }
     return value != 0;
-}
-
-uid_t get_manager_uid(void)
-{
-    struct ksu_get_manager_uid_cmd cmd = {0};
-
-    if (ksuctl(KSU_IOCTL_GET_MANAGER_UID, &cmd) == 0)
-        return (uid_t)cmd.uid;
-
-    return (uid_t)-1;
 }
 
 const char* get_hook_mode(void)

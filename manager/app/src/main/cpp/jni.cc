@@ -2,6 +2,7 @@
 
 #include <sys/prctl.h>
 #include <linux/capability.h>
+#include <pwd.h>
 
 #include <android/log.h>
 #include <cstring>
@@ -24,13 +25,6 @@ Java_com_rifsxd_ksunext_Natives_getVersion(JNIEnv *env, jobject) {
     }
     // try legacy method as fallback
     return legacy_get_info().first;
-}
-
-extern "C"
-JNIEXPORT jint JNICALL
-Java_com_rifsxd_ksunext_Natives_getManagerUid(JNIEnv *env, jobject) {
-    uid_t manager_uid = get_manager_uid();
-    return (jint)manager_uid;
 }
 
 extern "C"
@@ -361,4 +355,14 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_rifsxd_ksunext_Natives_setEnhancedSecurityEnabled(JNIEnv *env, jobject thiz, jboolean enabled) {
     return set_enhanced_security_enabled(enabled);
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_rifsxd_ksunext_Natives_getUserName(JNIEnv *env, jobject thiz, jint uid) {
+    struct passwd *pw = getpwuid((uid_t) uid);
+    if (pw && pw->pw_name && pw->pw_name[0] != '\0') {
+        return env->NewStringUTF(pw->pw_name);
+    }
+    return nullptr;
 }
