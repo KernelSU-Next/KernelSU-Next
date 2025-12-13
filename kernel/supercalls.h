@@ -9,6 +9,9 @@
 #define KSU_INSTALL_MAGIC1 0xDEADBEEF
 #define KSU_INSTALL_MAGIC2 0xCAFEBABE
 
+// SULog_Dump Extension
+#define GET_SULOG_DUMP 10009
+
 // Command structures for ioctl
 
 struct ksu_become_daemon_cmd {

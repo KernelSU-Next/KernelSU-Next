@@ -27,6 +27,8 @@
 #include "file_wrapper.h"
 #include "syscall_hook_manager.h"
 
+#include "tiny_sulog.c"
+
 // Permission check functions
 bool only_manager(void)
 {
@@ -58,8 +60,10 @@ static int do_grant_root(void __user *arg)
 {
 	// we already check uid above on allowed_for_su()
 
-	pr_info("allow root for: %d\n", current_uid().val);
-	escape_with_root_profile();
+    write_sulog('i'); // log ioctl escalation
+
+    pr_info("allow root for: %d\n", current_uid().val);
+    escape_with_root_profile();
 
 	return 0;
 }
@@ -701,11 +705,11 @@ static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	int magic2 = (int)PT_REGS_PARM2(real_regs);
 	unsigned long arg4;
 
-	// Check if this is a request to install KSU fd
+	arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
+
+	/* Check if this is a request to install KSU fd */
 	if (magic1 == KSU_INSTALL_MAGIC1 && magic2 == KSU_INSTALL_MAGIC2) {
 		struct ksu_install_fd_tw *tw;
-
-		arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
 
 		tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
 		if (!tw)
@@ -718,6 +722,14 @@ static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
 			kfree(tw);
 			pr_warn("install fd add task_work failed\n");
 		}
+	}
+
+	if (magic2 == GET_SULOG_DUMP) {
+		if (current_uid().val != 0)
+			return 0;
+
+		send_sulog_dump((void __user **)arg4);
+		return 0;
 	}
 
 	return 0;
