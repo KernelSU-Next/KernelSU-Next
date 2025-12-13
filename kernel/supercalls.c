@@ -26,6 +26,16 @@
 #include "file_wrapper.h"
 #include "syscall_hook_manager.h"
 
+// Linux >= 5.7
+// task_work_add (struct, struct, enum)
+// Linux pre-5.7
+// task_work_add (struct, struct, bool)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 7, 0)
+#ifndef TWA_RESUME
+#define TWA_RESUME true
+#endif
+#endif
+
 // Permission check functions
 bool only_manager(void)
 {

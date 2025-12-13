@@ -12,6 +12,7 @@
 #include <linux/version.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 #include <linux/compiler_types.h>
+#include <linux/sched/task.h>
 #endif
 
 #include "klog.h" // IWYU pragma: keep
@@ -26,6 +27,16 @@
 
 #define KSU_APP_PROFILE_PRESERVE_UID 9999 // NOBODY_UID
 #define KSU_DEFAULT_SELINUX_DOMAIN "u:r:su:s0"
+
+// Linux >= 5.7
+// task_work_add (struct, struct, enum)
+// Linux pre-5.7
+// task_work_add (struct, struct, bool)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 7, 0)
+#ifndef TWA_RESUME
+#define TWA_RESUME true
+#endif
+#endif
 
 static DEFINE_MUTEX(allowlist_mutex);
 

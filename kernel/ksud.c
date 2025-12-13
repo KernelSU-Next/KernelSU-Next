@@ -26,6 +26,16 @@
 #include "selinux/selinux.h"
 #include "throne_tracker.h"
 
+// Linux >= 5.7
+// task_work_add (struct, struct, enum)
+// Linux pre-5.7
+// task_work_add (struct, struct, bool)
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 7, 0)
+#ifndef TWA_RESUME
+#define TWA_RESUME true
+#endif
+#endif
+
 bool ksu_module_mounted __read_mostly = false;
 bool ksu_boot_completed __read_mostly = false;
 

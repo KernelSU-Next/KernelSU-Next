@@ -1,5 +1,8 @@
 #include <linux/mm.h>
+#include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
 #include <linux/pgtable.h>
+#endif
 #include <linux/printk.h>
 #include <asm/current.h>
 
