@@ -71,6 +71,16 @@ static inline bool is_allow_su()
     return ksu_is_allow_uid_for_current(current_uid().val);
 }
 
+// force_sig kcompat, TODO: move it out of core_hook.c
+// https://elixir.bootlin.com/linux/v5.3-rc1/source/kernel/signal.c#L1613
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 3, 0)
+#define send_sigkill() force_sig(SIGKILL)
+#else
+#define send_sigkill() force_sig(SIGKILL, current)
+#endif
+
+extern void disable_seccomp(struct task_struct *tsk);
+
 int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 {
     // we rely on the fact that zygote always call setresuid(3) with same uids
@@ -87,7 +97,7 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
             if (!is_ksu_domain()) {
                 pr_warn("find suspicious EoP: %d %s, from %d to %d\n", 
                     current->pid, current->comm, old_uid, new_uid);
-                force_sig(SIGKILL);
+                send_sigkill();
                 return 0;
             }
         }
@@ -96,7 +106,7 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
             if (euid < current_euid().val && !ksu_is_allow_uid_for_current(old_uid)) {
                 pr_warn("find suspicious EoP: %d %s, from %d to %d\n", 
                     current->pid, current->comm, old_uid, new_uid);
-                force_sig(SIGKILL);
+                send_sigkill();
                 return 0;
             }
         }
@@ -112,12 +122,17 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
         pr_info("install fd for manager: %d\n", new_uid);
         ksu_install_fd();
         spin_lock_irq(&current->sighand->siglock);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
         ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
+#else
+		disable_seccomp(current);
+#endif
         ksu_set_task_tracepoint_flag(current);
         spin_unlock_irq(&current->sighand->siglock);
         return 0;
     }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
     if (ksu_is_allow_uid_for_current(new_uid)) {
         if (current->seccomp.mode == SECCOMP_MODE_FILTER &&
             current->seccomp.filter) {
@@ -129,6 +144,13 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
     } else {
         ksu_clear_task_tracepoint_flag_if_needed(current);
     }
+#else
+	if (ksu_is_allow_uid_for_current(new_uid)) {
+		spin_lock_irq(&current->sighand->siglock);
+		disable_seccomp(current);
+		spin_unlock_irq(&current->sighand->siglock);
+	}
+#endif
 
     // Handle kernel umount
     ksu_handle_umount(old_uid, new_uid);

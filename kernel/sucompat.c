@@ -25,6 +25,12 @@
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0)
+#ifndef KSU_STRNCPY_UNSAFE_USER
+#define strncpy_from_user_nofault strncpy_from_unsafe_user
+#endif // #ifndef KSU_STRNCPY_UNSAFE_USER
+#endif // #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0)
+
 bool ksu_su_compat_enabled __read_mostly = true;
 
 static int su_compat_feature_get(u64 *value)

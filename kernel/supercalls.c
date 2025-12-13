@@ -365,11 +365,17 @@ static int do_get_wrapper_fd(void __user *arg) {
 		goto put_orig_file;
 	}
 
+// kcompat for older kernel
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
 #define getfd_secure anon_inode_create_getfd
-#else
+#elif defined(KSU_HAS_GETFD_SECURE)
 #define getfd_secure anon_inode_getfd_secure
+#else
+// technically not a secure inode, but, this is the only way so.
+#define getfd_secure(name, ops, data, flags, __unused)                         \
+	anon_inode_getfd(name, ops, data, flags)
 #endif
+
 	ret = getfd_secure("[ksu_fdwrapper]", &data->ops, data, f->f_flags, NULL);
 	if (ret < 0) {
 		pr_err("ksu_fdwrapper: getfd failed: %d\n", ret);
