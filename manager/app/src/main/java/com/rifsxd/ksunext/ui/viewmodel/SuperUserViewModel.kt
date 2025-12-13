@@ -179,7 +179,7 @@ class SuperUserViewModel : ViewModel() {
                     packageInfo = it,
                     profile = profile,
                 )
-            }.filter { it.packageName != ksuApp.packageName }
+            }
             Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}")
         }
     }

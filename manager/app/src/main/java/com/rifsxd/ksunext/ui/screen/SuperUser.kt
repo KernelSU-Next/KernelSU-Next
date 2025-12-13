@@ -34,6 +34,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AppProfileScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
+import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.R
 import com.rifsxd.ksunext.ui.component.SearchAppBar
@@ -133,7 +134,7 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                     .fillMaxSize()
                     .nestedScroll(scrollBehavior.nestedScrollConnection)
             ) {
-                items(viewModel.appList, key = { it.packageName + it.uid }) { app ->
+                items(viewModel.appList.filter { it.packageName != ksuApp.packageName }, key = { it.packageName + it.uid }) { app ->
                     AppItem(app) {
                         navigator.navigate(AppProfileScreenDestination(app))
                     }
