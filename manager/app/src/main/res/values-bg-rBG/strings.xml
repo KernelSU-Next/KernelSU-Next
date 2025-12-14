@@ -141,7 +141,7 @@
   <string name="module_updated">Актуализиран</string>
   <string name="module_downloading">Изтегляне на модул: %s</string>
   <string name="module_start_downloading">Започнете изтеглянето: %s</string>
-  <string name="new_version_available">Налична е нова версия %1$s (%2$d), кликнете за актуализация.</string>
+  <string name="new_version_available">Налична е нова версия %s, кликнете за актуализация.</string>
   <string name="launch_app">Стартиране</string>
   <string name="close">Затвори</string>
   <string name="force_stop_app">Принудително спиране</string>
@@ -228,9 +228,9 @@
   <string name="module_sort_action_first">Сортиране (първо действие)</string>
   <string name="module_sort_webui_first">Сортиране (първо WebUI)</string>
   <string name="settings_global_namespace_mode_summary">Всички сесии на root използват глобалното пространство от имена за монтиране</string>
-  <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup).</string>
-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU Next (root and all modules) completely and permanently.</string>
-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU Next, please use \"Uninstall permanently\".</string>
-  <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
-  <string name="settings_global_namespace_mode">Global namespace mode</string>
+  <string name="shrink_sparse_image_message">Преоразмерете разреденото изображение, където се намира модулът, до действителния му размер. Обърнете внимание, че това може да доведе до неправилна работа на модула, така че, моля, използвайте го само когато е необходимо (Например за архивиране).</string>
+  <string name="settings_uninstall_permanent_message">Пълно и окончателно деинсталиране на KernelSU Next (root и всички модули).</string>
+  <string name="settings_restore_stock_image_message">Възстановете базовото копие (ако съществува резервно копие), обикновено използвано преди OTA; ако трябва да деинсталирате KernelSU Next, моля, използвайте „Деинсталирай завинаги“.</string>
+  <string name="settings_disable_su_summary">Временно деактивирайте възможността на всяко приложение да получава root права чрез командата ⁠su (Съществуващите root процеси няма да бъдат засегнати).</string>
+  <string name="settings_global_namespace_mode">Режим на глобално пространство от имена</string>
 </resources>
