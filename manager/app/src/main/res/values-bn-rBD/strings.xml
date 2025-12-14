@@ -141,7 +141,7 @@
   <string name="module_updated">Updated</string>
   <string name="module_downloading">Downloading module: %s</string>
   <string name="module_start_downloading">Start downloading: %s</string>
-  <string name="new_version_available">New version %1$s (%2$d) is available, click to upgrade.</string>
+  <string name="new_version_available">New version %s is available, click to upgrade.</string>
   <string name="launch_app">Launch</string>
   <string name="close">Close</string>
   <string name="force_stop_app">Force stop</string>
