@@ -141,7 +141,7 @@
   <string name="module_updated">Güncellendi</string>
   <string name="module_downloading">Modül indiriliyor: %s</string>
   <string name="module_start_downloading">İndirme başlıyor: %s</string>
-  <string name="new_version_available">Yeni sürüm %1$s (%2$d) mevcut, güncellemek için tıklayın.</string>
+  <string name="new_version_available">Yeni sürüm %s mevcut, güncellemek için tıklayın.</string>
   <string name="launch_app">Başlat</string>
   <string name="close">Kapat</string>
   <string name="force_stop_app">Durmaya zorla</string>
