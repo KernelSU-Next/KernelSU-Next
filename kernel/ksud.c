@@ -57,9 +57,9 @@ static void stop_vfs_read_hook();
 static void stop_execve_hook();
 static void stop_input_hook();
 
-static struct work_struct stop_vfs_read_work;
-static struct work_struct stop_execve_hook_work;
-static struct work_struct stop_input_hook_work;
+static struct work_struct __maybe_unused stop_vfs_read_work;
+static struct work_struct __maybe_unused stop_execve_hook_work;
+static struct work_struct __maybe_unused stop_input_hook_work;
 
 u32 ksu_file_sid;
 void on_post_fs_data(void)
