@@ -141,7 +141,7 @@
   <string name="module_updated">Zaktualizowany</string>
   <string name="module_downloading">Pobieranie modułu: %s</string>
   <string name="module_start_downloading">Rozpocznij pobieranie: %s</string>
-  <string name="new_version_available">Nowa wersja %1$s (%2$d) jest dostępna, kliknij, aby zaktualizować.</string>
+  <string name="new_version_available">Nowa wersja %s jest dostępna, kliknij, aby zaktualizować.</string>
   <string name="launch_app">Uruchom</string>
   <string name="close">Zamknij</string>
   <string name="force_stop_app">Wymuś zatrzymanie</string>
