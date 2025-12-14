@@ -130,7 +130,7 @@
   <string name="failed_to_update_app_profile">Не удалось обновить Профиль Приложения для %s</string>
   <string name="require_kernel_version">Текущая версия KernelSU Next %1$d слишком низкая для корректной работы менеджера. Пожалуйста, обновитесь до версии %2$d или выше!</string>
   <string name="settings_umount_modules_default">Размонтировать модули</string>
-  <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для параметра \"Размонтировать модули\" в Профиле Приложения. Если этот параметр включён, то все изменения, внесённые модулями, будут скрыты для приложений без установленного профиля.</string>
+  <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для \"Размонтировать модули\" в профиле приложения. Если этот параметр включен, все изменения которые внесли модули будут удалены для приложений, без настроенного профиля.</string>
   <string name="settings_susfs_toggle">Скрыть хук kprobes</string>
   <string name="settings_susfs_toggle_summary">Эта опция отключает хук kprobes, созданный ksu, и вместо него активирует встроенный хук без использования kprobes, реализующий ту же функциональность, которая применяется к ядрам без GKI, не поддерживающим kprobe.</string>
   <string name="profile_umount_modules_summary">Если этот параметр включен, то все модификации, внесённые модулями, будут скрыты для данного приложения.</string>
@@ -141,7 +141,7 @@
   <string name="module_updated">Обновлено</string>
   <string name="module_downloading">Загружается модуль: %s</string>
   <string name="module_start_downloading">Начало загрузки: %s</string>
-  <string name="new_version_available">Доступна новая версия %1$s (%2$d), нажмите для обновления.</string>
+  <string name="new_version_available">Доступна новая версия %s, нажмите для обновления.</string>
   <string name="launch_app">Запустить</string>
   <string name="close">Закрыть</string>
   <string name="force_stop_app">Принудительно остановить</string>
@@ -203,7 +203,7 @@
   <string name="save_log">Сохранить\nлоги</string>
   <string name="log_saved">Логи сохранены</string>
   <string name="send_log">Поделиться\nлогами</string>
-  <string name="settings_disable_su">Откл. совместимость с su</string>
+  <string name="settings_disable_su">Совместимость с su</string>
   <string name="settings_language">Язык</string>
   <string name="system_default">Системный</string>
   <string name="settings_legacyui">Использовать старый UI</string>
