@@ -21,17 +21,8 @@ struct watch_dir {
 
 static struct fsnotify_group *g;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 7, 0)
-static int ksu_handle_event(struct fsnotify_group *group,
-			    struct inode *inode,
-			    u32 mask, const void *data, int data_type,
-			    const struct qstr *file_name, u32 cookie,
-			    struct fsnotify_iter_info *iter_info)
-#else
-static int ksu_handle_inode_event(struct fsnotify_mark *mark, u32 mask,
-				  struct inode *inode, struct inode *dir,
-				  const struct qstr *file_name, u32 cookie)
-#endif
+#include "pkg_observer_defs.h" // KSU_DECL_FSNOTIFY_OPS
+static KSU_DECL_FSNOTIFY_OPS(ksu_handle_inode_event)
 {
 	if (!file_name)
 		return 0;
@@ -46,10 +37,10 @@ static int ksu_handle_inode_event(struct fsnotify_mark *mark, u32 mask,
 }
 
 static const struct fsnotify_ops ksu_ops = {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 7, 0)
-	.handle_event = ksu_handle_event,
-#else
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0)
 	.handle_inode_event = ksu_handle_inode_event,
+#else
+	.handle_event = ksu_handle_inode_event,
 #endif
 };
 
