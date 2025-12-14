@@ -142,7 +142,7 @@
   <string name="module_updated">بروزرسانی شده</string>
   <string name="module_downloading">درحال دانلود ماژول: %s</string>
   <string name="module_start_downloading">شروع دانلود: %s</string>
-  <string name="new_version_available">نسخه جدید %1$s (%2$d) در دسترس است، برای ارتقا کلیک کنید.</string>
+  <string name="new_version_available">نسخه جدید %s در دسترس است، برای ارتقا کلیک کنید.</string>
   <string name="launch_app">اجرا</string>
   <string name="close">بستن</string>
   <string name="force_stop_app">توقف اجباری</string>
