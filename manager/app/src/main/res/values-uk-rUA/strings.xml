@@ -141,7 +141,7 @@
   <string name="module_updated">Оновлено</string>
   <string name="module_downloading">Завантаження модуля: %s</string>
   <string name="module_start_downloading">Початок завантаження: %s</string>
-  <string name="new_version_available">Доступна нова версія %1$s (%2$d), натисніть для оновлення.</string>
+  <string name="new_version_available">Доступна нова версія %s, натисніть для оновлення.</string>
   <string name="launch_app">Запустити</string>
   <string name="close">Закрити</string>
   <string name="force_stop_app">Примусово зупинити</string>
