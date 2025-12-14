@@ -141,7 +141,7 @@
   <string name="module_updated">更新されました</string>
   <string name="module_downloading">モジュールをダウンロード中: %s</string>
   <string name="module_start_downloading">ダウンロードを開始: %s</string>
-  <string name="new_version_available">新しいバージョン %1$s (%2$d) が利用可能です。タップで更新します。</string>
+  <string name="new_version_available">新しいバージョン %s が利用可能です。タップで更新します。</string>
   <string name="launch_app">起動</string>
   <string name="close">閉じる</string>
   <string name="force_stop_app">強制停止</string>
