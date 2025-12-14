@@ -31,7 +31,7 @@
   <string name="home_susfs_sus_su">SuS SU</string>
   <string name="home_android">Versão do Android</string>
   <string name="home_manager_version">Versão do gerenciador</string>
-  <string name="home_abi">ABI</string>
+  <string name="home_abi">Lista de ABI</string>
   <string name="home_selinux_status">Status do SELinux</string>
   <string name="selinux_status_disabled">Desativado</string>
   <string name="selinux_status_enforcing">Impondo</string>
@@ -177,7 +177,7 @@
   <string name="module_changelog_failed">Falha ao buscar o registro de alterações: %s</string>
   <string name="settings_check_update">Verificar por atualizações</string>
   <string name="settings_check_update_summary">Verifique automaticamente se há atualizações ao abrir o app</string>
-  <string name="grant_root_failed">Falha ao conceder acesso root!</string>
+  <string name="grant_root_failed">Falha ao conceder acesso root! Toque para reiniciar o processo do gerenciador.</string>
   <string name="action">Ação</string>
   <string name="webui">WebUI</string>
   <string name="open">Abrir</string>
