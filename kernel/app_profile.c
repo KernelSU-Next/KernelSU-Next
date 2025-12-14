@@ -67,9 +67,24 @@ extern void disable_seccomp(void)
 
 #ifdef CONFIG_SECCOMP
 	current->seccomp.mode = 0;
-	current->seccomp.filter = NULL;
+// 5.9+ have filter_count, but optional.
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0) ||                          \
+     defined(KSU_OPTIONAL_SECCOMP_FILTER_CNT))
 	atomic_set(&current->seccomp.filter_count, 0);
-#else
+#endif
+// some old kernel backport seccomp_filter_release..
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) &&                           \
+     defined(KSU_OPTIONAL_SECCOMP_FILTER_RELEASE))
+	seccomp_filter_release(current);
+#elif LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
+	put_seccomp_filter(current);
+#endif
+// never, ever call seccomp_filter_release on 6.10+ (no effect)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) &&                          \
+     LINUX_VERSION_CODE < KERNEL_VERSION(6, 10, 0))
+	seccomp_filter_release(current);
+#endif 
+	current->seccomp.filter = NULL;
 #endif
 }
 

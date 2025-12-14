@@ -84,6 +84,15 @@ endif
 $(info -- KernelSU-Next Manager signature size: $(KSU_NEXT_MANAGER_SIZE))
 $(info -- KernelSU-Next Manager signature hash: $(KSU_NEXT_MANAGER_HASH))
 
+ifeq ($(shell grep -q "atomic_t\s\+filter_count" $(srctree)/include/linux/seccomp.h; echo $$?),0)
+ccflags-y += -DKSU_OPTIONAL_SECCOMP_FILTER_CNT
+endif
+
+# some old kernel backport this, let's check if put_seccomp_filter still exist
+ifneq ($(shell grep -wq "put_seccomp_filter" $(srctree)/kernel/seccomp.c $(srctree)/include/linux/seccomp.h; echo $$?),0)
+ccflags-y += -DKSU_OPTIONAL_SECCOMP_FILTER_RELEASE
+endif
+
 ifeq ($(shell grep -q "anon_inode_getfd_secure" $(srctree)/fs/anon_inodes.c; echo $$?),0)
 ccflags-y += -DKSU_HAS_GETFD_SECURE
 endif
