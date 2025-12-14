@@ -386,7 +386,13 @@ static int do_get_wrapper_fd(void __user *arg) {
 	struct inode* wrapper_inode = file_inode(pf);
 	// copy original inode mode
     wrapper_inode->i_mode = file_inode(f)->i_mode;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0) ||                           \
+	defined(KSU_OPTIONAL_SELINUX_INODE)
 	struct inode_security_struct *sec = selinux_inode(wrapper_inode);
+#else
+	struct inode_security_struct *sec =
+		(struct inode_security_struct *)wrapper_inode->i_security;
+#endif
 	if (sec) {
 		sec->sid = ksu_file_sid;
 	}
@@ -670,7 +676,7 @@ static void ksu_install_fd_tw_func(struct callback_head *cb)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
 		close_fd(fd);
 #else
-		ksys_close(fd);
+		__close_fd(current->files, fd);
 #endif
 	}
 

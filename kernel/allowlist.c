@@ -21,22 +21,13 @@
 #include "allowlist.h"
 #include "manager.h"
 #include "syscall_hook_manager.h"
+#include "kernel_compat.h"
 
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
 #define FILE_FORMAT_VERSION 3 // u32
 
 #define KSU_APP_PROFILE_PRESERVE_UID 9999 // NOBODY_UID
 #define KSU_DEFAULT_SELINUX_DOMAIN "u:r:su:s0"
-
-// Linux >= 5.7
-// task_work_add (struct, struct, enum)
-// Linux pre-5.7
-// task_work_add (struct, struct, bool)
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 7, 0)
-#ifndef TWA_RESUME
-#define TWA_RESUME true
-#endif
-#endif
 
 static DEFINE_MUTEX(allowlist_mutex);
 

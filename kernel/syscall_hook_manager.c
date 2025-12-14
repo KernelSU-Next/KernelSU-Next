@@ -18,6 +18,7 @@
 #include "setuid_hook.h"
 #include "selinux/selinux.h"
 #include "util.h"
+#include "kernel_compat.h"
 
 // Tracepoint registration count management
 // == 1: just us
