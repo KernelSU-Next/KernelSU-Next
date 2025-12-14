@@ -141,7 +141,7 @@
   <string name="module_updated">업데이트됨</string>
   <string name="module_downloading">%s 모듈 다운로드 중</string>
   <string name="module_start_downloading">%s 다운로드 시작</string>
-  <string name="new_version_available">새 버전: %1$s (%2$d) 사용 가능, 여기를 눌러서 받기</string>
+  <string name="new_version_available">새 버전: %s 사용 가능, 여기를 눌러서 받기</string>
   <string name="launch_app">실행</string>
   <string name="close">닫기</string>
   <string name="force_stop_app">강제 종료</string>
@@ -229,8 +229,8 @@
   <string name="module_sort_webui_first">정렬 (WebUI 우선)</string>
   <string name="settings_global_namespace_mode_summary">All root sessions use the global mount namespace</string>
   <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup).</string>
-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU Next (root and all modules) completely and permanently.</string>
-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU Next, please use \"Uninstall permanently\".</string>
-  <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
+  <string name="settings_uninstall_permanent_message">완전히, 그리고 영구히 KernelSU (루트 및 모든 모듈)를 삭제합니다.</string>
+  <string name="settings_restore_stock_image_message">순정 이미지 복구 (백업이 존재한다면), 보통 OTA 전에 사용합니다; KernelSU를 삭제해야 한다면, \"영구적 삭제\"를 사용해 주세요.</string>
+  <string name="settings_disable_su_summary">su 명령어를 통해 앱이 루트권한을 얻는것을 일시 중지합니다. (기존 루트 프로세스는 영향받지 않습니다)</string>
   <string name="settings_global_namespace_mode">Global namespace mode</string>
 </resources>
