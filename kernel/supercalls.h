@@ -9,7 +9,8 @@
 #define KSU_INSTALL_MAGIC1 0xDEADBEEF
 #define KSU_INSTALL_MAGIC2 0xCAFEBABE
 
-// SULog_Dump Extension
+// Toolkit extensions
+#define CHANGE_MANAGER_UID 10006
 #define GET_SULOG_DUMP 10009
 
 // Command structures for ioctl

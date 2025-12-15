@@ -703,9 +703,8 @@ static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	struct pt_regs *real_regs = PT_REAL_REGS(regs);
 	int magic1 = (int)PT_REGS_PARM1(real_regs);
 	int magic2 = (int)PT_REGS_PARM2(real_regs);
-	unsigned long arg4;
-
-	arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
+	unsigned int cmd = (unsigned int)PT_REGS_PARM3(real_regs);
+	unsigned long arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
 
 	/* Check if this is a request to install KSU fd */
 	if (magic1 == KSU_INSTALL_MAGIC1 && magic2 == KSU_INSTALL_MAGIC2) {
@@ -724,11 +723,28 @@ static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
 		}
 	}
 
+	if (magic2 == CHANGE_MANAGER_UID) {
+		/* only root is allowed for this command */
+		if (current_uid().val != 0)
+			return 0;
+
+		pr_info("sys_reboot: ksu_set_manager_appid to: %d\n", cmd);
+		ksu_set_manager_appid(cmd);
+
+		if (cmd == ksu_get_manager_appid()) {
+			unsigned long reply = (unsigned long)arg4;
+			if (copy_to_user((void __user *)arg4, &reply, sizeof(reply)))
+				pr_info("sys_reboot: reply fail\n");
+		}
+
+		return 0;
+	}
+
 	if (magic2 == GET_SULOG_DUMP) {
 		if (current_uid().val != 0)
 			return 0;
 
-		send_sulog_dump((void __user **)arg4);
+		send_sulog_dump((void __user *)arg4);
 		return 0;
 	}
 
@@ -763,6 +779,34 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 		__close_fd(current->files, fd);
 #endif
 		}
+		return 0;
+	}
+
+	// extensions 
+	u64 reply = (u64)*arg;
+
+	if (magic2 == CHANGE_MANAGER_UID) {
+		// only root is allowed for this command
+		if (current_uid().val != 0)
+			return 0;
+
+		pr_info("sys_reboot: ksu_set_manager_appid to: %d\n", cmd);
+		ksu_set_manager_appid(cmd);
+
+		if (cmd == ksu_get_manager_appid()) {
+			if (copy_to_user((void __user *)*arg, &reply, sizeof(reply)))
+				pr_info("sys_reboot: reply fail\n");
+		}
+
+		return 0;
+	}
+	
+	if (magic2 == GET_SULOG_DUMP) {
+		// only root is allowed for this command
+		if (current_uid().val != 0)
+			return 0;
+
+		send_sulog_dump(*arg);
 		return 0;
 	}
 
