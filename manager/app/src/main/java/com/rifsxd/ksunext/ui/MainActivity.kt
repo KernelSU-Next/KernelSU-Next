@@ -28,6 +28,7 @@ import com.ramcosta.composedestinations.generated.NavGraphs
 import com.ramcosta.composedestinations.generated.destinations.FlashScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.ModuleScreenDestination
 import com.ramcosta.composedestinations.generated.destinations.SuperUserScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.SettingScreenDestination
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
 import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.ui.screen.FlashIt
@@ -97,6 +98,9 @@ class MainActivity : ComponentActivity() {
                             "modules" -> {
                                 navigator.navigate(ModuleScreenDestination)
                             }
+                            "settings" -> {
+                                navigator.navigate(SettingScreenDestination)
+                            }
                         }
                         navigateLoc = ""
                     }
@@ -162,12 +166,8 @@ class MainActivity : ComponentActivity() {
 
     private fun handleIntent(intent: Intent) {
         when (intent.action) {
-            "com.rifsxd.ksunext.ACTION_REBOOT" -> {
-                Toast.makeText(this, "Rebooting in 5 secs!", Toast.LENGTH_SHORT).show()
-
-                handler.postDelayed({
-                    reboot("")
-                }, 5000)
+            "com.rifsxd.ksunext.ACTION_SETTINGS" -> {
+                navigateLoc = "settings"
             }
             "com.rifsxd.ksunext.ACTION_SUPERUSER" -> {
                 navigateLoc = "superuser"

@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Shortcut 1: Reboot -->
+    <!-- Shortcut 1: Settings -->
     <shortcut
-        android:shortcutId="power_settings_shortcut"
+        android:shortcutId="settings_shortcut"
         android:enabled="true"
-        android:icon="@drawable/ic_reboot"
-        android:shortcutShortLabel="@string/reboot"
-        android:shortcutLongLabel="@string/reboot">
+        android:icon="@drawable/ic_settings"
+        android:shortcutShortLabel="@string/settings"
+        android:shortcutLongLabel="@string/settings">
         <intent
-            android:action="com.rifsxd.ksunext.ACTION_REBOOT"
+            android:action="com.rifsxd.ksunext.ACTION_SETTINGS"
             android:targetPackage="com.rifsxd.ksunext"
             android:targetClass="com.rifsxd.ksunext.ui.MainActivity" />
-        <!-- Categories can remain, or be removed if not needed for conversation apps -->
         <categories android:name="android.shortcut.conversation" />
     </shortcut>
 
