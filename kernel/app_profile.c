@@ -23,6 +23,7 @@
 #include "kernel_compat.h"
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
+#include "su_mount_ns.h"
 #include "syscall_hook_manager.h"
 
 static struct group_info root_groups = { .usage = ATOMIC_INIT(2) };
@@ -302,6 +303,8 @@ void escape_with_root_profile(void)
 		ksu_set_task_tracepoint_flag(t);
 	}
 #endif
+
+	setup_mount_ns(profile->namespaces);
 }
 
 void escape_to_root_for_init(void) {

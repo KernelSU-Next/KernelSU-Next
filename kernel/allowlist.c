@@ -25,6 +25,7 @@
 #include "allowlist.h"
 #include "manager.h"
 #include "syscall_hook_manager.h"
+#include "su_mount_ns.h"
 #include "kernel_compat.h"
 
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
@@ -76,14 +77,14 @@ static void init_default_profiles()
 {
 	kernel_cap_t full_cap = CAP_FULL_SET;
 
-	default_root_profile.uid = 0;
-	default_root_profile.gid = 0;
-	default_root_profile.groups_count = 1;
-	default_root_profile.groups[0] = 0;
-	memcpy(&default_root_profile.capabilities.effective, &full_cap,
-		sizeof(default_root_profile.capabilities.effective));
-	default_root_profile.namespaces = 0;
-	strcpy(default_root_profile.selinux_domain, KSU_DEFAULT_SELINUX_DOMAIN);
+    default_root_profile.uid = 0;
+    default_root_profile.gid = 0;
+    default_root_profile.groups_count = 1;
+    default_root_profile.groups[0] = 0;
+    memcpy(&default_root_profile.capabilities.effective, &full_cap,
+           sizeof(default_root_profile.capabilities.effective));
+    default_root_profile.namespaces = KSU_NS_INHERITED;
+    strcpy(default_root_profile.selinux_domain, KSU_DEFAULT_SELINUX_DOMAIN);
 
 	// This means that we will umount modules by default!
 	default_non_root_profile.umount_modules = true;
