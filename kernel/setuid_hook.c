@@ -1,5 +1,8 @@
 #include <linux/compiler.h>
+#include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 10, 0)
 #include <linux/sched/signal.h>
+#endif
 #include <linux/slab.h>
 #include <linux/task_work.h>
 #include <linux/thread_info.h>
@@ -124,10 +127,12 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
         spin_lock_irq(&current->sighand->siglock);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
         ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
+#ifdef KSU_KPROBES_HOOK
+		ksu_set_task_tracepoint_flag(current);
+#endif
 #else
 		disable_seccomp(current);
 #endif
-        ksu_set_task_tracepoint_flag(current);
         spin_unlock_irq(&current->sighand->siglock);
         return 0;
     }
@@ -140,9 +145,11 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
             ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
             spin_unlock_irq(&current->sighand->siglock);
         }
-        ksu_set_task_tracepoint_flag(current);
-    } else {
-        ksu_clear_task_tracepoint_flag_if_needed(current);
+#ifdef KSU_KPROBES_HOOK
+		ksu_set_task_tracepoint_flag(current);
+	} else {
+		ksu_clear_task_tracepoint_flag_if_needed(current);
+#endif
     }
 #else
 	if (ksu_is_allow_uid_for_current(new_uid)) {
@@ -158,6 +165,7 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
     return 0;
 }
 
+extern void ksu_lsm_hook_init(void);
 void ksu_setuid_hook_init(void)
 {
     ksu_kernel_umount_init();

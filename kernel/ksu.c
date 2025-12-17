@@ -12,6 +12,19 @@
 #include "ksud.h"
 #include "supercalls.h"
 
+extern void __init ksu_lsm_hook_init(void);
+extern int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
+					void *argv, void *envp, int *flags);
+extern int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
+				    void *argv, void *envp, int *flags);
+int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
+			void *envp, int *flags)
+{
+	ksu_handle_execveat_ksud(fd, filename_ptr, argv, envp, flags);
+	return ksu_handle_execveat_sucompat(fd, filename_ptr, argv, envp,
+					    flags);
+}
+
 int __init kernelsu_init(void)
 {
 #ifdef CONFIG_KSU_DEBUG
@@ -29,6 +42,8 @@ int __init kernelsu_init(void)
 	ksu_supercalls_init();
 
 	ksu_syscall_hook_manager_init();
+
+	ksu_lsm_hook_init();
 
 	ksu_allowlist_init();
 

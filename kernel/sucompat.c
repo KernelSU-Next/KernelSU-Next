@@ -1,4 +1,3 @@
-#include <linux/compiler_types.h>
 #include <linux/preempt.h>
 #include <linux/printk.h>
 #include <linux/mm.h>
@@ -11,8 +10,18 @@
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
 #include <linux/pgtable.h>
 #endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
+#include <linux/compiler_types.h>
+#include <linux/compiler.h>
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
 #include <linux/sched/task_stack.h>
+#else
+#include <linux/sched.h>
+#endif
 #include <linux/ptrace.h>
+
+#include "objsec.h"
 
 #include "allowlist.h"
 #include "feature.h"
@@ -165,6 +174,63 @@ int ksu_handle_execve_sucompat(const char __user **filename_user,
 
 	escape_with_root_profile();
 
+	return 0;
+}
+
+int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
+				 void *__never_use_argv, void *__never_use_envp,
+				 int *__never_use_flags)
+{
+	struct filename *filename;
+	const char su[] = SU_PATH;
+	static const char ksud_path[] = KSUD_PATH;
+
+	if (unlikely(!filename_ptr))
+		return 0;
+
+	filename = *filename_ptr;
+	if (IS_ERR(filename))
+		return 0;
+
+	if (likely(memcmp(filename->name, su, sizeof(su))))
+		return 0;
+
+	pr_info("do_execveat_common su found\n");
+	memcpy((void *)filename->name, ksud_path, sizeof(ksud_path));
+
+	escape_with_root_profile();
+
+	return 0;
+}
+
+int __ksu_handle_devpts(struct inode *inode)
+{
+#ifndef KSU_KPROBES_HOOK
+	if (!ksu_su_compat_enabled)
+		return 0;
+#endif
+
+	if (!current->mm) {
+		return 0;
+	}
+
+	uid_t uid = current_uid().val;
+	if (uid % 100000 < 10000) {
+		// not untrusted_app, ignore it
+		return 0;
+	}
+
+	if (likely(!ksu_is_allow_uid(uid)))
+		return 0;
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0) || defined(KSU_OPTIONAL_SELINUX_INODE)
+	struct inode_security_struct *sec = selinux_inode(inode);
+#else
+	struct inode_security_struct *sec = (struct inode_security_struct *)inode->i_security;
+#endif
+
+	if (ksu_file_sid && sec)
+		sec->sid = ksu_file_sid;
 	return 0;
 }
 

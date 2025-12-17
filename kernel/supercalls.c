@@ -19,22 +19,13 @@
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "ksud.h"
+#include "kernel_compat.h"
 #include "kernel_umount.h"
 #include "manager.h"
 #include "selinux/selinux.h"
 #include "objsec.h"
 #include "file_wrapper.h"
 #include "syscall_hook_manager.h"
-
-// Linux >= 5.7
-// task_work_add (struct, struct, enum)
-// Linux pre-5.7
-// task_work_add (struct, struct, bool)
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 7, 0)
-#ifndef TWA_RESUME
-#define TWA_RESUME true
-#endif
-#endif
 
 // Permission check functions
 bool only_manager(void)
@@ -409,6 +400,7 @@ put_orig_file:
 
 static int do_manage_mark(void __user *arg)
 {
+#ifdef KSU_KPROBES_HOOK
 	struct ksu_manage_mark_cmd cmd;
 	int ret = 0;
 
@@ -470,13 +462,27 @@ static int do_manage_mark(void __user *arg)
 	}
 
 	return 0;
+#else
+	// We don't care, just return -ENOTSUPP
+	pr_warn("manage_mark: this supercalls is not implemented for manual hook.\n");
+	return -ENOTSUPP;
+#endif
 }
 
 static int do_get_hook_mode(void __user *arg)
 {
 	struct ksu_get_hook_mode_cmd cmd = {0};
+	const char *type = "Kprobes";
 
-	strscpy(cmd.mode, "Kprobes", sizeof(cmd.mode));
+#ifndef KSU_KPROBES_HOOK
+	type = "Manual";
+#endif
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
+	strscpy(cmd.mode, type, sizeof(cmd.mode));
+#else
+	strscpy(cmd.mode, type, sizeof(cmd.mode));
+#endif
 
 	if (copy_to_user(arg, &cmd, sizeof(cmd))) {
 		pr_err("get_hook_mode: copy_to_user failed\n");
@@ -490,7 +496,11 @@ static int do_get_version_tag(void __user *arg)
 {
 	struct ksu_get_version_tag_cmd cmd = {0};
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
 	strscpy(cmd.tag, KERNEL_SU_VERSION_TAG, sizeof(cmd.tag));
+#else
+	strlcpy(cmd.tag, KERNEL_SU_VERSION_TAG, sizeof(cmd.tag));
+#endif
 
 	if (copy_to_user(arg, &cmd, sizeof(cmd))) {
 		pr_err("get_version_tag: copy_to_user failed\n");
@@ -538,7 +548,7 @@ static int add_try_umount(void __user *arg)
     struct mount_entry *new_entry, *entry, *tmp;
     struct ksu_add_try_umount_cmd cmd;
     char buf[256] = {0};
-
+	
     if (copy_from_user(&cmd, arg, sizeof cmd))
         return -EFAULT;
 
@@ -660,6 +670,7 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
 	{ .cmd = 0, .name = NULL, .handler = NULL, .perm_check = NULL } // Sentinel
 	};
 
+#ifdef KSU_KPROBES_HOOK
 struct ksu_install_fd_tw {
 	struct callback_head cb;
 	int __user *outp;
@@ -716,6 +727,36 @@ static struct kprobe reboot_kp = {
 	.symbol_name = REBOOT_SYMBOL,
 	.pre_handler = reboot_handler_pre,
 };
+#else
+int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
+			  void __user **arg)
+{
+	if (magic1 != KSU_INSTALL_MAGIC1)
+		return 0;
+
+#ifdef CONFIG_KSU_DEBUG
+	pr_info("sys_reboot: intercepted call! magic: 0x%x id: %d\n", magic1,
+		magic2);
+#endif
+
+	// Check if this is a request to install KSU fd
+	if (magic2 == KSU_INSTALL_MAGIC2) {
+		int fd = ksu_install_fd();
+		// downstream: dereference all arg usage!
+		if (copy_to_user((void __user *)*arg, &fd, sizeof(fd))) {
+			pr_err("install ksu fd reply err\n");
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+		close_fd(fd);
+#else
+		__close_fd(current->files, fd);
+#endif
+		}
+		return 0;
+	}
+
+	return 0;
+}
+#endif
 
 void ksu_supercalls_init(void)
 {
@@ -726,16 +767,20 @@ void ksu_supercalls_init(void)
 		pr_info("  %-18s = 0x%08x\n", ksu_ioctl_handlers[i].name, ksu_ioctl_handlers[i].cmd);
 	}
 
+#ifdef KSU_KPROBES_HOOK
 	int rc = register_kprobe(&reboot_kp);
 	if (rc) {
 		pr_err("reboot kprobe failed: %d\n", rc);
 	} else {
 		pr_info("reboot kprobe registered successfully\n");
 	}
+#endif
 }
 
 void ksu_supercalls_exit(void){
+#ifdef KSU_KPROBES_HOOK
 	unregister_kprobe(&reboot_kp);
+#endif
 }
 
 // IOCTL dispatcher

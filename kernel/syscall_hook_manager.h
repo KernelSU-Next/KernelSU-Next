@@ -9,6 +9,7 @@
 void ksu_syscall_hook_manager_init(void);
 void ksu_syscall_hook_manager_exit(void);
 
+#ifdef KSU_KPROBES_HOOK
 // Process marking for tracepoint
 void ksu_mark_all_process(void);
 void ksu_unmark_all_process(void);
@@ -37,5 +38,7 @@ static inline void ksu_clear_task_tracepoint_flag(struct task_struct *t)
 }
 
 void ksu_clear_task_tracepoint_flag_if_needed(struct task_struct *t);
+
+#endif
 
 #endif
