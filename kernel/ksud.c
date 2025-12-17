@@ -127,11 +127,13 @@ void on_module_mounted(void)
 	ksu_module_mounted = true;
 }
 
+extern void ksu_avc_spoof_late_init();
 void on_boot_completed(void)
 {
     ksu_boot_completed = true;
     pr_info("on_boot_completed!\n");
     track_throne(true);
+    ksu_avc_spoof_late_init();
 }
 
 #define MAX_ARG_STRINGS 0x7FFFFFFF
