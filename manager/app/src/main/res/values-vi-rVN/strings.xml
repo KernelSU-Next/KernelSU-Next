@@ -57,7 +57,7 @@
   <string name="reboot_userspace">Khởi động lại mềm</string>
   <string name="reboot_recovery">Khởi động lại vào Recovery</string>
   <string name="reboot_bootloader">Khởi động lại vào Bootloader</string>
-  <string name="reboot_download">Khởi động lại vào Download Mode</string>
+  <string name="reboot_download">Khởi động lại vào Download</string>
   <string name="reboot_edl">Khởi động lại vào EDL</string>
   <string name="about">Thông tin</string>
   <string name="module_uninstall_confirm">Bạn có THẬT SỰ muốn gỡ cài đặt module %s không?</string>
