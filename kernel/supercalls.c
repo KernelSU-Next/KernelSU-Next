@@ -23,7 +23,6 @@
 #include "kernel_umount.h"
 #include "manager.h"
 #include "selinux/selinux.h"
-#include "objsec.h"
 #include "file_wrapper.h"
 #include "syscall_hook_manager.h"
 
@@ -342,64 +341,12 @@ static int do_get_wrapper_fd(void __user *arg) {
 	}
 
 	struct ksu_get_wrapper_fd_cmd cmd;
-	int ret;
-
-	if (copy_from_user(&cmd, arg, sizeof(cmd))) {
-		pr_err("get_wrapper_fd: copy_from_user failed\n");
-		return -EFAULT;
+    if (copy_from_user(&cmd, arg, sizeof(cmd))) {
+        pr_err("get_wrapper_fd: copy_from_user failed\n");
+        return -EFAULT;
 	}
-
-	struct file* f = fget(cmd.fd);
-	if (!f) {
-		return -EBADF;
-	}
-
-	struct ksu_file_wrapper *data = ksu_create_file_wrapper(f);
-	if (data == NULL) {
-		ret = -ENOMEM;
-		goto put_orig_file;
-	}
-
-// kcompat for older kernel
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
-#define getfd_secure anon_inode_create_getfd
-#elif defined(KSU_HAS_GETFD_SECURE)
-#define getfd_secure anon_inode_getfd_secure
-#else
-// technically not a secure inode, but, this is the only way so.
-#define getfd_secure(name, ops, data, flags, __unused)                         \
-	anon_inode_getfd(name, ops, data, flags)
-#endif
-
-	ret = getfd_secure("[ksu_fdwrapper]", &data->ops, data, f->f_flags, NULL);
-	if (ret < 0) {
-		pr_err("ksu_fdwrapper: getfd failed: %d\n", ret);
-		goto put_wrapper_data;
-	}
-	struct file* pf = fget(ret);
-
-	struct inode* wrapper_inode = file_inode(pf);
-	// copy original inode mode
-    wrapper_inode->i_mode = file_inode(f)->i_mode;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0) ||                           \
-	defined(KSU_OPTIONAL_SELINUX_INODE)
-	struct inode_security_struct *sec = selinux_inode(wrapper_inode);
-#else
-	struct inode_security_struct *sec =
-		(struct inode_security_struct *)wrapper_inode->i_security;
-#endif
-	if (sec) {
-		sec->sid = ksu_file_sid;
-	}
-
-	fput(pf);
-	goto put_orig_file;
-put_wrapper_data:
-	ksu_delete_file_wrapper(data);
-put_orig_file:
-	fput(f);
-
-	return ret;
+	
+	return ksu_install_file_wrapper(cmd.fd);
 }
 
 static int do_manage_mark(void __user *arg)
