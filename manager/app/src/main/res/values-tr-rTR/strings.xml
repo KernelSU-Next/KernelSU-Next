@@ -3,7 +3,7 @@
   <string name="issue_report_title">Sorun mu yaşıyorsunuz?</string>
   <string name="issue_report_body">Bir hatayla mı karşılaştınız veya geri bildiriminiz mi var?</string>
   <string name="issue_report_body_2">Mümkün olan en kısa sürede bildirin!</string>
-  <string name="issue_report_github">GitHub’da bildirin</string>
+  <string name="issue_report_github">GitHub ile bildirin</string>
   <string name="issue_report_telegram">Telegram üzerinden iletişim kurun</string>
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
@@ -121,7 +121,7 @@
   <string name="profile_name">Profil ismi</string>
   <string name="profile_namespace">Bağlama alanadı</string>
   <string name="profile_namespace_inherited">Inherited</string>
-  <string name="profile_namespace_global">Genel</string>
+  <string name="profile_namespace_global">Küresel</string>
   <string name="profile_namespace_individual">Özel</string>
   <string name="profile_groups">Gruplar</string>
   <string name="profile_capabilities">Kabiliyetler</string>
@@ -203,7 +203,7 @@
   <string name="save_log">Günlükleri kaydet</string>
   <string name="log_saved">Günlükler kaydedildi</string>
   <string name="send_log">Günlükleri paylaş</string>
-  <string name="settings_disable_su">Su uyumluluğunu devre dışı bırak</string>
+  <string name="settings_disable_su">SU uyumluluğunu devre dışı bırak</string>
   <string name="settings_language">Dil</string>
   <string name="system_default">Sistem varsayılanı</string>
   <string name="settings_legacyui">Eski Kullanıcı Arayüzünü Kullan</string>
