@@ -16,6 +16,8 @@ display_usage() {
 initialize_variables() {
     if test -d "$GKI_ROOT/common/drivers"; then
          DRIVER_DIR="$GKI_ROOT/common/drivers"
+    elif test -d "$GKI_ROOT/aosp/drivers"; then
+         DRIVER_DIR="$GKI_ROOT/aosp/drivers"
     elif test -d "$GKI_ROOT/drivers"; then
          DRIVER_DIR="$GKI_ROOT/drivers"
     else
