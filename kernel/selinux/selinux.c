@@ -69,24 +69,16 @@ void setup_selinux(const char *domain)
 
 void setenforce(bool enforce)
 {
-#ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-    selinux_state.enforcing = enforce;
-#endif
+	do_setenforce(enforce);
 }
 
 bool getenforce()
 {
-#ifdef CONFIG_SECURITY_SELINUX_DISABLE
-    if (selinux_state.disabled) {
-        return false;
-    }
-#endif
+	if (is_selinux_disabled()) {
+		return false;
+	}
 
-#ifdef CONFIG_SECURITY_SELINUX_DEVELOP
-    return selinux_state.enforcing;
-#else
-    return true;
-#endif
+	return is_selinux_enforcing();
 }
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 14, 0)
