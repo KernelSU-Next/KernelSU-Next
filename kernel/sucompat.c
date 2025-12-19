@@ -237,7 +237,7 @@ int __ksu_handle_devpts(struct inode *inode)
 // dead code: devpts handling
 int __maybe_unused ksu_handle_devpts(struct inode *inode)
 {
-	return 0;
+	return __ksu_handle_devpts(inode);
 }
 
 // sucompat: permitted process can execute 'su' to gain root access.
