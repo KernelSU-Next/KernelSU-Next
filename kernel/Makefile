@@ -106,7 +106,7 @@ endif
 endif
 
 ifneq ($(HAVE_KSU_HOOK),0)
-$(error -- KernelSU: No hooks were defined, bail!)
+$(error -- KernelSU: No hooks were defined, please integrate manual hooks in your kernel!)
 endif
 
 # some backports
