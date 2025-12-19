@@ -211,10 +211,14 @@ try_drop_caps:
 	return;
 }
 
+void seccomp_filter_release(struct task_struct *tsk);
 
-extern void disable_seccomp(void)
+void disable_seccomp(void)
 {
-	assert_spin_locked(&current->sighand->siglock);
+	struct task_struct fake;
+    // Refer to kernel/seccomp.c: seccomp_set_mode_strict
+    // When disabling Seccomp, ensure that current->sighand->siglock is held during the operation.
+    spin_lock_irq(&current->sighand->siglock);
 	// disable seccomp
 #if defined(CONFIG_GENERIC_ENTRY) &&                                           \
 	LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
@@ -223,26 +227,33 @@ extern void disable_seccomp(void)
 	clear_thread_flag(TIF_SECCOMP);
 #endif
 
-#ifdef CONFIG_SECCOMP
+    memcpy(&fake, current, sizeof(fake));
 	current->seccomp.mode = 0;
+	current->seccomp.filter = NULL;
 // 5.9+ have filter_count, but optional.
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0) ||                          \
      defined(KSU_OPTIONAL_SECCOMP_FILTER_CNT))
 	atomic_set(&current->seccomp.filter_count, 0);
 #endif
+    spin_unlock_irq(&current->sighand->siglock);
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
+    // https://github.com/torvalds/linux/commit/bfafe5efa9754ebc991750da0bcca2a6694f3ed3#diff-45eb79a57536d8eccfc1436932f093eb5c0b60d9361c39edb46581ad313e8987R576-R577
+    fake.flags |= PF_EXITING;
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+    // https://github.com/torvalds/linux/commit/0d8315dddd2899f519fe1ca3d4d5cdaf44ea421e#diff-45eb79a57536d8eccfc1436932f093eb5c0b60d9361c39edb46581ad313e8987R556-R558
+    fake.sighand = NULL;
+#endif
 // some old kernel backport seccomp_filter_release..
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) &&                           \
      defined(KSU_OPTIONAL_SECCOMP_FILTER_RELEASE))
-	seccomp_filter_release(current);
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
-	put_seccomp_filter(current);
-#endif
+	seccomp_filter_release(&fake);
 // never, ever call seccomp_filter_release on 6.10+ (no effect)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) &&                          \
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) &&                          \
      LINUX_VERSION_CODE < KERNEL_VERSION(6, 10, 0))
-	seccomp_filter_release(current);
-#endif 
-	current->seccomp.filter = NULL;
+	seccomp_filter_release(&fake);
+#elif LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
+	put_seccomp_filter(&fake);
 #endif
 }
 
@@ -292,11 +303,7 @@ void escape_with_root_profile(void)
 
 	commit_creds(cred);
 
-	// Refer to kernel/seccomp.c: seccomp_set_mode_strict
-	// When disabling Seccomp, ensure that current->sighand->siglock is held during the operation.
-	spin_lock_irq(&current->sighand->siglock);
 	disable_seccomp();
-	spin_unlock_irq(&current->sighand->siglock);
 
 	setup_selinux(profile->selinux_domain);
 

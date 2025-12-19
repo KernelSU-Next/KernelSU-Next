@@ -99,7 +99,6 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
     }
 
     if (ksu_get_manager_appid() == new_uid % PER_USER_RANGE) {
-        spin_lock_irq(&current->sighand->siglock);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
         ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
 #ifdef KSU_KPROBES_HOOK
@@ -108,7 +107,6 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 #else
 		disable_seccomp(current);
 #endif
-        spin_unlock_irq(&current->sighand->siglock);
 
         pr_info("install fd for manager: %d\n", new_uid);
         struct callback_head *cb = kzalloc(sizeof(*cb), GFP_ATOMIC);
@@ -126,9 +124,7 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
     if (ksu_is_allow_uid_for_current(new_uid)) {
         if (current->seccomp.mode == SECCOMP_MODE_FILTER &&
             current->seccomp.filter) {
-            spin_lock_irq(&current->sighand->siglock);
             ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
-            spin_unlock_irq(&current->sighand->siglock);
         }
 #ifdef KSU_KPROBES_HOOK
 		ksu_set_task_tracepoint_flag(current);
@@ -138,9 +134,7 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
     }
 #else
 	if (ksu_is_allow_uid_for_current(new_uid)) {
-		spin_lock_irq(&current->sighand->siglock);
 		disable_seccomp(current);
-		spin_unlock_irq(&current->sighand->siglock);
 	}
 #endif
 
