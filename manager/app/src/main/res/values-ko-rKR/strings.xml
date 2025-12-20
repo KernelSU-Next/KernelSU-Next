@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="issue_report_title">문제가 있나요?</string>
+  <string name="issue_report_title">어려움이 있으신가요?</string>
   <string name="issue_report_body">버그를 발견하셨거나 의견이 있으신가요?</string>
   <string name="issue_report_body_2">바로 알려주세요!</string>
   <string name="issue_report_github">Github에 신고</string>
