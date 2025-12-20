@@ -63,7 +63,6 @@ void apply_kernelsu_rules()
         ksu_allowxperm(db, KERNEL_SU_DOMAIN, ALL, "file", ALL);
     }
 
-#ifndef KSU_KPROBES_HOOK
     // we need to save allowlist in /data/adb/ksu
     ksu_allow(db, "kernel", "adb_data_file", "dir", ALL);
     ksu_allow(db, "kernel", "adb_data_file", "file", ALL);
@@ -85,9 +84,12 @@ void apply_kernelsu_rules()
     // http://aospxref.com/android-9.0.0_r61/xref/system/sepolicy/private/file_contexts#360
     ksu_allow(db, "kernel", "system_data_file", "file", ALL);
     ksu_allow(db, "kernel", "system_data_file", "dir", ALL);
-#endif
     // our ksud triggered by init
+    ksu_allow(db, "init", "adb_data_file", "file", ALL);
+    ksu_allow(db, "init", "adb_data_file", "dir", ALL); // #1289
     ksu_allow(db, "init", KERNEL_SU_DOMAIN, ALL, ALL);
+    // we need to umount modules in zygote
+    ksu_allow(db, "zygote", "adb_data_file", "dir", "search");
 
     // copied from Magisk rules
     // suRights
@@ -116,6 +118,10 @@ void apply_kernelsu_rules()
     ksu_allow(db, "hwservicemanager", KERNEL_SU_DOMAIN, "file", "read");
     ksu_allow(db, "hwservicemanager", KERNEL_SU_DOMAIN, "file", "open");
     ksu_allow(db, "hwservicemanager", KERNEL_SU_DOMAIN, "process", "getattr");
+
+    // For mounting loop devices, mirrors, tmpfs
+    ksu_allow(db, "kernel", ALL, "file", "read");
+    ksu_allow(db, "kernel", ALL, "file", "write");
 
     // Allow all binder transactions
     ksu_allow(db, ALL, KERNEL_SU_DOMAIN, "binder", ALL);
