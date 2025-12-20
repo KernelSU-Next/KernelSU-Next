@@ -13,6 +13,7 @@
 #endif
 #include <linux/sched.h>
 #include <linux/seccomp.h>
+#include <linux/slab.h>
 #include <linux/thread_info.h>
 #include <linux/uidgid.h>
 #include <linux/syscalls.h>
@@ -215,7 +216,13 @@ void seccomp_filter_release(struct task_struct *tsk);
 
 void disable_seccomp(void)
 {
-	struct task_struct fake;
+	struct task_struct *fake;
+	fake = kmalloc(sizeof(*fake), GFP_ATOMIC);
+	if (!fake) {
+		pr_err("%s: cannot allocate fake struct!\n", __func__);
+		return;
+	}
+
     // Refer to kernel/seccomp.c: seccomp_set_mode_strict
     // When disabling Seccomp, ensure that current->sighand->siglock is held during the operation.
     spin_lock_irq(&current->sighand->siglock);
@@ -227,7 +234,7 @@ void disable_seccomp(void)
 	clear_thread_flag(TIF_SECCOMP);
 #endif
 
-    memcpy(&fake, current, sizeof(fake));
+    memcpy(fake, current, sizeof(*fake));
 	current->seccomp.mode = 0;
 	current->seccomp.filter = NULL;
 // 5.9+ have filter_count, but optional.
@@ -239,21 +246,24 @@ void disable_seccomp(void)
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
     // https://github.com/torvalds/linux/commit/bfafe5efa9754ebc991750da0bcca2a6694f3ed3#diff-45eb79a57536d8eccfc1436932f093eb5c0b60d9361c39edb46581ad313e8987R576-R577
-    fake.flags |= PF_EXITING;
+    fake->flags |= PF_EXITING;
 #elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
     // https://github.com/torvalds/linux/commit/0d8315dddd2899f519fe1ca3d4d5cdaf44ea421e#diff-45eb79a57536d8eccfc1436932f093eb5c0b60d9361c39edb46581ad313e8987R556-R558
-    fake.sighand = NULL;
+    fake->sighand = NULL;
 #endif
 // some old kernel backport seccomp_filter_release..
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) &&                           \
      defined(KSU_OPTIONAL_SECCOMP_FILTER_RELEASE))
-	seccomp_filter_release(&fake);
+	seccomp_filter_release(fake);
+	kfree(fake);
 // never, ever call seccomp_filter_release on 6.10+ (no effect)
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) &&                          \
      LINUX_VERSION_CODE < KERNEL_VERSION(6, 10, 0))
-	seccomp_filter_release(&fake);
+	seccomp_filter_release(fake);
+	kfree(fake);
 #elif LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
-	put_seccomp_filter(&fake);
+	put_seccomp_filter(fake);
+	kfree(fake);
 #endif
 }
 
