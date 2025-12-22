@@ -11,7 +11,7 @@
 
 // Toolkit extensions
 #define CHANGE_MANAGER_UID 10006
-#define GET_SULOG_DUMP 10009
+#define GET_SULOG_DUMP_V2 10010
 #define KSU_UMOUNT_GETSIZE 107   // get list size // shit is u8 we cant fit 10k+ on it
 #define KSU_UMOUNT_GETLIST 108   // get list
 
