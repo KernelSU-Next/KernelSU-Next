@@ -1,6 +1,7 @@
 #include "selinux.h"
 #include "linux/cred.h"
 #include "linux/sched.h"
+#include "linux/security.h"
 #include "objsec.h"
 #include "linux/version.h"
 #include "../klog.h" // IWYU pragma: keep

@@ -4,6 +4,13 @@
 #include <linux/pgtable.h>
 #endif
 #include <linux/printk.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 7, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
+#include <linux/sched/task.h>
+#else
+#include <linux/sched.h>
+#endif
+#endif
 #include <asm/current.h>
 
 #include "util.h"

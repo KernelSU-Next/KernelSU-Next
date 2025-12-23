@@ -1,5 +1,5 @@
-#ifndef __KSU_H_KERNEL_COMPAT
-#define __KSU_H_KERNEL_COMPAT
+#ifndef __KSU_H_SECCOMP_CACHE
+#define __KSU_H_SECCOMP_CACHE
 
 #include <linux/fs.h>
 #include <linux/version.h>

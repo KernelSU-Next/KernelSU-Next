@@ -8,12 +8,16 @@
 
 #include "allowlist.h"
 #include "klog.h" // IWYU pragma: keep
-#include "manager.h"
+#include "manager.h" 
 #include "throne_tracker.h"
 
 uid_t ksu_manager_appid = KSU_INVALID_APPID;
 
+#ifdef CONFIG_KSU_MANUAL_HOOK
+#define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list.tmp"
+#else
 #define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"
+#endif
 
 struct uid_data {
 	struct list_head list;
@@ -104,7 +108,7 @@ struct apk_path_hash {
 	struct list_head list;
 };
 
-static struct list_head apk_path_hash_list = LIST_HEAD_INIT(apk_path_hash_list);
+static struct list_head apk_path_hash_list;
 
 struct my_dir_context {
 	struct dir_context ctx;
@@ -172,7 +176,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 		list_add_tail(&data->list, my_ctx->data_path_list);
 	} else {
 		if ((namelen == 8) && (strncmp(name, "base.apk", namelen) == 0)) {
-			struct apk_path_hash *pos, *n;
+			struct apk_path_hash *pos;
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 8, 0)
 			unsigned int hash = full_name_hash(dirpath, strlen(dirpath));
 #else
@@ -191,18 +195,6 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 			if (is_manager) {
 				crown_manager(dirpath, my_ctx->private_data);
 				*my_ctx->stop = 1;
-
-				// Manager found, clear APK cache list
-				list_for_each_entry_safe (pos, n, &apk_path_hash_list, list) {
-					list_del(&pos->list);
-					kfree(pos);
-				}
-			} else {
-				struct apk_path_hash *apk_data =
-					kzalloc(sizeof(struct apk_path_hash), GFP_ATOMIC);
-				apk_data->hash = hash;
-				apk_data->exists = true;
-				list_add_tail(&apk_data->list, &apk_path_hash_list);
 			}
 		}
 	}
@@ -215,6 +207,7 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 	int i, stop = 0;
 	struct list_head data_path_list;
 	INIT_LIST_HEAD(&data_path_list);
+	INIT_LIST_HEAD(&apk_path_hash_list);
 	unsigned long data_app_magic = 0;
 
 	// Initialize APK cache list
@@ -279,12 +272,10 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 		}
 	}
 
-	// Remove stale cached APK entries
+	// clear apk_path_hash_list unconditionally
 	list_for_each_entry_safe (pos, n, &apk_path_hash_list, list) {
-		if (!pos->exists) {
-			list_del(&pos->list);
-			kfree(pos);
-		}
+		list_del(&pos->list);
+		kfree(pos);
 	}
 }
 

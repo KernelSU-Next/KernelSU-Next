@@ -216,12 +216,20 @@ void seccomp_filter_release(struct task_struct *tsk);
 
 void disable_seccomp(void)
 {
+	// https://github.com/backslashxx/KernelSU/tree/e28930645e764b9f0e5d0d1b0d5e236464939075/kernel/app_profile.c
+	if (!!!current->seccomp.mode) {
+		return;
+	}
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) ||                          \
+     defined(KSU_OPTIONAL_SECCOMP_FILTER_RELEASE))
 	struct task_struct *fake;
 	fake = kmalloc(sizeof(*fake), GFP_ATOMIC);
 	if (!fake) {
 		pr_err("%s: cannot allocate fake struct!\n", __func__);
 		return;
 	}
+#endif
 
     // Refer to kernel/seccomp.c: seccomp_set_mode_strict
     // When disabling Seccomp, ensure that current->sighand->siglock is held during the operation.
@@ -234,8 +242,16 @@ void disable_seccomp(void)
 	clear_thread_flag(TIF_SECCOMP);
 #endif
 
-    memcpy(fake, current, sizeof(*fake));
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) ||                          \
+     defined(KSU_OPTIONAL_SECCOMP_FILTER_RELEASE))
+	memcpy(fake, current, sizeof(*fake));
+#endif
 	current->seccomp.mode = 0;
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) &&                           \
+     !defined(KSU_OPTIONAL_SECCOMP_FILTER_RELEASE))
+	// put_seccomp_filter is allowed while we holding sighand
+	put_seccomp_filter(current);
+#endif
 	current->seccomp.filter = NULL;
 // 5.9+ have filter_count, but optional.
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0) ||                          \
@@ -244,6 +260,8 @@ void disable_seccomp(void)
 #endif
     spin_unlock_irq(&current->sighand->siglock);
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) ||                          \
+     defined(KSU_OPTIONAL_SECCOMP_FILTER_RELEASE))
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 11, 0)
     // https://github.com/torvalds/linux/commit/bfafe5efa9754ebc991750da0bcca2a6694f3ed3#diff-45eb79a57536d8eccfc1436932f093eb5c0b60d9361c39edb46581ad313e8987R576-R577
     fake->flags |= PF_EXITING;
@@ -251,18 +269,7 @@ void disable_seccomp(void)
     // https://github.com/torvalds/linux/commit/0d8315dddd2899f519fe1ca3d4d5cdaf44ea421e#diff-45eb79a57536d8eccfc1436932f093eb5c0b60d9361c39edb46581ad313e8987R556-R558
     fake->sighand = NULL;
 #endif
-// some old kernel backport seccomp_filter_release..
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) &&                           \
-     defined(KSU_OPTIONAL_SECCOMP_FILTER_RELEASE))
 	seccomp_filter_release(fake);
-	kfree(fake);
-// never, ever call seccomp_filter_release on 6.10+ (no effect)
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) &&                          \
-     LINUX_VERSION_CODE < KERNEL_VERSION(6, 10, 0))
-	seccomp_filter_release(fake);
-	kfree(fake);
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
-	put_seccomp_filter(fake);
 	kfree(fake);
 #endif
 }

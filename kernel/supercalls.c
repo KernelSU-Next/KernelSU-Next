@@ -432,7 +432,7 @@ static int do_get_hook_mode(void __user *arg)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
 	strscpy(cmd.mode, type, sizeof(cmd.mode));
 #else
-	strscpy(cmd.mode, type, sizeof(cmd.mode));
+	strlcpy(cmd.mode, type, sizeof(cmd.mode));
 #endif
 
 	if (copy_to_user(arg, &cmd, sizeof(cmd))) {
