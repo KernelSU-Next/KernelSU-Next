@@ -17,7 +17,9 @@
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 1, 0)
 #include <linux/aio.h>
 #endif
+#ifdef KSU_KPROBES_HOOK
 #include <linux/kprobes.h>
+#endif
 #include <linux/printk.h>
 #include <linux/types.h>
 #include <linux/uaccess.h>
@@ -39,6 +41,7 @@
 #include "throne_tracker.h"
 #include "kernel_compat.h"
 
+extern int ksu_observer_init(void);
 bool ksu_module_mounted __read_mostly = false;
 bool ksu_boot_completed __read_mostly = false;
 
@@ -199,6 +202,9 @@ static int __maybe_unused count(struct user_arg_ptr argv, int max)
 
 			if (fatal_signal_pending(current))
 				return -ERESTARTNOHAND;
+#ifndef KSU_KPROBES_HOOK
+			cond_resched();
+#endif
 		}
 	}
 	return i;
@@ -374,6 +380,11 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 				struct user_arg_ptr *argv,
 				struct user_arg_ptr *envp, int *flags)
 {
+#ifndef KSU_KPROBES_HOOK
+	if (!ksu_execveat_hook) {
+		return 0;
+	}
+#endif
 	struct filename *filename;
 
 	static const char app_process[] = "/system/bin/app_process";
@@ -408,6 +419,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 				if (!strcmp(first_arg, "second_stage")) {
 					pr_info("/system/bin/init second_stage executed\n");
 					apply_kernelsu_rules();
+					setup_ksu_cred();
 					init_second_stage_executed = true;
 				}
 			} else {
@@ -430,6 +442,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 				if (!strcmp(first_arg, "--second-stage")) {
 					pr_info("/init second_stage executed\n");
 					apply_kernelsu_rules();
+					setup_ksu_cred();
 					init_second_stage_executed = true;
 				}
 			} else {
@@ -463,6 +476,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 					     !strcmp(env_value, "true"))) {
 						pr_info("/init second_stage executed\n");
 						apply_kernelsu_rules();
+						setup_ksu_cred();
 						init_second_stage_executed = true;
 					}
 				}

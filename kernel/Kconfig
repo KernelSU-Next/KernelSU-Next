@@ -16,6 +16,13 @@ config KSU_DEBUG
 	help
 	  Enable KernelSU debug mode.
 
+config KSU_ALLOWLIST_WORKAROUND
+	bool "KernelSU allowlist workaround"
+	depends on KSU
+	default n
+	help
+	  Enable workaround for broken allowlist save
+
 # For easier extern ifdef handling
 config KSU_MANUAL_HOOK
 	bool "KernelSU manual hook mode."

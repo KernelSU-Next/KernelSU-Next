@@ -30,6 +30,60 @@ static int ksu_key_permission(key_ref_t key_ref, const struct cred *cred,
 }
 #endif
 
+static int ksu_inode_rename(struct inode *old_inode, struct dentry *old_dentry,
+			    struct inode *new_inode, struct dentry *new_dentry)
+{
+	// skip kernel threads
+	if (!current->mm) {
+		return 0;
+	}
+
+	// skip non system uid
+	if (current_uid().val != 1000) {
+		return 0;
+	}
+
+	if (!old_dentry || !new_dentry) {
+		return 0;
+	}
+
+	// /data/system/packages.list.tmp -> /data/system/packages.list
+	if (strcmp(new_dentry->d_iname, "packages.list")) {
+		return 0;
+	}
+
+	char path[128];
+	char *buf = dentry_path_raw(new_dentry, path, sizeof(path));
+	if (IS_ERR(buf)) {
+		pr_err("dentry_path_raw failed.\n");
+		return 0;
+	}
+
+	if (!strstr(buf, "/system/packages.list")) {
+		return 0;
+	}
+
+	pr_info("renameat: %s -> %s, new path: %s\n", old_dentry->d_iname,
+		new_dentry->d_iname, buf);
+
+	/*
+	 * RKSU note:
+	 * track_throne(true) only occurs on on_boot_completed event.
+	 * When using this LSM, we must handle it here, else it returns
+	 * ENOENT (-2).
+	 */
+	static bool did = false;
+	if (ksu_boot_completed && !did) {
+		did = true;
+		track_throne(true);
+		return 0;
+	}
+
+	track_throne(false);
+
+	return 0;
+}
+
 static int ksu_task_fix_setuid(struct cred *new, const struct cred *old,
 			       int flags)
 {
@@ -87,14 +141,15 @@ int ksu_bprm_check(struct linux_binprm *bprm)
 
 static struct security_hook_list ksu_hooks[] = {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) ||                           \
-	defined(CONFIG_IS_HW_HISI)
+	defined(CONFIG_IS_HW_HISI) || defined(CONFIG_KSU_ALLOWLIST_WORKAROUND)
 	LSM_HOOK_INIT(key_permission, ksu_key_permission),
 #endif
-	LSM_HOOK_INIT(inode_permission, ksu_inode_permission),
 #ifndef KSU_KPROBES_HOOK
 	LSM_HOOK_INIT(bprm_check_security, ksu_bprm_check),
-#endif
+	LSM_HOOK_INIT(inode_permission, ksu_inode_permission),
+	LSM_HOOK_INIT(inode_rename, ksu_inode_rename),
 	LSM_HOOK_INIT(task_fix_setuid, ksu_task_fix_setuid)
+#endif
 };
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 8, 0)
