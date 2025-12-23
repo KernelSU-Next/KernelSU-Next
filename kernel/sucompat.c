@@ -194,6 +194,9 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 	if (unlikely(!filename_ptr))
 		return 0;
 
+	if (!ksu_is_allow_uid_for_current(current_uid().val))
+		return 0;
+
 	filename = *filename_ptr;
 	if (IS_ERR(filename))
 		return 0;
