@@ -39,6 +39,27 @@ static int install_session_keyring(struct key *keyring)
 }
 #endif
 
+// mnt_ns context switch for environment that android_init->nsproxy->mnt_ns != init_task.nsproxy->mnt_ns, such as WSA
+struct ksu_ns_fs_saved {
+        struct nsproxy *ns;
+        struct fs_struct *fs;
+};
+
+static void ksu_save_ns_fs(struct ksu_ns_fs_saved *ns_fs_saved)
+{
+        ns_fs_saved->ns = current->nsproxy;
+        ns_fs_saved->fs = current->fs;
+}
+
+static void ksu_load_ns_fs(struct ksu_ns_fs_saved *ns_fs_saved)
+{
+        current->nsproxy = ns_fs_saved->ns;
+        current->fs = ns_fs_saved->fs;
+}
+
+static bool android_context_saved_enabled = false;
+static struct ksu_ns_fs_saved android_context_saved;
+
 struct file *ksu_filp_open_compat(const char *filename, int flags, umode_t mode)
 {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) ||                           \
@@ -49,7 +70,23 @@ struct file *ksu_filp_open_compat(const char *filename, int flags, umode_t mode)
 		install_session_keyring(init_session_keyring);
 	}
 #endif
-	return filp_open(filename, flags, mode);
+    // switch mnt_ns even if current is not wq_worker, to ensure what we open is the correct file in android mnt_ns, rather than user created mnt_ns
+    struct ksu_ns_fs_saved saved;
+    if (android_context_saved_enabled) {
+            pr_info("start switch current nsproxy and fs to android context\n");
+            task_lock(current);
+            ksu_save_ns_fs(&saved);
+            ksu_load_ns_fs(&android_context_saved);
+            task_unlock(current);
+    }
+    struct file *fp = filp_open(filename, flags, mode);
+	    if (android_context_saved_enabled) {
+            task_lock(current);
+            ksu_load_ns_fs(&saved);
+            task_unlock(current);
+            pr_info("switch current nsproxy and fs back to saved successfully\n");
+    }
+    return fp;
 }
 
 ssize_t ksu_kernel_read_compat(struct file *p, void *buf, size_t count,
