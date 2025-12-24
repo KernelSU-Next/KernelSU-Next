@@ -2,6 +2,8 @@
 set -eu
 
 GKI_ROOT=$(pwd)
+OWNER="KernelSU-Next"
+REPO="$OWNER"
 
 display_usage() {
     echo "Usage: $0 [--cleanup | <commit-or-tag>]"
@@ -31,20 +33,23 @@ perform_cleanup() {
     [ -L "$DRIVER_DIR/kernelsu" ] && rm "$DRIVER_DIR/kernelsu" && echo "[-] Symlink removed."
     grep -q "kernelsu" "$DRIVER_MAKEFILE" && sed -i '/kernelsu/d' "$DRIVER_MAKEFILE" && echo "[-] Makefile reverted."
     grep -q "drivers/kernelsu/Kconfig" "$DRIVER_KCONFIG" && sed -i '/drivers\/kernelsu\/Kconfig/d' "$DRIVER_KCONFIG" && echo "[-] Kconfig reverted."
-    if [ -d "$GKI_ROOT/KernelSU-Next" ]; then
-        rm -rf "$GKI_ROOT/KernelSU-Next" && echo "[-] KernelSU-Next directory deleted."
+    if [ -d "$GKI_ROOT/$REPO" ]; then
+        rm -rf "$GKI_ROOT/$REPO" && echo "[-] $REPO directory deleted."
     fi
 }
 
 # Sets up or update KernelSU-Next environment
 setup_kernelsu() {
-    echo "[+] Setting up KernelSU-Next..."
-    test -d "$GKI_ROOT/KernelSU-Next" || git clone https://github.com/KernelSU-Next/KernelSU-Next && echo "[+] Repository cloned."
-    cd "$GKI_ROOT/KernelSU-Next"
+    echo "[+] Setting up $REPO..."
+    test -d "$GKI_ROOT/$REPO" || git clone "https://github.com/$OWNER/$REPO" && echo "[+] Repository cloned."
+    cd "$GKI_ROOT/$REPO"
     git stash && echo "[-] Stashed current changes."
+
+    BRANCH="$(git rev-parse --abbrev-ref origin/HEAD | sed 's@^origin/@@')"
     if [ "$(git status | grep -Po 'v\d+(\.\d+)*' | head -n1)" ]; then
-        git checkout next && echo "[-] Switched to next branch."
+        git checkout $BRANCH && echo "[-] Switched to $BRANCH branch."
     fi
+
     git pull && echo "[+] Repository updated."
     if [ -z "${1-}" ]; then
         git checkout "$(git describe --abbrev=0 --tags)" && echo "[-] Checked out latest tag."
@@ -52,7 +57,7 @@ setup_kernelsu() {
         git checkout "$1" && echo "[-] Checked out $1." || echo "[-] Checkout default branch"
     fi
     cd "$DRIVER_DIR"
-    ln -sf "$(realpath --relative-to="$DRIVER_DIR" "$GKI_ROOT/KernelSU-Next/kernel")" "kernelsu" && echo "[+] Symlink created."
+    ln -sf "$(realpath --relative-to="$DRIVER_DIR" "$GKI_ROOT/$REPO/kernel")" "kernelsu" && echo "[+] Symlink created."
 
     # Add entries in Makefile and Kconfig if not already existing
     grep -q "kernelsu" "$DRIVER_MAKEFILE" || printf "\nobj-\$(CONFIG_KSU) += kernelsu/\n" >> "$DRIVER_MAKEFILE" && echo "[+] Modified Makefile."
