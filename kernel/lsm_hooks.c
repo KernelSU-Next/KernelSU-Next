@@ -17,6 +17,8 @@
 static int ksu_key_permission(key_ref_t key_ref, const struct cred *cred,
 			      unsigned perm)
 {
+	extern struct key *init_session_keyring;
+
 	if (init_session_keyring != NULL) {
 		return 0;
 	}
