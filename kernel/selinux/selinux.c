@@ -6,6 +6,8 @@
 #include "../klog.h" // IWYU pragma: keep
 #include "../ksu.h"
 
+#include <linux/security.h>
+
 static int transive_to_domain(const char *domain, struct cred *cred)
 {
     struct task_security_struct *tsec;
