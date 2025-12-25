@@ -390,13 +390,25 @@ static void do_persistent_allow_list(struct callback_head *_cb)
 		goto unlock;
 	}
 
+
 	// store magic and version
+
+	// kernel_write on 4.13.y and earlier take a 'const char *' instead of a 'const void *' in 4.14 and newer as a 2nd argument.
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
+	if (kernel_write(fp, (const char *)&magic, sizeof(magic), &off) != sizeof(magic)) {
+#else
 	if (kernel_write(fp, &magic, sizeof(magic), &off) != sizeof(magic)) {
+#endif
 		pr_err("save_allow_list write magic failed.\n");
 		goto close_file;
 	}
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
+	if (kernel_write(fp, (const char *)&version, sizeof(version), &off) != sizeof(version)) {
+#else
 	if (kernel_write(fp, &version, sizeof(version), &off) != sizeof(version)) {
+#endif
 		pr_err("save_allow_list write version failed.\n");
 		goto close_file;
 	}
@@ -406,7 +418,11 @@ static void do_persistent_allow_list(struct callback_head *_cb)
 		pr_info("save allow list, name: %s uid :%d, allow: %d\n",
 			p->profile.key, p->profile.current_uid, p->profile.allow_su);
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
+		kernel_write(fp, (const char *)&p->profile, sizeof(p->profile), &off);
+#else
 		kernel_write(fp, &p->profile, sizeof(p->profile), &off);
+#endif
 	}
 
 close_file:
