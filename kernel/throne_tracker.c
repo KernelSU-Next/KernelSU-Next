@@ -147,7 +147,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 	if (!strncmp(name, "..", namelen) || !strncmp(name, ".", namelen))
 		return FILLDIR_ACTOR_CONTINUE; // Skip "." and ".."
 
-	if (d_type == DT_DIR && namelen >= 8 && !strncmp(name, "vmdl", 4) &&
+	if ((d_type == DT_DIR || d_type == DT_UNKNOWN) && namelen >= 8 && !strncmp(name, "vmdl", 4) &&
 		!strncmp(name + namelen - 4, ".tmp", 4)) {
 		pr_info("Skipping directory: %.*s\n", namelen, name);
 		return FILLDIR_ACTOR_CONTINUE; // Skip staging package
@@ -159,7 +159,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 		return FILLDIR_ACTOR_CONTINUE;
 	}
 
-	if (d_type == DT_DIR && my_ctx->depth > 0 &&
+	if ((d_type == DT_DIR || d_type == DT_UNKNOWN) && my_ctx->depth > 0 &&
 		(my_ctx->stop && !*my_ctx->stop)) {
 		struct data_path *data = kzalloc(sizeof(struct data_path), GFP_ATOMIC);
 
@@ -216,7 +216,6 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 	int i, stop = 0;
 	struct list_head data_path_list;
 	INIT_LIST_HEAD(&data_path_list);
-	unsigned long data_app_magic = 0;
 
 	// Initialize APK cache list
 	struct apk_path_hash *pos, *n;
@@ -243,30 +242,10 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 			struct file *file;
 
 			if (!stop) {
-				file = filp_open(pos->dirpath, O_RDONLY | O_NOFOLLOW, 0);
+				file = ksu_filp_open_compat(pos->dirpath, O_RDONLY | O_NOFOLLOW, 0);
 				if (IS_ERR(file)) {
 					pr_err("Failed to open directory: %s, err: %ld\n",
 						pos->dirpath, PTR_ERR(file));
-					goto skip_iterate;
-				}
-
-				// grab magic on first folder, which is /data/app
-				if (!data_app_magic) {
-					if (file->f_inode->i_sb->s_magic) {
-						data_app_magic = file->f_inode->i_sb->s_magic;
-						pr_info("%s: dir: %s got magic! 0x%lx\n", __func__,
-								pos->dirpath, data_app_magic);
-					} else {
-						filp_close(file, NULL);
-						goto skip_iterate;
-					}
-				}
-
-				if (file->f_inode->i_sb->s_magic != data_app_magic) {
-					pr_info("%s: skip: %s magic: 0x%lx expected: 0x%lx\n",
-							__func__, pos->dirpath,
-							file->f_inode->i_sb->s_magic, data_app_magic);
-					filp_close(file, NULL);
 					goto skip_iterate;
 				}
 
