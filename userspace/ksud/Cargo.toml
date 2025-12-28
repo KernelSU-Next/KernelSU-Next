@@ -71,6 +71,16 @@ rustix = { version = "=1.0.8", features = [
 android-properties = { version = "0.2", features = ["bionic-deprecated"] }
 
 android_logger = { version = "0.15", default-features = false }
+jwalk = "0.8"
+is_executable = "1"
+zip-extensions = { version = "0.13", features = [
+    "deflate",
+    "lzma",
+    "xz",
+], default-features = false }
+java-properties = { git = "https://github.com/Kernel-SU/java-properties.git", branch = "master", default-features = false }
+getopts = "0.2"
+libc = "0.2"
 
 [profile.release]
 strip = true
