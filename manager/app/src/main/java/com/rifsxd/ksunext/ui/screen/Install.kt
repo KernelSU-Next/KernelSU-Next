@@ -235,6 +235,13 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
 
         radioOptions.add(InstallMethod.AnyKernel())
     }
+    if (rootAvailable && !kernelVersion.isGKI()) {
+        radioOptions.remove(InstallMethod.SelectFile(summary = selectFileTip))
+        radioOptions.remove(InstallMethod.DirectInstall)
+        if (isAbDevice) {
+            radioOptions.remove(InstallMethod.DirectInstallToInactiveSlot)
+        }
+    }
 
     var selectedOption by remember { mutableStateOf<InstallMethod?>(null) }
     val selectImageLauncher = rememberLauncherForActivityResult(
@@ -379,6 +386,7 @@ private fun TopBar(
     onLkmUpload: () -> Unit = {},
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
+    val kernelVersion = getKernelVersion()
     TopAppBar(
         title = { Text(
                 text = stringResource(R.string.install),
@@ -389,8 +397,10 @@ private fun TopBar(
                 onClick = onBack
             ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null) }
         }, actions = {
-            IconButton(onClick = onLkmUpload) {
-                Icon(Icons.Filled.FileUpload, contentDescription = null)
+            if (kernelVersion.isGKI()) {
+                IconButton(onClick = onLkmUpload) {
+                    Icon(Icons.Filled.FileUpload, contentDescription = null)
+                }
             }
         },
         windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),

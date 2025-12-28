@@ -403,6 +403,7 @@ private fun TopBar(
     onSettingsClick: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
+    val rootAvailable = rootAvailable()
     var isSpinning by remember { mutableStateOf(false) }
     var rotationTarget by remember { mutableStateOf(0f) }
     val rotation by animateFloatAsState(
@@ -454,6 +455,13 @@ private fun TopBar(
         actions = {
             if (ksuVersion != null) {
                 if (kernelVersion.isGKI()) {
+                    IconButton(onClick = onInstallClick) {
+                        Icon(
+                            imageVector = Icons.Filled.Archive,
+                            contentDescription = stringResource(id = R.string.install)
+                        )
+                    }
+                } else if (rootAvailable && !kernelVersion.isGKI()) {
                     IconButton(onClick = onInstallClick) {
                         Icon(
                             imageVector = Icons.Filled.Archive,
@@ -513,6 +521,7 @@ private fun StatusCard(
     ksuVersionTag: String? = null,
     onClickInstall: () -> Unit = {}
 ) {
+    val rootAvailable = rootAvailable()
     val context = LocalContext.current
     var tapCount by remember { mutableStateOf(0) }
 
@@ -537,6 +546,8 @@ private fun StatusCard(
                         if (ksuVersion != null) {
                             context.startActivity(intent)
                         } else if (kernelVersion.isGKI()) {
+                            onClickInstall()
+                        } else if (rootAvailable && !kernelVersion.isGKI()) {
                             onClickInstall()
                         } else {
                             Toast.makeText(context, "Something weird happened... 🤔", Toast.LENGTH_SHORT).show()
