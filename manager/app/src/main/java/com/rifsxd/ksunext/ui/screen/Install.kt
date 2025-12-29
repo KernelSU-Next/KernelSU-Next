@@ -353,29 +353,32 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun rememberSelectKmiDialog(onSelected: (String?) -> Unit): DialogHandle {
+    val kernelVersion = getKernelVersion()
     return rememberCustomDialog { dismiss ->
-        val supportedKmi by produceState(initialValue = emptyList()) {
-            value = getSupportedKmis()
-        }
-        val options = supportedKmi.map { value ->
-            ListOption(
-                titleText = value
-            )
-        }
+        if (kernelVersion.isGKI()) {
+            val supportedKmi by produceState(initialValue = emptyList()) {
+                value = getSupportedKmis()
+            }
+            val options = supportedKmi.map { value ->
+                ListOption(
+                    titleText = value
+                )
+            }
 
-        var selection by remember { mutableStateOf<String?>(null) }
-        ListDialog(state = rememberUseCaseState(visible = true, onFinishedRequest = {
-            onSelected(selection)
-        }, onCloseRequest = {
-            dismiss()
-        }), header = Header.Default(
-            title = stringResource(R.string.select_kmi),
-        ), selection = ListSelection.Single(
-            showRadioButtons = true,
-            options = options,
-        ) { _, option ->
-            selection = option.titleText
-        })
+            var selection by remember { mutableStateOf<String?>(null) }
+            ListDialog(state = rememberUseCaseState(visible = true, onFinishedRequest = {
+                onSelected(selection)
+            }, onCloseRequest = {
+                dismiss()
+            }), header = Header.Default(
+                title = stringResource(R.string.select_kmi),
+            ), selection = ListSelection.Single(
+                showRadioButtons = true,
+                options = options,
+            ) { _, option ->
+                selection = option.titleText
+            })
+        }
     }
 }
 
