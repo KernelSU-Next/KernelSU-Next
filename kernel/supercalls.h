@@ -15,6 +15,7 @@
 #define KSU_UMOUNT_GETLIST 108
 #define GET_SULOG_DUMP_V2 10010
 #define CHANGE_KSUVER 10011
+#define CHANGE_SPOOF_UNAME 10012
 
 // Command structures for ioctl
 
