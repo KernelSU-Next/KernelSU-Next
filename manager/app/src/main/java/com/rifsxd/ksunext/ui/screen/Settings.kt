@@ -121,10 +121,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 value = getFeatureStatus("avc_spoof")
             }
 
-            val enhancedSecurityStatus by produceState(initialValue = "") {
-                value = getFeatureStatus("enhanced_security")
-            }
-
             val suCompatStatus by produceState(initialValue = "") {
                 value = getFeatureStatus("su_compat")
             }
@@ -227,28 +223,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 val shouldEnable = !checked
                                 if (Natives.setAvcSpoofEnabled(shouldEnable)) {
                                     isAvcSpoofDisabled = !shouldEnable
-                                }
-                            }
-                        }
-
-                        if (enhancedSecurityStatus == "supported") {
-                            var isEnhancedSecurityDisabled by rememberSaveable {
-                                mutableStateOf(!Natives.isEnhancedSecurityEnabled())
-                            }
-
-                            SwitchItem(
-                                icon = Icons.Filled.EnhancedEncryption,
-                                title = stringResource(R.string.settings_disable_enhanced_security),
-                                summary = stringResource(R.string.settings_disable_enhanced_security_summary),
-                                checked = isEnhancedSecurityDisabled,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(8.dp)),
-                                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-                            ) { checked ->
-                                val shouldEnable = !checked
-                                if (Natives.setEnhancedSecurityEnabled(shouldEnable)) {
-                                    isEnhancedSecurityDisabled = !shouldEnable
                                 }
                             }
                         }

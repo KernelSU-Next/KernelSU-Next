@@ -239,20 +239,3 @@ const char* get_version_tag(void)
 bool is_zygisk_enabled() {
     return !!getenv("ZYGISK_ENABLED");
 }
-
-
-bool set_enhanced_security_enabled(bool enabled) {
-    return set_feature(KSU_FEATURE_ENHANCED_SECURITY, enabled ? 1 : 0);
-}
-
-bool is_enhanced_security_enabled() {
-    uint64_t value = 0;
-    bool supported = false;
-    if (!get_feature(KSU_FEATURE_ENHANCED_SECURITY, &value, &supported)) {
-        return false;
-    }
-    if (!supported) {
-        return false;
-    }
-    return value != 0;
-}

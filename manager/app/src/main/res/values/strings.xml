@@ -228,8 +228,6 @@
     <string name="settings_disable_kernel_umount_summary">Temporarily disable kernel-level umount behavior controlled by KernelSU.</string>
     <string name="settings_disable_avc_spoof">Disable avc spoofing</string>
     <string name="settings_disable_avc_spoof_summary">Disable fixing selinux context leak caused by avc denial in audit log.</string>
-    <string name="settings_disable_enhanced_security">Disable enhanced security</string>
-    <string name="settings_disable_enhanced_security_summary">Disable stricter security policies.</string>
     <string name="meta_module">Meta</string>
     <string name="donate">Donate</string>
 </resources>

@@ -83,7 +83,6 @@ int get_app_profile(app_profile *profile);
 enum ksu_feature_id {
     KSU_FEATURE_SU_COMPAT = 0,
     KSU_FEATURE_KERNEL_UMOUNT = 1,
-    KSU_FEATURE_ENHANCED_SECURITY = 2,
     KSU_FEATURE_AVC_SPOOF = 10003,
 };
 
@@ -175,11 +174,6 @@ struct ksu_get_hook_mode_cmd {
 struct ksu_get_version_tag_cmd {
     char tag[32];
 };
-
-// Enhanced security
-bool set_enhanced_security_enabled(bool enabled);
-
-bool is_enhanced_security_enabled();
 
 // Avc spoof
 bool set_avc_spoof_enabled(bool enabled);
