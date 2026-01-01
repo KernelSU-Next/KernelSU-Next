@@ -6,7 +6,6 @@
 #include "klog.h"
 #include "ksud.h"
 #include "seccomp_cache.h"
-#include "selinux/selinux.h"
 
 // sorry for the ifdef hell
 // but im too lazy to fragment this out.
@@ -14,6 +13,7 @@
 // - xx, 20251019
 
 static u32 su_sid = 0;
+static u32 priv_app_sid = 0;
 
 // init as disabled by default
 static atomic_t disable_spoof = ATOMIC_INIT(1);
@@ -64,31 +64,33 @@ static const struct ksu_feature_handler avc_spoof_handler = {
 static int get_sid()
 {
 	// dont load at all if we cant get sids
-	int err = security_secctx_to_secid(KERNEL_SU_CONTEXT, strlen(KERNEL_SU_CONTEXT), &su_sid);
+	int err = security_secctx_to_secid("u:r:su:s0", strlen("u:r:su:s0"), &su_sid);
 	if (err) {
 		pr_info("avc_spoof/get_sid: su_sid not found!\n");
 		return -1;
 	}
 	pr_info("avc_spoof/get_sid: su_sid: %u\n", su_sid);
 
+	err = security_secctx_to_secid("u:r:priv_app:s0:c512,c768", strlen("u:r:priv_app:s0:c512,c768"), &priv_app_sid);
+	if (err) {
+		pr_info("avc_spoof/get_sid: priv_app_sid not found!\n");
+		return -1;
+	}
+	pr_info("avc_spoof/get_sid: priv_app_sid: %u\n", priv_app_sid);
 	return 0;
 }
 
-static int ksu_handle_slow_avc_audit_new(u32 tsid, u16 *tclass)
+int ksu_handle_slow_avc_audit(u32 *tsid)
 {
 	if (atomic_read(&disable_spoof))
 		return 0;
 
-	if (tsid != su_sid)
-		return 0;
-
-	// we can just zero out tclass for gki
-	// since theres a check that if !tclass; return -EINVAL;
-	// this way all logging is prevented for su_sid
-	// this can cause splats due to WARN_ON though
-
-	pr_info("avc_spoof/slow_avc_audit: prevent log for sid: %u\n", su_sid);
-	*tclass = 0;
+	// if tsid is su, we just replace it
+	// unsure if its enough, but this is how it is aye?
+	if (*tsid == su_sid) {
+		pr_info("avc_spoof/slow_avc_audit: replacing su_sid: %u with priv_app_sid: %u\n", su_sid, priv_app_sid);
+		*tsid = priv_app_sid;
+	}
 
 	return 0;
 }
@@ -98,24 +100,30 @@ static int ksu_handle_slow_avc_audit_new(u32 tsid, u16 *tclass)
 #include <linux/slab.h>
 #include "arch.h"
 static struct kprobe *slow_avc_audit_kp;
-
+//	.symbol_name = "slow_avc_audit",
+//	.pre_handler = slow_avc_audit_pre_handler,
 static int slow_avc_audit_pre_handler(struct kprobe *p, struct pt_regs *regs)
 {
 	if (atomic_read(&disable_spoof))
 		return 0;
 
-	u32 tsid;
-	u16 *tclass;
+	/* 
+	 * for < 4.17 int slow_avc_audit(u32 ssid, u32 tsid
+	 * for >= 4.17 int slow_avc_audit(struct selinux_state *state, u32 ssid, u32 tsid
+	 * for >= 6.4 int slow_avc_audit(u32 ssid, u32 tsid
+	 * not to mention theres also DKSU_HAS_SELINUX_STATE
+	 * since its hard to make sure this selinux state thing 
+	 * cross crossing with 4.17 ~ 6.4's where slow_avc_audit
+	 * changes abi (tsid in arg2 vs arg3)
+	 */
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
-	tsid = (u32)PT_REGS_PARM2(regs);
-	tclass = (u16 *)&PT_REGS_PARM3(regs);
+	u32 *tsid = (u32 *)&PT_REGS_PARM2(regs);
+	ksu_handle_slow_avc_audit(tsid);
 #else
-	tsid = (u32)PT_REGS_PARM3(regs);
-	tclass = (u16 *)&PT_REGS_CCALL_PARM4(regs);
+	u32 *tsid = (u32 *)&PT_REGS_PARM3(regs);
+	ksu_handle_slow_avc_audit(tsid);
 #endif
-
-	ksu_handle_slow_avc_audit_new(tsid, tclass);
 
 	return 0;
 }
