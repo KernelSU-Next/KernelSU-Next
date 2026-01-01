@@ -213,7 +213,7 @@ static struct callback_head on_post_fs_data_cb = { .func =
 							on_post_fs_data_cbfun };
 
 static bool check_argv(struct user_arg_ptr argv, int index,
-		       const char *expected, char *buf, size_t buf_len)
+			const char *expected, char *buf, size_t buf_len)
 {
 	const char __user *p;
 	int argc;
@@ -224,122 +224,75 @@ static bool check_argv(struct user_arg_ptr argv, int index,
 
 	p = get_user_arg_ptr(argv, index);
 	if (!p || IS_ERR(p))
-		return false;
+		goto fail;
 
 	if (strncpy_from_user_nofault(buf, p, buf_len) <= 0)
-		return false;
+		goto fail;
 
 	buf[buf_len - 1] = '\0';
 	return !strcmp(buf, expected);
+
+fail:
+	pr_err("check_argv failed\n");
+	return false;
 }
 
 // IMPORTANT NOTE: the call from execve_handler_pre WON'T provided correct value for envp and flags in GKI version
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
-				struct user_arg_ptr *argv,
-				struct user_arg_ptr *envp, int *flags)
+                             struct user_arg_ptr *argv,
+                             struct user_arg_ptr *envp, int *flags)
 {
-#ifndef KSU_KPROBES_HOOK
-	if (!ksu_execveat_hook) {
-		return 0;
-	}
-#endif
-	struct filename *filename;
+    struct filename *filename;
 
-	static const char app_process[] = "/system/bin/app_process";
-	static bool first_zygote = true;
+    static const char app_process[] = "/system/bin/app_process";
+    static bool first_zygote = true;
 
-	/* This applies to versions Android 10+ */
-	static const char system_bin_init[] = "/system/bin/init";
-	/* This applies to versions between Android 6 ~ 9  */
-	static const char old_system_init[] = "/init";
-	static bool init_second_stage_executed = false;
+    /* This applies to versions Android 10+ */
+    static const char system_bin_init[] = "/system/bin/init";
+    static bool init_second_stage_executed = false;
 
-	if (!filename_ptr)
-		return 0;
+    if (!filename_ptr)
+        return 0;
 
-	filename = *filename_ptr;
-	if (IS_ERR(filename)) {
-		return 0;
-	}
+    filename = *filename_ptr;
+    if (IS_ERR(filename)) {
+        return 0;
+    }
 
-	if (unlikely(!memcmp(filename->name, system_bin_init,
-				sizeof(system_bin_init) - 1) &&
-			argv)) {
-		char buf[16];
-		if (!init_second_stage_executed &&
-		    check_argv(*argv, 1, "second_stage", buf, sizeof(buf))) {
-			pr_info("/system/bin/init second_stage executed\n");
-			apply_kernelsu_rules();
-			cache_sid();
-			setup_ksu_cred();
-			init_second_stage_executed = true;
-		}
-	} else if (unlikely(!memcmp(filename->name, old_system_init,
-					sizeof(old_system_init) - 1) &&
-				argv)) {
-		char buf[16];
-		if (!init_second_stage_executed &&
-		    check_argv(*argv, 1, "--second-stage", buf, sizeof(buf))) {
-			/* This applies to versions between Android 6 ~ 7 */
-			pr_info("/init second_stage executed\n");
-			apply_kernelsu_rules();
-			setup_ksu_cred();
-			init_second_stage_executed = true;
-		} else if (count(*argv, MAX_ARG_STRINGS) == 1 &&
-			   !init_second_stage_executed && envp) {
-			/* This applies to versions between Android 8 ~ 9  */
-			int envc = count(*envp, MAX_ARG_STRINGS);
-			if (envc > 0) {
-				int n;
-				for (n = 1; n <= envc; n++) {
-					const char __user *p = get_user_arg_ptr(*envp, n);
-					if (!p || IS_ERR(p)) {
-						continue;
-					}
-					char env[256];
-					// Reading environment variable strings from user space
-					if (strncpy_from_user_nofault(env, p, sizeof(env)) < 0)
-						continue;
-					// Parsing environment variable names and values
-					char *env_name = env;
-					char *env_value = strchr(env, '=');
-					if (env_value == NULL)
-						continue;
-					// Replace equal sign with string terminator
-					*env_value = '\0';
-					env_value++;
-					// Check if the environment variable name and value are matching
-					if (!strcmp(env_name, "INIT_SECOND_STAGE") &&
-					    (!strcmp(env_value, "1") ||
-					     !strcmp(env_value, "true"))) {
-						pr_info("/init second_stage executed\n");
-						apply_kernelsu_rules();
-						setup_ksu_cred();
-						init_second_stage_executed = true;
-					}
-				}
-			}
-		}
-	}
+    // https://cs.android.com/android/platform/superproject/+/android-16.0.0_r2:system/core/init/main.cpp;l=77
+    if (unlikely(!memcmp(filename->name, system_bin_init,
+                         sizeof(system_bin_init) - 1) &&
+                 argv)) {
+        char buf[16];
+        if (!init_second_stage_executed &&
+            check_argv(*argv, 1, "second_stage", buf, sizeof(buf))) {
+            pr_info("/system/bin/init second_stage executed\n");
+            apply_kernelsu_rules();
+            setup_ksu_cred();
+            init_second_stage_executed = true;
+        }
+    }
 
-	if (unlikely(first_zygote && !memcmp(filename->name, app_process,
-			     sizeof(app_process) - 1) && argv)) {
-		char buf[16];
-		if (check_argv(*argv, 1, "-Xzygote", buf, sizeof(buf))) {
-			pr_info("exec zygote, /data prepared, second_stage: %d\n",
-				init_second_stage_executed);
-			rcu_read_lock();
-			struct task_struct *init_task =
-				rcu_dereference(current->real_parent);
-			if (init_task)
-				task_work_add(init_task, &on_post_fs_data_cb, TWA_RESUME);
-			rcu_read_unlock();
-			first_zygote = false;
-			stop_execve_hook();
-		}
-	}
+    if (unlikely(
+            first_zygote &&
+            !memcmp(filename->name, app_process, sizeof(app_process) - 1) &&
+            argv)) {
+        char buf[16];
+        if (check_argv(*argv, 1, "-Xzygote", buf, sizeof(buf))) {
+            pr_info("exec zygote, /data prepared, second_stage: %d\n",
+                    init_second_stage_executed);
+            rcu_read_lock();
+            struct task_struct *init_task =
+                rcu_dereference(current->real_parent);
+            if (init_task)
+                task_work_add(init_task, &on_post_fs_data_cb, TWA_RESUME);
+            rcu_read_unlock();
+            first_zygote = false;
+            stop_execve_hook();
+        }
+    }
 
-	return 0;
+    return 0;
 }
 
 static ssize_t (*orig_read)(struct file *, char __user *, size_t, loff_t *);
