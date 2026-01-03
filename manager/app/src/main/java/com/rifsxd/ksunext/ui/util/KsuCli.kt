@@ -162,6 +162,38 @@ fun restoreModule(id: String): Boolean {
     return result
 }
 
+private fun processUiPrintLine(s: String?): String? {
+    if (s == null || !s.startsWith("ui_print")) {
+        return null
+    }
+
+    val content = s.drop(8).dropWhile { it.isWhitespace() }
+    return content
+}
+
+private fun flashWithIO_ak3(
+    cmd: String,
+    onStdout: (String) -> Unit,
+    onStderr: (String) -> Unit
+): Shell.Result {
+
+    val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            processUiPrintLine(s)?.let(onStdout)
+        }
+    }
+
+    val stderrCallback: CallbackList<String?> = object : CallbackList<String?>() {
+        override fun onAddElement(s: String?) {
+            onStderr(s ?: "")
+        }
+    }
+
+    return withNewRootShell {
+        newJob().add(cmd).to(stdoutCallback, stderrCallback).exec()
+    }
+}
+
 private fun flashWithIO(
     cmd: String,
     onStdout: (String) -> Unit,
@@ -353,14 +385,21 @@ fun flashAnyKernelZip(
     val destDirFile = File(ksuApp.cacheDir, "anykernel3_${timestamp}")
     val destDir = destDirFile.absolutePath
 
-    val cmd = buildString {
-        append("mkdir -p '$destDir' && ")
-        append("(unzip -o '$destZip' -d '$destDir' 2>/dev/null || $BUSYBOX unzip -o '$destZip' -d '$destDir' 2>/dev/null || tar -xf '$destZip' -C '$destDir' 2>/dev/null) && ")
-        append("cp '$destZip' '$destDir/$destZipName' 2>/dev/null || true && chmod +x '$destDir/$destZipName' '$destDir/anykernel.sh' '$destDir/install.sh' '$destDir/anykernel' '$destDir/tools/'* 2>/dev/null || true && ")
-        append("(cd '$destDir' && if [ -f './anykernel.sh' ]; then OUTFD=1 sh './anykernel.sh' '$destZipName'; elif [ -f './install.sh' ]; then OUTFD=1 sh './install.sh' '$destZipName'; elif [ -f './anykernel' ]; then OUTFD=1 sh './anykernel' '$destZipName'; else echo 'No installer script found' >&2; exit 1; fi)")
-    }
+    val cmd = """
+                mkdir -p '$destDir' && \
+                $BUSYBOX unzip -p -o '$destZip' "META-INF/com/google/android/update-binary" > '$destDir/update-binary' 2>/dev/null && \
+                cp '$destZip' '$destDir/$destZipName' 2>/dev/null || true && \
+                $BUSYBOX chmod 755 '$destDir/update-binary' && \
+                $BUSYBOX chown root:root '$destDir/update-binary' && \
+                (cd '$destDir' && \
+                    if [ -f './update-binary' ]; then \
+                        AKHOME='$destDir/tmp' $BUSYBOX ash '$destDir/update-binary' 3 1 '$destDir/$destZipName'; \
+                    else \
+                        echo 'No installer script found' >&2; exit 1; \
+                    fi)
+            """.trimIndent().replace(Regex("\\s+\\\\\\s*"), " ")
 
-    val result = flashWithIO(cmd, onStdout, onStderr)
+    val result = flashWithIO_ak3(cmd, onStdout, onStderr)
     try {
         return FlashResult(result, result.isSuccess)
     } finally {
