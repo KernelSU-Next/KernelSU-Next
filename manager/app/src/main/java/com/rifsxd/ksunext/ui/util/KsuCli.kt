@@ -162,13 +162,22 @@ fun restoreModule(id: String): Boolean {
     return result
 }
 
-private fun processUiPrintLine(s: String?): String? {
-    if (s == null || !s.startsWith("ui_print")) {
-        return null
+private fun processUiPrintLine(s: String?): Pair<Int, String?> {
+    if (s == null) {
+        return Pair(1,null)
     }
 
-    val content = s.drop(8).dropWhile { it.isWhitespace() }
-    return content
+    val check1 = s.startsWith("ui_print")
+    val trimmed = s.trim()
+    val check2 = trimmed.startsWith("ui_print")
+    if (!check1 && check2) return Pair(1,null)
+
+    return if(check1) {
+        Pair(1,trimmed.drop(8).dropWhile { it.isWhitespace() })
+    }
+    else {
+        Pair(2, trimmed)
+    }
 }
 
 private fun flashWithIO_ak3(
@@ -179,7 +188,12 @@ private fun flashWithIO_ak3(
 
     val stdoutCallback: CallbackList<String?> = object : CallbackList<String?>() {
         override fun onAddElement(s: String?) {
-            processUiPrintLine(s)?.let(onStdout)
+            val (type, text) = processUiPrintLine(s)
+            if(type == 1) {
+                text?.let(onStdout)
+            } else {
+                text?.let(onStderr)
+            }
         }
     }
 
