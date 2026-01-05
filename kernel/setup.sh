@@ -2,8 +2,8 @@
 set -eu
 
 GKI_ROOT=$(pwd)
-OWNER="KernelSU-Next"
-REPO="$OWNER"
+OWNER="Mr-Morat"
+REPO="KernelSU-Next"
 
 display_usage() {
     echo "Usage: $0 [--cleanup | <commit-or-tag>]"
@@ -41,13 +41,13 @@ perform_cleanup() {
 # Sets up or update KernelSU-Next environment
 setup_kernelsu() {
     echo "[+] Setting up $REPO..."
-    test -d "$GKI_ROOT/$REPO" || git clone "https://github.com/$OWNER/$REPO" && echo "[+] Repository cloned."
-    cd "$GKI_ROOT/$REPO"
+    test -d "$GKI_ROOT/KernelSU-Next" || git clone "https://github.com/Mr-Morat/KernelSU-Next" && echo "[+] Repository cloned."
+    cd "$GKI_ROOT/KernelSU-Next"
     git stash && echo "[-] Stashed current changes."
 
     BRANCH="$(git rev-parse --abbrev-ref origin/HEAD | sed 's@^origin/@@')"
     if [ "$(git status | grep -Po 'v\d+(\.\d+)*' | head -n1)" ]; then
-        git checkout $BRANCH && echo "[-] Switched to $BRANCH branch."
+        git checkout legacy && echo "[-] Switched to legacy branch."
     fi
 
     git pull && echo "[+] Repository updated."
