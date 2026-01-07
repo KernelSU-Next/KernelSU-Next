@@ -6,7 +6,6 @@
 enum ksu_feature_id {
 	KSU_FEATURE_SU_COMPAT = 0,
 	KSU_FEATURE_KERNEL_UMOUNT = 1,
-	KSU_FEATURE_ENHANCED_SECURITY = 2,
 
     // custom extensions
     KSU_FEATURE_AVC_SPOOF = 10003,

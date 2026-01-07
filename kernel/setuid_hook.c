@@ -18,7 +18,6 @@
 
 #include "allowlist.h"
 #include "setuid_hook.h"
-#include "feature.h"
 #include "klog.h" // IWYU pragma: keep
 #include "manager.h"
 #include "selinux/selinux.h"
@@ -112,30 +111,6 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 
     pr_info("handle_setresuid from %d to %d\n", old_uid, new_uid);
 
-    // if old process is root, ignore it.
-    if (old_uid != 0 && ksu_enhanced_security_enabled) {
-        // disallow any non-ksu domain escalation from non-root to root!
-        // euid is what we care about here as it controls permission
-        if (unlikely(euid == 0)) {
-            if (!is_ksu_domain()) {
-                pr_warn("find suspicious EoP: %d %s, from %d to %d\n", 
-                    current->pid, current->comm, old_uid, new_uid);
-                send_sigkill();
-                return 0;
-            }
-        }
-        // disallow appuid decrease to any other uid if it is not allowed to su
-        if (is_appuid(old_uid)) {
-            if (euid < current_euid().val && !ksu_is_allow_uid_for_current(old_uid)) {
-                pr_warn("find suspicious EoP: %d %s, from %d to %d\n", 
-                    current->pid, current->comm, old_uid, new_uid);
-                send_sigkill();
-                return 0;
-            }
-        }
-        return 0;
-    }
-
     if (likely(ksu_is_manager_appid_valid()) &&
         unlikely(ksu_get_manager_appid() == new_uid % PER_USER_RANGE)) {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
@@ -209,14 +184,10 @@ extern void ksu_lsm_hook_init(void);
 void ksu_setuid_hook_init(void)
 {
     ksu_kernel_umount_init();
-    if (ksu_register_feature_handler(&enhanced_security_handler)) {
-        pr_err("Failed to register enhanced security feature handler\n");
-    }
 }
 
 void ksu_setuid_hook_exit(void)
 {
     pr_info("ksu_core_exit\n");
     ksu_kernel_umount_exit();
-    ksu_unregister_feature_handler(KSU_FEATURE_ENHANCED_SECURITY);
 }

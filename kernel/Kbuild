@@ -17,6 +17,7 @@ kernelsu-objs += ksud.o
 kernelsu-objs += seccomp_cache.o
 kernelsu-objs += file_wrapper.o
 kernelsu-objs += util.o
+kernelsu-objs += extras.o
 
 kernelsu-objs += extras.o
 
@@ -99,7 +100,7 @@ HAVE_KSU_HOOK := 0
 endif
 
 ifeq ($(CONFIG_KSU_MANUAL_HOOK), y)
-HAVE_KSU_HOOK := $(shell grep -q "ksu_handle_faccessat" $(srctree)/fs/open.c; echo $$?)
+HAVE_KSU_HOOK := $(shell grep -q "ksu_handle_faccessat" $(srctree)/fs/open.c && echo 0 || echo 1)
 ifeq ($(HAVE_KSU_HOOK),0)
 $(info -- KernelSU: Hook mode: Manual)
 endif
@@ -270,3 +271,4 @@ else
 $(info -- You have not integrated susfs in your kernel yet.)
 $(info -- Read: https://gitlab.com/simonpunk/susfs4ksu)
 endif
+

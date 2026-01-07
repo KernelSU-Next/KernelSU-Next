@@ -533,8 +533,8 @@ static bool add_filename_trans(struct policydb *db, const char *s,
 		trans = trans->next;
 	}
 
-	if (trans == NULL) {
-		trans = (struct filename_trans_datum *)kcalloc(sizeof(*trans), 1,
+    if (trans == NULL) {
+        trans = (struct filename_trans_datum *)kcalloc(1, sizeof(*trans),
                                                        GFP_ATOMIC);
 		struct filename_trans_key *new_key =
 			(struct filename_trans_key *)kzalloc(sizeof(*new_key), GFP_ATOMIC);
