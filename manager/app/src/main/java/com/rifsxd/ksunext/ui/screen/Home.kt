@@ -161,7 +161,9 @@ fun HomeScreen(navigator: DestinationsNavigator) {
 
             InfoCard(autoExpand = developerOptionsEnabled)
             IssueReportCard()
-            Spacer(Modifier)
+            Spacer(Modifier.height(
+                innerPadding.calculateBottomPadding() + 16.dp
+            ))
         }
     }
 }

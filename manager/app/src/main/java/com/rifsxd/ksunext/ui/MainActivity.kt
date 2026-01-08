@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.rememberNavController
@@ -114,8 +115,8 @@ class MainActivity : ComponentActivity() {
                     ) {
                         DestinationsNavHost(
                             modifier = Modifier
-                                .padding(innerPadding)
-                                .windowInsetsPadding(WindowInsets.navigationBars),
+                                .fillMaxSize()
+                                .consumeWindowInsets(innerPadding),
                             navGraph = NavGraphs.root,
                             navController = navController,
                             defaultTransitions = object : NavHostAnimatedDestinationStyle() {
