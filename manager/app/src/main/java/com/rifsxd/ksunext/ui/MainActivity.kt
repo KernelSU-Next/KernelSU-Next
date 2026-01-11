@@ -205,9 +205,9 @@ class MainActivity : ComponentActivity() {
                         }
             }
 
-            "com.rifsxd.ksunext.ACTION_SETTINGS" -> navigateLoc = "settings"
-            "com.rifsxd.ksunext.ACTION_SUPERUSER" -> navigateLoc = "superuser"
-            "com.rifsxd.ksunext.ACTION_MODULES" -> navigateLoc = "modules"
+            "ACTION_SETTINGS" -> navigateLoc = "settings"
+            "ACTION_SUPERUSER" -> navigateLoc = "superuser"
+            "ACTION_MODULES" -> navigateLoc = "modules"
         }
     }
 }
