@@ -9,10 +9,7 @@
 #include <linux/printk.h>
 #include <linux/slab.h>
 #include <linux/types.h>
-#include <linux/version.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 #include <linux/compiler_types.h>
-#endif
 
 #include "klog.h" // IWYU pragma: keep
 #include "ksud.h"

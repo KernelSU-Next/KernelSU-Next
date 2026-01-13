@@ -18,20 +18,12 @@
 #define __PT_SP_REG sp
 #define __PT_IP_REG pc
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
 #define REBOOT_SYMBOL "__arm64_sys_reboot"
 #define SYS_READ_SYMBOL "__arm64_sys_read"
 #define SYS_EXECVE_SYMBOL "__arm64_sys_execve"
 // https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/scripts/syscalltbl.sh;l=57;drc=9142be9e6443fd641ca37f820efe00d9cd890eb1
 // https://cs.android.com/android/kernel/superproject/+/common-android-mainline:common/scripts/syscall.tbl;l=104;drc=b36d4b6aa88ef039647228b98c59a875e92f8c8e
 #define SYS_FSTAT_SYMBOL "__arm64_sys_newfstat"
-#else
-#define PRCTL_SYMBOL "sys_prctl"
-#define SYS_READ_SYMBOL "sys_read"
-#define SYS_NEWFSTATAT_SYMBOL "sys_newfstatat"
-#define SYS_FACCESSAT_SYMBOL "sys_faccessat"
-#define SYS_EXECVE_SYMBOL "sys_execve"
-#endif
 
 #elif defined(__x86_64__)
 
@@ -48,18 +40,10 @@
 #define __PT_RC_REG ax
 #define __PT_SP_REG sp
 #define __PT_IP_REG ip
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
 #define REBOOT_SYMBOL "__x64_sys_reboot"
 #define SYS_READ_SYMBOL "__x64_sys_read"
 #define SYS_EXECVE_SYMBOL "__x64_sys_execve"
 #define SYS_FSTAT_SYMBOL "__x64_sys_newfstat"
-#else
-#define PRCTL_SYMBOL "sys_prctl"
-#define SYS_READ_SYMBOL "sys_read"
-#define SYS_NEWFSTATAT_SYMBOL "sys_newfstatat"
-#define SYS_FACCESSAT_SYMBOL "sys_faccessat"
-#define SYS_EXECVE_SYMBOL "sys_execve"
-#endif
 
 #else
 #error "Unsupported arch"
@@ -83,10 +67,6 @@
 #define PT_REGS_SP(x) (__PT_REGS_CAST(x)->__PT_SP_REG)
 #define PT_REGS_IP(x) (__PT_REGS_CAST(x)->__PT_IP_REG)
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 16, 0)
 #define PT_REAL_REGS(regs) ((struct pt_regs *)PT_REGS_PARM1(regs))
-#else
-#define PT_REAL_REGS(regs) ((regs))
-#endif
 
 #endif
