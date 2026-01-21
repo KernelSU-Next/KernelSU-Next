@@ -10,7 +10,7 @@ struct root_profile {
 
     uint32 groups_count;
     uint32 groups[KSU_MAX_GROUPS];
-    char padding1[4]; // Padding for 64-bit alignment.
+    char padding1[4]; // Padding for 64-bit alignment. codgi
 
     struct {
         uint64 effective;
