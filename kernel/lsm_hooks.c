@@ -114,38 +114,12 @@ int ksu_inode_permission(struct inode *inode, int mask)
 	return 0;
 }
 
-int ksu_bprm_check(struct linux_binprm *bprm)
-{
-	char *filename = (char *)bprm->filename;
-	
-	if (likely(!ksu_execveat_hook))
-		return 0;
-
-#ifdef CONFIG_COMPAT
-	static bool compat_check_done __read_mostly = false;
-	if ( unlikely(!compat_check_done) && unlikely(!strcmp(filename, "/data/adb/ksud"))
-		&& !memcmp(bprm->buf, "\x7f\x45\x4c\x46", 4) ) {
-		if (bprm->buf[4] == 0x01 )
-			ksu_is_compat = true;
-
-		pr_info("%s: %s ELF magic found! ksu_is_compat: %d \n", __func__, filename, ksu_is_compat);
-		compat_check_done = true;
-	}
-#endif
-
-	ksu_handle_pre_ksud(filename);
-
-	return 0;
-
-}
-
 static struct security_hook_list ksu_hooks[] = {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) ||                           \
 	defined(CONFIG_IS_HW_HISI) || defined(CONFIG_KSU_ALLOWLIST_WORKAROUND)
 	LSM_HOOK_INIT(key_permission, ksu_key_permission),
 #endif
 #ifndef KSU_KPROBES_HOOK
-	LSM_HOOK_INIT(bprm_check_security, ksu_bprm_check),
 	LSM_HOOK_INIT(inode_permission, ksu_inode_permission),
 	LSM_HOOK_INIT(inode_rename, ksu_inode_rename),
 	LSM_HOOK_INIT(task_fix_setuid, ksu_task_fix_setuid)
