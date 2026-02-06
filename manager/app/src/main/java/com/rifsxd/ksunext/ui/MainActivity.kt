@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.*
@@ -186,7 +187,25 @@ class MainActivity : ComponentActivity() {
                     BottomBarDestination.entries.map { it.direction.route }.toSet()
                 }
                 val navigator = navController.rememberDestinationsNavigator()
-                
+
+                val currentBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = currentBackStackEntry?.destination?.route
+
+                val homeDestination = BottomBarDestination.entries.firstOrNull()
+                val startRoute = homeDestination?.direction?.route
+
+                    if (homeDestination != null && startRoute != null) {
+                    BackHandler(enabled = currentRoute != startRoute && currentRoute in bottomBarRoutes) {
+                        navigator.navigate(homeDestination.direction) {
+                            popUpTo(NavGraphs.root) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                }
+
                 // Track the last bottom bar destination index for directional animations
                 var lastBottomBarIndex by remember { mutableStateOf(0) }
                 var isBottomBarNavigation by remember { mutableStateOf(false) }
