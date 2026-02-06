@@ -78,6 +78,7 @@ static struct work_struct __maybe_unused stop_execve_hook_work;
 static struct work_struct __maybe_unused stop_input_hook_work;
 #else
 bool ksu_init_rc_hook __read_mostly = true;
+bool __maybe_unused ksu_vfs_read_hook = true;
 bool ksu_input_hook __read_mostly = true;
 bool ksu_execveat_hook __read_mostly = true;
 #endif
@@ -426,23 +427,14 @@ static bool is_init_rc(struct file *fp)
     return true;
 }
 
-void ksu_handle_sys_read(unsigned int fd)
+static void ksu_apply_init_rc_proxy(struct file *file)
 {
-    struct file *file = fget(fd);
-    if (!file) {
-        return;
-    }
-
-    if (!is_init_rc(file)) {
-        goto skip;
-    }
-
     // we only process the first read
     static bool rc_hooked = false;
     if (rc_hooked) {
         // we don't need these kprobe, unregister it!
         stop_init_rc_hook();
-        goto skip;
+        return;
     }
     rc_hooked = true;
 
@@ -466,8 +458,17 @@ void ksu_handle_sys_read(unsigned int fd)
     }
     // replace the file_operations
     file->f_op = &fops_proxy;
+}
 
-skip:
+void ksu_handle_sys_read(unsigned int fd)
+{
+    struct file *file = fget(fd);
+    if (!file) return;
+
+    if (is_init_rc(file)) {
+        ksu_apply_init_rc_proxy(file);
+    }
+
     fput(file);
 }
 
@@ -707,13 +708,19 @@ int __maybe_unused ksu_handle_compat_execve_ksud(
 #endif /* COMPAT & 64BIT */
 
 // working dummies for manual hooks
-__attribute__((deprecated))
-int __maybe_unused ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr, size_t *count_ptr, loff_t **pos)
+int __maybe_unused ksu_handle_vfs_read(struct file **file_ptr, char __user **buf_ptr,
+                size_t *count_ptr, loff_t **pos)
 {
-	return 0;
-}
+    struct file *file = *file_ptr;
 
-bool __maybe_unused ksu_vfs_read_hook = true;
+    if (IS_ERR_OR_NULL(file)) return 0;
+
+    if (is_init_rc(file)) {
+        ksu_apply_init_rc_proxy(file);
+    }
+
+    return 0;
+}
 
 #endif
 
