@@ -229,7 +229,7 @@
   <string name="module_sort_webui_first">Sortuj (najpierw z WebUI)</string>
   <string name="settings_global_namespace_mode_summary">Wszystkie sesje roota używają globalnej przestrzeni nazw montowania</string>
   <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup).</string>
-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU Next (root and all modules) completely and permanently.</string>
+  <string name="settings_uninstall_permanent_message">Całkowite i trwałe odinstalowanie KernelSU Next (root i wszystkich modułów).</string>
   <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU Next, please use \"Uninstall permanently\".</string>
   <string name="settings_disable_su_summary">Temporarily disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
   <string name="settings_global_namespace_mode">Global namespace mode</string>
