@@ -3,6 +3,8 @@
     <string name="issue_report_title">Having trouble?</string>
     <string name="issue_report_body">Encountered a bug or have feedback?</string>
     <string name="issue_report_body_2">Report it as soon as possible!</string>
+    <string name="issue_report_github">Report on GitHub</string>
+    <string name="issue_report_telegram">Contact via Telegram</string>
     <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
     <string name="issue_report_telegram_link">https://t.me/ksunext</string>
     <string name="confirm">Confirm</string>
@@ -91,6 +93,15 @@
     <string name="proceed">Proceed</string>
     <string name="cancel">Cancel</string>
     <string name="later">Later</string>
+    <string name="home_next_kernelsu">🔥 Next build</string>
+    <string name="home_next_kernelsu_repo">https://github.com/KernelSU-Next/KernelSU-Next</string>
+    <string name="home_next_kernelsu_body">Next experimental branch. Check it out on GitHub!</string>
+    <string name="home_experimental_kernelsu">⚠️ Experimental development warning!</string>
+    <string name="home_experimental_kernelsu_repo">127.0.0.1</string>
+    <string name="home_experimental_kernelsu_body">KernelSU Next is a non-official version that is always under active experimental development. It\'s provided as-is, with no guarantees of stability, performance, or reliability.</string>
+    <string name="home_experimental_kernelsu_body_point_1"> • Use at your own risk: crashes, unexpected behavior, or system issues may occur.</string>
+    <string name="home_experimental_kernelsu_body_point_2"> • No warranty: the developers aren\'t responsible for any data loss, system damage, or other consequences resulting from its use.</string>
+    <string name="home_experimental_kernelsu_body_point_3"> • For testing purposes only: intended for users who understand the risks and are comfortable troubleshooting issues.</string>
     <string name="about_source_code"><![CDATA[View source code at %1$s]]></string>
     <string name="profile" translatable="false">App Profile</string>
     <string name="profile_default">Default</string>
