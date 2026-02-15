@@ -213,7 +213,7 @@
     <string name="module_sort_action_first">Sort (Action first)</string>
     <string name="module_sort_webui_first">Sort (WebUI first)</string>
     <string name="settings_disable_kernel_umount">Disable kernel umount</string>
-    <string name="settings_disable_kernel_umount_summary">Temporarily disable kernel-level umount behavior controlled by KernelSU.</string>
+    <string name="settings_disable_kernel_umount_summary">Temporarily disable kernel-level umount behavior controlled by KernelSU Next.</string>
     <string name="settings_disable_avc_spoof">Disable avc spoofing</string>
     <string name="settings_disable_avc_spoof_summary">Disable fixing selinux context leak caused by avc denial in audit log.</string>
     <string name="meta_module">Meta</string>
