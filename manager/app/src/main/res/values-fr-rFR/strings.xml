@@ -11,7 +11,7 @@
   <string name="app_name">KernelSU Next</string>
   <string name="home">Accueil</string>
   <string name="home_not_installed">Pas installé</string>
-  <string name="home_click_to_install">Cliquez ici pour installer</string>
+  <string name="home_click_to_install">Cliquez pour installer</string>
   <string name="lkm_mode_deprecated">Le mode LKM est désormais obsolète !</string>
   <string name="lkm_alternative_suggestion">Installez un noyau GKI ou intégrez KernelSU Next à votre appareil.</string>
   <string name="home_working">En fonctionnement</string>
@@ -55,13 +55,13 @@
   <string name="uninstalled">Désinstallé</string>
   <string name="settings">Paramètres</string>
   <string name="reboot_userspace">Redémarrage rapide</string>
-  <string name="reboot_recovery">Redémarrer en mode Recovery</string>
+  <string name="reboot_recovery">Redémarrer en mode récupération</string>
   <string name="reboot_bootloader">Redémarrage dans le bootloader</string>
   <string name="reboot_download">Redémarrer pour télécharger</string>
   <string name="reboot_edl">Redémarrer en mode EDL</string>
   <string name="about">À propos</string>
   <string name="module_uninstall_confirm">Êtes-vous sûr de vouloir désinstaller le module %s \ ?</string>
-  <string name="module_uninstall_success">%s désinstallé</string>
+  <string name="module_uninstall_success">%s a été désinstallé</string>
   <string name="module_uninstall_failed">Échec de la désinstallation : %s</string>
   <string name="module_restore_confirm">Voulez-vous vraiment restaurer le module %s?</string>
   <string name="module_restore_success">%s restauré</string>
@@ -229,10 +229,10 @@
   <string name="module_sort_enabled_first">Trier (Activé en premier)</string>
   <string name="module_sort_action_first">Trier (Action en premier)</string>
   <string name="module_sort_webui_first">Trier (WebUI en premier)</string>
-  <string name="settings_global_namespace_mode_summary">Root</string>
-  <string name="shrink_sparse_image_message">Resize the sparse image where the module is located to its actual size. Note that this may cause the module to work abnormally, so please only use when necessary (such as for backup).</string>
-  <string name="settings_uninstall_permanent_message">Root.img</string>
-  <string name="settings_restore_stock_image_message">Root.</string>
-  <string name="settings_disable_su_summary">Root</string>
-  <string name="settings_global_namespace_mode">Yes</string>
+  <string name="settings_global_namespace_mode_summary">Toutes les sessions root utilisent l\'espace de noms de montage global</string>
+  <string name="shrink_sparse_image_message">Redimensionnez l\'image fractionnée où se trouve le module à sa taille réelle. Notez que cela peut entraîner un fonctionnement anormal du module, veuillez donc n\'utiliser cette fonction qu\'en cas de nécessité (par exemple pour une sauvegarde).</string>
+  <string name="settings_uninstall_permanent_message">Désinstallation complète et définitive de KernelSU Next (root et tous les modules).</string>
+  <string name="settings_restore_stock_image_message">Restaurez l\'image d\'usine d\'origine (si une sauvegarde existe), généralement utilisée avant OTA ; si vous devez désinstaller KernelSU Next, veuillez utiliser « Désinstaller définitivement ».</string>
+  <string name="settings_disable_su_summary">Désactivez temporairement la possibilité pour toute application d\'obtenir des privilèges root via la commande ⁠su (les processus root existants ne seront pas affectés).</string>
+  <string name="settings_global_namespace_mode">Mode espace de noms uniques</string>
 </resources>
