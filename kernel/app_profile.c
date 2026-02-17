@@ -245,16 +245,16 @@ void disable_seccomp(void)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) ||                          \
      defined(KSU_OPTIONAL_SECCOMP_FILTER_RELEASE))
 	memcpy(fake, current, sizeof(*fake));
+	atomic_set(&current->seccomp.filter_count, 0);
 #endif
-	current->seccomp.mode = 0;
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) &&                           \
      !defined(KSU_OPTIONAL_SECCOMP_FILTER_RELEASE))
 	// put_seccomp_filter is allowed while we holding sighand
 	put_seccomp_filter(current);
 #endif
+	current->seccomp.mode = 0;
 	current->seccomp.filter = NULL;
-
-	atomic_set(&current->seccomp.filter_count, 0);
+	
     spin_unlock_irq(&current->sighand->siglock);
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) ||                          \
