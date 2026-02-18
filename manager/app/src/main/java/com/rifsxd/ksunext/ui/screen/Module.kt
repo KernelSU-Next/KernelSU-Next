@@ -955,7 +955,7 @@ fun ModuleItem(
                         .matchParentSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    if (module.banner.startsWith("https", true) || module.banner.startsWith("http", true)) {
+                    if (module.banner.startsWith("http", true)) {
                         AsyncImage(
                             model = module.banner,
                             contentDescription = null,
@@ -969,10 +969,17 @@ fun ModuleItem(
                         val bannerData = remember(module.banner) {
                             try {
                                 val file = SuFile("/data/adb/modules/${module.id}/${module.banner}")
-                                file.newInputStream().use { it.readBytes() }
+                                return@remember file.newInputStream().use { it.readBytes() }
                             } catch (_: Exception) {
-                                null
                             }
+
+                            try {
+                                val file = SuFile("/data/adb/modules_update/${module.id}/${module.banner}")
+                                return@remember file.newInputStream().use { it.readBytes() }
+                            } catch (_: Exception) {
+                            }
+
+                            null
                         }
                         if (bannerData != null) {
                             AsyncImage(
