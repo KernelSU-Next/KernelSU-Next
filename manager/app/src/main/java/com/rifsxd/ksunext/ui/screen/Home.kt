@@ -940,82 +940,6 @@ private fun InfoCard(autoExpand: Boolean = false) {
 }
 
 @Composable
-fun NextCard() {
-    val uriHandler = LocalUriHandler.current
-    val url = stringResource(R.string.home_next_kernelsu_repo)
-
-    ElevatedCard {
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    uriHandler.openUri(url)
-                }
-                .padding(24.dp), verticalAlignment = Alignment.CenterVertically) {
-            Column {
-                Text(
-                    text = stringResource(R.string.home_next_kernelsu),
-                    style = MaterialTheme.typography.titleSmall
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.home_next_kernelsu_body),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun EXperimentalCard() {
-    /*val uriHandler = LocalUriHandler.current
-    val url = stringResource(R.string.home_experimental_kernelsu_repo)
-    */
-
-    ElevatedCard {
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                /*.clickable {
-                    uriHandler.openUri(url)
-                }
-                */
-                .padding(24.dp), verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(
-                    text = stringResource(R.string.home_experimental_kernelsu),
-                    style = MaterialTheme.typography.titleSmall
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.home_experimental_kernelsu_body),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.home_experimental_kernelsu_body_point_1),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = stringResource(R.string.home_experimental_kernelsu_body_point_2),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = stringResource(R.string.home_experimental_kernelsu_body_point_3),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-        }
-    }
-}
-
-@Composable
 fun IssueReportCard() {
     val uriHandler = LocalUriHandler.current
     val githubIssueUrl = stringResource(R.string.issue_report_github_link)
@@ -1110,7 +1034,7 @@ private fun WarningCardPreview() {
     Column {
         WarningCard(message = "Warning message")
         WarningCard(
-            message = "Warning message ",
+            message = "Warning message",
             MaterialTheme.colorScheme.outlineVariant,
             onClick = {})
     }
