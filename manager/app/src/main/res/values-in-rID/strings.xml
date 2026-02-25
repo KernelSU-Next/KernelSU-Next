@@ -45,8 +45,8 @@
   <string name="module_install_prompt_with_name">Modul yang akan diinstal: %1$s</string>
   <string name="module_sort_a_to_z">Urutkan (A → Z)</string>
   <string name="module_sort_z_to_a">Urutkan (Z → A)</string>
-  <string name="module_size_low_to_high">Urutkan (Kecil → Besar)</string>
-  <string name="module_size_high_to_low">Urutkan (Besar → Kecil)</string>
+  <string name="module_size_low_to_high">Urutkan (Rendah → Tinggi)</string>
+  <string name="module_size_high_to_low">Urutkan (Tinggi → Rendah)</string>
   <string name="uninstall">Hapus</string>
   <string name="restore">Pulihkan</string>
   <string name="module_install">Pasang</string>
@@ -141,7 +141,7 @@
   <string name="module_updated">Diperbarui</string>
   <string name="module_downloading">Mengunduh modul: %s</string>
   <string name="module_start_downloading">Mulai mengunduh: %s</string>
-  <string name="new_version_available">Versi baru %s tersedia, klik untuk memperbaharui.</string>
+  <string name="new_version_available">Versi baru %s telah tersedia, klik untuk memperbarui.</string>
   <string name="launch_app">Luncurkan</string>
   <string name="close">Tutup</string>
   <string name="force_stop_app">Paksa berhenti</string>
