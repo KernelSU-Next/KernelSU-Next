@@ -19,6 +19,10 @@
 #include "selinux/selinux.h"
 #include "allowlist.h"
 #include "manager.h"
+
+#ifndef CONFIG_KSU_SUSFS
+#include "syscall_hook_manager.h"
+#endif // #ifndef CONFIG_KSU_SUSFS
 #include "su_mount_ns.h"
 
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
@@ -260,6 +264,14 @@ out:
         } else {
             remove_uid_from_arr(profile->current_uid);
         }
+    }
+
+    if (persist) {
+        persistent_allow_list();
+#ifndef CONFIG_KSU_SUSFS
+        // FIXME: use a new flag
+        ksu_mark_running_process();
+#endif // #ifndef CONFIG_KSU_SUSFS
     }
 
 out_unlock:

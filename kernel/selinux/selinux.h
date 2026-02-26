@@ -36,4 +36,17 @@ int handle_sepolicy(unsigned long arg3, void __user *arg4);
 
 void setup_ksu_cred();
 
+#ifdef CONFIG_KSU_SUSFS
+bool susfs_is_sid_equal(const struct cred *cred, u32 sid2);
+u32 susfs_get_sid_from_name(const char *secctx_name);
+u32 susfs_get_current_sid(void);
+void susfs_set_zygote_sid(void);
+bool susfs_is_current_zygote_domain(void);
+void susfs_set_ksu_sid(void);
+bool susfs_is_current_ksu_domain(void);
+void susfs_set_init_sid(void);
+bool susfs_is_current_init_domain(void);
+void susfs_set_priv_app_sid(void);
+#endif // #ifdef CONFIG_KSU_SUSFS
+
 #endif
