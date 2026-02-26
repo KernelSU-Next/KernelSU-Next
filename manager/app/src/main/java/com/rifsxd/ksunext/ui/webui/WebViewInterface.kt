@@ -31,6 +31,7 @@ import com.topjohnwu.superuser.internal.UiThreadHandler
 import com.topjohnwu.superuser.io.SuFile
 import com.topjohnwu.superuser.io.SuFileInputStream
 import com.topjohnwu.superuser.io.SuFileOutputStream
+import com.rifsxd.ksunext.ui.util.module.Shortcut
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedOutputStream
@@ -224,6 +225,48 @@ class WebViewInterface(
             break
         }
         return currentModuleInfo.toString()
+    }
+
+    @JavascriptInterface
+    fun createShortcut(): Boolean {
+        return try {
+            val moduleId = File(modDir).name
+
+            val infoJson = JSONObject(moduleInfo())
+            val moduleName = infoJson.optString("name", moduleId)
+            val webuiIcon = infoJson.optString("webuiIcon").takeIf { it.isNotBlank() }
+
+            fun resolveIcon(p: String?): String? {
+                if (p.isNullOrBlank()) return null
+
+                try {
+                    val candidate = "/data/adb/modules/$moduleId/$p"
+                    val f = SuFile(candidate)
+                    if (f.exists()) return "su://$candidate"
+                } catch (_: Exception) {
+                }
+
+                if (p.startsWith("/")) {
+                    try {
+                        val f = SuFile(p)
+                        if (f.exists()) return "su://$p"
+                    } catch (_: Exception) {
+                    }
+                    return "file://$p"
+                }
+
+                return p
+            }
+
+            val resolved = resolveIcon(webuiIcon)
+
+            Handler(Looper.getMainLooper()).post {
+                Shortcut.createModuleWebUiShortcut(context, moduleId, moduleName, resolved)
+            }
+            true
+        } catch (e: Exception) {
+            false
+        }
     }
 
     @JavascriptInterface

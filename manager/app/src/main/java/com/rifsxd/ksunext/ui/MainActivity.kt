@@ -476,7 +476,7 @@ private fun BottomBar(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = horizontalScreenPadding, vertical = 16.dp),
+                .padding(horizontal = horizontalScreenPadding, vertical = 14.dp),
             contentAlignment = Alignment.Center
         ) {
             Surface(
@@ -485,9 +485,9 @@ private fun BottomBar(
                 tonalElevation = 3.dp,
                 shadowElevation = 8.dp
             ) {
-                val itemSize = 64.dp
+                val itemSize = 56.dp
                 val itemSpacing = 4.dp
-                val containerPadding = 8.dp // Reduced to match vertical padding
+                val containerPadding = 7.dp // Reduced to match vertical padding
                 
                 // Calculate exact width based on items
                 val navBarWidth = (itemSize * visibleDestinations.size) + 
@@ -497,7 +497,7 @@ private fun BottomBar(
                 Box(
                     modifier = Modifier
                         .width(navBarWidth)
-                        .height(80.dp)
+                        .height(72.dp)
                 ) {
                     var totalWidth by remember { mutableStateOf(0) }
                     

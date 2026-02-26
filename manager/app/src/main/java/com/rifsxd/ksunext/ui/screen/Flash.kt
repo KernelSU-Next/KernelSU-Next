@@ -126,34 +126,55 @@ fun FlashScreen(
     }
 
     val confirmDialog = rememberConfirmDialog()
-    var confirmed by rememberSaveable { mutableStateOf(flashIt !is FlashIt.FlashModules) }
+    var confirmed by rememberSaveable { mutableStateOf(flashIt !is FlashIt.FlashModules && flashIt !is FlashIt.FlashAnyKernel) }
     var pendingFlashIt by rememberSaveable { mutableStateOf<FlashIt?>(null) }
     var hasFlashed by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(flashIt) {
-        if (flashIt is FlashIt.FlashModules && !confirmed) {
-            val uris = flashIt.uris
-            val moduleNames =
-                uris.mapIndexed { index, uri -> "\n${index + 1}. ${uri.getFileName(context)}" }
-                    .joinToString("")
-            val confirmContent =
-                context.getString(R.string.module_install_prompt_with_name, moduleNames)
-            val confirmTitle = context.getString(R.string.module)
-            val result = confirmDialog.awaitConfirm(
-                title = confirmTitle,
-                content = confirmContent,
-                markdown = true
-            )
-            if (result == ConfirmResult.Confirmed) {
+        when {
+            flashIt is FlashIt.FlashModules && !confirmed -> {
+                val uris = flashIt.uris
+                val moduleNames =
+                    uris.mapIndexed { index, uri -> "\n${index + 1}. ${uri.getFileName(context)}" }
+                        .joinToString("")
+                val confirmContent =
+                    context.getString(R.string.module_install_prompt_with_name, moduleNames)
+                val confirmTitle = context.getString(R.string.module)
+                val result = confirmDialog.awaitConfirm(
+                    title = confirmTitle,
+                    content = confirmContent,
+                    markdown = true
+                )
+                if (result == ConfirmResult.Confirmed) {
+                    confirmed = true
+                    pendingFlashIt = flashIt
+                } else {
+                    // User cancelled, go back
+                    navigator.popBackStack()
+                }
+            }
+            flashIt is FlashIt.FlashAnyKernel && !confirmed -> {
+                val name = flashIt.uri.getFileName(context)
+                val confirmContent =
+                    context.getString(R.string.anykernel_flash_prompt, name)
+                // reuse the existing label for title
+                val confirmTitle = context.getString(R.string.flash_anykernel)
+                val result = confirmDialog.awaitConfirm(
+                    title = confirmTitle,
+                    content = confirmContent,
+                    markdown = true
+                )
+                if (result == ConfirmResult.Confirmed) {
+                    confirmed = true
+                    pendingFlashIt = flashIt
+                } else {
+                    navigator.popBackStack()
+                }
+            }
+            else -> {
                 confirmed = true
                 pendingFlashIt = flashIt
-            } else {
-                // User cancelled, go back
-                navigator.popBackStack()
             }
-        } else {
-            confirmed = true
-            pendingFlashIt = flashIt
         }
     }
 
@@ -294,6 +315,32 @@ fun FlashScreen(
                             text = { Text(text = stringResource(R.string.reboot)) }
                         )
                     }
+                }
+            }
+
+            if ((flashIt is FlashIt.FlashUninstall || flashIt is FlashIt.FlashRestore) && (flashing == FlashingStatus.SUCCESS || flashing == FlashingStatus.FAILED)) {
+                if (flashing == FlashingStatus.SUCCESS) {
+                    // Show reboot button on successful uninstall or restore
+                    ExtendedFloatingActionButton(
+                        onClick = {
+                            scope.launch {
+                                withContext(Dispatchers.IO) {
+                                    reboot()
+                                }
+                            }
+                        },
+                        icon = { Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.reboot)) },
+                        text = { Text(text = stringResource(R.string.reboot)) }
+                    )
+                } else {
+                    // Show close button on failure
+                    ExtendedFloatingActionButton(
+                        text = { Text(text = stringResource(R.string.close)) },
+                        icon = { Icon(Icons.Filled.Close, contentDescription = null) },
+                        onClick = {
+                            navigator.popBackStack()
+                        }
+                    )
                 }
             }
         },

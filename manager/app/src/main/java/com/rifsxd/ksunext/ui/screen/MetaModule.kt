@@ -19,6 +19,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.rifsxd.ksunext.ui.LocalScrollState
 import com.rifsxd.ksunext.ui.rememberScrollConnection
 import androidx.compose.ui.res.stringResource
@@ -57,6 +64,7 @@ data class MetaModule(
     val description: String,
     val author: String,
     val repoUrl: String,
+    val bannerLink: String = "",
     val license: String = "",
     val visibility: Int = 1,
     val latestVersion: String = "",
@@ -131,6 +139,7 @@ fun MetaModuleScreen(navigator: DestinationsNavigator) {
                         description = obj.optString("description"),
                         author = obj.optString("author"),
                         repoUrl = obj.optString("repoUrl"),
+                        bannerLink = obj.optString("bannerUrl"),
                         license = obj.optString("license", ""),
                         visibility = obj.optInt("visibility", 1)
                     )
@@ -251,8 +260,8 @@ fun MetaModuleScreen(navigator: DestinationsNavigator) {
                                 modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
                             }
                         },
-                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp, bottom = 8.dp + 16.dp + navBarPadding),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp + navBarPadding),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     items(sortedModules) { module ->
                         val isInstalled = installedIds.contains(module.id)
@@ -343,106 +352,167 @@ private fun MetaModuleCard(
             .fillMaxWidth()
             .clickable { onCardClick() }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Row(modifier = Modifier.fillMaxWidth()) {
-                if (module.license.isNotEmpty()) {
-                    LabelItem(
-                        text = module.license,
-                        style = LabelItemDefaults.style.copy(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
+        Box(modifier = Modifier.fillMaxWidth()) {
+            val context = LocalContext.current
+            val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+            val useBanner = prefs.getBoolean("use_banner", true)
+
+            if (useBanner && module.bannerLink.isNotEmpty()) {
+                val isDark = isSystemInDarkTheme()
+                val colorScheme = MaterialTheme.colorScheme
+                val amoledMode = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                    .getBoolean("amoled_mode", false)
+                val isDynamic = colorScheme.primary != colorScheme.secondary
+
+                val fadeColor = when {
+                    amoledMode && isDark -> Color.Black
+                    isDynamic -> colorScheme.surface
+                    isDark -> Color(0xFF222222)
+                    else -> Color.White
                 }
 
-                if (isInstalled) {
-                    LabelItem(
-                        text = stringResource(R.string.installed),
-                        style = LabelItemDefaults.style.copy(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                        )
-                    )
-                }
-            }
-
-            if (module.license.isNotEmpty() || isInstalled) {
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-            
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f)
+                Box(
+                    modifier = Modifier
+                        .matchParentSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = module.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "by ${module.author}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Text(
-                text = module.description,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text(
-                        text = stringResource(R.string.latest_version),
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                    Text(
-                        text = if (module.latestVersion.isNotEmpty()) module.latestVersion else stringResource(R.string.loading),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-
-                Button(
-                    onClick = { onDownload(module) },
-                    modifier = Modifier.height(40.dp),
-                    enabled = module.downloadUrl.isNotEmpty() && isInstallEnabled,
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
-                ) {
-                    if (isDownloading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            strokeWidth = 2.dp,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.CloudDownload,
-                            contentDescription = "Download",
-                            modifier = Modifier.size(18.dp)
+                    if (module.bannerLink.startsWith("http", true)) {
+                        AsyncImage(
+                            model = module.bannerLink,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .fillMaxHeight(),
+                            contentScale = ContentScale.Crop,
+                            alpha = 0.18f
                         )
                     }
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(if (isInstalled) stringResource(R.string.reinstall) else stringResource(R.string.install))
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        fadeColor.copy(alpha = 0.0f),
+                                        fadeColor.copy(alpha = 0.8f)
+                                    ),
+                                    startY = 0f,
+                                    endY = Float.POSITIVE_INFINITY
+                                )
+                            )
+                    )
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(22.dp, 18.dp, 22.dp, 12.dp)
+            ) {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    if (module.license.isNotEmpty()) {
+                        LabelItem(
+                            text = module.license,
+                            style = LabelItemDefaults.style.copy(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+
+                    if (isInstalled) {
+                        LabelItem(
+                            text = stringResource(R.string.installed),
+                            style = LabelItemDefaults.style.copy(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        )
+                    }
+                }
+
+                if (module.license.isNotEmpty() || isInstalled) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(
+                            text = module.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "by ${module.author}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                Text(
+                    text = module.description,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = stringResource(R.string.latest_version),
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                        Text(
+                            text = if (module.latestVersion.isNotEmpty()) module.latestVersion else stringResource(R.string.loading),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+
+                    Button(
+                        onClick = { onDownload(module) },
+                        modifier = Modifier.defaultMinSize(52.dp, 32.dp),
+                        enabled = module.downloadUrl.isNotEmpty() && isInstallEnabled,
+                        shape = ButtonDefaults.textShape,
+                        contentPadding = ButtonDefaults.TextButtonContentPadding
+                    ) {
+                        if (isDownloading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.CloudDownload,
+                                contentDescription = "Download",
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(7.dp))
+                        Text(
+                            modifier = Modifier.padding(start = 0.dp),
+                            text = if (isInstalled) stringResource(R.string.reinstall) else stringResource(R.string.install),
+                            fontFamily = MaterialTheme.typography.labelMedium.fontFamily,
+                            fontSize = MaterialTheme.typography.labelMedium.fontSize
+                        )
+                    }
                 }
             }
         }

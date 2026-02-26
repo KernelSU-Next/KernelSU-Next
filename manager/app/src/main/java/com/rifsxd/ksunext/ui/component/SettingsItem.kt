@@ -30,6 +30,7 @@ fun SwitchItem(
     onCheckedChange: (Boolean) -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
+    val switchInteractionSource = remember { MutableInteractionSource() }
     val stateAlpha = remember(checked, enabled) { Modifier.alpha(if (enabled) 1f else 0.5f) }
 
     ListItem(
@@ -76,7 +77,7 @@ fun SwitchItem(
                 checked = checked,
                 enabled = enabled,
                 onCheckedChange = onCheckedChange,
-                interactionSource = interactionSource
+                interactionSource = switchInteractionSource
             )
         },
         supportingContent = {

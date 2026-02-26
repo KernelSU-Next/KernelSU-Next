@@ -25,6 +25,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -52,11 +54,12 @@ import com.rifsxd.ksunext.ui.util.module.Shortcut
 @Composable
 fun ShortcutDialog(
     initialName: String,
+    initialIconUri: String? = null,
     onDismiss: () -> Unit,
     onConfirm: (String, String?) -> Unit
 ) {
     var name by remember { mutableStateOf(initialName) }
-    var iconUri by remember { mutableStateOf<String?>(null) }
+    var iconUri by remember { mutableStateOf<String?>(initialIconUri) }
     val context = LocalContext.current
 
     val launcher = rememberLauncherForActivityResult(
@@ -192,12 +195,23 @@ fun ShortcutDialog(
                             }
                         }
 
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        if (iconUri != null) {
+                            IconButton(onClick = { iconUri = null }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     }
                 }
 

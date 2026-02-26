@@ -115,7 +115,10 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     }
                 }
                 .verticalScroll(rememberScrollState())
+                .padding(top = 16.dp)
                 .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + 116.dp)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
             val context = LocalContext.current
@@ -158,7 +161,6 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
                 ) {
                     Column(
                         modifier = Modifier.padding(12.dp),
@@ -199,7 +201,10 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             ) { checked ->
                                 val shouldEnable = !checked
+                                val prefsLocal = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
                                 if (Natives.setSuEnabled(shouldEnable)) {
+                                    execKsud("feature save", true)
+                                    prefsLocal.edit { putInt("su_compat_mode", if (shouldEnable) 0 else 2) }
                                     isSuDisabled = !shouldEnable
                                 }
                             }
@@ -220,7 +225,10 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             ) { checked ->
                                 val shouldEnable = !checked
+                                val prefsLocal = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
                                 if (Natives.setKernelUmountEnabled(shouldEnable)) {
+                                    execKsud("feature save", true)
+                                    prefsLocal.edit { putInt("kernel_umount_mode", if (shouldEnable) 0 else 2) }
                                     isKernelUmountDisabled = !shouldEnable
                                 }
                             }
@@ -242,7 +250,10 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                                 colors = ListItemDefaults.colors(containerColor = Color.Transparent)
                             ) { checked ->
                                 val shouldEnable = !checked
+                                val prefsLocal = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
                                 if (Natives.setAvcSpoofEnabled(shouldEnable)) {
+                                    execKsud("feature save", true)
+                                    prefsLocal.edit { putInt("avc_spoof_mode", if (shouldEnable) 0 else 2) }
                                     isAvcSpoofDisabled = !shouldEnable
                                 }
                             }
@@ -253,12 +264,32 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
                 ) {
                     Column(
                         modifier = Modifier.padding(12.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
+
+                        var isSelinuxPermissive by rememberSaveable {
+                            mutableStateOf(getSelinuxEnforce() == false)
+                        }
+
+                        SwitchItem(
+                            icon = Icons.Filled.Security,
+                            title = stringResource(R.string.set_selinux),
+                            summary = stringResource(R.string.set_selinux_summary),
+                            checked = isSelinuxPermissive,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp)),
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                        ) { checked ->
+                            val shouldEnforce = !checked
+                            if (setSelinuxEnforce(shouldEnforce)) {
+                                isSelinuxPermissive = !shouldEnforce
+                            }
+                        }
+
                         ListItem(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -334,15 +365,13 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     }
                 }
 
-                Spacer(Modifier.height(2.dp))
+                
             }
 
             val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
+                modifier = Modifier.fillMaxWidth(),
             ) {
                 Column(
                     modifier = Modifier.padding(12.dp),

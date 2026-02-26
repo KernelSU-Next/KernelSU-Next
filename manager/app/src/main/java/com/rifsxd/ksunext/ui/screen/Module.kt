@@ -805,6 +805,30 @@ fun ModuleItem(
     var showMenu by remember { mutableStateOf(false) }
     var showShortcutDialog by remember { mutableStateOf(false) }
     var shortcutType by remember { mutableStateOf("") }
+    var dialogInitialIcon by remember { mutableStateOf<String?>(null) }
+
+    fun normalizeIconPath(p: String?): String? {
+        if (p.isNullOrBlank()) return null
+
+        try {
+            val candidate = "/data/adb/modules/${module.id}/$p"
+            val f = SuFile(candidate)
+            if (f.exists()) return "su://$candidate"
+        } catch (_: Exception) {
+        }
+
+        if (p.startsWith("/")) {
+            try {
+                val f = SuFile(p)
+                if (f.exists()) return "su://$p"
+            } catch (_: Exception) {
+            }
+            return "file://$p"
+        }
+
+        return p
+    }
+    
     val haptic = LocalHapticFeedback.current
 
     val context = LocalContext.current
@@ -812,6 +836,7 @@ fun ModuleItem(
     if (showShortcutDialog) {
         ShortcutDialog(
             initialName = module.name,
+            initialIconUri = dialogInitialIcon,
             onDismiss = { showShortcutDialog = false },
             onConfirm = { name, iconUri ->
                 showShortcutDialog = false
@@ -854,6 +879,7 @@ fun ModuleItem(
                                     onClick = {
                                         showMenu = false
                                         shortcutType = "webui"
+                                        dialogInitialIcon = normalizeIconPath(module.webUiIconPath)
                                         showShortcutDialog = true
                                     },
                                     contentPadding = ButtonDefaults.TextButtonContentPadding
@@ -878,6 +904,7 @@ fun ModuleItem(
                                     onClick = {
                                         showMenu = false
                                         shortcutType = "action"
+                                        dialogInitialIcon = normalizeIconPath(module.actionIconPath)
                                         showShortcutDialog = true
                                     },
                                     contentPadding = ButtonDefaults.TextButtonContentPadding
@@ -1429,6 +1456,8 @@ fun ModuleItemPreview() {
         banner = "",
         zygiskRequired = false,
         isMetaModule = false,
+        actionIconPath = null,
+        webUiIconPath = null,
         donate = ""
     )
     ModuleItem(

@@ -17,7 +17,8 @@ object Natives {
     // 10977: change groups_count and groups to avoid overflow write
     // 11071: Fix the issue of failing to set a custom SELinux type.
     // 12797: zygisk query and get manager uid.
-    const val MINIMAL_SUPPORTED_KERNEL = 22000
+    // 32310: new get_allow_list ioctl
+    const val MINIMAL_SUPPORTED_KERNEL = 32310
 
     const val KERNEL_SU_DOMAIN = "u:r:su:s0"
 
@@ -31,6 +32,7 @@ object Natives {
     val version: Int
         external get
 
+    // deprecated
     // get the uid list of allowed su processes.
     val allowList: IntArray
         external get
@@ -112,6 +114,8 @@ object Natives {
      */
     external fun isAvcSpoofEnabled(): Boolean
     external fun setAvcSpoofEnabled(enabled: Boolean): Boolean
+
+    external fun getSuperuserCount(): Int
 
     private const val NON_ROOT_DEFAULT_PROFILE_KEY = "$"
     private const val NOBODY_UID = 9999

@@ -47,6 +47,8 @@ class ModuleViewModel : ViewModel() {
         val banner: String,
         val zygiskRequired: Boolean,
         val isMetaModule: Boolean,
+        val actionIconPath: String?,
+        val webUiIconPath: String?,
         val donate: String,
     )
 
@@ -154,6 +156,8 @@ class ModuleViewModel : ViewModel() {
                                 obj.optString("banner"),
                                 zygiskRequired,
                                 metaModule,
+                                obj.optString("actionIcon").takeIf { it.isNotBlank() },
+                                obj.optString("webuiIcon").takeIf { it.isNotBlank() },
                                 obj.optString("donate")
                             )
                         }.toList()
