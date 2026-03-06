@@ -15,8 +15,8 @@
   <string name="home_working">Em execução</string>
   <string name="home_working_version">Versão: %1$s (%2$d)</string>
   <string name="home_module_update_count">Atualizações: %d</string>
-  <string name="home_failure">Assinatura KernelSU Next v2 não encontrada no kernel! [ !KSU_NEXT || != size/hash ]</string>
-  <string name="home_failure_tip">Peça ao seu desenvolvedor de kernel para integrar o KernelSU Next!</string>
+  <string name="home_failure">Não suportado | Não integrado</string>
+  <string name="home_failure_tip">Kernels que não sejam GKI não são suportados. Integre o driver legado KernelSU-Next em seu kernel!</string>
   <string name="home_kernel">Versão do kernel</string>
   <string name="hook_mode">Modo do hook</string>
   <string name="enable">Ativar</string>
@@ -164,8 +164,8 @@
   <string name="enable_web_debugging_summary">Pode ser usado para depurar o WebUI. Por favor, ative somente quando necessário.</string>
   <string name="direct_install">Instalação direta (Recomendada)</string>
   <string name="select_file">Selecione um arquivo</string>
-  <string name="flash_module">Flash Module</string>
-  <string name="flash_anykernel">Flash AnyKernel (.zip)</string>
+  <string name="flash_module">Módulo Flash</string>
+  <string name="flash_anykernel">Instale o AnyKernel (.zip)</string>
   <string name="install_inactive_slot">Instalar no slot inativo (Após o OTA)</string>
   <string name="install_inactive_slot_warning">Seu dispositivo será **FORÇADO** a inicializar no slot inativo atual após uma reinicialização!\nSó use esta opção após a conclusão do OTA.\nDeseja continuar?</string>
   <string name="install_next">Próximo</string>
@@ -185,10 +185,8 @@
   <string name="save_log">Salvar registros</string>
   <string name="log_saved">Registros salvos</string>
   <string name="send_log">Compartilhar registros</string>
-  <string name="settings_disable_su">Desativar compatibilidade su</string>
-  <string name="settings_disable_su_summary">Desative temporariamente a capacidade de qualquer app obter privilégios root por meio do comando ⁠su (processos root existentes não serão afetados).</string>
   <string name="settings_language">Idioma</string>
-  <string name="system_default">Padrão do sistema.</string>
+  <string name="system_default">Padrão do sistema</string>
   <string name="settings_banner">Ativar banners</string>
   <string name="settings_banner_summary">Mostre banners de fundo para módulos.</string>
   <string name="customization">Personalização</string>
@@ -204,10 +202,6 @@
   <string name="module_sort_enabled_first">Ordenar (Ativado primeiro)</string>
   <string name="module_sort_action_first">Ordenar (Ação primeiro)</string>
   <string name="module_sort_webui_first">Ordenar (WebUI primeiro)</string>
-  <string name="settings_disable_kernel_umount">Desativar montagem em kernel</string>
-  <string name="settings_disable_kernel_umount_summary">Desabilitar o comportamento de umount no kernel-level controlado pelo KernelSU Next.</string>
-  <string name="settings_disable_avc_spoof">Desativar spoofing avc</string>
-  <string name="settings_disable_avc_spoof_summary">Desativar correção de vazamento de contexto selinux causado pela negação avc no log de auditorias.</string>
   <string name="meta_module">Meta</string>
   <string name="donate">Faça uma doação</string>
   <string name="meta_module_screen">Meta Module</string>
@@ -248,4 +242,12 @@
   <string name="no_repositories_configured">Nenhum repositório configurado. Adicione um abaixo.</string>
   <string name="add_repository">Adicionar Repositório</string>
   <string name="reset_to_default">Restaurar ao Padrão</string>
+  <string name="supported">Suportado</string>
+  <string name="home_susfs_version">Versão SuSFS</string>
+  <string name="settings_enable_su">SU compatibility</string>
+  <string name="settings_enable_su_summary">Allow the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
+  <string name="settings_enable_kernel_umount">Kernel umount</string>
+  <string name="settings_enable_kernel_umount_summary">Umount modules at kernel-level.</string>
+  <string name="settings_enable_avc_spoof">AVC spoofing</string>
+  <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
 </resources>
