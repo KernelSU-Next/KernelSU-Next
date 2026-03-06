@@ -15,8 +15,8 @@
   <string name="home_working">Funcionando</string>
   <string name="home_working_version">Versión %1$s (%2$d)</string>
   <string name="home_module_update_count">Actualizaciones: %d</string>
-  <string name="home_failure">¡Firma v2 de KernelSU Next no encontrada en el kernel! [ !KSU_NEXT || != size/hash ]</string>
-  <string name="home_failure_tip">¡Pídele a tu desarrollador de kernel que integre KernelSU Next!</string>
+  <string name="home_failure">No compatible | No integrado</string>
+  <string name="home_failure_tip">Los kernels que no sean GKI no son compatibles. ¡Integre el controlador heredado KernelSU-Next en su kernel!</string>
   <string name="home_kernel">Versión del kernel</string>
   <string name="hook_mode">Método de intercepción</string>
   <string name="enable">Activar</string>
@@ -185,10 +185,8 @@
   <string name="save_log">Guardar logs</string>
   <string name="log_saved">Logs guardados</string>
   <string name="send_log">Enviar logs</string>
-  <string name="settings_disable_su">Deshabilitar compatibilidad su</string>
-  <string name="settings_disable_su_summary">Desactivar temporalmente la capacidad de cualquier aplicación para obtener privilegios de root mediante el comando ⁠su (los procesos root existentes no se verán afectados).</string>
   <string name="settings_language">Idioma</string>
-  <string name="system_default">Predeterminado del sistema.</string>
+  <string name="system_default">Predeterminado del sistema</string>
   <string name="settings_banner">Activar banners</string>
   <string name="settings_banner_summary">Mostrar banners de fondo para los módulos.</string>
   <string name="customization">Personalización</string>
@@ -204,10 +202,6 @@
   <string name="module_sort_enabled_first">Ordenar (Activados Primero)</string>
   <string name="module_sort_action_first">Ordenar (Accionables primero)</string>
   <string name="module_sort_webui_first">Ordenar (WebUI primero)</string>
-  <string name="settings_disable_kernel_umount">Deshabilitar desmontaje del kernel</string>
-  <string name="settings_disable_kernel_umount_summary">Deshabilita el comportamiento de desmontaje a nivel del kernel controlado por KernelSU-Next.</string>
-  <string name="settings_disable_avc_spoof">Deshabilitar falsificación de avc</string>
-  <string name="settings_disable_avc_spoof_summary">Desactivar la corrección de la fuga de contexto de selinux causada por la denegación de avc en el registro de auditorías.</string>
   <string name="meta_module">Meta</string>
   <string name="donate">Donar</string>
   <string name="meta_module_screen">Meta Módulo</string>
@@ -241,11 +235,19 @@
   <string name="set_selinux_summary">Establece SELinux en modo permisivo.</string>
   <string name="main">Principal</string>
   <string name="spoofed">Spoofeado</string>
-  <string name="select_build_type">Select build type</string>
+  <string name="select_build_type">Seleccione el tipo de compilación</string>
   <string name="home_module_update_available">Actualización!</string>
   <string name="non_free_repo">Repositorio no libre</string>
   <string name="non_free_repo_summary">Incluye módulos con licencias no libres.</string>
   <string name="no_repositories_configured">No hay repositorios configurados. Añada uno abajo.</string>
   <string name="add_repository">Añadir repositorio</string>
   <string name="reset_to_default">Restablecer a por defecto</string>
+  <string name="supported">Supported</string>
+  <string name="home_susfs_version">SuSFS version</string>
+  <string name="settings_enable_su">SU compatibility</string>
+  <string name="settings_enable_su_summary">Allow the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
+  <string name="settings_enable_kernel_umount">Kernel umount</string>
+  <string name="settings_enable_kernel_umount_summary">Umount modules at kernel-level.</string>
+  <string name="settings_enable_avc_spoof">AVC spoofing</string>
+  <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
 </resources>
