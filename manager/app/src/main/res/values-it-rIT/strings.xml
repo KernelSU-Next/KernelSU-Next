@@ -16,7 +16,7 @@
   <string name="home_working_version">Versione: %1$s (%2$d)</string>
   <string name="home_module_update_count">Aggiornamenti: %d</string>
   <string name="home_failure">Non supportato | Non integrato</string>
-  <string name="home_failure_tip">I kernel non GKI non sono supportati. Integra il driver legacy KernelSU-Next nel tuo kernel!</string>
+  <string name="home_failure_tip">I kernel non-GKI non sono supportati. Integra il driver legacy KernelSU-Next nel tuo kernel!</string>
   <string name="home_kernel">Versione kernel</string>
   <string name="hook_mode">Modalità hook</string>
   <string name="enable">Abilita</string>
@@ -244,10 +244,10 @@
   <string name="reset_to_default">Resetta a Predefinito</string>
   <string name="supported">Supportato</string>
   <string name="home_susfs_version">Versione SuSFS</string>
-  <string name="settings_enable_su">SU compatibility</string>
-  <string name="settings_enable_su_summary">Allow the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
+  <string name="settings_enable_su">Compatibilità SU</string>
+  <string name="settings_enable_su_summary">Consenti a qualsiasi app di ottenere privilegi di root tramite il comando su (i processi di root esistenti non saranno interessati).</string>
   <string name="settings_enable_kernel_umount">Kernel umount</string>
-  <string name="settings_enable_kernel_umount_summary">Umount modules at kernel-level.</string>
-  <string name="settings_enable_avc_spoof">AVC spoofing</string>
-  <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
+  <string name="settings_enable_kernel_umount_summary">Smonta moduli a livello-kernel.</string>
+  <string name="settings_enable_avc_spoof">Spoofing AVC</string>
+  <string name="settings_enable_avc_spoof_summary">Correggi la perdita di contesto di selinux causata dal rifiuto di avc nel registro di controllo.</string>
 </resources>
