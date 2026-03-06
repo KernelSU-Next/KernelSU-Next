@@ -242,12 +242,12 @@
   <string name="no_repositories_configured">Репозитории не настроены. Добавьте их ниже.</string>
   <string name="add_repository">Добавить репозиторий</string>
   <string name="reset_to_default">Восстановить значения по умолчанию</string>
-  <string name="supported">Supported</string>
-  <string name="home_susfs_version">SuSFS version</string>
-  <string name="settings_enable_su">SU compatibility</string>
-  <string name="settings_enable_su_summary">Allow the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
-  <string name="settings_enable_kernel_umount">Kernel umount</string>
-  <string name="settings_enable_kernel_umount_summary">Umount modules at kernel-level.</string>
-  <string name="settings_enable_avc_spoof">AVC spoofing</string>
-  <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
+  <string name="supported">Поддерживается</string>
+  <string name="home_susfs_version">Версия SuSFS</string>
+  <string name="settings_enable_su">Включить команду su</string>
+  <string name="settings_enable_su_summary">Позволять приложениям получать root-доступ с помощью команды su (запущенные процессы с root-привилегиями не будут затронуты изменением этой настройки до их завершения).</string>
+  <string name="settings_enable_kernel_umount">Размонтирование на уровне ядра</string>
+  <string name="settings_enable_kernel_umount_summary">Осуществлять размонтирование модулей на уровне ядра.</string>
+  <string name="settings_enable_avc_spoof">Применять AVC спуфинг</string>
+  <string name="settings_enable_avc_spoof_summary">Исправлять возможную утечку контекста SELinux в событиях avc denial лога аудита.</string>
 </resources>
