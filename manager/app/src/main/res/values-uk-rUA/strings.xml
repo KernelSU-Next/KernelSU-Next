@@ -15,8 +15,8 @@
   <string name="home_working">Працює</string>
   <string name="home_working_version">Версія %1$s (%2$d)</string>
   <string name="home_module_update_count">Оновлень: %d</string>
-  <string name="home_failure">В ядрі не знайдено сигнатуру KernelSU Next v2! [ !KSU_NEXT || != size/hash ]</string>
-  <string name="home_failure_tip">Попросіть розробника ядра інтегрувати KernelSU Next!</string>
+  <string name="home_failure">Unsupported | Not integrated</string>
+  <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate KernelSU-Next legacy driver in your kernel!</string>
   <string name="home_kernel">Версія ядра</string>
   <string name="hook_mode">Режим хука</string>
   <string name="enable">Ввімкнути</string>
@@ -185,10 +185,8 @@
   <string name="save_log">Save logs</string>
   <string name="log_saved">Logs saved</string>
   <string name="send_log">Share logs</string>
-  <string name="settings_disable_su">Disable SU compatibility</string>
-  <string name="settings_disable_su_summary">Disable the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
   <string name="settings_language">Language</string>
-  <string name="system_default">System default.</string>
+  <string name="system_default">System default</string>
   <string name="settings_banner">Enable banners</string>
   <string name="settings_banner_summary">Show background banners for modules.</string>
   <string name="customization">Customization</string>
@@ -204,10 +202,6 @@
   <string name="module_sort_enabled_first">Sort (Enabled first)</string>
   <string name="module_sort_action_first">Sort (Action first)</string>
   <string name="module_sort_webui_first">Sort (WebUI first)</string>
-  <string name="settings_disable_kernel_umount">Disable kernel umount</string>
-  <string name="settings_disable_kernel_umount_summary">Disable kernel-level umount behavior controlled by KernelSU Next.</string>
-  <string name="settings_disable_avc_spoof">Disable avc spoofing</string>
-  <string name="settings_disable_avc_spoof_summary">Disable fixing selinux context leak caused by avc denial in audit log.</string>
   <string name="meta_module">Meta</string>
   <string name="donate">Donate</string>
   <string name="meta_module_screen">Meta Module</string>
@@ -248,4 +242,12 @@
   <string name="no_repositories_configured">No repositories configured. Add one below.</string>
   <string name="add_repository">Add Repository</string>
   <string name="reset_to_default">Reset to Default</string>
+  <string name="supported">Supported</string>
+  <string name="home_susfs_version">SuSFS version</string>
+  <string name="settings_enable_su">SU compatibility</string>
+  <string name="settings_enable_su_summary">Allow the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
+  <string name="settings_enable_kernel_umount">Kernel umount</string>
+  <string name="settings_enable_kernel_umount_summary">Umount modules at kernel-level.</string>
+  <string name="settings_enable_avc_spoof">AVC spoofing</string>
+  <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
 </resources>
