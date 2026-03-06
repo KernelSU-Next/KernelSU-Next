@@ -37,7 +37,7 @@
   <string name="module_empty">Ningún módulo instalado</string>
   <string name="module">Módulo</string>
   <string name="module_install_prompt_with_name">Los siguientes módulos serán instalados: %1$s</string>
-  <string name="anykernel_flash_prompt">El siguiente zip del núcleo será flasheado: %1$s</string>
+  <string name="anykernel_flash_prompt">El siguiente kernel será flasheado: %1$s</string>
   <string name="module_sort_a_to_z">Ordenar (A → Z)</string>
   <string name="module_sort_z_to_a">Ordenar (Z → A)</string>
   <string name="module_size_low_to_high">Ordenar (Menor → Mayor)</string>
@@ -242,12 +242,12 @@
   <string name="no_repositories_configured">No hay repositorios configurados. Añada uno abajo.</string>
   <string name="add_repository">Añadir repositorio</string>
   <string name="reset_to_default">Restablecer a por defecto</string>
-  <string name="supported">Supported</string>
-  <string name="home_susfs_version">SuSFS version</string>
-  <string name="settings_enable_su">SU compatibility</string>
+  <string name="supported">Soportado</string>
+  <string name="home_susfs_version">Version de SuSFS</string>
+  <string name="settings_enable_su">Compatibilidad de SU</string>
   <string name="settings_enable_su_summary">Allow the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
-  <string name="settings_enable_kernel_umount">Kernel umount</string>
-  <string name="settings_enable_kernel_umount_summary">Umount modules at kernel-level.</string>
-  <string name="settings_enable_avc_spoof">AVC spoofing</string>
-  <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
+  <string name="settings_enable_kernel_umount">Desmontar Kernel</string>
+  <string name="settings_enable_kernel_umount_summary">Desmontar modulos al nivel de kernel.</string>
+  <string name="settings_enable_avc_spoof">Suplantación de AVC</string>
+  <string name="settings_enable_avc_spoof_summary">Se soluciona la fuga de contenido de Selinux causada por la denegación de Avc en el registro de auditoría.</string>
 </resources>
