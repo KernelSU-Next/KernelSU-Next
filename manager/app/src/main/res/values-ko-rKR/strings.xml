@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="issue_report_title">Having trouble?</string>
+  <string name="issue_report_title">문제가 있나요?</string>
   <string name="issue_report_body">Encountered a bug or have feedback?</string>
   <string name="issue_report_body_2">Report it as soon as possible!</string>
   <string name="issue_report_github">GitHub에 보고</string>
@@ -17,10 +17,10 @@
   <string name="home_module_update_count">Updates: %d</string>
   <string name="home_failure">Unsupported | Not integrated</string>
   <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate KernelSU-Next legacy driver in your kernel!</string>
-  <string name="home_kernel">Kernel version</string>
-  <string name="hook_mode">Hook mode</string>
-  <string name="enable">Enable</string>
-  <string name="disable">Disable</string>
+  <string name="home_kernel">커널 버전</string>
+  <string name="hook_mode">Hook 모드</string>
+  <string name="enable">활성화</string>
+  <string name="disable">비활성화</string>
   <string name="enabled">Enabled</string>
   <string name="disabled">Disabled</string>
   <string name="home_android">Android 버전</string>
