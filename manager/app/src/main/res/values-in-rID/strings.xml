@@ -79,8 +79,6 @@
   <string name="module_magisk_conflict">Modul tidak tersedia karena konflik dengan Magisk!</string>
   <string name="home_mount_system">Sistem mount</string>
   <string name="unavailable">Tidak tersedia</string>
-  <string name="reboot_required">Mulai ulang diperlukan</string>
-  <string name="reboot_message">Perubahan akan berlaku setelah sistem dimulai ulang. Apakah Anda ingin memulai ulang sekarang?</string>
   <string name="module_restore">Pulihkan modul</string>
   <string name="module_restore_message">Pulihkan modul dari cadangan terkini.</string>
   <string name="backup_restore">Cadangkan &amp; Pulihkan</string>
@@ -92,7 +90,6 @@
   <string name="allowlist_backup_message">Cadangkan daftar izin yang saat ini dikonfigurasi.</string>
   <string name="proceed">Lanjutkan</string>
   <string name="cancel">Batal</string>
-  <string name="later">Nanti</string>
   <string name="about_source_code">Lihat kode sumber di %1$s</string>
   <string name="profile">Profil Aplikasi</string>
   <string name="profile_default">Default</string>
@@ -165,7 +162,7 @@
   <string name="flash_anykernel">Pasang AnyKernel (.zip)</string>
   <string name="install_inactive_slot">Pasang ke slot nonaktif (setelah OTA)</string>
   <string name="install_inactive_slot_warning">Perangkatmu akan **DIPAKSA** untuk boot ke slot nonaktif saat ini setelah reboot!\nGunakan hanya setelah proses OTA selesai.\nLanjutkan?</string>
-  <string name="install_next">Selanjutnya</string>
+  <string name="install_next">Berikutnya</string>
   <string name="select_file_tip">%1$s partisi image disarankan!</string>
   <string name="select_kmi">Pilih KMI</string>
   <string name="settings_uninstall">Hapus</string>
@@ -241,9 +238,13 @@
   <string name="settings_enable_avc_spoof_summary">Memperbaiki kebocoran konteks SELinux akibat penolakan AVC yang tercatat di log audit.</string>
   <string name="manage_repositories">Kelola Repositori</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
-  <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
-  <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
+  <string name="require_kernel_version">Versi KernelSU-Next saat ini %1$d terlalu rendah untuk manajer berfungsi dengan baik. Silakan perbarui ke versi %2$d atau lebih tinggi!</string>
+  <string name="profile_umount_modules_summary">Mengaktifkan opsi ini akan memungkinkan KernelSU-Next untuk memulihkan berkas apa pun yang telah dimodifikasi oleh modul untuk aplikasi ini.</string>
+  <string name="settings_uninstall_temporary_message">Hapus sementara KernelSU-Next, dipulihkan ke keadaan semula setelah mulai ulang berikutnya.</string>
+  <string name="settings_uninstall_permanent_message">Menghapus KernelSU-Next (root dan semua modul) sepenuhnya dan secara permanen.</string>
+  <string name="settings_restore_stock_image_message">Pulihkan image bawaan pabrik (jika cadangan ada), biasanya digunakan sebelum OTA; Jika Anda perlu menghapus KernelSU-Next, silakan gunakan \"Hapus permanen\".</string>
+  <string name="backup_success">Backup completed successfully</string>
+  <string name="backup_failed">Backup failed</string>
+  <string name="restore_success">Restore completed successfully</string>
+  <string name="restore_failed">Restore failed</string>
 </resources>
