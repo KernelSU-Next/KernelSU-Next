@@ -79,8 +79,6 @@
   <string name="module_magisk_conflict">与 Magisk 冲突，模块不可用！</string>
   <string name="home_mount_system">挂载系统</string>
   <string name="unavailable">不可用</string>
-  <string name="reboot_required">需要重启</string>
-  <string name="reboot_message">更改将在系统重启后生效。您现在要重启吗？</string>
   <string name="module_restore">恢复模块</string>
   <string name="module_restore_message">从最近的备份中恢复模块。</string>
   <string name="backup_restore">备份与恢复</string>
@@ -92,7 +90,6 @@
   <string name="allowlist_backup_message">备份当前配置的允许列表。</string>
   <string name="proceed">继续</string>
   <string name="cancel">取消</string>
-  <string name="later">稍后</string>
   <string name="about_source_code">在 %1$s 上查看源代码</string>
   <string name="profile">App Profile</string>
   <string name="profile_default">默认</string>
@@ -246,4 +243,8 @@
   <string name="settings_uninstall_temporary_message">临时卸载 KernelSU-Next，设备下次重启后将恢复原状。</string>
   <string name="settings_uninstall_permanent_message">彻底永久卸载 KernelSU-Next（包括 root 和所有模块）。</string>
   <string name="settings_restore_stock_image_message">恢复原厂镜像（如果存在备份），通常在 OTA 更新前使用；如果需要卸载 KernelSU-Next，请使用“永久卸载”。</string>
+  <string name="backup_success">Backup completed successfully</string>
+  <string name="backup_failed">Backup failed</string>
+  <string name="restore_success">Restore completed successfully</string>
+  <string name="restore_failed">Restore failed</string>
 </resources>
