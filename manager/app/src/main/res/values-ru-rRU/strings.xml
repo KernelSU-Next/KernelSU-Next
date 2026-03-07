@@ -79,8 +79,6 @@
   <string name="module_magisk_conflict">Модули недоступны из-за конфликта с Magisk!</string>
   <string name="home_mount_system">Система монтирования</string>
   <string name="unavailable">Недоступно</string>
-  <string name="reboot_required">Требуется перезагрузка</string>
-  <string name="reboot_message">Изменения вступят в силу после перезагрузки системы. Перезагрузить сейчас?</string>
   <string name="module_restore">Восстановить модули</string>
   <string name="module_restore_message">Восстановить модули из последней резервной копии.</string>
   <string name="backup_restore">Резервное копирование и восстановление</string>
@@ -92,7 +90,6 @@
   <string name="allowlist_backup_message">Резервное копирование текущего списка прав.</string>
   <string name="proceed">Продолжить</string>
   <string name="cancel">Отмена</string>
-  <string name="later">Позже</string>
   <string name="about_source_code">Исходный код на %1$s</string>
   <string name="profile">Профиль Приложения</string>
   <string name="profile_default">По умолчанию</string>
@@ -246,4 +243,8 @@
   <string name="settings_uninstall_temporary_message">Временно удаляет KernelSU-Next, восстанавливая исходное состояние после следующей перезагрузки.</string>
   <string name="settings_uninstall_permanent_message">Полностью и навсегда удаляет KernelSU-Next, включая все модули.</string>
   <string name="settings_restore_stock_image_message">Восстанавливает исходный образ, если резервная копия доступна. Обычно используется перед OTA-обновлением. Если Вы хотите удалить KernelSU-Next, пожалуйста, воспользуйтесь опцией \"Полное удаление\".</string>
+  <string name="backup_success">Backup completed successfully</string>
+  <string name="backup_failed">Backup failed</string>
+  <string name="restore_success">Restore completed successfully</string>
+  <string name="restore_failed">Restore failed</string>
 </resources>
