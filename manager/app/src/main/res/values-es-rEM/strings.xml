@@ -79,8 +79,6 @@
   <string name="module_magisk_conflict">¡Los módulos no están disponibles debido a un conflicto con Magisk!</string>
   <string name="home_mount_system">Mecanismo de montaje</string>
   <string name="unavailable">No disponible</string>
-  <string name="reboot_required">Reinicio requerido</string>
-  <string name="reboot_message">Los cambios tendrán efecto después de reiniciar el sistema. ¿Deseas reiniciar ahora?</string>
   <string name="module_restore">Restaurar módulo</string>
   <string name="module_restore_message">Restaurar módulos desde una copia de seguridad reciente.</string>
   <string name="backup_restore">Copia de seguridad y Restauración</string>
@@ -92,7 +90,6 @@
   <string name="allowlist_backup_message">Respaldar la lista permitida actualmente configurada.</string>
   <string name="proceed">Continuar</string>
   <string name="cancel">Cancelar</string>
-  <string name="later">Más adelante</string>
   <string name="about_source_code">Ver el código fuente en %1$s</string>
   <string name="profile">Perfil de Aplicación</string>
   <string name="profile_default">Predeterminado</string>
@@ -246,4 +243,8 @@
   <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
   <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
   <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
+  <string name="backup_success">Backup completed successfully</string>
+  <string name="backup_failed">Backup failed</string>
+  <string name="restore_success">Restore completed successfully</string>
+  <string name="restore_failed">Restore failed</string>
 </resources>
