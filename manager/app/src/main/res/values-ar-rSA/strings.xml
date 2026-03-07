@@ -79,8 +79,6 @@
   <string name="module_magisk_conflict">الإضافات غير متاحة بسبب تعارضها مع magisk!</string>
   <string name="home_mount_system">تركيب النظام</string>
   <string name="unavailable">غير متاح</string>
-  <string name="reboot_required">مطلوب إعادة التشغيل!</string>
-  <string name="reboot_message">ستصبح التغييرات سارية المفعول بعد إعادة تشغيل النظام. هل تريد إعادة التشغيل الآن؟</string>
   <string name="module_restore">استعادة الإضافة</string>
   <string name="module_restore_message">استعادة الإضافات من النسخة الاحتياطية الأخيرة.</string>
   <string name="backup_restore">النسخ الاحتياطي &amp; الاستعادة</string>
@@ -92,7 +90,6 @@
   <string name="allowlist_backup_message">النسخ الاحتياطي لقائمة السماح المُعدة حاليا.</string>
   <string name="proceed">متابعة</string>
   <string name="cancel">إلغاء</string>
-  <string name="later">لاحقاً</string>
   <string name="about_source_code">عرض كود المصدر في %1$s</string>
   <string name="profile">ملف تعريف التطبيق</string>
   <string name="profile_default">الافتراضي</string>
@@ -248,4 +245,8 @@
   <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
   <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
   <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
+  <string name="backup_success">Backup completed successfully</string>
+  <string name="backup_failed">Backup failed</string>
+  <string name="restore_success">Restore completed successfully</string>
+  <string name="restore_failed">Restore failed</string>
 </resources>
