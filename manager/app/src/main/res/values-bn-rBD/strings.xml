@@ -79,8 +79,6 @@
   <string name="module_magisk_conflict">ম্যাজিস্কের সাথে দ্বন্দ্বের কারণে মডিউলগুলি অপ্রাপ্য</string>
   <string name="home_mount_system">মাউন্ট সিস্টেম</string>
   <string name="unavailable">আন-আভেইলাবেল </string>
-  <string name="reboot_required">পুনরায় বুট করা প্রয়োজন</string>
-  <string name="reboot_message">সিস্টেম পুনরায় চালু হওয়ার পরে পরিবর্তনগুলি কার্যকর হবে। আপনি কি এখন পুনরায় চালু করতে চান?</string>
   <string name="module_restore">মডিউল পুনরুদ্ধার করুন</string>
   <string name="module_restore_message">সাম্প্রতিক ব্যাকআপ থেকে মডিউল পুনরুদ্ধার করুন</string>
   <string name="backup_restore">ব্যাকআপ &amp; পুনরুদ্ধার</string>
@@ -92,7 +90,6 @@
   <string name="allowlist_backup_message">সাম্প্রতিক ব্যাকআপ থেকে এ্যালাও লিস্ট ব্যাকআপ করুন</string>
   <string name="proceed">এগিয়ে যান</string>
   <string name="cancel">বাতিল করুন</string>
-  <string name="later">পরে</string>
   <string name="about_source_code">সোর্স কোড দেখুন %1$s</string>
   <string name="profile">অ্যাপ প্রোফাইল</string>
   <string name="profile_default">ডিফল্ট</string>
@@ -246,4 +243,8 @@
   <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
   <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
   <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
+  <string name="backup_success">Backup completed successfully</string>
+  <string name="backup_failed">Backup failed</string>
+  <string name="restore_success">Restore completed successfully</string>
+  <string name="restore_failed">Restore failed</string>
 </resources>
