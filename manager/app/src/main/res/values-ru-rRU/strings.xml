@@ -8,7 +8,6 @@
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
   <string name="confirm">Подтвердить</string>
-  <string name="app_name">KernelSU Next</string>
   <string name="home">Главная</string>
   <string name="home_not_installed">Не установлен</string>
   <string name="home_click_to_install">Нажмите, чтобы установить</string>
@@ -21,7 +20,7 @@
   <string name="hook_mode">Режим хуков</string>
   <string name="enable">Включить</string>
   <string name="disable">Выключить</string>
-  <string name="enabled">Включено</string>
+  <string name="enabled">Включён</string>
   <string name="disabled">Выключено</string>
   <string name="home_android">Версия Android</string>
   <string name="home_manager_version">Версия менеджера</string>
@@ -80,8 +79,6 @@
   <string name="module_magisk_conflict">Модули недоступны из-за конфликта с Magisk!</string>
   <string name="home_mount_system">Система монтирования</string>
   <string name="unavailable">Недоступно</string>
-  <string name="reboot_required">Требуется перезагрузка</string>
-  <string name="reboot_message">Изменения вступят в силу после перезагрузки системы. Перезагрузить сейчас?</string>
   <string name="module_restore">Восстановить модули</string>
   <string name="module_restore_message">Восстановить модули из последней резервной копии.</string>
   <string name="backup_restore">Резервное копирование и восстановление</string>
@@ -93,7 +90,6 @@
   <string name="allowlist_backup_message">Резервное копирование текущего списка прав.</string>
   <string name="proceed">Продолжить</string>
   <string name="cancel">Отмена</string>
-  <string name="later">Позже</string>
   <string name="about_source_code">Исходный код на %1$s</string>
   <string name="profile">Профиль Приложения</string>
   <string name="profile_default">По умолчанию</string>
@@ -109,10 +105,8 @@
   <string name="profile_selinux_context">Контекст SELinux</string>
   <string name="profile_umount_modules">Размонтировать модули</string>
   <string name="failed_to_update_app_profile">Не удалось обновить Профиль Приложения для %s</string>
-  <string name="require_kernel_version">Текущая версия KernelSU Next %1$d слишком старая для корректной работы менеджера. Пожалуйста, обновитесь до версии %2$d или выше!</string>
   <string name="settings_umount_modules_default">Размонтировать модули</string>
   <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для параметра \"Размонтировать модули\" в Профиле Приложения. Если этот параметр включён, то все изменения, внесённые модулями, будут скрыты для приложений без установленного профиля.</string>
-  <string name="profile_umount_modules_summary">Если этот параметр включен, то все модификации, внесённые модулями, будут скрыты для данного приложения.</string>
   <string name="profile_selinux_domain">Домен</string>
   <string name="profile_selinux_rules">Правила</string>
   <string name="module_update">Обновить</string>
@@ -175,9 +169,6 @@
   <string name="settings_uninstall_temporary">Временное удаление</string>
   <string name="settings_uninstall_permanent">Полное удаление</string>
   <string name="settings_restore_stock_image">Восстановить исходный образ</string>
-  <string name="settings_uninstall_temporary_message">Временно удаляет KernelSU Next, восстановив исходное состояние после следующей перезагрузки.</string>
-  <string name="settings_uninstall_permanent_message">Полностью и навсегда удаляет KernelSU Next, включая все модули.</string>
-  <string name="settings_restore_stock_image_message">Восстанавливает исходный образ, если резервная копия доступна. Обычно используется перед OTA-обновлением. Если Вы хотите удалить KernelSU Next, пожалуйста, воспользуйтесь опцией \"Полное удаление\".</string>
   <string name="flashing">Прошивка</string>
   <string name="flash_success">Прошивка выполнена успешно</string>
   <string name="flash_failed">Ошибка при прошивке</string>
@@ -217,11 +208,6 @@
   <string name="module_shortcut_not_supported">Лаунчер не поддерживает ярлыки рабочего стола.</string>
   <string name="module_shortcut_created">Ярлык создан на рабочем столе.</string>
   <string name="module_shortcut_updated">Ярлык обновлен.</string>
-  <string name="module_shortcut_delete">Удалить ярлык</string>
-  <string name="module_shortcut_type_title">Выберите тип</string>
-  <string name="module_shortcut_permission_tip_xiaomi">Пожалуйста, включите разрешение \"Создавать ярлыки рабочего стола\" для этого приложения в настройках Xiaomi.</string>
-  <string name="module_shortcut_permission_tip_oppo">Пожалуйста, включите разрешение \"Создавать ярлыки\" для этого приложения в настройках OPPO.</string>
-  <string name="module_shortcut_permission_tip_default">Если создание ярлыка не удалось, пожалуйста, включите разрешение на создание ярлыков рабочего стола этим приложением в системных настройках.</string>
   <string name="module_shortcut">Ярлыки модуля</string>
   <string name="create_webui_shortcut">Создать ярлык для WebUI</string>
   <string name="create_action_shortcut">Создать ярлык для скрипта</string>
@@ -231,7 +217,7 @@
   <string name="module_shortcut_icon_tap_to_replace">Нажмите, чтобы изменить</string>
   <string name="module_shortcut_icon_select_from_gallery">Выбрать из галереи</string>
   <string name="module_shortcut_pick_icon">Добавить иконку</string>
-  <string name="set_selinux"></string>
+  <string name="set_selinux">Режим Permissive для SELinux</string>
   <string name="set_selinux_summary">Перевести систему мандатного управления доступом SELinux в режим permissive: доступы, запрещённые политикой, регистрируются, но не блокируются.</string>
   <string name="main">Обычная</string>
   <string name="spoofed">Маскированная (Spoofed)</string>
@@ -250,4 +236,15 @@
   <string name="settings_enable_kernel_umount_summary">Осуществлять размонтирование модулей на уровне ядра.</string>
   <string name="settings_enable_avc_spoof">Применять AVC спуфинг</string>
   <string name="settings_enable_avc_spoof_summary">Исправлять возможную утечку контекста SELinux в событиях avc denial лога аудита.</string>
+  <string name="manage_repositories">Управление репозиториями</string>
+  <string name="app_name">KernelSU-Next</string>
+  <string name="require_kernel_version">Текущая версия KernelSU-Next %1$d слишком стара для корректной работы менеджера. Пожалуйста, обновитесь до версии %2$d или выше!</string>
+  <string name="profile_umount_modules_summary">Если этот параметр включен, то все модификации, внесённые модулями, будут скрыты для данного приложения.</string>
+  <string name="settings_uninstall_temporary_message">Временно удаляет KernelSU-Next, восстанавливая исходное состояние после следующей перезагрузки.</string>
+  <string name="settings_uninstall_permanent_message">Полностью и навсегда удаляет KernelSU-Next, включая все модули.</string>
+  <string name="settings_restore_stock_image_message">Восстанавливает исходный образ, если резервная копия доступна. Обычно используется перед OTA-обновлением. Если Вы хотите удалить KernelSU-Next, пожалуйста, воспользуйтесь опцией \"Полное удаление\".</string>
+  <string name="backup_success">Резервное копирование успешно завершено</string>
+  <string name="backup_failed">Резервное копирование не удалось</string>
+  <string name="restore_success">Восстановление резервной копии успешно завершено</string>
+  <string name="restore_failed">Восстановление резервной копии не удалось</string>
 </resources>
