@@ -8,7 +8,6 @@
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
   <string name="confirm">Confirmar</string>
-  <string name="app_name">KernelSU Next</string>
   <string name="home">Inicio</string>
   <string name="home_not_installed">No instalado</string>
   <string name="home_click_to_install">Pulsa para instalar</string>
@@ -44,7 +43,7 @@
   <string name="module_size_high_to_low">Ordenar (Mayor → Menor)</string>
   <string name="uninstall">Desinstalar</string>
   <string name="restore">Restaurar</string>
-  <string name="module_install">Instalar</string>
+  <string name="module_install">Instal</string>
   <string name="install">Instalar</string>
   <string name="reinstall">Reinstalar</string>
   <string name="reboot">Reiniciar</string>
@@ -80,8 +79,6 @@
   <string name="module_magisk_conflict">¡Los módulos no están disponibles debido a un conflicto con Magisk!</string>
   <string name="home_mount_system">Mecanismo de montaje</string>
   <string name="unavailable">No disponible</string>
-  <string name="reboot_required">Reinicio requerido</string>
-  <string name="reboot_message">Los cambios tendrán efecto después de reiniciar el sistema. ¿Deseas reiniciar ahora?</string>
   <string name="module_restore">Restaurar módulo</string>
   <string name="module_restore_message">Restaurar módulos desde una copia de seguridad reciente.</string>
   <string name="backup_restore">Copia de seguridad y Restauración</string>
@@ -93,7 +90,6 @@
   <string name="allowlist_backup_message">Respaldar la lista permitida actualmente configurada.</string>
   <string name="proceed">Continuar</string>
   <string name="cancel">Cancelar</string>
-  <string name="later">Más adelante</string>
   <string name="about_source_code">Ver el código fuente en %1$s</string>
   <string name="profile">Perfil de Aplicación</string>
   <string name="profile_default">Predeterminado</string>
@@ -109,10 +105,8 @@
   <string name="profile_selinux_context">Contexto de SELinux</string>
   <string name="profile_umount_modules">Desmontar módulos</string>
   <string name="failed_to_update_app_profile">Error al actualizar el perfil de aplicación para %s</string>
-  <string name="require_kernel_version">La versión actual de KernelSU Next %1$d es demasiado antigua para que el gestor funcione correctamente. ¡Actualiza a la versión %2$d o superior!</string>
   <string name="settings_umount_modules_default">Desmontar módulos</string>
   <string name="settings_umount_modules_default_summary">El valor global predeterminado para \"Desmontar módulos\" en el Perfil de App. Si se activa, eliminará todas las modificaciones de módulos en el sistema para las aplicaciones que no tengan un perfil establecido.</string>
-  <string name="profile_umount_modules_summary">Activar esta opción permitirá a KernelSU Next restaurar cualquier archivo modificado por los módulos para esta apliacion.</string>
   <string name="profile_selinux_domain">Dominio</string>
   <string name="profile_selinux_rules">Reglas</string>
   <string name="module_update">Actualizar</string>
@@ -175,9 +169,6 @@
   <string name="settings_uninstall_temporary">Desinstalar temporalmente</string>
   <string name="settings_uninstall_permanent">Desinstalar permanentemente</string>
   <string name="settings_restore_stock_image">Restaurar imagen stock</string>
-  <string name="settings_uninstall_temporary_message">Desinstalar temporalmente KernelSU Next, restaurar al estado original después del próximo reinicio.</string>
-  <string name="settings_uninstall_permanent_message">Desinstalar KernelSU Next (root y todos los módulos) de forma completa y permanente.</string>
-  <string name="settings_restore_stock_image_message">Restaurar la imagen de fábrica original (si existe una copia de seguridad), que suele utilizarse antes de una OTA; si necesita desinstalar KernelSU Next, utilice «Desinstalar permanentemente».</string>
   <string name="flashing">Flasheando</string>
   <string name="flash_success">Flasheado con éxito</string>
   <string name="flash_failed">Error en el flasheo</string>
@@ -217,11 +208,6 @@
   <string name="module_shortcut_not_supported">El lanzador no soporta accesos directos.</string>
   <string name="module_shortcut_created">Acceso directo creado en el escritorio.</string>
   <string name="module_shortcut_updated">Acceso directo actualizado.</string>
-  <string name="module_shortcut_delete">Eliminar atajo</string>
-  <string name="module_shortcut_type_title">Seleccionar tipo</string>
-  <string name="module_shortcut_permission_tip_xiaomi">Por favor, activa el permiso \"Crear accesos directos de escritorio\" para esta aplicación en los ajustes de Xiaomi.</string>
-  <string name="module_shortcut_permission_tip_oppo">Por favor, activa el permiso \"Acceso directo de escritorio\" para esta aplicación en la configuración OPPO.</string>
-  <string name="module_shortcut_permission_tip_default">Si la creación de acceso directo falla, por favor habilite el permiso de acceso directo para esta aplicación en los ajustes del sistema.</string>
   <string name="module_shortcut">Atajo del módulo</string>
   <string name="create_webui_shortcut">Crear acceso directo a la WebUI</string>
   <string name="create_action_shortcut">Crear acceso directo a la acción</string>
@@ -250,4 +236,15 @@
   <string name="settings_enable_kernel_umount_summary">Desmontar modulos al nivel de kernel.</string>
   <string name="settings_enable_avc_spoof">Suplantación de AVC</string>
   <string name="settings_enable_avc_spoof_summary">Se soluciona la fuga de contenido de Selinux causada por la denegación de Avc en el registro de auditoría.</string>
+  <string name="manage_repositories">Manage Repositories</string>
+  <string name="app_name">KernelSU-Next</string>
+  <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
+  <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
+  <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
+  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
+  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
+  <string name="backup_success">Backup completed successfully</string>
+  <string name="backup_failed">Backup failed</string>
+  <string name="restore_success">Restore completed successfully</string>
+  <string name="restore_failed">Restore failed</string>
 </resources>

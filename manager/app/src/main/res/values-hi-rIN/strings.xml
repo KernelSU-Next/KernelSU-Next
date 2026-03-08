@@ -8,7 +8,6 @@
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
   <string name="confirm">Confirm</string>
-  <string name="app_name">KernelSU Next</string>
   <string name="home">Home</string>
   <string name="home_not_installed">Not installed</string>
   <string name="home_click_to_install">Click to install</string>
@@ -80,8 +79,6 @@
   <string name="module_magisk_conflict">Modules are unavailable due to a conflict with Magisk!</string>
   <string name="home_mount_system">Mount system</string>
   <string name="unavailable">Unavailable</string>
-  <string name="reboot_required">Reboot required</string>
-  <string name="reboot_message">The changes will take effect after the system restart. Do you want to reboot now?</string>
   <string name="module_restore">Restore module</string>
   <string name="module_restore_message">Restore modules from recent backup.</string>
   <string name="backup_restore">Backup &amp; Restore</string>
@@ -93,7 +90,6 @@
   <string name="allowlist_backup_message">Backup currently configured allowlist.</string>
   <string name="proceed">Proceed</string>
   <string name="cancel">Cancel</string>
-  <string name="later">Later</string>
   <string name="about_source_code">View source code at %1$s</string>
   <string name="profile">App Profile</string>
   <string name="profile_default">Default</string>
@@ -109,10 +105,8 @@
   <string name="profile_selinux_context">SELinux context</string>
   <string name="profile_umount_modules">Umount modules</string>
   <string name="failed_to_update_app_profile">Failed to update App Profile for %s</string>
-  <string name="require_kernel_version">The current KernelSU Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
   <string name="settings_umount_modules_default">Umount modules</string>
   <string name="settings_umount_modules_default_summary">The global default value for \"Umount modules\" in App Profile. If enabled, it will remove all module modifications to the system for apps that don\'t have a profile set.</string>
-  <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU Next to restore any modified files by the modules for this app.</string>
   <string name="profile_selinux_domain">Domain</string>
   <string name="profile_selinux_rules">Rules</string>
   <string name="module_update">Update</string>
@@ -175,9 +169,6 @@
   <string name="settings_uninstall_temporary">Uninstall temporarily</string>
   <string name="settings_uninstall_permanent">Uninstall permanently</string>
   <string name="settings_restore_stock_image">Restore stock image</string>
-  <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU Next, restore to original state after next reboot.</string>
-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU Next (root and all modules) completely and permanently.</string>
-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU Next, please use \"Uninstall permanently\".</string>
   <string name="flashing">Flashing</string>
   <string name="flash_success">Flash success</string>
   <string name="flash_failed">Flash failed</string>
@@ -217,11 +208,6 @@
   <string name="module_shortcut_not_supported">Launcher does not support desktop shortcuts.</string>
   <string name="module_shortcut_created">Shortcut created on desktop.</string>
   <string name="module_shortcut_updated">Shortcut updated.</string>
-  <string name="module_shortcut_delete">Delete shortcut</string>
-  <string name="module_shortcut_type_title">Select type</string>
-  <string name="module_shortcut_permission_tip_xiaomi">Please enable \"Create desktop shortcuts\" permission for this app in Xiaomi settings.</string>
-  <string name="module_shortcut_permission_tip_oppo">Please enable \"Desktop shortcut\" permission for this app in OPPO settings.</string>
-  <string name="module_shortcut_permission_tip_default">If shortcut creation fails, please enable desktop shortcut permission for this app in system settings.</string>
   <string name="module_shortcut">Module Shortcut</string>
   <string name="create_webui_shortcut">Create WebUI Shortcut</string>
   <string name="create_action_shortcut">Create Action Shortcut</string>
@@ -250,4 +236,15 @@
   <string name="settings_enable_kernel_umount_summary">Umount modules at kernel-level.</string>
   <string name="settings_enable_avc_spoof">AVC spoofing</string>
   <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
+  <string name="manage_repositories">Manage Repositories</string>
+  <string name="app_name">KernelSU-Next</string>
+  <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
+  <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
+  <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
+  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
+  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
+  <string name="backup_success">Backup completed successfully</string>
+  <string name="backup_failed">Backup failed</string>
+  <string name="restore_success">Restore completed successfully</string>
+  <string name="restore_failed">Restore failed</string>
 </resources>
