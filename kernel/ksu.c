@@ -45,6 +45,7 @@ int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
 					    flags);
 }
 
+NO_STACK_PROTECTOR_WORKAROUND
 int __init kernelsu_init(void)
 {
 #if defined(CONFIG_STACKPROTECTOR) && !defined(CONFIG_STACKPROTECTOR_PER_TASK)
