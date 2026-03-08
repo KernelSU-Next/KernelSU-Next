@@ -1225,9 +1225,9 @@ fun ModuleItem(
                                 checked = module.enabled,
                                 onCheckedChange = onCheckChanged,
                                 interactionSource = if (!module.hasWebUi) interactionSource else null
-                            )W
+                            )
+                        }
                     }
-
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
