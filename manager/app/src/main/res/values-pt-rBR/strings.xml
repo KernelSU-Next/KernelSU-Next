@@ -8,7 +8,6 @@
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
   <string name="confirm">Confirmar</string>
-  <string name="app_name">KernelSU Next</string>
   <string name="home">Início</string>
   <string name="home_not_installed">Não instalado</string>
   <string name="home_click_to_install">Clique para instalar</string>
@@ -80,8 +79,6 @@
   <string name="module_magisk_conflict">Os módulos estão indisponíveis devido a um conflito com Magisk!</string>
   <string name="home_mount_system">Sistema de montagem</string>
   <string name="unavailable">Indisponível</string>
-  <string name="reboot_required">Reinicialização necessária</string>
-  <string name="reboot_message">As alterações entrarão em vigor após a reinicialização do sistema. Deseja reiniciar agora?</string>
   <string name="module_restore">Restaurar módulo</string>
   <string name="module_restore_message">Restaure os módulos de um backup recente.</string>
   <string name="backup_restore">Backup e restauração</string>
@@ -93,7 +90,6 @@
   <string name="allowlist_backup_message">Faça backup da lista de permissões configurada atualmente.</string>
   <string name="proceed">Prosseguir</string>
   <string name="cancel">Cancelar</string>
-  <string name="later">Mais tarde</string>
   <string name="about_source_code">Veja o código-fonte no %1$s</string>
   <string name="profile">Perfil do Aplicativo</string>
   <string name="profile_default">Padrão</string>
@@ -109,10 +105,8 @@
   <string name="profile_selinux_context">Contexto do SELinux</string>
   <string name="profile_umount_modules">Desmontar módulos</string>
   <string name="failed_to_update_app_profile">Falha ao atualizar o Perfil do Aplicativo para %s</string>
-  <string name="require_kernel_version">A versão atual do KernelSU Next %1$d é muito baixa para o gerenciador funcionar corretamente. Por favor, atualize para a versão %2$d ou superior!</string>
   <string name="settings_umount_modules_default">Desmontar módulos</string>
   <string name="settings_umount_modules_default_summary">O valor padrão global para \"Desmontar módulos\" em Perfil do Aplicativo. Se ativado, ele removerá todas as modificações do módulo no sistema para apps que não possuem um perfil definido.</string>
-  <string name="profile_umount_modules_summary">Ativar esta opção permitirá que o KernelSU Next restaure quaisquer arquivos modificados pelos módulos para este app.</string>
   <string name="profile_selinux_domain">Domínio</string>
   <string name="profile_selinux_rules">Regras</string>
   <string name="module_update">Atualizar</string>
@@ -175,9 +169,6 @@
   <string name="settings_uninstall_temporary">Desinstalar temporariamente</string>
   <string name="settings_uninstall_permanent">Desinstalar permanentemente</string>
   <string name="settings_restore_stock_image">Restaurar imagem de fábrica</string>
-  <string name="settings_uninstall_temporary_message">Desinstale temporariamente o KernelSU Next e restaure ao estado original após a próxima reinicialização.</string>
-  <string name="settings_uninstall_permanent_message">Desinstale o KernelSU Next (root e todos os módulos) completamente e permanentemente.</string>
-  <string name="settings_restore_stock_image_message">Restaure a imagem de fábrica (se existir um backup), geralmente usada antes do OTA. Se você precisar desinstalar o KernelSU Next, use \"Desinstalar permanentemente\".</string>
   <string name="flashing">Flashando</string>
   <string name="flash_success">Flash bem-sucedido</string>
   <string name="flash_failed">Flash falhou</string>
@@ -217,11 +208,6 @@
   <string name="module_shortcut_not_supported">O Launcher não suporta atalhos de desktop.</string>
   <string name="module_shortcut_created">Atalho criado na área de trabalho.</string>
   <string name="module_shortcut_updated">Atalho atualizado</string>
-  <string name="module_shortcut_delete">Excluir atalho</string>
-  <string name="module_shortcut_type_title">Selecionar tipo</string>
-  <string name="module_shortcut_permission_tip_xiaomi">Por favor, ative a permissão \"Criar atalhos na área de trabalho\" para este app nas configurações da Xiaomi.</string>
-  <string name="module_shortcut_permission_tip_oppo">Por favor, ative a permissão \"atalho de área de trabalho\" para este aplicativo nas configurações OPPO.</string>
-  <string name="module_shortcut_permission_tip_default">Se a criação de atalhos falhar, ative a permissão de atalho na área de trabalho para este aplicativo nas configurações do sistema.</string>
   <string name="module_shortcut">Atalho do Módulo</string>
   <string name="create_webui_shortcut">Criar atalho de WebUI</string>
   <string name="create_action_shortcut">Criar atalho de Ação</string>
@@ -250,4 +236,15 @@
   <string name="settings_enable_kernel_umount_summary">Umount modules at kernel-level.</string>
   <string name="settings_enable_avc_spoof">AVC spoofing</string>
   <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
+  <string name="manage_repositories">Manage Repositories</string>
+  <string name="app_name">KernelSU-Next</string>
+  <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
+  <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
+  <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
+  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
+  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
+  <string name="backup_success">Backup completed successfully</string>
+  <string name="backup_failed">Backup failed</string>
+  <string name="restore_success">Restore completed successfully</string>
+  <string name="restore_failed">Restore failed</string>
 </resources>
