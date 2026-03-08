@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="issue_report_title">需要帮助？</string>
+  <string name="issue_report_title">遇到问题？</string>
   <string name="issue_report_body">发现错误或者有改进建议？</string>
   <string name="issue_report_body_2">快向我们报告吧！</string>
   <string name="issue_report_github">去 GitHub 报告</string>
@@ -8,7 +8,6 @@
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
   <string name="confirm">确认</string>
-  <string name="app_name">KernelSU Next</string>
   <string name="home">首页</string>
   <string name="home_not_installed">未安装</string>
   <string name="home_click_to_install">点击安装</string>
@@ -80,8 +79,6 @@
   <string name="module_magisk_conflict">与 Magisk 冲突，模块不可用！</string>
   <string name="home_mount_system">挂载系统</string>
   <string name="unavailable">不可用</string>
-  <string name="reboot_required">需要重启</string>
-  <string name="reboot_message">更改将在系统重启后生效。您现在要重启吗？</string>
   <string name="module_restore">恢复模块</string>
   <string name="module_restore_message">从最近的备份中恢复模块。</string>
   <string name="backup_restore">备份与恢复</string>
@@ -93,7 +90,6 @@
   <string name="allowlist_backup_message">备份当前配置的允许列表。</string>
   <string name="proceed">继续</string>
   <string name="cancel">取消</string>
-  <string name="later">稍后</string>
   <string name="about_source_code">在 %1$s 上查看源代码</string>
   <string name="profile">App Profile</string>
   <string name="profile_default">默认</string>
@@ -109,10 +105,8 @@
   <string name="profile_selinux_context">SELinux 上下文</string>
   <string name="profile_umount_modules">卸载模块</string>
   <string name="failed_to_update_app_profile">更新 %s 的 App Profile 失败</string>
-  <string name="require_kernel_version">当前 KernelSU Next 版本 %1$d 过低，管理器无法正常工作。请升级到版本 %2$d 或更高版本！</string>
-  <string name="settings_umount_modules_default">卸载模块</string>
+  <string name="settings_umount_modules_default">默认卸载模块</string>
   <string name="settings_umount_modules_default_summary">App Profile 中“卸载模块”的全局默认值，如果启用，将会为没有设置 Profile 的应用移除所有模块针对系统的修改。</string>
-  <string name="profile_umount_modules_summary">启用该选项后将允许 KernelSU Next 为本应用还原被模块修改过的文件。</string>
   <string name="profile_selinux_domain">域</string>
   <string name="profile_selinux_rules">规则</string>
   <string name="module_update">更新</string>
@@ -126,7 +120,7 @@
   <string name="force_stop_app">强行停止</string>
   <string name="restart_app">重新启动</string>
   <string name="settings_amoled_mode">AMOLED 模式</string>
-  <string name="settings_amoled_mode_summary">启用纯黑色主题，有助于减少 AMOLED 屏幕的眼部疲劳并节省电量。</string>
+  <string name="settings_amoled_mode_summary">启用纯黑主题，适用于 AMOLED 屏幕，可减轻眼睛疲劳并节省电量。</string>
   <string name="restart_required">需要重启</string>
   <string name="restart_app_message">该应用需要重启才能使更改生效。</string>
   <string name="failed_to_update_sepolicy">更新 %s 的 SELinux 规则失败</string>
@@ -167,7 +161,7 @@
   <string name="flash_module">刷入模块</string>
   <string name="flash_anykernel">刷入 AnyKernel (.zip)</string>
   <string name="install_inactive_slot">安装到非活动插槽（OTA 更新后）</string>
-  <string name="install_inactive_slot_warning">重启后，您的设备将被**强制**从当前未使用的槽位启动！\n仅在 OTA 更新完成后使用此选项。\n继续？</string>
+  <string name="install_inactive_slot_warning">重启后，您的设备将被**强制**从当前未激活的槽位启动！\n仅在 OTA 更新完成后使用此选项。\n继续？</string>
   <string name="install_next">下一步</string>
   <string name="select_file_tip">建议使用 %1$s 分区镜像！</string>
   <string name="select_kmi">选择 KMI</string>
@@ -175,9 +169,6 @@
   <string name="settings_uninstall_temporary">暂时卸载</string>
   <string name="settings_uninstall_permanent">永久卸载</string>
   <string name="settings_restore_stock_image">恢复原厂镜像</string>
-  <string name="settings_uninstall_temporary_message">暂时卸载 KernelSU Next，下次重启后恢复到原始状态。</string>
-  <string name="settings_uninstall_permanent_message">彻底永久卸载 KernelSU Next（root 和所有模块）。</string>
-  <string name="settings_restore_stock_image_message">恢复原厂镜像（如果存在备份），通常在 OTA 更新之前使用；如果需要卸载 KernelSU Next，请使用“永久卸载”。</string>
   <string name="flashing">刷写中</string>
   <string name="flash_success">刷写成功</string>
   <string name="flash_failed">刷写失败</string>
@@ -189,7 +180,7 @@
   <string name="system_default">系统默认设置</string>
   <string name="settings_banner">启用横幅</string>
   <string name="settings_banner_summary">显示模块背景横幅。</string>
-  <string name="customization">自定义</string>
+  <string name="customization">个性化</string>
   <string name="developer">开发者</string>
   <string name="sucompat_disabled">SU 兼容层已禁用</string>
   <string name="zygisk_required">需要 Zygisk</string>
@@ -217,11 +208,6 @@
   <string name="module_shortcut_not_supported">启动器不支持桌面快捷方式。</string>
   <string name="module_shortcut_created">已在桌面创建快捷方式。</string>
   <string name="module_shortcut_updated">快捷方式已更新。</string>
-  <string name="module_shortcut_delete">删除快捷方式</string>
-  <string name="module_shortcut_type_title">选择类型</string>
-  <string name="module_shortcut_permission_tip_xiaomi">请在小米设置中为此应用启用“创建桌面快捷方式”权限。</string>
-  <string name="module_shortcut_permission_tip_oppo">请在 OPPO 设置中为此应用启用“桌面快捷方式”权限。</string>
-  <string name="module_shortcut_permission_tip_default">如果快捷方式创建失败，请在系统设置中为此应用启用桌面快捷方式权限。</string>
   <string name="module_shortcut">模块快捷方式</string>
   <string name="create_webui_shortcut">创建 WebUI 快捷方式</string>
   <string name="create_action_shortcut">创建操作快捷方式</string>
@@ -248,6 +234,17 @@
   <string name="settings_enable_su_summary">允许任何应用通过 su 命令获取 root 权限（已有的 root 进程不受影响）。</string>
   <string name="settings_enable_kernel_umount">内核处理卸载模块</string>
   <string name="settings_enable_kernel_umount_summary">在内核层面卸载模块。</string>
-  <string name="settings_enable_avc_spoof">AVC 欺骗</string>
-  <string name="settings_enable_avc_spoof_summary">修复因 AVC 拒绝在日志中导致的 SELinux 上下文泄露问题。</string>
+  <string name="settings_enable_avc_spoof">AVC 日志伪装</string>
+  <string name="settings_enable_avc_spoof_summary">修复日志中 avc denial 导致的 SELinux 上下文泄漏。</string>
+  <string name="manage_repositories">管理仓库</string>
+  <string name="app_name">KernelSU-Next</string>
+  <string name="require_kernel_version">当前 KernelSU-Next 版本 %1$d 过低，管理器无法正常工作。请升级到 %2$d 或更高版本！</string>
+  <string name="profile_umount_modules_summary">启用该选项后将允许 KernelSU-Next 为本应用还原被模块修改过的文件。</string>
+  <string name="settings_uninstall_temporary_message">临时卸载 KernelSU-Next，设备下次重启后将恢复原状。</string>
+  <string name="settings_uninstall_permanent_message">彻底永久卸载 KernelSU-Next（包括 root 和所有模块）。</string>
+  <string name="settings_restore_stock_image_message">恢复原厂镜像（如果存在备份），通常在 OTA 更新前使用；如果需要卸载 KernelSU-Next，请使用“永久卸载”。</string>
+  <string name="backup_success">Backup completed successfully</string>
+  <string name="backup_failed">Backup failed</string>
+  <string name="restore_success">Restore completed successfully</string>
+  <string name="restore_failed">Restore failed</string>
 </resources>
