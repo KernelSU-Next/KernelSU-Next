@@ -8,7 +8,6 @@
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
   <string name="confirm">Conferma</string>
-  <string name="app_name">KernelSU Next</string>
   <string name="home">Home</string>
   <string name="home_not_installed">Non installato</string>
   <string name="home_click_to_install">Clicca per installare</string>
@@ -80,8 +79,6 @@
   <string name="module_magisk_conflict">I moduli non sono disponibili a causa di un conflitto con Magisk!</string>
   <string name="home_mount_system">Sistema di montaggio</string>
   <string name="unavailable">Non disponibile</string>
-  <string name="reboot_required">Riavvio richiesto</string>
-  <string name="reboot_message">Le modifiche verranno applicate dopo il riavvio del sistema. Vuoi riavviare ora?</string>
   <string name="module_restore">Ripristina moduli</string>
   <string name="module_restore_message">Ripristina i moduli da un backup.</string>
   <string name="backup_restore">Backup &amp; Ripristino</string>
@@ -93,8 +90,7 @@
   <string name="allowlist_backup_message">Esegue il backup della lista consentita attualmente configurata.</string>
   <string name="proceed">Procedi</string>
   <string name="cancel">Annulla</string>
-  <string name="later">Più tardi</string>
-  <string name="about_source_code">Mostra il codice sorgente a %1$s</string>
+  <string name="about_source_code">Visualizza codice sorgente su %1$s</string>
   <string name="profile">Profilo App</string>
   <string name="profile_default">Default</string>
   <string name="profile_template">Modello</string>
@@ -109,10 +105,8 @@
   <string name="profile_selinux_context">Contesto SELinux</string>
   <string name="profile_umount_modules">Smonta moduli</string>
   <string name="failed_to_update_app_profile">Aggiornamento App Profile fallito per %s</string>
-  <string name="require_kernel_version">La versione attualmente installata di KernelSU Next %1$d è troppo vecchia ed il manager non può funzionare correttamente. Si prega di aggiornare alla versione %2$d o successiva!</string>
   <string name="settings_umount_modules_default">Smonta moduli</string>
   <string name="settings_umount_modules_default_summary">Il valore predefinito globale per \"Smonta moduli\" nel Profilo App. Se abilitato, rimuoverà tutte le modifiche ai moduli nel sistema per le app che non hanno un profilo impostato.</string>
-  <string name="profile_umount_modules_summary">Abilitando questa opzione, KernelSU Next potrà ripristinare tutti i file modificati dai moduli per questa app.</string>
   <string name="profile_selinux_domain">Dominio</string>
   <string name="profile_selinux_rules">Regole</string>
   <string name="module_update">Aggiorna</string>
@@ -175,9 +169,6 @@
   <string name="settings_uninstall_temporary">Disinstalla temporaneamente</string>
   <string name="settings_uninstall_permanent">Disinstalla permanentemente</string>
   <string name="settings_restore_stock_image">Ripristina l\'immagine originale</string>
-  <string name="settings_uninstall_temporary_message">Disinstalla temporaneamente KernelSU Next e recupera il suo stato originale dopo il prossimo riavvio.</string>
-  <string name="settings_uninstall_permanent_message">Disinstallazione completa e permanente di KernelSU Next (root e tutti i moduli).</string>
-  <string name="settings_restore_stock_image_message">Ripristina l\'immagine di fabbrica (se esiste un backup), solitamente utilizzata prima dell\'OTA; se vuoi disinstallare KernelSU Next, utilizza \"Disinstalla definitivamente\".</string>
   <string name="flashing">Installazione in corso</string>
   <string name="flash_success">Installazione completata</string>
   <string name="flash_failed">Installazione fallita</string>
@@ -217,11 +208,6 @@
   <string name="module_shortcut_not_supported">Launcher non supporta le scorciatoie desktop.</string>
   <string name="module_shortcut_created">Scorciatoia creata sul desktop.</string>
   <string name="module_shortcut_updated">Scorciatoia aggiornata.</string>
-  <string name="module_shortcut_delete">Elimina scorciatoia</string>
-  <string name="module_shortcut_type_title">Seleziona tipo</string>
-  <string name="module_shortcut_permission_tip_xiaomi">Abilita l\'autorizzazione \"Crea scorciatoie sul desktop\" per questa app nelle impostazioni Xiaomi.</string>
-  <string name="module_shortcut_permission_tip_oppo">Abilita l\'autorizzazione \"Scorciatoia desktop\" per questa app nelle impostazioni OPPO.</string>
-  <string name="module_shortcut_permission_tip_default">Se la creazione della collegamento non riesce, abilita l\'autorizzazione di scorciatoia desktop per questa app nelle impostazioni di sistema.</string>
   <string name="module_shortcut">Scorciatoia Modulo</string>
   <string name="create_webui_shortcut">Crea Scorciatoia WebUI</string>
   <string name="create_action_shortcut">Crea Scorciatoia Azione</string>
@@ -250,4 +236,15 @@
   <string name="settings_enable_kernel_umount_summary">Smonta moduli a livello-kernel.</string>
   <string name="settings_enable_avc_spoof">Spoofing AVC</string>
   <string name="settings_enable_avc_spoof_summary">Correggi la perdita di contesto di selinux causata dal rifiuto di avc nel registro di controllo.</string>
+  <string name="manage_repositories">Gestisci Repository</string>
+  <string name="app_name">KernelSU-Next</string>
+  <string name="require_kernel_version">La versione attualmente installata di KernelSU-Next %1$d è troppo vecchia ed il manager non può funzionare correttamente. Si prega di aggiornare alla versione %2$d o successiva!</string>
+  <string name="profile_umount_modules_summary">Abilitando questa opzione, KernelSU-Next potrà ripristinare tutti i file modificati dai moduli per questa app.</string>
+  <string name="settings_uninstall_temporary_message">Disinstalla temporaneamente KernelSU-Next e recupera il suo stato originale dopo il prossimo riavvio.</string>
+  <string name="settings_uninstall_permanent_message">Disinstallazione completa e permanente di KernelSU-Next (root e tutti i moduli).</string>
+  <string name="settings_restore_stock_image_message">Ripristina l\'immagine di fabbrica (se esiste un backup), solitamente utilizzata prima dell\'OTA; se vuoi disinstallare KernelSU-Next, utilizza \"Disinstalla definitivamente\".</string>
+  <string name="backup_success">Backup completato con successo</string>
+  <string name="backup_failed">Backup fallito</string>
+  <string name="restore_success">Ripristino completato con successo</string>
+  <string name="restore_failed">Ripristino fallito</string>
 </resources>
