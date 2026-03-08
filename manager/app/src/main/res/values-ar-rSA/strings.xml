@@ -8,7 +8,6 @@
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
   <string name="confirm">تأكيد</string>
-  <string name="app_name">KernelSU Next</string>
   <string name="home">تأكيد</string>
   <string name="home_not_installed">ليس مثبت</string>
   <string name="home_click_to_install">اضغط للتثبيت</string>
@@ -80,8 +79,6 @@
   <string name="module_magisk_conflict">الإضافات غير متاحة بسبب تعارضها مع magisk!</string>
   <string name="home_mount_system">تركيب النظام</string>
   <string name="unavailable">غير متاح</string>
-  <string name="reboot_required">مطلوب إعادة التشغيل!</string>
-  <string name="reboot_message">ستصبح التغييرات سارية المفعول بعد إعادة تشغيل النظام. هل تريد إعادة التشغيل الآن؟</string>
   <string name="module_restore">استعادة الإضافة</string>
   <string name="module_restore_message">استعادة الإضافات من النسخة الاحتياطية الأخيرة.</string>
   <string name="backup_restore">النسخ الاحتياطي &amp; الاستعادة</string>
@@ -93,7 +90,6 @@
   <string name="allowlist_backup_message">النسخ الاحتياطي لقائمة السماح المُعدة حاليا.</string>
   <string name="proceed">متابعة</string>
   <string name="cancel">إلغاء</string>
-  <string name="later">لاحقاً</string>
   <string name="about_source_code">عرض كود المصدر في %1$s</string>
   <string name="profile">ملف تعريف التطبيق</string>
   <string name="profile_default">الافتراضي</string>
@@ -109,10 +105,8 @@
   <string name="profile_selinux_context">سياق SELinux</string>
   <string name="profile_umount_modules">إلغاء تحميل الإضافات</string>
   <string name="failed_to_update_app_profile">فشل تحديث ملف تعريف التطبيق لـ %s</string>
-  <string name="require_kernel_version">الإصدار KernelSU Next الحالي %1$d منخفض جدا لكي يعمل المدير بشكل صحيح. الرجاء الترقية إلى الإصدار %2$d أو أعلى!</string>
   <string name="settings_umount_modules_default">إلغاء تحميل الإضافات</string>
   <string name="settings_umount_modules_default_summary">القيمة الافتراضية العامة لـ\"إلغاء تركيب الإضافات\" في ملفات تعريف التطبيقات. إذا تم تمكينه، إزالة جميع تعديلات الإضافات على النظام للتطبيقات التي لا تحتوي على مجموعة ملف تعريف.</string>
-  <string name="profile_umount_modules_summary">تمكين هذا الخيار سيسمح KernelSU Next لاستعادة أي ملفات معدلة بواسطة إضافات هذا التطبيق.</string>
   <string name="profile_selinux_domain">النطاق</string>
   <string name="profile_selinux_rules">القواعد</string>
   <string name="module_update">تحديث</string>
@@ -177,9 +171,6 @@
   <string name="settings_uninstall_temporary">إلغاء التثبيت مؤقتًا</string>
   <string name="settings_uninstall_permanent">إلغاء التثبيت بشكل دائم</string>
   <string name="settings_restore_stock_image">استعادة الصورة الأصلية</string>
-  <string name="settings_uninstall_temporary_message">إلغاء تثبيت KernelSU Next مؤقتا، وقم بإستعادة الحالة الأصلية بعد إعادة التشغيل.</string>
-  <string name="settings_uninstall_permanent_message">إلغاء تثبيت KernelSU Next (الروت وجميع الإضافات) بشكل كامل ودائم.</string>
-  <string name="settings_restore_stock_image_message">استعادة صورة المصنع الأصلية (إذا كانت هناك نسخة احتياطية)، تُستخدم عادةً قبل تحديثات النظام الهوائية (OTA)؛ إذا كنت بحاجة إلى إلغاء تثبيت KernelSU Next، فيرجى استخدام \"إلغاء التثبيت بشكل دائم\".</string>
   <string name="flashing">جارٍ التثبيت</string>
   <string name="flash_success">تم التثبيت بنجاح</string>
   <string name="flash_failed">فشل التثبيت</string>
@@ -219,11 +210,6 @@
   <string name="module_shortcut_not_supported">المشغل لا يدعم اختصارات سطح المكتب.</string>
   <string name="module_shortcut_created">تم إنشاء الاختصار على سطح المكتب.</string>
   <string name="module_shortcut_updated">تم تحديث الاختصار.</string>
-  <string name="module_shortcut_delete">حذف الاختصار</string>
-  <string name="module_shortcut_type_title">تحديد النوع</string>
-  <string name="module_shortcut_permission_tip_xiaomi">الرجاء تمكين إذن \"إنشاء اختصارات سطح المكتب\" لهذا التطبيق في إعدادات Xiaomi.</string>
-  <string name="module_shortcut_permission_tip_oppo">الرجاء تمكين إذن \"اختصار سطح المكتب\" لهذا التطبيق في إعدادات OPPO.</string>
-  <string name="module_shortcut_permission_tip_default">إذا فشل إنشاء الاختصار، الرجاء تمكين إذن اختصار سطح المكتب لهذا التطبيق في إعدادات النظام.</string>
   <string name="module_shortcut">اختصار الإضافة</string>
   <string name="create_webui_shortcut">إنشاء اختصار WebUI</string>
   <string name="create_action_shortcut">إنشاء اختصار الإجراء</string>
@@ -252,4 +238,15 @@
   <string name="settings_enable_kernel_umount_summary">جمع الإضافات على مستوى النواة..</string>
   <string name="settings_enable_avc_spoof">تزييف AVC</string>
   <string name="settings_enable_avc_spoof_summary">إصلاح تسرب SELinux context بسبب رفض AVC في سجل المراجعة.</string>
+  <string name="manage_repositories">إدارة المستودعات</string>
+  <string name="app_name">KernelSU-Next</string>
+  <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
+  <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
+  <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
+  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
+  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
+  <string name="backup_success">Backup completed successfully</string>
+  <string name="backup_failed">Backup failed</string>
+  <string name="restore_success">Restore completed successfully</string>
+  <string name="restore_failed">Restore failed</string>
 </resources>
