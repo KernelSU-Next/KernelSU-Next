@@ -243,8 +243,8 @@
   <string name="settings_uninstall_temporary_message">临时卸载 KernelSU-Next，设备下次重启后将恢复原状。</string>
   <string name="settings_uninstall_permanent_message">彻底永久卸载 KernelSU-Next（包括 root 和所有模块）。</string>
   <string name="settings_restore_stock_image_message">恢复原厂镜像（如果存在备份），通常在 OTA 更新前使用；如果需要卸载 KernelSU-Next，请使用“永久卸载”。</string>
-  <string name="backup_success">Backup completed successfully</string>
-  <string name="backup_failed">Backup failed</string>
-  <string name="restore_success">Restore completed successfully</string>
-  <string name="restore_failed">Restore failed</string>
+  <string name="backup_success">备份成功</string>
+  <string name="backup_failed">备份失败</string>
+  <string name="restore_success">恢复成功</string>
+  <string name="restore_failed">恢复失败</string>
 </resources>
