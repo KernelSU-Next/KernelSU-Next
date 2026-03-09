@@ -238,13 +238,13 @@
   <string name="settings_enable_avc_spoof_summary">Denetim günlüğünde avc reddi nedeniyle oluşan selinux bağlam sızıntısını düzeltin.</string>
   <string name="manage_repositories">Depoları Yönet</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
-  <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
-  <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
-  <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
-  <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
-  <string name="backup_success">Backup completed successfully</string>
-  <string name="backup_failed">Backup failed</string>
-  <string name="restore_success">Restore completed successfully</string>
-  <string name="restore_failed">Restore failed</string>
+  <string name="require_kernel_version">Geçerli KernelSU Next sürümü %1$d, yöneticinin düzgün çalışması için çok düşük. Lütfen %2$d veya daha yüksek bir sürüme yükseltin!</string>
+  <string name="profile_umount_modules_summary">Bu seçeneğin etkinleştirilmesi, KernelSU Next\'in bu uygulama için modüller tarafından değiştirilen tüm dosyaları geri yüklemesine izin verecektir.</string>
+  <string name="settings_uninstall_temporary_message">KernelSU\'yu geçici olarak kaldırın, bir sonraki yeniden başlatmadan sonra orijinal duruma geri dönün.</string>
+  <string name="settings_uninstall_permanent_message">KernelSU-Next\'i (kök ve tüm modüller) tamamen ve kalıcı olarak kaldırın.</string>
+  <string name="settings_restore_stock_image_message">(eğer yedek varsa) Stok fabrika imajını geri yükleyin, genellikle OTA\'dan önce kullanılır; KernelSU\'yu kaldırmanız gerekiyorsa, lütfen \"Kalıcı olarak kaldır\" seçeneğini kullanın.</string>
+  <string name="backup_success">Yedekleme başarıyla tamamlandı</string>
+  <string name="backup_failed">Yedekleme başarısız oldu</string>
+  <string name="restore_success">Geri yükleme başarıyla tamamlandı</string>
+  <string name="restore_failed">Geri yükleme başarısız oldu</string>
 </resources>
