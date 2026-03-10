@@ -161,14 +161,14 @@
   <string name="flash_module">Pasang modul</string>
   <string name="flash_anykernel">Pasang AnyKernel (.zip)</string>
   <string name="install_inactive_slot">Pasang ke slot nonaktif (setelah OTA)</string>
-  <string name="install_inactive_slot_warning">Perangkatmu akan **DIPAKSA** untuk boot ke slot nonaktif saat ini setelah mulai ulang!\nGunakan hanya setelah proses OTA selesai.\nLanjutkan?</string>
+  <string name="install_inactive_slot_warning">Perangkat Anda akan **DIPAKSA** untuk boot ke slot nonaktif saat ini setelah mulai ulang!\nGunakan hanya setelah proses OTA selesai.\nLanjutkan?</string>
   <string name="install_next">Berikutnya</string>
   <string name="select_file_tip">%1$s partisi image disarankan!</string>
   <string name="select_kmi">Pilih KMI</string>
   <string name="settings_uninstall">Hapus</string>
   <string name="settings_uninstall_temporary">Hapus sementara</string>
   <string name="settings_uninstall_permanent">Hapus permanen</string>
-  <string name="settings_restore_stock_image">Pulihkan image bawaan</string>
+  <string name="settings_restore_stock_image">Pulihkan image asli</string>
   <string name="flashing">Memasang</string>
   <string name="flash_success">Pemasangan berhasil</string>
   <string name="flash_failed">Pemasangan gagal</string>
@@ -180,7 +180,7 @@
   <string name="system_default">Default sistem</string>
   <string name="settings_banner">Aktifkan banner</string>
   <string name="settings_banner_summary">Tampilkan banner latar belakang pada modul.</string>
-  <string name="customization">Kustomisasi</string>
+  <string name="customization">Personalisasi</string>
   <string name="developer">Pengembang</string>
   <string name="sucompat_disabled">Kompatibilitas SU Dinonaktifkan</string>
   <string name="zygisk_required">Zygisk diperlukan</string>
