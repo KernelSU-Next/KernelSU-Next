@@ -33,9 +33,9 @@
   <string name="superuser">Superuser</string>
   <string name="module_failed_to_enable">Không thể bật module: %s</string>
   <string name="module_failed_to_disable">Không thể tắt module: %s</string>
-  <string name="module_empty">No module installed</string>
+  <string name="module_empty">Chưa có module nào được cài</string>
   <string name="module">Module</string>
-  <string name="module_install_prompt_with_name">The following modules will be installed: %1$s</string>
+  <string name="module_install_prompt_with_name">Những module sau đây sẽ được cài: %1$s</string>
   <string name="anykernel_flash_prompt">The following kernel zip will be flashed: %1$s</string>
   <string name="module_sort_a_to_z">Sort (A → Z)</string>
   <string name="module_sort_z_to_a">Sort (Z → A)</string>
