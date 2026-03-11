@@ -422,6 +422,74 @@ fsconfig_set_string(fs, "source", "KSU")?;  // 必須!
 
 いいえ。ほとんどのモジュールと互換性のある標準の overlayfs マウントを提供します。異なる動作が必要な場合は、独自のメタモジュールを作成できます。
 
+## Late-load モード {#late-load-mode}
+
+上記の標準起動フローに加えて、KernelSU は LKM（ローダブルカーネルモジュール）シナリオ向けの **late-load モード** をサポートしています。このモードでは、KernelSU カーネルモジュールは init プロセス中ではなく、**システムが完全に起動した後** にロードされます。
+
+### late-load はいつ発生するか？
+
+`ksud late-load` コマンドを実行することでトリガーされます。このコマンドは：
+
+1. 現在の KMI バージョンを検出し、組み込みアセットから対応する `kernelsu.ko` をロードします。
+2. 通常起動時に行われるモジュールの初期化（SELinux ルール、許可リスト、機能など）を実行します。
+
+システムが既に完全に稼働しているため、起動時の特定のメカニズムは利用不可または不要です。
+
+### 標準起動との違い
+
+| 動作 | 標準起動 | Late-load モード |
+|------|:---:|:---:|
+| カーネルモジュールが init (PID 1) によりロード | はい | いいえ（起動後にロード） |
+| ksud の kprobe フック (execve/read/fstat/input) | はい | スキップ |
+| セーフモード検出（音量キー） | はい | 常に無効 |
+| 起動ログのキャプチャ (logcat/dmesg) | はい | スキップ |
+| Magisk 共存チェック | はい | スキップ |
+| `post-fs-data` イベントのカーネル通知 | はい | スキップ |
+| `boot-completed` イベントのカーネル通知 | はい | 初期化時に直接設定 |
+| `post-fs-data.sh` / `post-fs-data.d/` スクリプト | はい | `late-load` ステージで代替 |
+| `system.prop` の読み込み | はい | はい |
+| OverlayFS マウント（metamodule） | はい | はい |
+| `post-mount.sh` / `post-mount.d/` スクリプト | はい | はい |
+| `service.sh` / `service.d/` スクリプト | はい | はい |
+| `boot-completed.sh` / `boot-completed.d/` スクリプト | はい | はい |
+| 環境変数 `KSU_LATE_LOAD` | 未設定 | `1` に設定 |
+| カーネル info フラグ `0x4` | 未設定 | 設定済み |
+
+### スクリプト実行順序
+
+late-load モードでのスクリプト実行順序は以下の通りです：
+
+```txt
+ksud late-load:
+  1. kernelsu.ko をロード（まだロードされていない場合）
+  2. バイナリの展開、モジュール更新の処理、SELinux ルールの読み込み、機能の初期化
+  3. late-load.d/ の汎用スクリプトとモジュールの late-load スクリプトを実行（ブロッキング）
+  4. system.prop を読み込み (resetprop -n)
+  5. metamodule マウントスクリプトを実行（OverlayFS マウント）
+  6. post-mount.d/ の汎用スクリプトとモジュールの post-mount.sh を実行（ブロッキング）
+  7. service.d/ の汎用スクリプトとモジュールの service.sh を実行（ノンブロッキング）
+  8. boot-completed.d/ の汎用スクリプトとモジュールの boot-completed.sh を実行（ノンブロッキング）
+```
+
+### Late-load 専用スクリプト
+
+モジュールは `late-load.sh` スクリプトを提供でき、このスクリプトは **late-load モードでのみ** 実行され、`post-fs-data.sh` の代替として機能します。このスクリプトは OverlayFS マウント前に実行され、標準フローの `post-fs-data.sh` と同様のタイミングです。
+
+また、汎用スクリプトを `/data/adb/late-load.d/` に配置して、このステージで実行することもできます。
+
+### スクリプト内で late-load モードを検出する
+
+モジュールは環境変数 `KSU_LATE_LOAD` をチェックすることで late-load モードかどうかを検出できます：
+
+```sh
+if [ "$KSU_LATE_LOAD" = "1" ]; then
+    # late-load モードで実行中
+    echo "Late-load mode detected"
+fi
+```
+
+これにより、モジュールは自身の動作を調整できます。例えば、早期起動時にのみ必要な操作をスキップできます。
+
 ## 関連項目
 
 - [モジュールガイド](module.md) - 一般的なモジュール開発

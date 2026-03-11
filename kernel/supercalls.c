@@ -75,14 +75,17 @@ static int do_get_info(void __user *arg)
     struct ksu_get_info_cmd cmd = { .version = KERNEL_SU_VERSION, .flags = 0 };
 
 #ifdef MODULE
-	cmd.flags |= 0x1;
+	cmd.flags |= KSU_GET_INFO_FLAG_LKM;
 #endif
 
 	if (ksuver_override)
 	    cmd.version = ksuver_override;
 
 	if (is_manager()) {
-		cmd.flags |= 0x2;
+		cmd.flags |= KSU_GET_INFO_FLAG_MANAGER;
+	}
+	if (ksu_late_loaded) {
+		cmd.flags |= KSU_GET_INFO_FLAG_LATE_LOAD;
 	}
 	cmd.features = KSU_FEATURE_MAX;
 
@@ -107,8 +110,12 @@ static int do_report_event(void __user *arg)
 		static bool post_fs_data_lock = false;
 		if (!post_fs_data_lock) {
 			post_fs_data_lock = true;
-			pr_info("post-fs-data triggered\n");
-			on_post_fs_data();
+			if (ksu_late_loaded) {
+				pr_info("post-fs-data skipped (late load)\n");
+			} else {
+				pr_info("post-fs-data triggered\n");
+				on_post_fs_data();
+			}
 		}
 		break;
 	}
@@ -116,8 +123,12 @@ static int do_report_event(void __user *arg)
 		static bool boot_complete_lock = false;
 		if (!boot_complete_lock) {
 			boot_complete_lock = true;
-			pr_info("boot_complete triggered\n");
-			on_boot_completed();
+			if (ksu_late_loaded) {
+				pr_info("boot_complete skipped (late load)\n");
+			} else {
+				pr_info("boot_complete triggered\n");
+				on_boot_completed();
+			}
 		}
 		break;
 	}

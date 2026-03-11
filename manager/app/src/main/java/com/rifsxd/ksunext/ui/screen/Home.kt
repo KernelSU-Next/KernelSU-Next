@@ -801,6 +801,28 @@ private fun StatusCard(
                                             )
                                         )
                                     }
+                                    if (Natives.isLateLoadMode) {
+                                        LabelItem(
+                                            icon = {
+                                                Icon(
+                                                    imageVector = Icons.Filled.Warning,
+                                                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                                                    contentDescription = null
+                                                )
+                                            },
+                                            text = {
+                                                Text(
+                                                    text = stringResource(R.string.jailbreak_mode),
+                                                    style = labelStyle.textStyle.copy(
+                                                        color = MaterialTheme.colorScheme.onErrorContainer,
+                                                    )
+                                                )
+                                            },
+                                            style = LabelItemDefaults.style.copy(
+                                                containerColor = MaterialTheme.colorScheme.errorContainer
+                                            )
+                                        )
+                                    }
                                 }
                             }
                         ) {

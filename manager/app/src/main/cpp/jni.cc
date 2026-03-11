@@ -86,6 +86,12 @@ Java_com_rifsxd_ksunext_Natives_isLkmMode(JNIEnv *env, jclass clazz) {
 
 extern "C"
 JNIEXPORT jboolean JNICALL
+Java_com_rifsxd_ksunext_Natives_isLateLoadMode(JNIEnv *env, jclass clazz) {
+    return is_late_load_mode();
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
 Java_com_rifsxd_ksunext_Natives_isManager(JNIEnv *env, jclass clazz) {
     return is_manager();
 }
