@@ -96,11 +96,11 @@
   <string name="profile_template">Templat</string>
   <string name="profile_custom">Khusus</string>
   <string name="profile_name">Nama profil</string>
-  <string name="profile_namespace">Mount namespace</string>
+  <string name="profile_namespace">Ruang-nama mount</string>
   <string name="profile_namespace_inherited">Diwariskan</string>
   <string name="profile_namespace_global">Global</string>
   <string name="profile_namespace_individual">Individual</string>
-  <string name="profile_groups">Kelompok</string>
+  <string name="profile_groups">Grup</string>
   <string name="profile_capabilities">Kemampuan</string>
   <string name="profile_selinux_context">Konteks SELinux</string>
   <string name="profile_umount_modules">Umount modul</string>
@@ -205,7 +205,7 @@
   <string name="module_shortcut_name_label">Nama pintasan</string>
   <string name="module_shortcut_icon_pick">Pilih ikon khusus</string>
   <string name="module_shortcut_add">Tambahkan pintasan</string>
-  <string name="module_shortcut_not_supported">Launcher tidak mendukung pintasan layar utama.</string>
+  <string name="module_shortcut_not_supported">Peluncur tidak mendukung pintasan layar utama.</string>
   <string name="module_shortcut_created">Pintasan dibuat di layar utama.</string>
   <string name="module_shortcut_updated">Pintasan diperbarui.</string>
   <string name="module_shortcut">Pintasan Modul</string>
@@ -233,7 +233,7 @@
   <string name="settings_enable_su">Kompatibilitas SU</string>
   <string name="settings_enable_su_summary">Izinkan aplikasi apa pun untuk mendapatkan hak akses root melalui perintah su (proses root yang sudah berjalan tidak akan terpengaruh).</string>
   <string name="settings_enable_kernel_umount">Umount modul</string>
-  <string name="settings_enable_kernel_umount_summary">Umount modul pada level kernel.</string>
+  <string name="settings_enable_kernel_umount_summary">Umount modul pada tingkat kernel.</string>
   <string name="settings_enable_avc_spoof">Spoof AVC</string>
   <string name="settings_enable_avc_spoof_summary">Memperbaiki kebocoran konteks SELinux akibat penolakan AVC yang tercatat di log audit.</string>
   <string name="manage_repositories">Kelola Repositori</string>
@@ -242,7 +242,7 @@
   <string name="profile_umount_modules_summary">Mengaktifkan opsi ini akan memungkinkan KernelSU-Next untuk memulihkan berkas apa pun yang telah dimodifikasi oleh modul untuk aplikasi ini.</string>
   <string name="settings_uninstall_temporary_message">Hapus sementara KernelSU-Next, dipulihkan ke keadaan semula setelah mulai ulang berikutnya.</string>
   <string name="settings_uninstall_permanent_message">Menghapus KernelSU-Next (root dan semua modul) sepenuhnya dan secara permanen.</string>
-  <string name="settings_restore_stock_image_message">Pulihkan image bawaan pabrik (jika cadangan ada), biasanya digunakan sebelum OTA; Jika Anda perlu menghapus KernelSU-Next, silakan gunakan \"Hapus permanen\".</string>
+  <string name="settings_restore_stock_image_message">Pulihkan image asli (jika cadangan ada), biasanya digunakan sebelum OTA; Jika Anda perlu menghapus KernelSU-Next, silakan gunakan \"Hapus permanen\".</string>
   <string name="backup_success">Pencadangan berhasil</string>
   <string name="backup_failed">Pencadangan gagal</string>
   <string name="restore_success">Pemulihan berhasil</string>
