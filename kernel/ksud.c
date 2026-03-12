@@ -235,6 +235,14 @@ static bool check_argv(struct user_arg_ptr argv, int index,
 	return !strcmp(buf, expected);
 }
 
+static void ksu_initialize_selinux_tw_func(struct callback_head *cb)
+{
+	apply_kernelsu_rules();
+	cache_sid();
+	setup_ksu_cred();
+	kfree(cb);
+}
+
 // IMPORTANT NOTE: the call from execve_handler_pre WON'T provided correct value for envp and flags in GKI version
 int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 				struct user_arg_ptr *argv,
@@ -271,9 +279,17 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		if (!init_second_stage_executed &&
 		    check_argv(*argv, 1, "second_stage", buf, sizeof(buf))) {
 			pr_info("/system/bin/init second_stage executed\n");
-			apply_kernelsu_rules();
-			cache_sid();
-			setup_ksu_cred();
+			struct callback_head *cb = kzalloc(sizeof(*cb), GFP_ATOMIC);
+			if (cb) {
+				cb->func = ksu_initialize_selinux_tw_func;
+				if (task_work_add(current, cb, TWA_RESUME)) {
+					kfree(cb);
+					pr_warn("ksu_initialize_selinux failed to add task work\n");
+				}
+			} else {
+				pr_warn(
+					"ksu_initialize_selinux failed to allocate task work\n");
+			}
 			init_second_stage_executed = true;
 		}
 	} else if (unlikely(!memcmp(filename->name, old_system_init,
