@@ -63,6 +63,28 @@ extern void *ksu_compat_kvrealloc(const void *p, size_t oldsize, size_t newsize,
 				  gfp_t flags);
 #endif
 
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0)
+static inline void *ksu_kvmalloc(size_t size, gfp_t flags)
+{
+	void *buf = kmalloc(size, flags);
+	if (!buf)
+		buf = vmalloc(size);
+	
+	return buf;
+}
+
+static inline void ksu_kvfree(void *buf)
+{
+	if (is_vmalloc_addr(buf))
+		vfree(buf);
+	else
+		kfree(buf);
+}
+#define kvmalloc ksu_kvmalloc
+#define kvfree ksu_kvfree
+#endif
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0)
 #define ksu_access_ok(addr, size) access_ok(addr, size)
 #else
