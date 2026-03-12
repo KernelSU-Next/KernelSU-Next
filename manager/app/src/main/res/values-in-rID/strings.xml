@@ -219,7 +219,7 @@
   <string name="module_shortcut_pick_icon">Pilih Ikon</string>
   <string name="set_selinux">SELinux Permisif</string>
   <string name="set_selinux_summary">Atur SELinux ke mode permisif.</string>
-  <string name="main">Utama</string>
+  <string name="main">Reguler</string>
   <string name="spoofed">Spoofed</string>
   <string name="select_build_type">Pilih tipe build</string>
   <string name="home_module_update_available">Pembaruan!</string>
