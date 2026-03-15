@@ -96,7 +96,7 @@
   <string name="profile_template">Templat</string>
   <string name="profile_custom">Khusus</string>
   <string name="profile_name">Nama profil</string>
-  <string name="profile_namespace">Ruang-nama mount</string>
+  <string name="profile_namespace">Ruang nama mount</string>
   <string name="profile_namespace_inherited">Diwariskan</string>
   <string name="profile_namespace_global">Global</string>
   <string name="profile_namespace_individual">Individual</string>
@@ -151,7 +151,7 @@
   <string name="settings_check_update">Periksa pembaruan</string>
   <string name="settings_check_update_summary">Memeriksa pembaruan secara otomatis saat membuka aplikasi.</string>
   <string name="grant_root_failed">Gagal memberikan akses root! Ketuk untuk memulai ulang proses manajer.</string>
-  <string name="action">Tindakan</string>
+  <string name="action">Aksi</string>
   <string name="webui">WebUI</string>
   <string name="open">Buka</string>
   <string name="enable_web_debugging">Debugging WebView</string>
@@ -191,7 +191,7 @@
   <string name="home_module_count_singular">Modul</string>
   <string name="home_module_count_plural">Modul</string>
   <string name="module_sort_enabled_first">Urutkan (Diaktifkan dahulu)</string>
-  <string name="module_sort_action_first">Urutkan (Tindakan dahulu)</string>
+  <string name="module_sort_action_first">Urutkan (Aksi dahulu)</string>
   <string name="module_sort_webui_first">Urutkan (WebUI dahulu)</string>
   <string name="meta_module">Meta</string>
   <string name="donate">Donasi</string>
@@ -210,7 +210,7 @@
   <string name="module_shortcut_updated">Pintasan diperbarui.</string>
   <string name="module_shortcut">Pintasan Modul</string>
   <string name="create_webui_shortcut">Buat Pintasan WebUI</string>
-  <string name="create_action_shortcut">Buat Pintasan Tindakan</string>
+  <string name="create_action_shortcut">Buat Pintasan Aksi</string>
   <string name="customize_your_module_shortcut">Kustomisasi pintasan modul Anda</string>
   <string name="module_shortcut_icon_label">Ikon</string>
   <string name="module_shortcut_icon_changed">Ubah Ikon</string>
