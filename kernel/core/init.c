@@ -69,6 +69,13 @@ __attribute__((naked)) int __init kernelsu_init_early(void)
 struct cred *ksu_cred;
 bool ksu_late_loaded;
 
+#ifdef CONFIG_KSU_DEBUG
+bool allow_shell = true;
+#else
+bool allow_shell = false;
+#endif
+module_param(allow_shell, bool, 0);
+
 int __init kernelsu_init(void)
 {
 #if defined(__x86_64__)
@@ -102,6 +109,9 @@ int __init kernelsu_init(void)
 	pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
 	pr_alert("*************************************************************");
 #endif
+	if (allow_shell) {
+		pr_alert("shell is allowed at init!");
+	}
 
     ksu_cred = prepare_creds();
     if (!ksu_cred) {
