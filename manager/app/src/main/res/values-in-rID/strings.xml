@@ -106,7 +106,7 @@
   <string name="profile_umount_modules">Umount modul</string>
   <string name="failed_to_update_app_profile">Gagal memperbarui Profil Aplikasi untuk %s</string>
   <string name="settings_umount_modules_default">Umount modul</string>
-  <string name="settings_umount_modules_default_summary">Nilai default global untuk \"Umount modul\" pada Profil Aplikasi. Jika diaktifkan, ini akan menghapus semua modifikasi modul ke sistem untuk aplikasi yang tidak memiliki profil yang ditetapkan.</string>
+  <string name="settings_umount_modules_default_summary">Nilai bawaan global untuk \"Umount modul\" pada Profil Aplikasi. Jika diaktifkan, ini akan menghapus semua modifikasi modul ke sistem untuk aplikasi yang tidak memiliki profil yang ditetapkan.</string>
   <string name="profile_selinux_domain">Domain</string>
   <string name="profile_selinux_rules">Aturan</string>
   <string name="module_update">Perbarui</string>
@@ -177,7 +177,7 @@
   <string name="log_saved">Log disimpan</string>
   <string name="send_log">Bagikan log</string>
   <string name="settings_language">Bahasa</string>
-  <string name="system_default">Default sistem</string>
+  <string name="system_default">Bawaan sistem</string>
   <string name="settings_banner">Aktifkan banner</string>
   <string name="settings_banner_summary">Tampilkan banner latar belakang pada modul.</string>
   <string name="customization">Personalisasi</string>
@@ -195,7 +195,7 @@
   <string name="module_sort_webui_first">Urutkan (WebUI dahulu)</string>
   <string name="meta_module">Meta</string>
   <string name="donate">Donasi</string>
-  <string name="meta_module_screen">Modul Meta</string>
+  <string name="meta_module_screen">Metamodul</string>
   <string name="latest_version">Versi Terbaru</string>
   <string name="module_repo_screen">Repo Modul</string>
   <string name="loading">Memuat...</string>
@@ -227,7 +227,7 @@
   <string name="non_free_repo_summary">Sertakan modul dengan lisensi non-bebas.</string>
   <string name="no_repositories_configured">Belum ada repositori yang dikonfigurasi. Tambahkan satu di bawah ini.</string>
   <string name="add_repository">Tambahkan Repositori</string>
-  <string name="reset_to_default">Atur ulang ke default</string>
+  <string name="reset_to_default">Atur ulang ke bawaan</string>
   <string name="supported">Didukung</string>
   <string name="home_susfs_version">Versi SuSFS</string>
   <string name="settings_enable_su">Kompatibilitas SU</string>
@@ -238,7 +238,7 @@
   <string name="settings_enable_avc_spoof_summary">Memperbaiki kebocoran konteks SELinux akibat penolakan AVC yang tercatat di log audit.</string>
   <string name="manage_repositories">Kelola Repositori</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">Versi KernelSU-Next saat ini %1$d terlalu rendah untuk manajer berfungsi dengan baik. Silakan perbarui ke versi %2$d atau lebih tinggi!</string>
+  <string name="require_kernel_version">Versi KernelSU-Next saat ini %1$d terlalu rendah agar manajer dapat berfungsi dengan baik. Silakan perbarui ke versi %2$d atau lebih baru!</string>
   <string name="profile_umount_modules_summary">Mengaktifkan opsi ini akan memungkinkan KernelSU-Next untuk memulihkan berkas apa pun yang telah dimodifikasi oleh modul untuk aplikasi ini.</string>
   <string name="settings_uninstall_temporary_message">Hapus sementara KernelSU-Next, dipulihkan ke keadaan semula setelah mulai ulang berikutnya.</string>
   <string name="settings_uninstall_permanent_message">Menghapus KernelSU-Next (root dan semua modul) sepenuhnya dan secara permanen.</string>
