@@ -77,7 +77,7 @@
   <string name="safe_mode">Safe mode</string>
   <string name="reboot_to_apply">Reboot to take effect</string>
   <string name="module_magisk_conflict">Modules are unavailable due to a conflict with Magisk!</string>
-  <string name="home_mount_system">Mount system</string>
+  <string name="home_mount_system">Hệ thống gắn kết</string>
   <string name="unavailable">Unavailable</string>
   <string name="module_restore">Restore module</string>
   <string name="module_restore_message">Restore modules from recent backup.</string>
