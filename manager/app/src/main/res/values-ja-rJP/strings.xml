@@ -56,7 +56,7 @@
   <string name="reboot_download">Download モードへ再起動</string>
   <string name="reboot_edl">EDL へ再起動</string>
   <string name="about">このプロジェクトについて</string>
-  <string name="module_uninstall_confirm">モジュール %s を復元してもよろしいですか？</string>
+  <string name="module_uninstall_confirm">モジュール %s をアンインストールしてもよろしいですか？</string>
   <string name="module_uninstall_success">%s をアンインストールしました</string>
   <string name="module_uninstall_failed">アンインストールに失敗: %s</string>
   <string name="module_restore_confirm">モジュール %s を復元してもよろしいですか？</string>
