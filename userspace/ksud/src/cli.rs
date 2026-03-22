@@ -100,7 +100,7 @@ enum Commands {
         args: Vec<String>,
     },
 
-    /// Soft reboot (zygote)
+    /// Emulate soft reboot (ksud; zygote)
     #[command(name = "soft-reboot")]
     SoftReboot,
 }
@@ -670,13 +670,7 @@ pub fn run() -> Result<()> {
             full_args.extend(args);
             crate::resetprop::resetprop_main(&full_args)
         }
-        Commands::SoftReboot => {
-            std::process::Command::new("setprop")
-                .args(["ctl.restart", "zygote"])
-                .status()
-                .map(|_| ())
-                .context("Failed zygote restart (setprop)")
-        }
+        Commands::SoftReboot => init_event::soft_reboot(),
 
         Commands::Kernel { command } => match command {
             Kernel::NukeExt4Sysfs { mnt } => ksucalls::nuke_ext4_sysfs(&mnt),
