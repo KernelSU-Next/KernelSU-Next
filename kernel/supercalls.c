@@ -1159,11 +1159,19 @@ void ksu_supercalls_init(void)
 }
 
 void ksu_supercalls_exit(void){
-#if defined(KSU_KPROBES_HOOK) && !defined(CONFIG_KSU_SUSFS)
+	struct mount_entry *entry, *tmp;
+
+#ifdef KSU_KPROBES_HOOK
 	unregister_kprobe(&reboot_kp);
-#else
-    pr_info("susfs: do nothing\n");
-#endif // #ifndef CONFIG_KSU_SUSFS
+#endif
+
+    down_write(&mount_list_lock);
+    list_for_each_entry_safe (entry, tmp, &mount_list, list) {
+        list_del(&entry->list);
+        kfree(entry->umountable);
+        kfree(entry);
+    }
+    up_write(&mount_list_lock);
 }
 
 // IOCTL dispatcher
