@@ -3,7 +3,7 @@ use clap::Parser;
 use std::path::PathBuf;
 
 use android_logger::Config;
-use log::LevelFilter;
+use log::{LevelFilter, info};
 
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
 use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, utils};
@@ -41,6 +41,9 @@ enum Commands {
         #[arg(long, default_value = None)]
         magiskboot: Option<PathBuf>,
     },
+
+    /// Unload KernelSU Next kernel module (LKM Only)
+    Unload,
 
     /// Uninstall KernelSU Next modules and itself(LKM Only)
     Uninstall {
@@ -545,6 +548,7 @@ pub fn run() -> Result<()> {
             }
         }
         Commands::Install { magiskboot } => utils::install(magiskboot),
+        Commands::Unload => crate::unload::unload(),
         Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
@@ -553,6 +557,10 @@ pub fn run() -> Result<()> {
         },
         Commands::LateLoad => crate::late_load::run(),
         Commands::Services => {
+            if ksucalls::get_version() <= 0 {
+                info!("KernelSU Next not available, exiting services");
+                std::process::exit(0);
+            }
             init_event::on_services();
             Ok(())
         }
