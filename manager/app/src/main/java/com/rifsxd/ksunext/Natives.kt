@@ -19,7 +19,8 @@ object Natives {
     // 12797: zygisk query and get manager uid.
     // 32310: new get_allow_list ioctl
     // 33070: SET_SEPOLICY ioctl
-    const val MINIMAL_SUPPORTED_KERNEL = 33070
+    // 33075: add set_init_pgrp ioctl
+    const val MINIMAL_SUPPORTED_KERNEL = 33075
 
     const val KERNEL_SU_DOMAIN = "u:r:su:s0"
 
