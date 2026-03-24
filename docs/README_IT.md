@@ -26,6 +26,9 @@ KernelSU Next supporta ufficialmente la maggior parte dei kernel Android dalla v
 
 Attualmente è supportata solo l'architettura `arm64-v8a`, `armeabi-v7a` & `x86_64`.
 
+> [!CAUTION]
+> Le versioni recenti del kernel hanno implementato una modifica che causa il fallimento di KernelSU Next e potenzialmente innesca un kernel panic su `x86_64`! Controlla il sito web per maggiori informazioni!
+
 ## Utilizzo
 
 - [Istruzioni per l'installazione](https://ksunext.org/pages/installation.html)

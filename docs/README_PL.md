@@ -47,6 +47,9 @@ KernelSU Next obsługuje jądra Androida od wersji **4.4 do 6.6**:
 
 **Obsługiwane architektury:** `arm64-v8a`, `armeabi-v7a` i `x86_64`
 
+> [!CAUTION]
+> Nowsze wersje jądra wprowadzają zmianę, która powoduje awarię KernelSU Next i może wywołać kernel panic na `x86_64`! Sprawdź stronę internetową po więcej informacji!
+
 ---
 
 ## 📦 Instalacja

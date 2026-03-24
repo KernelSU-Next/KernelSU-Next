@@ -47,6 +47,9 @@ KernelSU Next supports Android kernels from **4.4 up to 6.6**.
 
 **Supported architectures:** `arm64-v8a`, `armeabi-v7a` and `x86_64`
 
+> [!CAUTION]
+> Recent kernel versions have implemented a breaking change causing KernelSU Next to fail and potentially trigger a kernel panic on `x86_64`! Check the website for more info!
+
 ---
 
 ## 📦 Installation

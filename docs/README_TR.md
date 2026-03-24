@@ -47,6 +47,9 @@ KernelSU Next, **4.4 ile 6.6** arasındaki Android çekirdeklerini destekler.
 
 **Desteklenen mimariler:** `arm64-v8a`, `armeabi-v7a`, `x86_64`
 
+> [!CAUTION]
+> Yeni çekirdek sürümleri, KernelSU Next'nun çökmesine ve `x86_64` üzerinde kernel panic tetiklemesine neden olabilecek uyumsuz bir değişiklik uyguladı! Daha fazla bilgi için web sitesini kontrol edin!
+
 ---
 
 ## 📦 Kurulum

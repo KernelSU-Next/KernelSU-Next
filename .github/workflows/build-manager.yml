@@ -139,7 +139,7 @@ jobs:
           path: .
 
       - name: Download x86_64 ksud
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: ksud-x86_64-linux-android
           path: .

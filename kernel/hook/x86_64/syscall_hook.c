@@ -1,13 +1,15 @@
-#include "syscall_hook.h"
+#ifdef __x86_64__
+
+#include "../syscall_hook.h"
 
 #include <linux/kallsyms.h>
 #include <linux/mutex.h>
 #include <asm/cacheflush.h>
-#include "patch_memory.h"
-#include "../arch.h"
-#include "../klog.h" // IWYU pragma: keep
+#include "../patch_memory.h"
+#include "../../arch.h"
+#include "../../klog.h" // IWYU pragma: keep
 
-syscall_fn_t *ksu_syscall_table = NULL;
+sys_call_ptr_t *ksu_syscall_table = NULL;
 int ksu_dispatcher_nr = -1;
 
 // Hook registration table — read with READ_ONCE from tracepoint/dispatcher
@@ -18,14 +20,14 @@ static ksu_syscall_hook_fn syscall_hooks[__NR_syscalls];
 // Protected by hooked_entries_lock.
 struct syscall_hook_entry {
     int nr;
-    syscall_fn_t orig;
+    sys_call_ptr_t orig;
 };
 
 static DEFINE_MUTEX(hooked_entries_lock);
 static struct syscall_hook_entry hooked_entries[16];
 static int hooked_count = 0;
 
-static int patch_syscall_table(int nr, syscall_fn_t fn)
+static int patch_syscall_table(int nr, sys_call_ptr_t fn)
 {
     if (ksu_syscall_table == NULL)
         return -ENOENT;
@@ -46,7 +48,7 @@ static int patch_syscall_table(int nr, syscall_fn_t fn)
 
 // Direct syscall table patching: overwrite syscall_table[nr] with fn,
 // save original to *old, and record for restoration at module exit.
-void ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
+void ksu_syscall_table_hook(int nr, sys_call_ptr_t fn, sys_call_ptr_t *old)
 {
     if (ksu_syscall_table == NULL)
         return;
@@ -57,7 +59,7 @@ void ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
 
     mutex_lock(&hooked_entries_lock);
 
-    syscall_fn_t orig = READ_ONCE(ksu_syscall_table[nr]);
+    sys_call_ptr_t orig = READ_ONCE(ksu_syscall_table[nr]);
     if (old)
         *old = orig;
 
@@ -122,15 +124,9 @@ static int ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
     if (!ksu_syscall_table || max_slots <= 0)
         return 0;
 
-#if defined(__aarch64__)
-    ni_syscall = kallsyms_lookup_name("__arm64_sys_ni_syscall.cfi_jt");
+    ni_syscall = kallsyms_lookup_name("__x64_sys_ni_syscall.cfi_jt");
     if (!ni_syscall)
-        ni_syscall = kallsyms_lookup_name("__arm64_sys_ni_syscall");
-#elif defined(__x86_64__)
-    ni_syscall = kallsyms_lookup_name("__x64_sys_ni_syscall");
-#else
-    ni_syscall = 0;
-#endif
+        ni_syscall = kallsyms_lookup_name("__x64_sys_ni_syscall");
 
     pr_info("sys_ni_syscall: 0x%lx\n", ni_syscall);
 
@@ -147,22 +143,23 @@ static int ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
     return count;
 }
 
-// Unified dispatcher: reads original NR from x8/orig_ax, dispatches to handler.
-// Validates that syscallno matches our dispatcher slot (i.e. we redirected it),
+// Unified dispatcher: reads original NR from orig_ax, dispatches to handler.
+// Validates that orig_ax matches our dispatcher slot (i.e. we redirected it),
 // otherwise it's a spurious call — return -ENOSYS.
 static long __nocfi ksu_syscall_dispatcher(const struct pt_regs *regs)
 {
-    if (regs->syscallno != ksu_dispatcher_nr)
+    if (regs->orig_ax != ksu_dispatcher_nr)
         return -ENOSYS;
 
-    int orig_nr = (int)PT_REGS_ORIG_SYSCALL(regs);
+    // On x86_64, orig_ax was overwritten by our tracepoint to route here.
+    // The original syscall number passed by userspace is still sitting untouched in ax.
+    int orig_nr = (int)regs->ax;
 
-    if (regs->syscallno == orig_nr)
+    if (regs->orig_ax == orig_nr)
         return -ENOSYS;
 
     // Restore registers to original state before dispatching
-    ((struct pt_regs *)regs)->syscallno = orig_nr;
-    PT_REGS_ORIG_SYSCALL((struct pt_regs *)regs) = orig_nr;
+    ((struct pt_regs *)regs)->orig_ax = orig_nr;
 
     if (likely(orig_nr >= 0 && orig_nr < __NR_syscalls)) {
         ksu_syscall_hook_fn fn = READ_ONCE(syscall_hooks[orig_nr]);
@@ -211,7 +208,7 @@ void ksu_syscall_hook_init(void)
 
     memset(syscall_hooks, 0, sizeof(syscall_hooks));
 
-    ksu_syscall_table = kallsyms_lookup_name("sys_call_table");
+    ksu_syscall_table = (sys_call_ptr_t *)kallsyms_lookup_name("sys_call_table");
     pr_info("sys_call_table=0x%lx", (unsigned long)ksu_syscall_table);
 
     if (!ksu_syscall_table)
@@ -225,7 +222,7 @@ void ksu_syscall_hook_init(void)
 
     ksu_dispatcher_nr = ni_slot;
     ksu_syscall_table_hook(ksu_dispatcher_nr,
-                           (syscall_fn_t)ksu_syscall_dispatcher, NULL);
+                           (sys_call_ptr_t)ksu_syscall_dispatcher, NULL);
     pr_info("dispatcher installed at slot %d\n", ksu_dispatcher_nr);
 }
 
@@ -241,7 +238,7 @@ void ksu_syscall_hook_exit(void)
     mutex_lock(&hooked_entries_lock);
     for (i = 0; i < hooked_count; i++) {
         int nr = hooked_entries[i].nr;
-        syscall_fn_t orig = hooked_entries[i].orig;
+        sys_call_ptr_t orig = hooked_entries[i].orig;
 
         pr_info("restore syscall %d to 0x%lx\n", nr, (unsigned long)orig);
         if (ksu_patch_text(&ksu_syscall_table[nr], &orig, sizeof(orig),
@@ -262,3 +259,5 @@ clear_state:
 
     pr_info("all syscall hooks restored\n");
 }
+
+#endif /* __x86_64__ */

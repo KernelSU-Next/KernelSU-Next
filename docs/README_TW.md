@@ -47,6 +47,9 @@ KernelSU Next 正式支持大多數從 **4.4 到 6.6** 的 Android 內核。
 
 **支援的架構：** `arm64-v8a`、`armeabi-v7a`、`x86_64`
 
+> [!CAUTION]
+> 最近的核心版本引入了一項破壞性更改，導致 KernelSU Next 在 `x86_64` 上執行失敗，甚至可能引發核心恐慌 (kernel panic)！請查看網站獲取更多資訊！
+
 ---
 
 ## 📦 用法

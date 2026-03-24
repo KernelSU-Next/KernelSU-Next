@@ -26,6 +26,9 @@ KernelSU Next hỗ trợ chính thức các kernel Android từ phiên bản 4.4
 
 Hiện tại kernelSU Next chỉ hỗ trợ những cpu có `arm64-v8a`, `armeabi-v7a` & `x86_64` 
 
+> [!CAUTION]
+> Các phiên bản kernel gần đây đã áp dụng một thay đổi lớn có thể khiến KernelSU Next gặp lỗi và có khả năng gây ra kernel panic trên `x86_64`! Hãy kiểm tra trang web để biết thêm thông tin!
+
 ## Sử dụng
 
 - [Hướng dẫn vá KernelSU Next vào Kernel của bạn (yêu cầu kernel source)](https://ksunext.org/pages/installation.html)
