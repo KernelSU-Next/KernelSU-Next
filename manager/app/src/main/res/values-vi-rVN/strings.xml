@@ -68,7 +68,7 @@
   <string name="module_version_code">Mã</string>
   <string name="module_update_json">JSON Cập nhật</string>
   <string name="module_update_json_empty">Rỗng</string>
-  <string name="enable_developer_options">Bật tuỳ chọn nhà phát triển</string>
+  <string name="enable_developer_options">Bật tùy chọn nhà phát triển</string>
   <string name="enable_developer_options_summary">Hiện các cài đặt ẩn và thông tin gỡ lỗi chỉ dành cho nhà phát triển.</string>
   <string name="refresh">Làm mới</string>
   <string name="show_system_apps">Hiện các ứng dụng hệ thống</string>
@@ -94,7 +94,7 @@
   <string name="profile">Hồ sơ Ứng dụng</string>
   <string name="profile_default">Mặc định</string>
   <string name="profile_template">Mẫu</string>
-  <string name="profile_custom">Tuỳ chỉnh</string>
+  <string name="profile_custom">Tùy chỉnh</string>
   <string name="profile_name">Tên hồ sơ</string>
   <string name="profile_namespace">Không gian tên gắn kết</string>
   <string name="profile_namespace_inherited">Thừa hưởng</string>
@@ -180,7 +180,7 @@
   <string name="system_default">Mặc định hệ thống</string>
   <string name="settings_banner">Bật banner</string>
   <string name="settings_banner_summary">Hiện banner nền cho các mô-đun.</string>
-  <string name="customization">Tuỳ chỉnh</string>
+  <string name="customization">Tùy chỉnh</string>
   <string name="developer">Nhà phát triển</string>
   <string name="sucompat_disabled">SUCOMPAT BỊ TẮT</string>
   <string name="zygisk_required">Yêu cầu Zygisk</string>
@@ -203,7 +203,7 @@
   <string name="error_loading_modules">Tải mô-đun lỗi</string>
   <string name="module_shortcut_title">Tạo lối tắt</string>
   <string name="module_shortcut_name_label">Tên lối tắt</string>
-  <string name="module_shortcut_icon_pick">Chọn biểu tượng tuỳ chỉnh</string>
+  <string name="module_shortcut_icon_pick">Chọn biểu tượng tùy chỉnh</string>
   <string name="module_shortcut_add">Thêm lối tắt</string>
   <string name="module_shortcut_not_supported">Trình khởi chạy không hỗ trợ lối tắt desktop.</string>
   <string name="module_shortcut_created">Lối tắt đã được tạo trên desktop.</string>
@@ -211,7 +211,7 @@
   <string name="module_shortcut">Lối tắt Mô-đun</string>
   <string name="create_webui_shortcut">Tạo Lối tắt WebUI</string>
   <string name="create_action_shortcut">Tạo Lối tắt Hành động</string>
-  <string name="customize_your_module_shortcut">Tuỳ chỉnh lối tắt mô-đun của bạn</string>
+  <string name="customize_your_module_shortcut">Tùy chỉnh lối tắt mô-đun của bạn</string>
   <string name="module_shortcut_icon_label">Biểu tượng</string>
   <string name="module_shortcut_icon_changed">Thay đổi Biểu tượng</string>
   <string name="module_shortcut_icon_tap_to_replace">Nhấn để thay thế</string>
