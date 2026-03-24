@@ -20,6 +20,25 @@
 
 #define ALL NULL
 
+static DEFINE_MUTEX(ksu_rules);
+
+static struct policydb *get_policydb(void)
+{
+    struct policydb *db;
+#ifdef KSU_COMPAT_USE_SELINUX_STATE
+#ifdef SELINUX_POLICY_INSTEAD_SELINUX_SS
+    struct selinux_policy *policy = selinux_state.policy;
+    db = &policy->policydb;
+#else
+    struct selinux_ss *ss = selinux_state.ss;
+    db = &ss->policydb;
+#endif
+#else
+    db = &policydb;
+#endif
+    return db;
+}
+
 #if ((!defined(KSU_COMPAT_USE_SELINUX_STATE)) || \
 	LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0))
 extern int avc_ss_reset(u32 seqno);
@@ -45,13 +64,16 @@ static void reset_avc_cache()
 
 void apply_kernelsu_rules()
 {
+#ifdef SELINUX_POLICY_INSTEAD_SELINUX_SS
     struct selinux_policy *pol, *old_pol = selinux_state.policy;
+#endif
     struct policydb *db;
 
     if (!getenforce()) {
         pr_info("SELinux permissive or disabled, apply rules!\n");
     }
 
+#ifdef SELINUX_POLICY_INSTEAD_SELINUX_SS
     mutex_lock(&selinux_state.policy_mutex);
     pol = ksu_dup_sepolicy(rcu_dereference_protected(
         old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
@@ -61,6 +83,10 @@ void apply_kernelsu_rules()
     }
 
     db = &pol->policydb;
+#else
+    mutex_lock(&ksu_rules);
+    db = get_policydb();
+#endif
 
     ksu_permissive(db, KERNEL_SU_DOMAIN);
     ksu_typeattribute(db, KERNEL_SU_DOMAIN, "mlstrustedsubject");
@@ -159,6 +185,7 @@ void apply_kernelsu_rules()
     susfs_set_zygote_sid();
 #endif // #ifdef CONFIG_KSU_SUSFS
 
+#ifdef SELINUX_POLICY_INSTEAD_SELINUX_SS
     rcu_assign_pointer(selinux_state.policy, pol);
     synchronize_rcu();
     ksu_destroy_sepolicy(old_pol);
@@ -166,6 +193,10 @@ void apply_kernelsu_rules()
     reset_avc_cache();
 out_unlock:
     mutex_unlock(&selinux_state.policy_mutex);
+#else
+    mutex_unlock(&ksu_rules);
+    reset_avc_cache();
+#endif
 }
 
 #define KSU_SEPOLICY_MAX_BATCH_SIZE (8U * 1024U * 1024U)
@@ -497,6 +528,7 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
         pr_info("SELinux permissive or disabled when handle policy!\n");
     }
 
+#ifdef SELINUX_POLICY_INSTEAD_SELINUX_SS
     mutex_lock(&selinux_state.policy_mutex);
 
     old_pol = selinux_state.policy;
@@ -507,6 +539,10 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
         goto out_unlock;
     }
     db = &pol->policydb;
+#else
+    mutex_lock(&ksu_rules);
+    db = get_policydb();
+#endif
 
     cursor.cur = payload;
     cursor.end = payload + (size_t)data_len;
@@ -552,18 +588,29 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
         cmd_index++;
     }
 
+#ifdef SELINUX_POLICY_INSTEAD_SELINUX_SS
     rcu_assign_pointer(selinux_state.policy, pol);
     synchronize_rcu();
     ksu_destroy_sepolicy(old_pol);
+#endif
 
     reset_avc_cache();
     ret = success_cmd_count;
+
+#ifdef SELINUX_POLICY_INSTEAD_SELINUX_SS
     goto out_unlock;
 
 out_drop_new_policy:
     ksu_destroy_sepolicy(pol);
 out_unlock:
     mutex_unlock(&selinux_state.policy_mutex);
+#else
+    goto out_unlock;
+
+out_drop_new_policy:
+out_unlock:
+    mutex_unlock(&ksu_rules);
+#endif
 out_free:
     kvfree(payload);
 
