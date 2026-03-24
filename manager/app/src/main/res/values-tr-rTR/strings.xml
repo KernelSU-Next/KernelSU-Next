@@ -3,7 +3,7 @@
   <string name="issue_report_title">Sorun mu yaşıyorsunuz?</string>
   <string name="issue_report_body">Bir hatayla mı karşılaştınız veya geri bildiriminiz mi var?</string>
   <string name="issue_report_body_2">Mümkün olan en kısa sürede bildirin!</string>
-  <string name="issue_report_github">GitHub\'da bildirin</string>
+  <string name="issue_report_github">GitHub ile bildirin</string>
   <string name="issue_report_telegram">Telegram üzerinden iletişim kurun</string>
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
@@ -27,7 +27,7 @@
   <string name="home_abi">ABI listesi</string>
   <string name="home_selinux_status">SELinux durumu</string>
   <string name="selinux_status_disabled">Devre dışı</string>
-  <string name="selinux_status_enforcing">Zorlayıcı</string>
+  <string name="selinux_status_enforcing">Zorlanıyor</string>
   <string name="selinux_status_permissive">Serbest</string>
   <string name="selinux_status_unknown">Bilinmiyor</string>
   <string name="superuser">Süper Kullanıcı</string>
@@ -53,7 +53,7 @@
   <string name="reboot_userspace">Güvenli yeniden başlatma</string>
   <string name="reboot_recovery">Kurtarma modunda yeniden başlat</string>
   <string name="reboot_bootloader">Önyükleyici modunda yeniden başlat</string>
-  <string name="reboot_download">Yükleyici modunda yeniden başlat</string>
+  <string name="reboot_download">İndirme modunda yeniden başlat</string>
   <string name="reboot_edl">EDL modunda yeniden başlat</string>
   <string name="about">Hakkında</string>
   <string name="module_uninstall_confirm">%s modülünü kaldırmak istediğinize emin misiniz?</string>
