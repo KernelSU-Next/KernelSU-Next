@@ -96,15 +96,15 @@ static struct kretprobe *syscall_unregfunc_rp = NULL;
 // Unmark init's child that are not zygote, adbd or ksud
 int ksu_handle_init_mark_tracker(const char __user **filename_user)
 {
-	char path[64];
-	unsigned long addr;
-	const char __user *fn;
+    char path[64];
+    unsigned long addr;
+    const char __user *fn;
 
-	if (unlikely(!filename_user))
-		return 0;
+    if (unlikely(!filename_user))
+        return 0;
 
-	addr = untagged_addr((unsigned long)*filename_user);
-	fn = (const char __user *)addr;
+    addr = untagged_addr((unsigned long)*filename_user);
+    fn = (const char __user *)addr;
 
     long ret = strncpy_from_user(path, fn, sizeof(path));
 
@@ -125,7 +125,7 @@ int ksu_handle_init_mark_tracker(const char __user **filename_user)
         ksu_clear_task_tracepoint_flag_if_needed(current);
     }
 
-	return 0;
+    return 0;
 }
 
 // Syscall hook handlers using the dispatcher signature

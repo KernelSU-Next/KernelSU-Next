@@ -822,14 +822,14 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
       .name = "SET_INIT_PGRP",
       .handler = do_set_init_pgrp,
       .perm_check = only_root },
-	{ .cmd = KSU_IOCTL_GET_HOOK_MODE,
-	  .name = "GET_HOOK_MODE",
-	  .handler = do_get_hook_mode,
-	  .perm_check = manager_or_root },
-	{ .cmd = KSU_IOCTL_GET_VERSION_TAG,
-	  .name = "GET_VERSION_TAG",
-	  .handler = do_get_version_tag,
-	  .perm_check = manager_or_root },
+    { .cmd = KSU_IOCTL_GET_HOOK_MODE,
+      .name = "GET_HOOK_MODE",
+      .handler = do_get_hook_mode,
+      .perm_check = manager_or_root },
+    { .cmd = KSU_IOCTL_GET_VERSION_TAG,
+      .name = "GET_VERSION_TAG",
+      .handler = do_get_version_tag,
+      .perm_check = manager_or_root },
     { .cmd = 0, .name = NULL, .handler = NULL, .perm_check = NULL } // Sentinel
 };
 
