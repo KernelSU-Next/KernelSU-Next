@@ -82,7 +82,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -126,18 +126,18 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Download susfsd
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: susfsd-linux-android
 
       - name: Download arm64 ksud
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: ksud-aarch64-linux-android
           path: .
 
       - name: Download x86_64 ksud
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: ksud-x86_64-linux-android
           path: .
@@ -159,14 +159,14 @@ jobs:
         run: ./gradlew clean assembleRelease
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         if: ${{ ( github.event_name != 'pull_request' && (github.ref == 'refs/heads/dev' )) || github.ref_type == 'tag' }}
         with:
           name: ${{ matrix.spoofed && 'manager-spoofed' || 'manager' }}
           path: manager/app/build/outputs/apk/release/*.apk
 
       - name: Upload mappings
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         if: ${{ ( github.event_name != 'pull_request' && (github.ref == 'refs/heads/dev' )) || github.ref_type == 'tag' }}
         with:
           name: ${{ matrix.spoofed && 'mappings-spoofed' || 'mappings' }}
@@ -175,7 +175,7 @@ jobs:
       - name: Bot session cache
         if: github.event_name != 'pull_request' && steps.need_upload.outputs.UPLOAD == 'true'
         id: bot_session_cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: scripts/ksubot.session
           key: ${{ runner.os }}-bot-session
