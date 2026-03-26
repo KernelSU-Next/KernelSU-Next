@@ -43,8 +43,7 @@ int ksu_handle_setresuid(uid_t ruid, uid_t euid, uid_t suid)
 
     pr_debug("handle_setresuid from %d to %d\n", old_uid, new_uid);
 
-    if (likely(ksu_is_manager_appid_valid()) &&
-        unlikely(ksu_get_manager_appid() == new_uid % PER_USER_RANGE)) {
+    if (unlikely(is_uid_manager(new_uid))) {
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
         if (current->seccomp.mode == SECCOMP_MODE_FILTER && current->seccomp.filter) {
