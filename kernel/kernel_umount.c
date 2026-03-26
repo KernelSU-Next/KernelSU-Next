@@ -48,11 +48,11 @@ static const struct ksu_feature_handler kernel_umount_handler = {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 9, 0) ||                           \
 	defined(KSU_HAS_PATH_UMOUNT)
 extern int path_umount(struct path *path, int flags);
-static void ksu_umount_mnt(struct path *path, int flags)
+static void ksu_umount_mnt(const char *mnt, struct path *path, int flags)
 {
 	int err = path_umount(path, flags);
 	if (err) {
-		pr_info("umount %s failed: %d\n", path->dentry->d_iname, err);
+		pr_info("umount %s failed: %d\n", mnt, err);
 	}
 }
 #else
@@ -92,11 +92,7 @@ static void try_umount(const char *mnt, int flags)
 		path_put(&path);
 		return;
 	}
-#ifndef KSU_HAS_PATH_UMOUNT
     ksu_umount_mnt(mnt, &path, flags);
-#else
-	ksu_umount_mnt(&path, flags);
-#endif
 }
 
 struct umount_tw {
@@ -111,7 +107,7 @@ static void umount_tw_func(struct callback_head *cb)
     struct mount_entry *entry;
     down_read(&mount_list_lock);
     list_for_each_entry(entry, &mount_list, list) {
-        pr_info("%s: unmounting: %s flags 0x%x\n", __func__, entry->umountable, entry->flags);
+        pr_info("%s: unmounting: %s flags: 0x%x\n", __func__, entry->umountable, entry->flags);
         try_umount(entry->umountable, entry->flags);
     }
     up_read(&mount_list_lock);
