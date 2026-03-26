@@ -178,8 +178,8 @@
   <string name="send_log">Chia sẻ nhật ký</string>
   <string name="settings_language">Ngôn ngữ</string>
   <string name="system_default">Mặc định hệ thống</string>
-  <string name="settings_banner">Bật banner</string>
-  <string name="settings_banner_summary">Hiện banner nền cho các mô-đun.</string>
+  <string name="settings_banner">Bật biểu ngữ</string>
+  <string name="settings_banner_summary">Hiện biểu ngữ nền cho các mô-đun.</string>
   <string name="customization">Tùy chỉnh</string>
   <string name="developer">Nhà phát triển</string>
   <string name="sucompat_disabled">SUCOMPAT BỊ TẮT</string>
