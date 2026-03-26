@@ -1,61 +1,25 @@
-#include <linux/anon_inodes.h>
 #include <linux/capability.h>
 #include <linux/cred.h>
-#include <linux/err.h>
-#include <linux/fdtable.h>
-#include <linux/file.h>
-#include <linux/fs.h>
 #include <linux/slab.h>
-#include <linux/kprobes.h>
-#include <linux/syscalls.h>
-#include <linux/task_work.h>
+#include <linux/string.h>
 #include <linux/uaccess.h>
 #include <linux/version.h>
-#include <linux/pid.h>
-#include <linux/utsname.h> // utsname() and uts_sem
 
-#include "supercalls.h"
+#include "uapi/supercalls.h"
+#include "uapi/supercall_internal.h"
 #include "arch.h"
-#include "allowlist.h"
-#include "feature.h"
+#include "policy/allowlist.h"
+#include "policy/feature.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
-#include "ksud.h"
-#include "kernel_compat.h"
-#include "kernel_umount.h"
-#include "manager.h"
+#include "runtime/ksud_boot.h"
+#include "feature/kernel_umount.h"
+#include "manager/manager_identity.h"
 #include "selinux/selinux.h"
-#include "file_wrapper.h"
-#include "syscall_hook_manager.h"
+#include "infra/file_wrapper.h"
+#include "hook/hook_manager.h"
 
-#include "tiny_sulog.c"
-
-// Permission check functions
-bool only_manager(void)
-{
-	return is_manager();
-}
-
-bool only_root(void)
-{
-	return current_uid().val == 0;
-}
-
-bool manager_or_root(void)
-{
-	return current_uid().val == 0 || is_manager();
-}
-
-bool always_allow(void)
-{
-	return true; // No permission check
-}
-
-bool allowed_for_su(void)
-{
-	bool is_allowed = is_manager() || ksu_is_allow_uid_for_current(current_uid().val);
-	return is_allowed;
-}
+#include "tiny_sulog.h"
 
 static int do_grant_root(void __user *arg)
 {
@@ -68,8 +32,6 @@ static int do_grant_root(void __user *arg)
 
 	return 0;
 }
-
-static uint32_t ksuver_override = 0;
 
 static int do_get_info(void __user *arg)
 {
@@ -863,213 +825,8 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
     { .cmd = 0, .name = NULL, .handler = NULL, .perm_check = NULL } // Sentinel
 };
 
-int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
-			  void __user **arg)
+long ksu_supercall_handle_ioctl(unsigned int cmd, void __user *argp)
 {
-	if (magic1 != KSU_INSTALL_MAGIC1)
-		return 0;
-
-#ifdef CONFIG_KSU_DEBUG
-	pr_info("sys_reboot: intercepted call! magic: 0x%x id: %d\n", magic1,
-		magic2);
-#endif
-
-	// Check if this is a request to install KSU fd
-	if (magic2 == KSU_INSTALL_MAGIC2) {
-		int fd = ksu_install_fd();
-		// downstream: dereference all arg usage!
-		if (copy_to_user((void __user *)*arg, &fd, sizeof(fd))) {
-			pr_err("install ksu fd reply err\n");
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
-		close_fd(fd);
-#else
-		__close_fd(current->files, fd);
-#endif
-		}
-		return 0;
-	}
-
-	// extensions 
-	u64 reply = (u64)*arg;
-
-	if (magic2 == CHANGE_MANAGER_UID) {
-		// only root is allowed for this command
-		if (current_uid().val != 0)
-			return 0;
-
-		pr_info("sys_reboot: ksu_set_manager_appid to: %d\n", cmd);
-		ksu_set_manager_appid(cmd);
-
-		if (cmd == ksu_get_manager_appid()) {
-			if (copy_to_user((void __user *)*arg, &reply, sizeof(reply)))
-				pr_info("sys_reboot: reply fail\n");
-		}
-
-		return 0;
-	}
-	
-	if (magic2 == GET_SULOG_DUMP_V2) {
-		// only root is allowed for this command
-		if (current_uid().val != 0)
-			return 0;
-
-		int ret = send_sulog_dump(*arg);
-		if (ret)
-			return 0;
-
-		if (copy_to_user((void __user *)*arg, &reply, sizeof(reply) ))
-			return 0;
-	}
-
-	if (magic2 == CHANGE_KSUVER) {
-		// only root is allowed for this command
-		if (current_uid().val != 0)
-			return 0;
-
-		pr_info("sys_reboot: ksu_change_ksuver to: %d\n", cmd);
-		ksuver_override = cmd;
-
-		if (copy_to_user((void __user *)*arg, &reply, sizeof(reply) ))
-			return 0;
-	}
-
-	// WARNING!!! triple ptr zone! ***
-	// https://wiki.c2.com/?ThreeStarProgrammer
-	if (magic2 == CHANGE_SPOOF_UNAME) {
-		// only root is allowed for this command 
-		if (current_uid().val != 0)
-			return 0;
-
-		char release_buf[65];
-		char version_buf[65];
-		static char original_release_buf[65] = {0};
-		static char original_version_buf[65] = {0};
-
-		// basically void * void __user * void __user *arg
-		void ***ppptr = (uintptr_t)arg;
-
-		// user pointer storage
-		// init this as zero so this works on 32-on-64 compat (LE)
-		uint64_t u_pptr = 0;
-		uint64_t u_ptr = 0;
-
-		pr_info("sys_reboot: ppptr: 0x%lx \n", ppptr);
-
-		// arg here is ***, dereference to pull out **
-		if (copy_from_user(&u_pptr, (void __user *)*ppptr, sizeof(u_pptr)))
-			return 0;
-
-		pr_info("sys_reboot: u_pptr: 0x%lx \n", u_pptr);
-
-		// now we got the __user **
-		// we cannot dereference this as this is __user
-		// we just do another copy_from_user to get it
-		if (copy_from_user(&u_ptr, (void __user *)u_pptr, sizeof(u_ptr)))
-			return 0;
-
-		pr_info("sys_reboot: u_ptr: 0x%lx \n", u_ptr);
-
-		// for release
-		if (strncpy_from_user(release_buf, (char __user *)u_ptr, sizeof(release_buf)) < 0)
-			return 0;
-		release_buf[sizeof(release_buf) - 1] = '\0'; 
-
-		// for version
-		if (strncpy_from_user(version_buf, (char __user *)(u_ptr + strlen(release_buf) + 1), sizeof(version_buf)) < 0)
-			return 0;
-		version_buf[sizeof(version_buf) - 1] = '\0'; 
-
-		if (original_release_buf[0] == '\0') {
-			struct new_utsname *u_curr = utsname();
-			// we save current version as the original before modifying
-			strncpy(original_release_buf, u_curr->release, sizeof(original_release_buf));
-			strncpy(original_version_buf, u_curr->version, sizeof(original_version_buf));
-			pr_info("sys_reboot: original uname saved: %s %s\n", original_release_buf, original_version_buf);
-		}
-
-		// so user can reset
-		if (!strcmp(release_buf, "default") || !strcmp(version_buf, "default") ) {
-			memcpy(release_buf, original_release_buf, sizeof(release_buf));
-			memcpy(version_buf, original_version_buf, sizeof(version_buf));
-		}
-
-		pr_info("sys_reboot: spoofing kernel to: %s - %s\n", release_buf, version_buf);
-
-		struct new_utsname *u = utsname();
-
-		down_write(&uts_sem);
-		strncpy(u->release, release_buf, sizeof(u->release));
-		strncpy(u->version, version_buf, sizeof(u->version));
-		up_write(&uts_sem);
-
-		// we write our confirmation on **
-		if (copy_to_user((void __user *)*arg, &reply, sizeof(reply)))
-			return 0;
-	}
-
-	return 0;
-}
-
-#ifdef KSU_KPROBES_HOOK
-static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
-{
-	struct pt_regs *real_regs = PT_REAL_REGS(regs);
-	int magic1 = (int)PT_REGS_PARM1(real_regs);
-	int magic2 = (int)PT_REGS_PARM2(real_regs);
-	unsigned int cmd = (unsigned int)PT_REGS_PARM3(real_regs);
-	unsigned long arg4 = (unsigned long)PT_REGS_SYSCALL_PARM4(real_regs);
-	unsigned long reply = (unsigned long)arg4;
-
-	return ksu_handle_sys_reboot(magic1, magic2, cmd, (void __user **)&arg4);
-}
-
-static struct kprobe reboot_kp = {
-	.symbol_name = REBOOT_SYMBOL,
-	.pre_handler = reboot_handler_pre,
-};
-#endif
-
-void ksu_supercalls_init(void)
-{
-	int i;
-
-	pr_info("KernelSU IOCTL Commands:\n");
-	for (i = 0; ksu_ioctl_handlers[i].handler; i++) {
-		pr_info("  %-18s = 0x%08x\n", ksu_ioctl_handlers[i].name, ksu_ioctl_handlers[i].cmd);
-	}
-
-#ifdef KSU_KPROBES_HOOK
-	int rc = register_kprobe(&reboot_kp);
-	if (rc) {
-		pr_err("reboot kprobe failed: %d\n", rc);
-	} else {
-		pr_info("reboot kprobe registered successfully\n");
-	}
-#endif
-
-	sulog_init_heap(); // grab heap memory
-}
-
-void ksu_supercalls_exit(void){
-	struct mount_entry *entry, *tmp;
-
-#ifdef KSU_KPROBES_HOOK
-	unregister_kprobe(&reboot_kp);
-#endif
-
-    down_write(&mount_list_lock);
-    list_for_each_entry_safe (entry, tmp, &mount_list, list) {
-        list_del(&entry->list);
-        kfree(entry->umountable);
-        kfree(entry);
-    }
-    up_write(&mount_list_lock);
-}
-
-// IOCTL dispatcher
-static long anon_ksu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
-{
-	void __user *argp = (void __user *)arg;
 	int i;
 
 #ifdef CONFIG_KSU_DEBUG
@@ -1094,46 +851,25 @@ static long anon_ksu_ioctl(struct file *filp, unsigned int cmd, unsigned long ar
 	return -ENOTTY;
 }
 
-// File release handler
-static int anon_ksu_release(struct inode *inode, struct file *filp)
+void ksu_supercall_dump_commands(void)
 {
-	pr_info("ksu fd released\n");
-	return 0;
+    int i;
+
+    pr_info("KernelSU IOCTL Commands:\n");
+    for (i = 0; ksu_ioctl_handlers[i].handler; i++) {
+        pr_info("  %-18s = 0x%08x\n", ksu_ioctl_handlers[i].name, ksu_ioctl_handlers[i].cmd);
+    }
 }
 
-// File operations structure
-static const struct file_operations anon_ksu_fops = {
-	.owner = THIS_MODULE,
-	.unlocked_ioctl = anon_ksu_ioctl,
-	.compat_ioctl = anon_ksu_ioctl,
-	.release = anon_ksu_release,
-};
-
-// Install KSU fd to current process
-int ksu_install_fd(void)
+void ksu_supercall_cleanup_state(void)
 {
-	struct file *filp;
-	int fd;
+    struct mount_entry *entry, *tmp;
 
-	// Get unused fd
-	fd = get_unused_fd_flags(O_CLOEXEC);
-	if (fd < 0) {
-		pr_err("ksu_install_fd: failed to get unused fd\n");
-		return fd;
-	}
-
-	// Create anonymous inode file
-	filp = anon_inode_getfile("[ksu_driver]", &anon_ksu_fops, NULL, O_RDWR | O_CLOEXEC);
-	if (IS_ERR(filp)) {
-		pr_err("ksu_install_fd: failed to create anon inode file\n");
-		put_unused_fd(fd);
-		return PTR_ERR(filp);
-	}
-
-	// Install fd
-	fd_install(fd, filp);
-
-	pr_info("ksu fd installed: %d for pid %d\n", fd, current->pid);
-
-	return fd;
+    down_write(&mount_list_lock);
+    list_for_each_entry_safe (entry, tmp, &mount_list, list) {
+        list_del(&entry->list);
+        kfree(entry->umountable);
+        kfree(entry);
+    }
+    up_write(&mount_list_lock);
 }

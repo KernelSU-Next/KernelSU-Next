@@ -10,9 +10,9 @@
 #include <linux/version.h>
 
 #include "sepolicy.h"
-#include "../klog.h" // IWYU pragma: keep
+#include "klog.h" // IWYU pragma: keep
 #include "ss/symtab.h"
-#include "../kernel_compat.h" // Add check Huawei Device
+#include "compat/kernel_compat.h" // Add check Huawei Device
 
 #define KSU_SUPPORT_ADD_TYPE
 

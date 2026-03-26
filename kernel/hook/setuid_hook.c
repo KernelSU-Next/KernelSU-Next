@@ -16,15 +16,16 @@
 #include <linux/uidgid.h>
 #include <linux/version.h>
 
-#include "allowlist.h"
+#include "policy/allowlist.h"
 #include "setuid_hook.h"
 #include "klog.h" // IWYU pragma: keep
-#include "manager.h"
+#include "manager/manager_identity.h"
 #include "selinux/selinux.h"
-#include "seccomp_cache.h"
-#include "supercalls.h"
-#include "syscall_hook_manager.h"
-#include "kernel_umount.h"
+#include "infra/seccomp_cache.h"
+#include "uapi/supercalls.h"
+#include "hook_manager.h"
+#include "feature/kernel_umount.h"
+#include "compat/kernel_compat.h"
 
 extern void disable_seccomp(struct task_struct *tsk);
 

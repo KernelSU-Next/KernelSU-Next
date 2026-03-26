@@ -23,15 +23,15 @@
 
 #include "objsec.h"
 
-#include "allowlist.h"
-#include "feature.h"
+#include "policy/allowlist.h"
+#include "policy/feature.h"
 #include "klog.h" // IWYU pragma: keep
-#include "ksud.h"
-#include "kernel_compat.h"
+#include "runtime/ksud.h"
+#include "compat/kernel_compat.h"
 #include "sucompat.h"
-#include "app_profile.h"
-
-extern void write_sulog(uint8_t sym);
+#include "policy/app_profile.h"
+#include "selinux/selinux.h"
+#include "tiny_sulog.h"
 
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"

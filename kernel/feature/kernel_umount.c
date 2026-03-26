@@ -15,12 +15,12 @@
 
 #include "kernel_umount.h"
 #include "klog.h" // IWYU pragma: keep
-#include "allowlist.h"
+#include "policy/allowlist.h"
 #include "selinux/selinux.h"
-#include "feature.h"
-#include "ksud.h"
+#include "policy/feature.h"
+#include "runtime/ksud_boot.h"
 #include "ksu.h"
-#include "kernel_compat.h"
+#include "compat/kernel_compat.h"
 
 static bool ksu_kernel_umount_enabled = true;
 
