@@ -1,8 +1,5 @@
 #ifdef KSU_KPROBES_HOOK
-#include "linux/compiler.h"
-#include "linux/cred.h"
 #include "linux/printk.h"
-#include "selinux/selinux.h"
 #include <linux/spinlock.h>
 #include <linux/kprobes.h>
 #include <linux/tracepoint.h>
@@ -11,15 +8,15 @@
 #include <linux/slab.h>
 #include <trace/events/syscalls.h>
 
-#include "allowlist.h"
+#include "policy/allowlist.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
-#include "syscall_hook_manager.h"
-#include "sucompat.h"
+#include "hook_manager.h"
+#include "feature/sucompat.h"
 #include "setuid_hook.h"
 #include "selinux/selinux.h"
-#include "kernel_compat.h"
-#include "ksud.h"
+#include "compat/kernel_compat.h"
+#include "runtime/ksud.h"
 
 // Tracepoint registration count management
 // == 1: just us
@@ -405,8 +402,8 @@ void ksu_syscall_hook_manager_exit(void)
 }
 #else
 #include "klog.h" // IWYU pragma: keep
-#include "syscall_hook_manager.h"
-#include "sucompat.h"
+#include "hook_manager.h"
+#include "feature/sucompat.h"
 #include "setuid_hook.h"
 
 void ksu_syscall_hook_manager_init(void)

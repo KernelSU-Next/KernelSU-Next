@@ -1,3 +1,14 @@
+#include <linux/types.h>
+#include <linux/slab.h>
+#include <linux/spinlock.h>
+#include <linux/ktime.h>
+#include <linux/cred.h>
+#include <linux/string.h>
+#include <linux/uaccess.h>
+#include <linux/kernel.h>
+
+#include "tiny_sulog.h"
+
 // half assed ringbuffer
 // 8 bytes
 struct sulog_entry {
@@ -13,7 +24,7 @@ static uint8_t sulog_index_next = 0;
 
 static DEFINE_SPINLOCK(sulog_lock);
 
-void sulog_init_heap()
+void sulog_init_heap(void)
 {
 	sulog_buf_ptr = kzalloc(SULOG_BUFSIZ, GFP_KERNEL);
 	if (!sulog_buf_ptr)

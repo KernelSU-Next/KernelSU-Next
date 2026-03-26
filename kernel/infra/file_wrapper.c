@@ -19,7 +19,7 @@
 
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
-#include "ksud.h"
+#include "runtime/ksud.h"
 
 #include "file_wrapper.h"
 

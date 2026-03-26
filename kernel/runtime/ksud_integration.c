@@ -31,19 +31,13 @@
 #include <linux/sched.h>
 #endif
 
-#include "manager.h"
-#include "allowlist.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "ksud.h"
+#include "ksud_boot.h"
 #include "selinux/selinux.h"
-#include "throne_tracker.h"
-#include "kernel_compat.h"
-
-extern int ksu_observer_init(void);
-bool ksu_module_mounted __read_mostly = false;
-bool ksu_boot_completed __read_mostly = false;
+#include "compat/kernel_compat.h"
 
 static const char KERNEL_SU_RC[] =
 	"\n"
@@ -68,9 +62,9 @@ static const char KERNEL_SU_RC[] =
 
 	"\n";
 
-static void stop_init_rc_hook();
-static void stop_execve_hook();
-static void stop_input_hook();
+void stop_init_rc_hook();
+void stop_execve_hook();
+void stop_input_hook();
 
 #ifdef KSU_KPROBES_HOOK
 static struct work_struct __maybe_unused stop_init_rc_hook_work;
@@ -82,60 +76,6 @@ bool __maybe_unused ksu_vfs_read_hook = true;
 bool ksu_input_hook __read_mostly = true;
 bool ksu_execveat_hook __read_mostly = true;
 #endif
-
-void on_post_fs_data(void)
-{
-	static bool done = false;
-	if (done) {
-		pr_info("on_post_fs_data already done\n");
-		return;
-	}
-	done = true;
-	pr_info("on_post_fs_data!\n");
-
-	ksu_load_allow_list();
-	ksu_observer_init();
-	// sanity check, this may influence the performance
-	stop_input_hook();
-}
-
-extern void ext4_unregister_sysfs(struct super_block *sb);
-int nuke_ext4_sysfs(const char *mnt)
-{
-	struct path path;
-	int err = kern_path(mnt, 0, &path);
-	if (err) {
-		pr_err("nuke path err: %d\n", err);
-		return err;
-	}
-
-	struct super_block *sb = path.dentry->d_inode->i_sb;
-	const char *name = sb->s_type->name;
-	if (strcmp(name, "ext4") != 0) {
-		pr_info("nuke but module aren't mounted\n");
-		path_put(&path);
-		return -EINVAL;
-	}
-
-	ext4_unregister_sysfs(sb);
-	path_put(&path);
-	return 0;
-}
-
-void on_module_mounted(void)
-{
-	pr_info("on_module_mounted!\n");
-	ksu_module_mounted = true;
-}
-
-extern void ksu_avc_spoof_late_init();
-void on_boot_completed(void)
-{
-    ksu_boot_completed = true;
-    pr_info("on_boot_completed!\n");
-    track_throne(true);
-    ksu_avc_spoof_late_init();
-}
 
 #define MAX_ARG_STRINGS 0x7FFFFFFF
 struct user_arg_ptr {
@@ -812,7 +752,7 @@ int __maybe_unused ksu_handle_vfs_read(struct file **file_ptr, char __user **buf
 
 #endif
 
-static void stop_init_rc_hook()
+void stop_init_rc_hook()
 {
 #ifdef KSU_KPROBES_HOOK
 	bool ret = schedule_work(&stop_init_rc_hook_work);
@@ -823,7 +763,7 @@ static void stop_init_rc_hook()
 #endif
 }
 
-static void stop_execve_hook()
+void stop_execve_hook()
 {
 #ifdef KSU_KPROBES_HOOK
 	bool ret = schedule_work(&stop_execve_hook_work);
@@ -834,7 +774,7 @@ static void stop_execve_hook()
 #endif
 }
 
-static void stop_input_hook()
+void stop_input_hook()
 {
 #ifdef KSU_KPROBES_HOOK
 	static bool input_hook_stopped = false;

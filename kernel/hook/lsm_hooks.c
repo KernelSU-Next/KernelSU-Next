@@ -6,10 +6,10 @@
 #include <linux/atomic.h>
 
 #include "klog.h" // IWYU pragma: keep
-#include "ksud.h"
-#include "kernel_compat.h"
+#include "runtime/ksud_boot.h"
+#include "compat/kernel_compat.h"
 #include "setuid_hook.h"
-#include "throne_tracker.h"
+#include "manager/throne_tracker.h"
 
 #ifndef KSU_KPROBES_HOOK
 
