@@ -679,6 +679,7 @@ private fun TopBar(
                         showDropdown = false
                     }) {
                         RebootDropdownItem(id = R.string.reboot)
+                        RebootDropdownItem(id = R.string.reboot_userspace, reason = "soft-reboot")
 
                         val pm =
                             LocalContext.current.getSystemService(Context.POWER_SERVICE) as PowerManager?

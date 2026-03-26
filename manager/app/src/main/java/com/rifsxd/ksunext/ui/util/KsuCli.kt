@@ -394,6 +394,12 @@ fun installBoot(
 }
 
 fun reboot(reason: String = "") {
+    if (reason == "soft-reboot") {
+        // ksud (userspace)
+        com.rifsxd.ksunext.ui.util.execKsud("soft-reboot")
+        return
+    }
+
     if (reason == "recovery") {
         // KEYCODE_POWER = 26, hide incorrect "Factory data reset" message
         ShellUtils.fastCmdResult("/system/bin/input keyevent 26")

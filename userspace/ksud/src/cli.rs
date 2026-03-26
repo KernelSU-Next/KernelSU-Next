@@ -99,6 +99,10 @@ enum Commands {
         #[arg(trailing_var_arg = true, allow_hyphen_values = true, num_args = 0..)]
         args: Vec<String>,
     },
+
+    /// Soft reboot (zygote)
+    #[command(name = "soft-reboot")]
+    SoftReboot,
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -665,6 +669,13 @@ pub fn run() -> Result<()> {
             let mut full_args = vec!["resetprop".to_string()];
             full_args.extend(args);
             crate::resetprop::resetprop_main(&full_args)
+        }
+        Commands::SoftReboot => {
+            std::process::Command::new("setprop")
+                .args(["ctl.restart", "zygote"])
+                .status()
+                .map(|_| ())
+                .context("Failed zygote restart (setprop)")
         }
 
         Commands::Kernel { command } => match command {
