@@ -30,8 +30,8 @@ static int ksu_key_permission(key_ref_t key_ref, const struct cred *cred,
 }
 #endif
 
-static int ksu_inode_rename(struct inode *old_inode, struct dentry *old_dentry,
-			    struct inode *new_inode, struct dentry *new_dentry)
+static int ksu_inode_rename(struct inode *old_dir, struct dentry *old_dentry,
+			    struct inode *new_dir, struct dentry *new_dentry)
 {
 	// skip kernel threads
 	if (!current->mm) {
@@ -63,23 +63,23 @@ static int ksu_inode_rename(struct inode *old_inode, struct dentry *old_dentry,
 		return 0;
 	}
 
-	pr_info("renameat: %s -> %s, new path: %s\n", old_dentry->d_iname,
-		new_dentry->d_iname, buf);
-
-	/*
-	 * RKSU note:
-	 * track_throne(true) only occurs on on_boot_completed event.
-	 * When using this LSM, we must handle it here, else it returns
-	 * ENOENT (-2).
-	 */
-	static bool did = false;
-	if (ksu_boot_completed && !did) {
-		did = true;
-		track_throne(true);
+	// Do not track anything until the system has fully booted.
+	// Parsing files during early boot from an LSM hook can causes VFS deadlocks
+	if (!ksu_boot_completed) {
 		return 0;
 	}
 
-	track_throne(false);
+	pr_info("renameat: %s -> %s, new path: %s\n", old_dentry->d_iname,
+		new_dentry->d_iname, buf);
+
+	// Safe execution after boot completed
+	static bool first_time_after_boot = true;
+	if (first_time_after_boot) {
+		track_throne(true);
+		first_time_after_boot = false;
+	} else {
+		track_throne(false);
+	}
 
 	return 0;
 }
@@ -106,9 +106,7 @@ bool ksu_is_compat __read_mostly = false;
 
 int ksu_inode_permission(struct inode *inode, int mask)
 {
-	if (inode && inode->i_sb 
-		&& unlikely(inode->i_sb->s_magic == DEVPTS_SUPER_MAGIC)) {
-		//pr_info("%s: handling devpts for: %s \n", __func__, current->comm);
+	if (unlikely(inode && inode->i_sb && inode->i_sb->s_magic == DEVPTS_SUPER_MAGIC)) {
 		__ksu_handle_devpts(inode);
 	}
 	return 0;
