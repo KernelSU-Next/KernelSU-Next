@@ -12,7 +12,8 @@
 #include <linux/version.h>
 #include <linux/utsname.h> // utsname() and uts_sem
 
-#include "uapi/supercall_internal.h"
+#include "uapi/supercall.h"
+#include "supercall/internal.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
 #include "manager/manager_identity.h"

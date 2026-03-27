@@ -5,14 +5,17 @@
 # Linux
 # CLANG_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang
 # CLANG++_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang++
+# BINDGEN_EXTRA_CLANG_ARGS_aarch64_linux_android=--sysroot=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/sysroot -IANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android -IANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include
 
 # macOS
 # CLANG_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang
 # CLANG++_PATH=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android26-clang++
+# BINDGEN_EXTRA_CLANG_ARGS_aarch64_linux_android=--sysroot=ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/darwin-x86_64/sysroot -IANDROID_NDK_ROOT/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include/aarch64-linux-android -IANDROID_NDK_ROOT/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/include
 
 # Windows
 # CLANG_PATH=ANDROID_NDK_ROOT\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android26-clang.cmd
 # CLANG++_PATH=ANDROID_NDK_ROOT\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\aarch64-linux-android26-clang++.cmd
+# BINDGEN_EXTRA_CLANG_ARGS_aarch64_linux_android=--sysroot=ANDROID_NDK_ROOT\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot -IANDROID_NDK_ROOT\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\include\\aarch64-linux-android -IANDROID_NDK_ROOT\\toolchains\\llvm\\prebuilt\\windows-x86_64\\sysroot\\usr\\include
 
 # Run `cargo build --target aarch64-linux-android` to build.
 

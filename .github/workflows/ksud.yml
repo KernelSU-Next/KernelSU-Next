@@ -47,6 +47,7 @@ jobs:
         rustup update stable
         rustup target add x86_64-apple-darwin
         rustup target add aarch64-apple-darwin
+        rustup target add aarch64-linux-android
     - uses: Swatinem/rust-cache@v2
       with:
         workspaces: userspace/ksud
@@ -57,6 +58,11 @@ jobs:
         RUSTFLAGS="" cargo install cross --git https://github.com/cross-rs/cross --rev 66845c1
 
     - name: Build ksud
+      env:
+        BINDGEN_EXTRA_CLANG_ARGS_aarch64_linux_android: >
+          --sysroot=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+          -I$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android
+          -I$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include
       run: CROSS_NO_WARNINGS=0 cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
 
     - name: Upload ksud artifact
