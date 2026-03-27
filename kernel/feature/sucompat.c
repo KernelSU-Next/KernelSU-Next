@@ -18,6 +18,7 @@
 #include "runtime/ksud.h"
 #include "feature/sucompat.h"
 #include "policy/app_profile.h"
+#include "hook/syscall_hook.h"
 
 #include "tiny_sulog.h"
 
@@ -118,9 +119,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 	return 0;
 }
 
-int ksu_handle_execve_sucompat(const char __user **filename_user,
-				void *__never_use_argv, void *__never_use_envp,
-				int *__never_use_flags)
+long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, const struct pt_regs *regs)
 {
 	const char su[] = SU_PATH;
 	const char __user *fn;
@@ -129,10 +128,10 @@ int ksu_handle_execve_sucompat(const char __user **filename_user,
 	unsigned long addr;
 
 	if (unlikely(!filename_user))
-		return 0;
+		goto do_orig_execve;
 
 	if (!ksu_is_allow_uid_for_current(current_uid().val))
-		return 0;
+		goto do_orig_execve;
 
 	addr = untagged_addr((unsigned long)*filename_user);
 	fn = (const char __user *)addr;
@@ -141,18 +140,33 @@ int ksu_handle_execve_sucompat(const char __user **filename_user,
 
 	if (ret < 0) {
 		pr_warn("Access filename when execve failed: %ld", ret);
-		return 0;
+		goto do_orig_execve;
 	}
 
 	if (likely(memcmp(path, su, sizeof(su))))
-		return 0;
+		goto do_orig_execve;
 
-    write_sulog('x');
+	write_sulog('x');
 
-    pr_info("sys_execve su found\n");
-    *filename_user = ksud_user_path();
+	pr_info("sys_execve su found\n");
+	*filename_user = ksud_user_path();
 
-    return escape_with_root_profile();
+	ret = escape_with_root_profile();
+	if (ret) {
+		pr_err("escape_with_root_profile failed: %ld\n", ret);
+		goto do_orig_execve;
+	}
+
+	ret = ksu_syscall_table[orig_nr](regs);
+	if (ret < 0) {
+		pr_err("failed to execve ksud as su: %ld, fallback to sh\n", ret);
+		*filename_user = sh_user_path();
+	} else {
+		return ret;
+	}
+
+do_orig_execve:
+	return ksu_syscall_table[orig_nr](regs);
 }
 
 // sucompat: permitted process can execute 'su' to gain root access.
