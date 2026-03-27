@@ -5,6 +5,7 @@
 #include <linux/kallsyms.h>
 #include <linux/mutex.h>
 #include <asm/cacheflush.h>
+#include "infra/symbol_resolver.h"
 #include "../patch_memory.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
@@ -124,15 +125,7 @@ static int ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
     if (!ksu_syscall_table || max_slots <= 0)
         return 0;
 
-#if defined(__aarch64__)
-    ni_syscall = kallsyms_lookup_name("__arm64_sys_ni_syscall.cfi_jt");
-    if (!ni_syscall)
-        ni_syscall = kallsyms_lookup_name("__arm64_sys_ni_syscall");
-#elif defined(__x86_64__)
-    ni_syscall = kallsyms_lookup_name("__x64_sys_ni_syscall");
-#else
-    ni_syscall = 0;
-#endif
+    ni_syscall = (unsigned long)ksu_lookup_symbol("__arm64_sys_ni_syscall");
 
     pr_info("sys_ni_syscall: 0x%lx\n", ni_syscall);
 
@@ -213,7 +206,7 @@ void ksu_syscall_hook_init(void)
 
     memset(syscall_hooks, 0, sizeof(syscall_hooks));
 
-    ksu_syscall_table = kallsyms_lookup_name("sys_call_table");
+    ksu_syscall_table = (syscall_fn_t *)ksu_lookup_symbol("sys_call_table");
     pr_info("sys_call_table=0x%lx", (unsigned long)ksu_syscall_table);
 
     if (!ksu_syscall_table)
