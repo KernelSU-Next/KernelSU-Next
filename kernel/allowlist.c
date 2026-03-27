@@ -393,8 +393,9 @@ bool ksu_get_allow_list(int *array, u16 length, u16 *out_length, u16 *out_total,
 	return true;
 }
 
-// TODO: move to kernel thread or work queue
-static void do_persistent_allow_list(struct callback_head *_cb)
+static struct work_struct ksu_save_allow_list_work;
+
+static void do_persistent_allow_list(struct work_struct *work)
 {
     u32 magic = FILE_MAGIC;
     u32 version = FILE_FORMAT_VERSION;
@@ -403,7 +404,7 @@ static void do_persistent_allow_list(struct callback_head *_cb)
 
     const struct cred *saved = override_creds(ksu_cred);
     struct file *fp =
-        filp_open(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        ksu_filp_open_compat(KERNEL_SU_ALLOWLIST, O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (IS_ERR(fp)) {
         pr_err("save_allow_list create file failed: %ld\n", PTR_ERR(fp));
         goto out;
@@ -433,33 +434,11 @@ close_file:
     filp_close(fp, 0);
 out:
     revert_creds(saved);
-    kfree(_cb);
 }
 
-void ksu_persistent_allow_list()
+void ksu_persistent_allow_list(void)
 {
-	struct task_struct *tsk;
-
-	tsk = get_pid_task(find_vpid(1), PIDTYPE_PID);
-	if (!tsk) {
-		pr_err("save_allow_list find init task err\n");
-		return;
-	}
-
-	struct callback_head *cb =
-		kzalloc(sizeof(struct callback_head), GFP_KERNEL);
-	if (!cb) {
-		pr_err("save_allow_list alloc cb err\b");
-		goto put_task;
-	}
-	cb->func = do_persistent_allow_list;
-	if (task_work_add(tsk, cb, TWA_RESUME)) {
-		kfree(cb);
-		pr_warn("save_allow_list add task_work failed\n");
-	}
-
-put_task:
-	put_task_struct(tsk);
+    schedule_work(&ksu_save_allow_list_work);
 }
 
 void ksu_load_allow_list()
@@ -566,6 +545,8 @@ void ksu_allowlist_init(void)
 
 	INIT_LIST_HEAD(&allow_list);
 
+    INIT_WORK(&ksu_save_allow_list_work, do_persistent_allow_list);
+
 	init_default_profiles();
 }
 
@@ -573,6 +554,8 @@ void ksu_allowlist_exit(void)
 {
 	struct perm_data *np = NULL;
 	struct perm_data *n = NULL;
+
+    cancel_work_sync(&ksu_save_allow_list_work);
 
 	// free allowlist
 	mutex_lock(&allowlist_mutex);
