@@ -31,8 +31,7 @@ static inline u32 current_sid(void)
 }
 #endif
 
-// TODO: rename to "ksu"
-#define KERNEL_SU_DOMAIN "su"
+#define KERNEL_SU_DOMAIN "ksu"
 #define KERNEL_SU_FILE "ksu_file"
 
 #define KERNEL_SU_CONTEXT "u:r:" KERNEL_SU_DOMAIN ":s0"
