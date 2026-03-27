@@ -22,7 +22,7 @@
 #include "manager/manager_identity.h"
 #include "selinux/selinux.h"
 #include "infra/seccomp_cache.h"
-#include "uapi/supercalls.h"
+#include "supercall/supercall.h"
 #include "hook_manager.h"
 #include "feature/kernel_umount.h"
 #include "compat/kernel_compat.h"
