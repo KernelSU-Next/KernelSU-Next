@@ -136,7 +136,7 @@ void disable_seccomp(void)
 #endif
 }
 
-void escape_with_root_profile(void)
+int escape_with_root_profile(void)
 {
 	struct cred *cred;
     struct root_profile profile;
@@ -145,7 +145,7 @@ void escape_with_root_profile(void)
 	cred = prepare_creds();
 	if (!cred) {
 		pr_warn("prepare_creds failed!\n");
-		return;
+		return 0;
 	}
 
 	if (cred->euid.val == 0) {
@@ -223,10 +223,11 @@ void escape_with_root_profile(void)
 #endif
 
     setup_mount_ns(profile.namespaces);
-	return;
+	return 0;
 
 out_abort_creds:
     abort_creds(cred);
+	return 0;
 }
 
 void escape_to_root_for_init(void) {
