@@ -11,7 +11,7 @@
 #endif // #ifdef CONFIG_KSU_SUSFS
 #include "uapi/supercall.h"
 #include "supercall/internal.h"
-#include "arch.h"
+#include "arch.h" // IWYU pragma: keep
 #include "policy/allowlist.h"
 #include "policy/feature.h"
 #include "klog.h" // IWYU pragma: keep
@@ -23,6 +23,7 @@
 #include "infra/file_wrapper.h"
 #include "hook/hook_manager.h"
 #include "policy/app_profile.h"
+#include "supercall/supercall.h"
 
 #include "tiny_sulog.h"
 
