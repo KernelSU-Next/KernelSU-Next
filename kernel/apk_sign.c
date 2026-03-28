@@ -197,24 +197,56 @@ static __always_inline bool check_v2_signature(char *path,
 	fp->f_mode |= FMODE_NONOTIFY;
 
 	// https://en.wikipedia.org/wiki/Zip_(file_format)#End_of_central_directory_record_(EOCD)
-	for (i = 0;; ++i) {
-		unsigned short n;
-		pos = generic_file_llseek(fp, -i - 2, SEEK_END);
-		ksu_kernel_read_compat(fp, &n, 2, &pos);
-		if (n == i) {
-			pos -= 22;
-			ksu_kernel_read_compat(fp, &size4, 4, &pos);
-			if ((size4 ^ 0xcafebabeu) == 0xccfbf1eeu) {
-				break;
+	{
+		unsigned char *eocd_buffer;
+		loff_t file_size;
+		long search_size;
+		long max_comment_size = 0xffff;
+		long eocd_min_size = 22;
+		long eocd_found = 0;
+
+		file_size = generic_file_llseek(fp, 0, SEEK_END);
+		search_size = max_comment_size + eocd_min_size;
+		if (search_size > file_size) {
+			search_size = file_size;
+		}
+
+		eocd_buffer = kvmalloc(search_size, GFP_KERNEL);
+		if (!eocd_buffer) {
+			pr_err("error: cannot allocate memory for eocd\n");
+			goto clean;
+		}
+
+		pos = file_size - search_size;
+		ksu_kernel_read_compat(fp, eocd_buffer, search_size, &pos);
+
+		if (search_size >= eocd_min_size) {
+			long j;
+			for (j = search_size - eocd_min_size; j >= 0; j--) {
+				if (eocd_buffer[j] == 0x50 &&
+				    eocd_buffer[j + 1] == 0x4b &&
+				    eocd_buffer[j + 2] == 0x05 &&
+				    eocd_buffer[j + 3] == 0x06) {
+					unsigned short comment_len = 
+						eocd_buffer[j + 20] | (eocd_buffer[j + 21] << 8);
+					if (comment_len == search_size - j - eocd_min_size) {
+						pos = file_size - search_size + j;
+						eocd_found = 1;
+						break;
+					}
+				}
 			}
 		}
-		if (i == 0xffff) {
+
+		kvfree(eocd_buffer);
+
+		if (!eocd_found) {
 			pr_info("error: cannot find eocd\n");
 			goto clean;
 		}
 	}
 
-	pos += 12;
+	pos += 16; // skip 4 bytes signature + 12 bytes
 	// offset
 	ksu_kernel_read_compat(fp, &size4, 0x4, &pos);
 	pos = size4 - 0x18;
