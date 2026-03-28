@@ -640,7 +640,7 @@ static int sys_fstat_handler_pre(struct kretprobe_instance *p,
 {
 	struct pt_regs *real_regs = PT_REAL_REGS(regs);
 	unsigned int fd = PT_REGS_PARM1(real_regs);
-	void *statbuf = PT_REGS_PARM2(real_regs);
+	void *statbuf = (void *)PT_REGS_PARM2(real_regs);
 	*(void **)&p->data = NULL;
 
 	struct file *file = fget(fd);
@@ -660,22 +660,46 @@ static int sys_fstat_handler_post(struct kretprobe_instance *p,
 					struct pt_regs *regs)
 {
 	void __user *statbuf = *(void **)&p->data;
-	if (statbuf) {
-		void __user *st_size_ptr = statbuf + offsetof(struct stat, st_size);
-		long size, new_size;
-		if (!ksu_copy_from_user_nofault(&size, st_size_ptr, sizeof(long))) {
-			new_size = size + ksu_rc_len;
-			pr_info("adding ksu_rc_len: %ld -> %ld", size, new_size);
-			if (!copy_to_user(st_size_ptr, &new_size, sizeof(long))) {
-				pr_info("added ksu_rc_len");
-			} else {
-				pr_err("add ksu_rc_len failed: statbuf 0x%lx",
-					(unsigned long)st_size_ptr);
-			}
+	size_t size_offset;
+	size_t size_bytes;
+	long size = 0;
+	long new_size = 0;
+
+	if (!statbuf) return 0;
+
+#ifdef CONFIG_COMPAT
+	// Check if the process (like init) is 32-bit running on a 64-bit kernel
+	if (in_compat_syscall()) {
+		size_offset = offsetof(struct compat_stat, st_size);
+		size_bytes = sizeof(compat_off_t);
+	} else
+#endif
+	{
+		// Native 64-bit or pure 32-bit kernel
+		size_offset = offsetof(struct stat, st_size);
+		size_bytes = sizeof(off_t);
+	}
+
+	void __user *st_size_ptr = statbuf + size_offset;
+
+	// Kretprobes run in Atomic Context. We MUST disable pagefaults 
+	// to prevent copy_to_user from sleeping and causing a Kernel Panic.
+	pagefault_disable();
+
+	if (!ksu_copy_from_user_nofault(&size, st_size_ptr, size_bytes)) {
+		new_size = size + ksu_rc_len;
+		pr_info("adding ksu_rc_len: %ld -> %ld", size, new_size);
+
+		// Attempt to overwrite the file size in userspace safely
+		if (!copy_to_user(st_size_ptr, &new_size, size_bytes)) {
+			pr_info("added ksu_rc_len");
 		} else {
-			pr_err("read statbuf 0x%lx failed", (unsigned long)st_size_ptr);
+			pr_err("add ksu_rc_len failed: statbuf 0x%lx",
+					(unsigned long)st_size_ptr);
 		}
 	}
+
+	pagefault_enable();
 
 	return 0;
 }
