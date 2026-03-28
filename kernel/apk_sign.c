@@ -132,32 +132,81 @@ struct zip_entry_header {
 	uint16_t extra_field_length;
 } __attribute__((packed));
 
+struct ksu_buf_reader {
+	struct file *fp;
+	loff_t file_pos;
+	char buf[4096];
+	size_t buf_len;
+};
+
+static inline ssize_t ksu_bread(struct ksu_buf_reader *br, void *dst,
+				size_t count, loff_t *pos)
+{
+	if (*pos >= br->file_pos &&
+	    *pos + count <= br->file_pos + br->buf_len) {
+		memcpy(dst, br->buf + (*pos - br->file_pos), count);
+		*pos += count;
+		return count;
+	}
+
+	br->file_pos = *pos;
+	loff_t read_pos = br->file_pos;
+	ssize_t res = ksu_kernel_read_compat(br->fp, br->buf, sizeof(br->buf),
+					     &read_pos);
+	if (res <= 0) {
+		br->buf_len = 0;
+		return res;
+	}
+	br->buf_len = res;
+
+	if (count <= br->buf_len) {
+		memcpy(dst, br->buf, count);
+		*pos += count;
+		return count;
+	}
+
+	return 0;
+}
+
 // This is a necessary but not sufficient condition, but it is enough for us
 static bool has_v1_signature_file(struct file *fp)
 {
 	struct zip_entry_header header;
 	const char MANIFEST[] = "META-INF/MANIFEST.MF";
-
+	bool found = false;
 	loff_t pos = 0;
 
-	while (ksu_kernel_read_compat(fp, &header,
+	struct ksu_buf_reader *br =
+		kzalloc(sizeof(struct ksu_buf_reader), GFP_KERNEL);
+	if (!br) {
+		pr_err("ksu_buf_reader alloc failed\n");
+		return false;
+	}
+
+	br->fp = fp;
+	br->file_pos = 0;
+	br->buf_len = 0;
+	while (ksu_bread(br, &header,
 					sizeof(struct zip_entry_header), &pos) ==
 		sizeof(struct zip_entry_header)) {
 		if (header.signature != 0x04034b50) {
 			// ZIP magic: 'PK'
-			return false;
+			break;
 		}
 		// Read the entry file name
 		if (header.file_name_length == sizeof(MANIFEST) - 1) {
 			char fileName[sizeof(MANIFEST)];
-			ksu_kernel_read_compat(fp, fileName,
-						header.file_name_length, &pos);
-			fileName[header.file_name_length] = '\0';
+			if (ksu_bread(br, fileName, header.file_name_length,
+				      &pos) == header.file_name_length) {
+				fileName[header.file_name_length] = '\0';
 
-			// Check if the entry matches META-INF/MANIFEST.MF
-			if (strncmp(MANIFEST, fileName, sizeof(MANIFEST) - 1) ==
-				0) {
-				return true;
+				// Check if the entry matches META-INF/MANIFEST.MF
+				if (strncmp(MANIFEST, fileName, sizeof(MANIFEST) - 1) == 0) {
+					found = true;
+					break;
+				}
+			} else {
+				break;
 			}
 		} else {
 			// Skip the entry file name
@@ -168,7 +217,8 @@ static bool has_v1_signature_file(struct file *fp)
 		pos += header.extra_field_length + header.compressed_size;
 	}
 
-	return false;
+	kfree(br);
+	return found;
 }
 
 static __always_inline bool check_v2_signature(char *path,
