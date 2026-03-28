@@ -30,8 +30,16 @@ static int ksu_key_permission(key_ref_t key_ref, const struct cred *cred,
 }
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+static int ksu_inode_rename(struct mnt_idmap *idmap, struct inode *old_dir, struct dentry *old_dentry,
+			    struct inode *new_dir, struct dentry *new_dentry)
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
+static int ksu_inode_rename(struct user_namespace *mnt_userns, struct inode *old_dir, struct dentry *old_dentry,
+			    struct inode *new_dir, struct dentry *new_dentry)
+#else
 static int ksu_inode_rename(struct inode *old_dir, struct dentry *old_dentry,
 			    struct inode *new_dir, struct dentry *new_dentry)
+#endif
 {
 	// skip kernel threads
 	if (!current->mm) {
@@ -47,8 +55,9 @@ static int ksu_inode_rename(struct inode *old_dir, struct dentry *old_dentry,
 		return 0;
 	}
 
-	// /data/system/packages.list.tmp -> /data/system/packages.list
-	if (strcmp(new_dentry->d_iname, "packages.list")) {
+	// Use d_name.name instead of the dangerous d_iname 
+	// which can cause OOPS when the dentry is in an inconsistent state during rename
+	if (strcmp(new_dentry->d_name.name, "packages.list")) {
 		return 0;
 	}
 
@@ -69,8 +78,8 @@ static int ksu_inode_rename(struct inode *old_dir, struct dentry *old_dentry,
 		return 0;
 	}
 
-	pr_info("renameat: %s -> %s, new path: %s\n", old_dentry->d_iname,
-		new_dentry->d_iname, buf);
+	pr_info("renameat: %s -> %s, new path: %s\n", old_dentry->d_name.name,
+		new_dentry->d_name.name, buf);
 
 	// Safe execution after boot completed
 	static bool first_time_after_boot = true;
@@ -104,7 +113,13 @@ extern int __ksu_handle_devpts(struct inode *inode); // sucompat.c
 bool ksu_is_compat __read_mostly = false;
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+int ksu_inode_permission(struct mnt_idmap *idmap, struct inode *inode, int mask)
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
+int ksu_inode_permission(struct user_namespace *mnt_userns, struct inode *inode, int mask)
+#else
 int ksu_inode_permission(struct inode *inode, int mask)
+#endif
 {
 	if (unlikely(inode && inode->i_sb && inode->i_sb->s_magic == DEVPTS_SUPER_MAGIC)) {
 		__ksu_handle_devpts(inode);
