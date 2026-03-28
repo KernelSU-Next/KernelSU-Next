@@ -252,8 +252,13 @@ static bool is_lock_held(const char *path)
 	return false;
 }
 
-static struct delayed_work ksu_throne_work;
-static bool throne_prune_only_state = false;
+struct ksu_throne_work_data {
+	struct delayed_work dwork;
+	bool prune_only;
+	int retries;
+};
+
+static struct ksu_throne_work_data throne_data;
 static DEFINE_MUTEX(throne_tracker_mutex);
 
 static bool do_track_throne_core(bool prune_only)
@@ -357,38 +362,35 @@ out:
 // kworker
 static void ksu_throne_work_fn(struct work_struct *work)
 {
-	static int retries = 0;
+	struct ksu_throne_work_data *data = container_of(to_delayed_work(work), struct ksu_throne_work_data, dwork);
 	bool success;
 
 	mutex_lock(&throne_tracker_mutex);
 
 	// Temporarily lend root credentials to the kworker
 	const struct cred *saved_cred = override_creds(ksu_cred);
-	
-	success = do_track_throne_core(throne_prune_only_state);
-	
+
+	success = do_track_throne_core(data->prune_only);
+
 	revert_creds(saved_cred);
 	mutex_unlock(&throne_tracker_mutex);
 
-	if (!success && retries < 10) {
-		retries++;
-		pr_info("throne_tracker: retrying (%d/10) in 100ms...\n", retries);
-		// The job is rescheduled in 100ms
-		schedule_delayed_work(&ksu_throne_work, msecs_to_jiffies(100));
+	if (!success && data->retries < 10) {
+		data->retries++;
+		pr_info("throne_tracker: retrying (%d/10) in 100ms...\n", data->retries);
+		// Reschedule exactly this work instance
+		schedule_delayed_work(&data->dwork, msecs_to_jiffies(100));
 	} else {
 		if (!success) {
 			pr_warn("throne_tracker: giving up after 10 retries.\n");
 		}
-		retries = 0; // Resets for future triggers
+		data->retries = 0; // Resets for future triggers
 	}
 }
 
 void track_throne(bool prune_only)
 {
 	static bool throne_tracker_first_run __read_mostly = true;
-	
-	// The state is saved for the kworker to read
-	throne_prune_only_state = prune_only;
 
 	// First scan must be synchronous to not break FDE/FBEv1 on older kernels
 	if (unlikely(throne_tracker_first_run)) {
@@ -403,16 +405,22 @@ void track_throne(bool prune_only)
 		return;
 	}
 
-	// Subsequent executions: Fully asynchronous
-	schedule_delayed_work(&ksu_throne_work, 0);
+	// For asynchronous runs, if a work is already pending, canceling it
+	// ensures we don't clobber the prune_only state while it's waiting.
+	cancel_delayed_work_sync(&throne_data.dwork);
+
+	// Update state safely and queue the new work
+	throne_data.prune_only = prune_only;
+	throne_data.retries = 0;
+	schedule_delayed_work(&throne_data.dwork, 0);
 }
 
 void ksu_throne_tracker_init(void)
 {
-	INIT_DELAYED_WORK(&ksu_throne_work, ksu_throne_work_fn);
+	INIT_DELAYED_WORK(&throne_data.dwork, ksu_throne_work_fn);
 }
 
 void ksu_throne_tracker_exit(void)
 {
-	cancel_delayed_work_sync(&ksu_throne_work);
+	cancel_delayed_work_sync(&throne_data.dwork);
 }
