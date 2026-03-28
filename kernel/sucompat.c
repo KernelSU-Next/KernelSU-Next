@@ -62,9 +62,13 @@ static const struct ksu_feature_handler su_compat_handler = {
 
 static void __user *userspace_stack_buffer(const void *d, size_t len)
 {
-	// To avoid having to mmap a page in userspace, just write below the stack
-	// pointer.
-	char __user *p = (void __user *)current_user_stack_pointer() - len;
+	// Stack Pointer must be 16-byte aligned.
+	// We also subtract a safe margin (256 bytes) 
+	// to avoid corrupting local variables or smth
+	unsigned long sp = current_user_stack_pointer();
+	sp = (sp - len - 256) & ~0xFUL; // Align downwards to nearest 16 bytes
+
+	char __user *p = (char __user *)sp;
 
 	return copy_to_user(p, d, len) ? NULL : p;
 }
