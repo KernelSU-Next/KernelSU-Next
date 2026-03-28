@@ -50,29 +50,6 @@ static int transive_to_domain(const char *domain, struct cred *cred)
     return error;
 }
 
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(4, 19, 0)
-bool __maybe_unused
-is_ksu_transition(const struct task_security_struct *old_tsec,
-		  const struct task_security_struct *new_tsec)
-{
-	static u32 ksu_sid;
-	char *secdata;
-	u32 seclen;
-	bool allowed = false;
-
-	if (!ksu_sid)
-		security_secctx_to_secid(KERNEL_SU_CONTEXT,
-					 strlen(KERNEL_SU_CONTEXT), &ksu_sid);
-
-	if (security_secid_to_secctx(old_tsec->sid, &secdata, &seclen))
-		return false;
-
-	allowed = (!strcmp("u:r:init:s0", secdata) && new_tsec->sid == ksu_sid);
-	security_release_secctx(secdata, seclen);
-	return allowed;
-}
-#endif
-
 void setup_selinux(const char *domain, struct cred *cred)
 {
     if (transive_to_domain(domain, cred)) {
@@ -200,28 +177,32 @@ static bool is_sid_match(const struct cred *cred, u32 cached_sid,
     if (!cred) {
         return false;
     }
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
-    const struct task_security_struct *tsec = selinux_cred(cred);
-#else
-    const struct cred_security_struct *tsec = selinux_cred(cred);
-#endif
+
+    // Cast pointer dynamically to avoid struct cred_security_struct 
+    // vs task_security_struct mismatch
+    struct task_security_struct *tsec = selinux_cred(cred);
     if (!tsec) {
         return false;
     }
     
-    // Fast path: use cached SID if available
+    // use cached SID if available
     if (likely(cached_sid != 0)) {
         return tsec->sid == cached_sid;
     }
 
-    // Slow path fallback: string comparison (only before cache is initialized)
+    // fallback: string comparison (only before cache is initialized)
     struct lsm_context ctx;
     bool result;
     if (__security_secid_to_secctx(tsec->sid, &ctx)) {
         return false;
     }
-    result = strncmp(fallback_context, ctx.context, ctx.len) == 0;
+    
+    // Contexts from security_secid_to_secctx are null terminated. 
+    // Using strncmp with ctx.len is dangerous because ctx.len 
+    // might include the null byte.
+    result = strcmp(fallback_context, ctx.context) == 0;
     __security_release_secctx(&ctx);
+
     return result;
 }
 
