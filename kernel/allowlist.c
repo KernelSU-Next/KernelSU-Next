@@ -348,6 +348,10 @@ void ksu_get_root_profile(uid_t uid, struct root_profile *profile)
         goto use_default;
     }
 
+    if (!__ksu_is_allow_uid(uid)) {
+        goto use_default;
+    }
+
     rcu_read_lock();
     list_for_each_entry_rcu (p, &allow_list, list) {
         if (uid == p->profile.current_uid && p->profile.allow_su) {
