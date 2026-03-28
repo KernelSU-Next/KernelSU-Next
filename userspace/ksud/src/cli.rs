@@ -37,7 +37,11 @@ enum Commands {
     BootCompleted,
 
     /// Load kernelsu.ko and execute late-load stage scripts
-    LateLoad,
+    LateLoad {
+        /// manager package name
+        #[arg(long, default_value_t = String::from("com.rifsxd.ksunext"))]
+        package_name: String,
+    },
 
     /// Install KernelSU Next userspace component to system
     Install {
@@ -593,7 +597,7 @@ pub fn run() -> Result<()> {
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
             Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
         },
-        Commands::LateLoad => crate::late_load::run(),
+        Commands::LateLoad { package_name } => crate::late_load::run(&package_name),
         Commands::Services => {
             if ksucalls::get_version() <= 0 {
                 info!("KernelSU Next not available, exiting services");
