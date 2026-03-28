@@ -30,7 +30,6 @@
 #include "kernel_compat.h"
 #include "sucompat.h"
 #include "app_profile.h"
-#include "util.h"
 
 extern void write_sulog(uint8_t sym);
 

@@ -37,7 +37,6 @@
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
 #include "ksud.h"
-#include "util.h"
 #include "selinux/selinux.h"
 #include "throne_tracker.h"
 #include "kernel_compat.h"
