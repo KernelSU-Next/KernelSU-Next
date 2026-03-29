@@ -23,6 +23,7 @@
 #include "hook/syscall_hook.h"
 #include "feature/adb_root.h"
 #include "feature/selinux_hide.h"
+#include "feature/sulog.h"
 #include "infra/symbol_resolver.h"
 
 #if defined(__x86_64__)
@@ -127,6 +128,8 @@ int __init kernelsu_init(void)
 
 	ksu_feature_init();
 
+	ksu_sulog_init();
+
 	ksu_adb_root_init();
 
 	ksu_lsm_hook_init();
@@ -209,6 +212,8 @@ void __exit kernelsu_exit(void)
 	ksu_lsm_hook_exit();
 
 	ksu_adb_root_exit();
+
+	ksu_sulog_exit();
 
 	ksu_feature_exit();
 
