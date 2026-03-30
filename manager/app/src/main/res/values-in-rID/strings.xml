@@ -50,7 +50,7 @@
   <string name="installed">Terpasang</string>
   <string name="uninstalled">Dihapus</string>
   <string name="settings">Setelan</string>
-  <string name="reboot_userspace">Mulai ulang ringan</string>
+  <string name="reboot_userspace">Mulai ulang cepat</string>
   <string name="reboot_recovery">Mulai ulang ke Recovery</string>
   <string name="reboot_bootloader">Mulai ulang ke Bootloader</string>
   <string name="reboot_download">Mulai ulang ke Download</string>
