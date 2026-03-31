@@ -31,6 +31,8 @@
   <string name="selinux_status_permissive">寬容</string>
   <string name="selinux_status_unknown">未知</string>
   <string name="superuser">超級使用者</string>
+  <string name="feature_status_unsupported_summary">內核不支持此功能</string>
+  <string name="feature_status_managed_summary">此功能由模組管理</string>
   <string name="module_failed_to_enable">無法啟用模組：%s</string>
   <string name="module_failed_to_disable">無法停用模組：%s</string>
   <string name="module_empty">尚未安裝任何模組</string>

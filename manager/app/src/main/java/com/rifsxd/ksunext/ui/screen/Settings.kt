@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -117,12 +118,17 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     var kernelUmountStatus by rememberSaveable { mutableStateOf("") }
     var adbRootStatus by rememberSaveable { mutableStateOf("") }
     var selinuxHideStatus by rememberSaveable { mutableStateOf("") }
-    var avcSpoofStatus by rememberSaveable { mutableStateOf("") }
+    var sulogStatus by remember { mutableStateOf("unsupported") }
+    var isSulogEnabled by rememberSaveable { mutableStateOf(false) }
+    var avcSpoofStatus by remember { mutableStateOf("unsupported") }
 
     LaunchedEffect(Unit) {
         suCompatStatus = getFeatureStatus("su_compat")
         kernelUmountStatus = getFeatureStatus("kernel_umount")
+        sulogStatus = getFeatureStatus("sulog")
+        isSulogEnabled = getFeaturePersistValue("sulog") == 1L
         adbRootStatus = getFeatureStatus("adb_root")
+
         selinuxHideStatus = getFeatureStatus("selinux_hide")
         avcSpoofStatus = getFeatureStatus("avc_spoof")
     }
@@ -156,6 +162,9 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 KernelFeaturesCard(
                     suCompatStatus = suCompatStatus,
                     kernelUmountStatus = kernelUmountStatus,
+                    sulogStatusParam = sulogStatus,
+                    isSulogEnabled = isSulogEnabled,
+                    onSulogEnabledChange = { isSulogEnabled = it },
                     adbRootStatus = adbRootStatus,
                     selinuxHideStatus = selinuxHideStatus,
                     avcSpoofStatus = avcSpoofStatus,
@@ -186,6 +195,9 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 private fun KernelFeaturesCard(
     suCompatStatus: String,
     kernelUmountStatus: String,
+    sulogStatusParam: String,
+    isSulogEnabled: Boolean,
+    onSulogEnabledChange: (Boolean) -> Unit,
     adbRootStatus: String,
     selinuxHideStatus: String,
     avcSpoofStatus: String,
@@ -253,6 +265,27 @@ private fun KernelFeaturesCard(
                         execKsud("feature save", true)
                         prefsLocal.edit { putInt("kernel_umount_mode", if (checked) 0 else 2) }
                         isKernelUmountEnabled = checked
+                    }
+                }
+            }
+
+            if (sulogStatusParam == "supported") {
+                val sulogSummary = when (sulogStatusParam) {
+                    "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                    "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                    else -> stringResource(id = R.string.settings_sulog_summary)
+                }
+                SwitchItem(
+                    icon = Icons.AutoMirrored.Filled.Article,
+                    title = stringResource(id = R.string.settings_sulog),
+                    summary = sulogSummary,
+                    checked = isSulogEnabled,
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                ) { checked ->
+                    if (execKsud("feature set sulog ${if (checked) 1 else 0}", true)) {
+                        execKsud("feature save", true)
+                        onSulogEnabledChange(checked)
                     }
                 }
             }

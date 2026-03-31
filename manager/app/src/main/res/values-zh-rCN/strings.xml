@@ -31,6 +31,8 @@
   <string name="selinux_status_permissive">宽容模式</string>
   <string name="selinux_status_unknown">未知</string>
   <string name="superuser">超级用户</string>
+  <string name="feature_status_unsupported_summary">内核不支持此功能</string>
+  <string name="feature_status_managed_summary">此功能由模块管理</string>
   <string name="module_failed_to_enable">启用模块失败：%s</string>
   <string name="module_failed_to_disable">禁用模块失败：%s</string>
   <string name="module_empty">未安装模块</string>

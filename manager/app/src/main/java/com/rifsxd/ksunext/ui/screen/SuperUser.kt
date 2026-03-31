@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -38,6 +39,7 @@ import com.dergoogler.mmrl.ui.component.LabelItemDefaults
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.AppProfileScreenDestination
+import com.ramcosta.composedestinations.generated.destinations.SulogScreenDestination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.Natives
@@ -85,6 +87,14 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                 searchText = viewModel.search,
                 onSearchTextChange = { viewModel.search = it },
                 onClearClick = { viewModel.search = "" },
+                actionsContent = {
+                    IconButton(onClick = { navigator.navigate(SulogScreenDestination) }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Article,
+                            contentDescription = stringResource(R.string.settings_sulog)
+                        )
+                    }
+                },
                 dropdownContent = {
                     var showDropdown by remember { mutableStateOf(false) }
 
