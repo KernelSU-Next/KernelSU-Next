@@ -186,14 +186,14 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
 }
 #endif // #if defined(CONFIG_KSU_SUSFS) || !defined(CONFIG_KSU_SUSFS_TRY_UMOUNT)
 
-void ksu_kernel_umount_init(void)
+void __init ksu_kernel_umount_init(void)
 {
 	if (ksu_register_feature_handler(&kernel_umount_handler)) {
 		pr_err("Failed to register kernel_umount feature handler\n");
 	}
 }
 
-void ksu_kernel_umount_exit(void)
+void __exit ksu_kernel_umount_exit(void)
 {
 	ksu_unregister_feature_handler(KSU_FEATURE_KERNEL_UMOUNT);
 }

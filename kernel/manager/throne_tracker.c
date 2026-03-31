@@ -415,12 +415,12 @@ void track_throne(bool prune_only)
 	schedule_delayed_work(&throne_data.dwork, 0);
 }
 
-void ksu_throne_tracker_init(void)
+void __init ksu_throne_tracker_init(void)
 {
 	INIT_DELAYED_WORK(&throne_data.dwork, ksu_throne_work_fn);
 }
 
-void ksu_throne_tracker_exit(void)
+void __exit ksu_throne_tracker_exit(void)
 {
 	cancel_delayed_work_sync(&throne_data.dwork);
 }
