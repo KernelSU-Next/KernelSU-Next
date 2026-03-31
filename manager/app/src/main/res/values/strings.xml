@@ -222,7 +222,7 @@
     <string name="module_sort_webui_first">Sort (WebUI first)</string>
     <string name="settings_enable_kernel_umount">Kernel umount</string>
     <string name="settings_enable_kernel_umount_summary">Umount modules at kernel-level.</string>
-    <string name="settings_sulog">SU log</string>
+    <string name="settings_sulog">SU Log</string>
     <string name="settings_sulog_summary">Record root requests into KernelSU sulog files.</string>
     <string name="settings_adb_root" translatable="false">ADB Root</string>
     <string name="settings_adb_root_summary">Run adbd daemon with root privileges</string>
