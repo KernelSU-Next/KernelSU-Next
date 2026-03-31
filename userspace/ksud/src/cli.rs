@@ -30,7 +30,8 @@ enum Commands {
     /// Trigger `service` event
     Services,
 
-    /// Run sulog reader daemon
+    /// Run sulog reader daemon. Not for user. Use `ksud debug sulogd` to launch daemon.
+    #[command(hide = true)]
     Sulogd,
 
     /// Trigger `boot-complete` event
@@ -189,6 +190,9 @@ enum Debug {
         #[command(subcommand)]
         command: MarkCommand,
     },
+
+    /// Launch sulogd daemon manually
+    Sulogd,
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -660,6 +664,7 @@ pub fn run() -> Result<()> {
                 MarkCommand::Unmark { pid } => debug::mark_unset(pid),
                 MarkCommand::Refresh => debug::mark_refresh(),
             },
+            Debug::Sulogd => sulog::ensure_sulogd_running(),
         },
 
         Commands::BootPatch(boot_patch) => crate::boot_patch::patch(boot_patch),
