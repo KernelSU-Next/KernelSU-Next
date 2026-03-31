@@ -795,7 +795,7 @@ void stop_input_hook()
 
 
 // ksud: module support
-void ksu_ksud_init()
+void __init ksu_ksud_init()
 {
 #ifdef KSU_KPROBES_HOOK
 	int ret;
@@ -818,7 +818,7 @@ void ksu_ksud_init()
 #endif
 }
 
-void ksu_ksud_exit()
+void __exit ksu_ksud_exit()
 {
 #ifdef KSU_KPROBES_HOOK
 	unregister_kprobe(&execve_kp);

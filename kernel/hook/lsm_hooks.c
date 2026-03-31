@@ -159,7 +159,7 @@ void __init ksu_lsm_hook_init(void)
 	pr_info("LSM hooks initialized.\n");
 }
 #else
-void ksu_lsm_hook_init(void)
+void __init ksu_lsm_hook_init(void)
 {
 	return;
 }
