@@ -233,7 +233,7 @@ static struct kprobe reboot_kp = {
     .pre_handler = reboot_handler_pre,
 };
 
-void ksu_supercalls_init(void)
+void __init ksu_supercalls_init(void)
 {
     int rc;
 
@@ -249,7 +249,7 @@ void ksu_supercalls_init(void)
     sulog_init_heap(); // grab heap memory
 }
 
-void ksu_supercalls_exit(void)
+void __exit ksu_supercalls_exit(void)
 {
     unregister_kprobe(&reboot_kp);
     ksu_supercall_cleanup_state();

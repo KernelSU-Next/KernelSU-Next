@@ -197,14 +197,14 @@ void ksu_avc_spoof_late_init(void)
 	}
 }
 
-void ksu_avc_spoof_init(void)
+void __init ksu_avc_spoof_init(void)
 {
 	if (ksu_register_feature_handler(&avc_spoof_handler)) {
 		pr_err("Failed to register avc spoof feature handler\n");
 	}
 }
 
-void ksu_avc_spoof_exit(void)
+void __exit ksu_avc_spoof_exit(void)
 {
 	if (ksu_avc_spoof_enabled) {
 		ksu_avc_spoof_disable();

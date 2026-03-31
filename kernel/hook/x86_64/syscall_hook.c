@@ -201,7 +201,7 @@ bool ksu_has_syscall_hook(int nr)
     return READ_ONCE(syscall_hooks[nr]) != NULL;
 }
 
-void ksu_syscall_hook_init(void)
+void __init ksu_syscall_hook_init(void)
 {
     int ni_slot;
 
@@ -225,7 +225,7 @@ void ksu_syscall_hook_init(void)
     pr_info("dispatcher installed at slot %d\n", ksu_dispatcher_nr);
 }
 
-void ksu_syscall_hook_exit(void)
+void __exit ksu_syscall_hook_exit(void)
 {
     int i;
 

@@ -348,7 +348,7 @@ out:
 	}
 }
 
-void ksu_throne_tracker_init()
+void __init ksu_throne_tracker_init()
 {
 	struct apk_path_hash *pos, *n;
 
@@ -358,7 +358,7 @@ void ksu_throne_tracker_init()
 	}
 }
 
-void ksu_throne_tracker_exit()
+void __exit ksu_throne_tracker_exit()
 {
 	// nothing to do
 }
