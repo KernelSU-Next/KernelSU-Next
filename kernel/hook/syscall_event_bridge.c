@@ -16,6 +16,7 @@
 #include "runtime/ksud.h"
 #include "hook/syscall_hook.h"
 #include "hook/syscall_event_bridge.h"
+#include "feature/adb_root.h"
 
 static int ksu_handle_init_mark_tracker(const char __user **filename_user)
 {
@@ -90,12 +91,17 @@ long __nocfi ksu_hook_execve(int orig_nr, const struct pt_regs *regs)
 {
     const char __user **filename_user = (const char __user **)&PT_REGS_PARM1(regs);
     bool current_is_init = is_init(current_cred());
+    long ret;
 
     if (static_branch_unlikely(&ksud_execve_key))
         ksu_execve_hook_ksud(regs);
 
     if (current->pid != 1 && current_is_init) {
         ksu_handle_init_mark_tracker(filename_user);
+        ret = ksu_adb_root_handle_execve((struct pt_regs *)regs);
+        if (ret) {
+            pr_err("adb root failed: %ld\n", ret);
+        }
     } else if (ksu_su_compat_enabled) {
         return ksu_handle_execve_sucompat(filename_user, orig_nr, regs);
     }
