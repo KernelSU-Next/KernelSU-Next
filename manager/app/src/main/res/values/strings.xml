@@ -203,6 +203,8 @@
     <string name="module_sort_webui_first">Sort (WebUI first)</string>
     <string name="settings_enable_kernel_umount">Kernel umount</string>
     <string name="settings_enable_kernel_umount_summary">Umount modules at kernel-level.</string>
+    <string name="settings_adb_root" translatable="false">ADB Root</string>
+    <string name="settings_adb_root_summary">Run adbd daemon with root privileges</string>
     <string name="settings_selinux_hide">Hide SELinux modification</string>
     <string name="settings_selinux_hide_summary">Prevent applications from detecting SELinux modifications</string>
     <string name="settings_selinux_hide_reboot_required">Reboot to take effect</string>

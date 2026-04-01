@@ -371,6 +371,18 @@ Java_com_rifsxd_ksunext_Natives_setKernelUmountEnabled(JNIEnv *env, jobject thiz
 
 extern "C"
 JNIEXPORT jboolean JNICALL
+Java_com_rifsxd_ksunext_Natives_isAdbRootEnabled(JNIEnv *env, jobject thiz) {
+    return is_adb_root_enabled();
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_rifsxd_ksunext_Natives_setAdbRootEnabled(JNIEnv *env, jobject thiz, jboolean enabled) {
+    return set_adb_root_enabled(enabled);
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
 Java_com_rifsxd_ksunext_Natives_isAvcSpoofEnabled(JNIEnv *env, jobject thiz) {
     return is_avc_spoof_enabled();
 }

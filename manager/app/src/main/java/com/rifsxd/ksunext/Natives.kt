@@ -108,6 +108,15 @@ object Natives {
     external fun setKernelUmountEnabled(enabled: Boolean): Boolean
 
     /**
+     * ADB root can be enabled/disabled.
+     *  0: disabled
+     *  1: enabled
+     *  negative : error
+     */
+    external fun isAdbRootEnabled(): Boolean
+    external fun setAdbRootEnabled(enabled: Boolean): Boolean
+
+    /**
      * SELinux hide can be disabled temporarily.
      *  0: disabled
      *  1: enabled

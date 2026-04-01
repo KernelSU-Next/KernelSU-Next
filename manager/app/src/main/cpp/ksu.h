@@ -51,6 +51,11 @@ bool set_kernel_umount_enabled(bool enabled);
 
 bool is_kernel_umount_enabled();
 
+// ADB root
+bool set_adb_root_enabled(bool enabled);
+
+bool is_adb_root_enabled();
+
 // Avc spoof
 bool set_avc_spoof_enabled(bool enabled);
 

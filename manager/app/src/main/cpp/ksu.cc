@@ -215,6 +215,22 @@ bool is_kernel_umount_enabled() {
     return value != 0;
 }
 
+bool set_adb_root_enabled(bool enabled) {
+    return set_feature(KSU_FEATURE_ADB_ROOT, enabled ? 1 : 0);
+}
+
+bool is_adb_root_enabled() {
+    uint64_t value = 0;
+    bool supported = false;
+    if (!get_feature(KSU_FEATURE_ADB_ROOT, &value, &supported)) {
+        return false;
+    }
+    if (!supported) {
+        return false;
+    }
+    return value != 0;
+}
+
 int set_selinux_hide_enabled(bool enabled) {
     if (!set_feature(KSU_FEATURE_SELINUX_HIDE, enabled ? 1 : 0)) {
         return -errno;

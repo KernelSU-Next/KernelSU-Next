@@ -44,6 +44,8 @@ kernelsu-objs += supercall/dispatch.o
 kernelsu-objs += supercall/perm.o
 kernelsu-objs += supercall/supercall.o
 
+kernelsu-objs += feature/adb_root.o
+
 kernelsu-objs += feature/selinux_hide.o
 
 ifdef KBUILD_EXTMOD

@@ -116,12 +116,14 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     var avcSpoofStatus by rememberSaveable { mutableStateOf("") }
     var suCompatStatus by rememberSaveable { mutableStateOf("") }
     var kernelUmountStatus by rememberSaveable { mutableStateOf("") }
+    var adbRootStatus by rememberSaveable { mutableStateOf("") }
     var selinuxHideStatus by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         avcSpoofStatus = getFeatureStatus("avc_spoof")
         suCompatStatus = getFeatureStatus("su_compat")
         kernelUmountStatus = getFeatureStatus("kernel_umount")
+        adbRootStatus = getFeatureStatus("adb_root")
         selinuxHideStatus = getFeatureStatus("selinux_hide")
     }
 
@@ -154,6 +156,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 KernelFeaturesCard(
                     suCompatStatus = suCompatStatus,
                     kernelUmountStatus = kernelUmountStatus,
+                    adbRootStatus = adbRootStatus,
                     avcSpoofStatus = avcSpoofStatus,
                     selinuxHideStatus = selinuxHideStatus,
                     scope = scope
@@ -183,6 +186,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 private fun KernelFeaturesCard(
     suCompatStatus: String,
     kernelUmountStatus: String,
+    adbRootStatus: String,
     avcSpoofStatus: String,
     selinuxHideStatus: String,
     scope: kotlinx.coroutines.CoroutineScope
@@ -249,6 +253,28 @@ private fun KernelFeaturesCard(
                         execKsud("feature save", true)
                         prefsLocal.edit { putInt("kernel_umount_mode", if (checked) 0 else 2) }
                         isKernelUmountEnabled = checked
+                    }
+                }
+            }
+
+            if (adbRootStatus == "supported") {
+                var isAdbRootEnabled by rememberSaveable {
+                    mutableStateOf(Natives.isAdbRootEnabled())
+                }
+                SwitchItem(
+                    icon = Icons.Filled.Usb,
+                    title = stringResource(id = R.string.settings_adb_root),
+                    summary = stringResource(id = R.string.settings_adb_root_summary),
+                    checked = isAdbRootEnabled,
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                ) { checked ->
+                    val prefsLocal = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                    if (Natives.setAdbRootEnabled(checked)) {
+                        execKsud("feature save", true)
+                        prefsLocal.edit { putInt("adb_root_mode", if (checked) 0 else 2) }
+                        com.topjohnwu.superuser.ShellUtils.fastCmd("setprop ctl.restart adbd")
+                        isAdbRootEnabled = checked
                     }
                 }
             }
