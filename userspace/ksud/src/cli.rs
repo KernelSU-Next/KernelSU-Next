@@ -39,6 +39,10 @@ enum Commands {
 
     /// Load kernelsu.ko and execute late-load stage scripts
     LateLoad {
+        /// Specify kernel KMI version instead of auto-detection
+        #[arg(long)]
+        kmi: Option<String>,
+
         /// manager package name
         #[arg(long, default_value_t = String::from("com.rifsxd.ksunext"))]
         package_name: String,
@@ -601,7 +605,7 @@ pub fn run() -> Result<()> {
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
             Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
         },
-        Commands::LateLoad { package_name } => crate::late_load::run(&package_name),
+        Commands::LateLoad { package_name, kmi } => crate::late_load::run(&package_name, kmi),
         Commands::Services => {
             if ksucalls::get_version() <= 0 {
                 info!("KernelSU Next not available, exiting services");
