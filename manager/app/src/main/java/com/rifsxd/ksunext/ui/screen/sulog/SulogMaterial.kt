@@ -202,7 +202,7 @@ private fun LazyListScope.sulogEntriesSection(
         }
 
         else -> {
-            itemsIndexed(entries, key = { _, entry -> entry.key }) { index, entry ->
+            itemsIndexed(entries, key = { index, entry -> "$index-${entry.key}" }) { index, entry ->
                 ElevatedCard(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -229,14 +229,14 @@ private fun LazyListScope.sulogEntriesSection(
                                     )
                                 }
                                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    entry.summaryTags.forEach { tag ->
+                                    sulogEntrySummaryTags(entry).forEach { tag ->
                                         StatusTag(label = tag)
                                     }
                                 }
                             }
                         },
                         trailingContent = {
-                            entry.status?.let { Text(it, style = MaterialTheme.typography.labelLarge) }
+                            sulogEntryStatus(entry)?.let { Text(it, style = MaterialTheme.typography.labelLarge) }
                         }
                     )
                 }
@@ -364,7 +364,7 @@ private fun SulogDetailDialog(
             ) {
                 SelectionContainer {
                     Text(
-                        text = entry.detailText,
+                        text = sulogEntryDetailText(entry),
                         fontFamily = FontFamily.Monospace,
                         fontSize = 12.sp
                     )
