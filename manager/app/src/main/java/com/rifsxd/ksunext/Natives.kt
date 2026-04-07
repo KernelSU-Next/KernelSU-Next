@@ -20,7 +20,8 @@ object Natives {
     // 32310: new get_allow_list ioctl
     // 33070: SET_SEPOLICY ioctl
     // 33075: add set_init_pgrp ioctl
-    const val MINIMAL_SUPPORTED_KERNEL = 33075
+    // 33110: bump app profile version, migrate selinux domain
+    const val MINIMAL_SUPPORTED_KERNEL = 33110
 
     const val KERNEL_SU_DOMAIN = "u:r:ksu:s0"
 
