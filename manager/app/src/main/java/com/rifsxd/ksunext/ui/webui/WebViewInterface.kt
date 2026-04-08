@@ -227,6 +227,16 @@ class WebViewInterface(
         return currentModuleInfo.toString()
     }
 
+    fun canGoBack(): Boolean {
+        return webView.canGoBack()
+    }
+
+    fun goBack() {
+        webView.post {
+            webView.goBack()
+        }
+    }
+
     @JavascriptInterface
     fun createShortcut(): Boolean {
         return try {
