@@ -275,6 +275,9 @@ class WebUIActivity : ComponentActivity() {
                                 return WebResourceResponse(
                                     "image/png",
                                     null,
+                                    200,
+                                    "OK",
+                                    mapOf("Access-Control-Allow-Origin" to "*"),
                                     ByteArrayInputStream(out.toByteArray())
                                 )
                             }
