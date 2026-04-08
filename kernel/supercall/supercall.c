@@ -187,8 +187,13 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 		if (original_release_buf[0] == '\0') {
 			struct new_utsname *u_curr = utsname();
 			// we save current version as the original before modifying
-			strncpy(original_release_buf, u_curr->release, sizeof(original_release_buf));
-			strncpy(original_version_buf, u_curr->version, sizeof(original_version_buf));
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
+			strscpy(original_release_buf, u_curr->release, sizeof(original_release_buf));
+			strscpy(original_version_buf, u_curr->version, sizeof(original_version_buf));
+#else
+			strlcpy(original_release_buf, u_curr->release, sizeof(original_release_buf));
+			strlcpy(original_version_buf, u_curr->version, sizeof(original_version_buf));
+#endif
 			pr_info("sys_reboot: original uname saved: %s %s\n", original_release_buf, original_version_buf);
 		}
 
@@ -203,8 +208,13 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 		struct new_utsname *u = utsname();
 
 		down_write(&uts_sem);
-		strncpy(u->release, release_buf, sizeof(u->release));
-		strncpy(u->version, version_buf, sizeof(u->version));
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
+		strscpy(u->release, release_buf, sizeof(u->release));
+		strscpy(u->version, version_buf, sizeof(u->version));
+#else
+		strlcpy(u->release, release_buf, sizeof(u->release));
+		strlcpy(u->version, version_buf, sizeof(u->version));
+#endif
 		up_write(&uts_sem);
 
 		// we write our confirmation on **
