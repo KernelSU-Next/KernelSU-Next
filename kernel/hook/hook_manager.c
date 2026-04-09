@@ -277,6 +277,11 @@ int ksu_handle_init_mark_tracker(const char __user **filename_user)
 	
 	// Safe no-fault reading, no try_set_access_flag hacks!
 	ret = strncpy_from_user_nofault(path, fn, sizeof(path));
+	if (ret < 0 && preempt_count()) {
+		preempt_enable_no_resched_notrace();
+		ret = strncpy_from_user(path, fn, sizeof(path));
+		preempt_disable_notrace();
+	}
 
 	if (ret < 0) {
         // unreadable path; keep mark to avoid wrongly unmarking zygote

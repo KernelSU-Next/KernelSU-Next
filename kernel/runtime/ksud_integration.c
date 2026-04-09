@@ -555,6 +555,12 @@ static int sys_execve_handler_pre(struct kprobe *p, struct pt_regs *regs)
 
 	memset(path, 0, sizeof(path));
 	ret = strncpy_from_user_nofault(path, fn, 32);
+	if (ret < 0 && preempt_count()) {
+		preempt_enable_no_resched_notrace();
+		ret = strncpy_from_user(path, fn, 32);
+		preempt_disable_notrace();
+	}
+
 	if (ret < 0) {
 		pr_err("Access filename failed for execve_handler_pre\n");
 		return 0;

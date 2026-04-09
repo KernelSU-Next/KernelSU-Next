@@ -153,8 +153,13 @@ long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, 
 	memset(path, 0, sizeof(path));
 
 	ret = strncpy_from_user_nofault(path, fn, sizeof(path));
+	if (ret < 0 && preempt_count()) {
+		preempt_enable_no_resched_notrace();
+		ret = strncpy_from_user(path, fn, sizeof(path));
+		preempt_disable_notrace();
+	}
+
 	if (ret < 0) {
-		// Memory is protected by ION/DMA or invalid. We gracefully back off.
 		goto do_orig_execve;
 	}
 
