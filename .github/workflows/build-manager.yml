@@ -147,6 +147,7 @@ jobs:
       - name: Copy susfsd to app jniLibs
         run: |
           mkdir -p app/src/main/jniLibs/arm64-v8a
+          mkdir -p app/src/main/jniLibs/x86_64
           cp -f ../arm64-v8a/susfsd ../manager/app/src/main/jniLibs/arm64-v8a/libsusfsd.so
           cp -f ../x86_64/susfsd ../manager/app/src/main/jniLibs/x86_64/libsusfsd.so
 
