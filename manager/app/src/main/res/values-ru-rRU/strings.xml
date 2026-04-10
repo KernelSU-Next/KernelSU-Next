@@ -17,7 +17,7 @@
   <string name="home_failure">Не поддерживается | Не интегрирован</string>
   <string name="home_failure_tip">Ядра, отличные от GKI, не поддерживаются. Для корректной работы добавьте поддержку legacy драйвера KernelSU-Next в ваше ядро!</string>
   <string name="home_kernel">Версия ядра</string>
-  <string name="hook_mode">Режим обработчика</string>
+  <string name="hook_mode">Режим перехвата</string>
   <string name="enable">Включить</string>
   <string name="disable">Выключить</string>
   <string name="enabled">Включён</string>
@@ -68,8 +68,8 @@
   <string name="module_version_code">Код версии</string>
   <string name="module_update_json">Обновить Json</string>
   <string name="module_update_json_empty">Пусто</string>
-  <string name="enable_developer_options">Режим разработчика</string>
-  <string name="enable_developer_options_summary">Показать скрытые настройки и отладочную информацию, предназначенную для разработчиков.</string>
+  <string name="enable_developer_options">Включить режим разработчика</string>
+  <string name="enable_developer_options_summary">Показать скрытые настройки и отладочную информацию, предназначенную только для разработчиков.</string>
   <string name="refresh">Обновить</string>
   <string name="show_system_apps">Показать системные приложения</string>
   <string name="hide_system_apps">Скрыть системные приложения</string>
@@ -81,7 +81,7 @@
   <string name="unavailable">Недоступно</string>
   <string name="module_restore">Восстановить модуль</string>
   <string name="module_restore_message">Восстановить модули из последней резервной копии.</string>
-  <string name="backup_restore">Резервные копии</string>
+  <string name="backup_restore">Резервное копирование &amp; Восстановление</string>
   <string name="module_backup">Резервное копирование модулей</string>
   <string name="module_backup_message">Резервное копирование текущих установленных модулей.</string>
   <string name="allowlist_restore">Восстановить список разрешений</string>
