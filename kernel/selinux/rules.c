@@ -10,7 +10,6 @@
 #include <linux/sched/types.h>
 #endif
 #include <linux/stop_machine.h>
-#include <uapi/linux/sched/types.h>
 
 #include "uapi/selinux.h"
 #include "klog.h" // IWYU pragma: keep
