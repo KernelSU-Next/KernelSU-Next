@@ -85,6 +85,27 @@ static inline void ksu_kvfree(void *buf)
 #define kvfree ksu_kvfree
 #endif
 
+// https://elixir.bootlin.com/linux/v4.14.222/source/lib/string.c#L282
+static inline ssize_t __strscpy_pad(char *dest, const char *src, size_t count)
+{
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 222)
+    return strscpy_pad(dest, src, count);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 3, 0)
+    ssize_t res = strscpy(dest, src, count);
+    if (res >= 0 && (size_t)res < count) {
+        memset(dest + res, 0, count - res);
+    }
+    return res;
+#else
+    if (count == 0)
+        return -E2BIG;
+
+    strncpy(dest, src, count);
+    dest[count - 1] = '\0';
+    return strlen(dest);
+#endif
+}
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0)
 #define ksu_access_ok(addr, size) access_ok(addr, size)
 #else
