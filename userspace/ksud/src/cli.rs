@@ -39,6 +39,10 @@ enum Commands {
 
     /// Load kernelsu.ko and execute late-load stage scripts
     LateLoad {
+        /// Pass allow_shell=1 when loading kernelsu.ko
+        #[arg(long)]
+        allow_shell: bool,
+
         /// Specify kernel KMI version instead of auto-detection
         #[arg(long)]
         kmi: Option<String>,
@@ -46,6 +50,15 @@ enum Commands {
         /// manager package name
         #[arg(long, default_value_t = String::from("com.rifsxd.ksunext"))]
         package_name: String,
+    },
+
+    /// Load a kernel module with kallsyms access
+    Insmod {
+        /// kernel module path
+        module: PathBuf,
+        /// module load parameters (e.g. key=val key2=val2)
+        #[arg(trailing_var_arg = true, allow_hyphen_values = true, num_args = 0..)]
+        params: Vec<String>,
     },
 
     /// Install KernelSU Next userspace component to system
@@ -181,12 +194,6 @@ enum Debug {
         name: String,
         /// destination file path
         path: PathBuf,
-    },
-
-    /// Load a kernel module from disk
-    Insmod {
-        /// kernel module path
-        module: PathBuf,
     },
 
     /// Process mark management
@@ -605,7 +612,7 @@ pub fn run() -> Result<()> {
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
             Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
         },
-        Commands::LateLoad { package_name, kmi } => crate::late_load::run(&package_name, kmi),
+        Commands::LateLoad { package_name, kmi, allow_shell } => crate::late_load::run(&package_name, kmi, allow_shell),
         Commands::Services => {
             if ksucalls::get_version() <= 0 {
                 info!("KernelSU Next not available, exiting services");
@@ -661,7 +668,6 @@ pub fn run() -> Result<()> {
                 let data = assets::get_asset_data(&name)?;
                 utils::ensure_binary(&path, &data, false)
             }
-            Debug::Insmod { module } => debug::insmod(&module),
             Debug::Mark { command } => match command {
                 MarkCommand::Get { pid } => debug::mark_get(pid),
                 MarkCommand::Mark { pid } => debug::mark_set(pid),
@@ -720,6 +726,8 @@ pub fn run() -> Result<()> {
             crate::resetprop::resetprop_main(&full_args)
         }
         Commands::SoftReboot => init_event::soft_reboot(),
+
+        Commands::Insmod { module, params } => debug::insmod(&module, &params),
 
         Commands::Susfs { command } => match command {
             SusfsAction::Support => susfsd::show_features(true),
