@@ -6,7 +6,7 @@ use android_logger::Config;
 use log::{LevelFilter, info};
 
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
-use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, utils};
+use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, susfsd, utils};
 
 /// KernelSU Next userspace cli
 #[derive(Parser, Debug)]
@@ -103,6 +103,12 @@ enum Commands {
     /// Emulate soft reboot (ksud; zygote)
     #[command(name = "soft-reboot")]
     SoftReboot,
+
+    /// Susfs management
+    Susfs {
+        #[command(subcommand)]
+        command: SusfsAction,
+    },
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -430,6 +436,18 @@ enum UmountOp {
     Wipe,
 }
 
+#[derive(clap::Subcommand, Debug)]
+enum SusfsAction {
+    /// Show if susfs is supported
+    Support,
+    /// Show susfs version
+    Version,
+    /// Show susfs variant
+    Variant,
+    /// Show enabled features
+    Features,
+}
+
 pub fn run() -> Result<()> {
     android_logger::init_once(
         Config::default()
@@ -678,6 +696,13 @@ pub fn run() -> Result<()> {
             crate::resetprop::resetprop_main(&full_args)
         }
         Commands::SoftReboot => init_event::soft_reboot(),
+
+        Commands::Susfs { command } => match command {
+            SusfsAction::Support => susfsd::show_features(true),
+            SusfsAction::Version => susfsd::show_version(),
+            SusfsAction::Variant => susfsd::show_variant(),
+            SusfsAction::Features => susfsd::show_features(false),
+        },
 
         Commands::Kernel { command } => match command {
             Kernel::NukeExt4Sysfs { mnt } => ksucalls::nuke_ext4_sysfs(&mnt),

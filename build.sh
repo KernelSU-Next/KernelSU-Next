@@ -12,14 +12,6 @@ cross build --target aarch64-linux-android --release --manifest-path ./userspace
 
 cp userspace/ksud/target/aarch64-linux-android/release/ksud manager/app/src/main/jniLibs/arm64-v8a/libksud.so
 
-cd userspace/susfsd/jni
-
-ndk-build
-
-cp ../libs/arm64-v8a/susfsd ../../../manager/app/src/main/jniLibs/arm64-v8a/libsusfsd.so
-
-cd ../../..
-
 cd manager
 
 ./setup.sh

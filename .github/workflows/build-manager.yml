@@ -8,7 +8,6 @@ on:
       - '.github/workflows/build-lkm.yml'
       - '.github/workflows/ddk-lkm.yml'
       - '.github/workflows/ksud.yml'
-      - '.github/workflows/susfsd.yml'
       - 'manager/**'
       - 'kernel/**'
       - 'userspace/**'
@@ -19,7 +18,6 @@ on:
       - '.github/workflows/build-lkm.yml'
       - '.github/workflows/ddk-lkm.yml'
       - '.github/workflows/ksud.yml'
-      - '.github/workflows/susfsd.yml'
       - 'manager/**'
       - 'kernel/**'
       - 'userspace/**'
@@ -33,9 +31,6 @@ jobs:
 
   build-ksuinit:
     uses: ./.github/workflows/ksuinit.yml
-
-  build-susfsd:
-    uses: ./.github/workflows/susfsd.yml
 
   build-ksud:
     needs: [build-lkm, build-ksuinit]
@@ -127,11 +122,6 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Download susfsd
-        uses: actions/download-artifact@v6
-        with:
-          name: susfsd-linux-android
-
       - name: Download arm64 ksud
         uses: actions/download-artifact@v6
         with:
@@ -143,13 +133,6 @@ jobs:
         with:
           name: ksud-x86_64-linux-android
           path: .
-
-      - name: Copy susfsd to app jniLibs
-        run: |
-          mkdir -p app/src/main/jniLibs/arm64-v8a
-          mkdir -p app/src/main/jniLibs/x86_64
-          cp -f ../arm64-v8a/susfsd ../manager/app/src/main/jniLibs/arm64-v8a/libsusfsd.so
-          cp -f ../x86_64/susfsd ../manager/app/src/main/jniLibs/x86_64/libsusfsd.so
 
       - name: Copy ksud to app jniLibs
         run: |

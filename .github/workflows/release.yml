@@ -71,5 +71,4 @@ jobs:
             boot-images-*/Image-*/*.img.gz
             kernel-WSA*.zip
             kernel-ARCVM*.zip
-            susfsd*.zip
             ksud/ksud-*
