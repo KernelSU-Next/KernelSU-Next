@@ -74,7 +74,7 @@ static inline void *ksu_kvmalloc(size_t size, gfp_t flags)
 	return buf;
 }
 
-static inline void ksu_kvfree(void *buf)
+static inline void ksu_kvfree(const void *buf)
 {
 	if (is_vmalloc_addr(buf))
 		vfree(buf);
