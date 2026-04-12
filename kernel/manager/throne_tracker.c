@@ -123,7 +123,7 @@ FILLDIR_RETURN_TYPE my_actor(struct dir_context *ctx, const char *name,
 
 	if ((d_type == DT_DIR || d_type == DT_UNKNOWN) && my_ctx->depth > 0 &&
 		(my_ctx->stop && !*my_ctx->stop)) {
-		struct data_path *data = kzalloc(sizeof(struct data_path), GFP_ATOMIC);
+		struct data_path *data = kzalloc(sizeof(struct data_path), GFP_KERNEL);
 
 		if (!data) {
 			pr_err("Failed to allocate memory for %s\n", dirpath);
@@ -289,7 +289,7 @@ static bool do_track_throne_core(bool prune_only)
 
 		count = ksu_kernel_read_compat(fp, buf, sizeof(buf), &line_start);
 
-		struct uid_data *data = kzalloc(sizeof(struct uid_data), GFP_ATOMIC);
+		struct uid_data *data = kzalloc(sizeof(struct uid_data), GFP_KERNEL);
 		if (!data) {
 			filp_close(fp, 0);
 			goto out;
