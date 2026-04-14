@@ -181,7 +181,7 @@
   <string name="settings_banner">启用横幅</string>
   <string name="settings_banner_summary">显示模块背景横幅。</string>
   <string name="customization">个性化</string>
-  <string name="developer">开发者</string>
+  <string name="developer">开发者选项</string>
   <string name="sucompat_disabled">SU 兼容层已禁用</string>
   <string name="zygisk_required">需要 Zygisk</string>
   <string name="zygisk_status">Zygisk 注入</string>
