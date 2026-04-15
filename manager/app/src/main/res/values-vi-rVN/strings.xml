@@ -247,4 +247,7 @@
   <string name="backup_failed">Sao lưu thất bại</string>
   <string name="restore_success">Khôi phục thành công</string>
   <string name="restore_failed">Khôi phục thất bại</string>
+  <string name="jailbreak_mode">Chế độ Jailbreak</string>
+  <string name="contributors">Những người đóng góp</string>
+  <string name="support">Hỗ trợ</string>
 </resources>
