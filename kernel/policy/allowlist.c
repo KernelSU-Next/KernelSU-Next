@@ -557,7 +557,7 @@ void ksu_load_allow_list()
 		}
 
 	pr_info("load_allow_uid, name: %s, uid: %d, allow: %d\n", profile.key, profile.curr_uid, profile.allow_su);
-        ksu_set_app_profile(&profile);
+	ksu_set_app_profile(&profile);
     }
 
 exit:
@@ -568,7 +568,7 @@ exit:
 void ksu_prune_allowlist(bool (*is_uid_valid)(uid_t, char *, void *),
 				void *data)
 {
-	struct perm_data *np = NULL;
+    struct perm_data *np = NULL;
     struct hlist_node *tmp;
     int i;
 
