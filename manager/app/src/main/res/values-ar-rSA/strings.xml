@@ -249,4 +249,7 @@
   <string name="backup_failed">النسخ الاحتياطي فشل</string>
   <string name="restore_success">استعادة اكتملت بنجاح</string>
   <string name="restore_failed">استعادة فشلت</string>
+  <string name="jailbreak_mode">Jailbreak mode</string>
+  <string name="contributors">Contributors</string>
+  <string name="support">Support</string>
 </resources>
