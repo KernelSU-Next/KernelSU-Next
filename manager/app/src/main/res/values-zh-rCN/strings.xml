@@ -50,7 +50,7 @@
   <string name="installed">已安装</string>
   <string name="uninstalled">已卸载</string>
   <string name="settings">设置</string>
-  <string name="reboot_userspace">软重启</string>
+  <string name="reboot_userspace"></string>
   <string name="reboot_recovery">重启至 Recovery</string>
   <string name="reboot_bootloader">重启至 Bootloader</string>
   <string name="reboot_download">重启至 Download</string>
@@ -247,4 +247,7 @@
   <string name="backup_failed">备份失败</string>
   <string name="restore_success">恢复成功</string>
   <string name="restore_failed">恢复失败</string>
+  <string name="jailbreak_mode">Jailbreak mode</string>
+  <string name="contributors">Contributors</string>
+  <string name="support">Support</string>
 </resources>
