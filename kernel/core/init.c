@@ -18,6 +18,9 @@
 #include "supercall/supercall.h"
 #include "ksu.h"
 #include "infra/file_wrapper.h"
+#ifdef CONFIG_KSU_SUSFS
+#include <linux/susfs.h>
+#endif // #ifdef CONFIG_KSU_SUSFS
 #include "selinux/selinux.h"
 
 extern void __init ksu_lsm_hook_init(void);
@@ -139,6 +142,10 @@ int __init kernelsu_init(void)
 		ksu_allowlist_init();
 
 		ksu_throne_tracker_init();
+
+#ifdef CONFIG_KSU_SUSFS
+    	susfs_init();
+#endif // #ifdef CONFIG_KSU_SUSFS
 
 		ksu_ksud_init();
 
