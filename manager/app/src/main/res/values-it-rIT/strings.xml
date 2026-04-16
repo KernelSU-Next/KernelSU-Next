@@ -247,7 +247,7 @@
   <string name="backup_failed">Backup fallito</string>
   <string name="restore_success">Ripristino completato con successo</string>
   <string name="restore_failed">Ripristino fallito</string>
-  <string name="jailbreak_mode">Jailbreak mode</string>
-  <string name="contributors">Contributors</string>
-  <string name="support">Support</string>
+  <string name="jailbreak_mode">Modalità Jailbreak</string>
+  <string name="contributors">Collaboratori</string>
+  <string name="support">Supporta</string>
 </resources>
