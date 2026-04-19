@@ -20,13 +20,13 @@
   <string name="hook_mode">Mode hook</string>
   <string name="enable">Aktifkan</string>
   <string name="disable">Nonaktifkan</string>
-  <string name="enabled">Diaktifkan</string>
-  <string name="disabled">Dinonaktifkan</string>
+  <string name="enabled">Aktif</string>
+  <string name="disabled">Nonaktif</string>
   <string name="home_android">Versi Android</string>
   <string name="home_manager_version">Versi manager</string>
   <string name="home_abi">Daftar ABI</string>
   <string name="home_selinux_status">Status SELinux</string>
-  <string name="selinux_status_disabled">Dinonaktifkan</string>
+  <string name="selinux_status_disabled">Nonaktif</string>
   <string name="selinux_status_enforcing">Enforcing</string>
   <string name="selinux_status_permissive">Permisif</string>
   <string name="selinux_status_unknown">Tidak diketahui</string>
