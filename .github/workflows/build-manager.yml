@@ -123,7 +123,7 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Download arm64 ksud
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: ksud-aarch64-linux-android
           path: .
