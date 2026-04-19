@@ -25,31 +25,6 @@
 
 #include "tiny_sulog.h"
 
-#ifdef CONFIG_KSU_SUSFS_TRY_UMOUNT
-
-#ifndef __weak
-#define __weak __attribute__((weak))
-#endif
-
-__weak void ksu_handle_umount(uid_t old_uid, uid_t new_uid)
-{
-    (void)old_uid;
-    (void)new_uid;
-}
-
-void susfs_try_umount(uid_t new_uid)
-{
-    uid_t old_uid = current_uid().val;
-    ksu_handle_umount(old_uid, new_uid);
-}
-
-int susfs_add_try_umount(void __user *arg)
-{
-    return 0;
-}
-
-#endif
-
 uint32_t ksuver_override = 0;
 
 static int anon_ksu_release(struct inode *inode, struct file *filp)
