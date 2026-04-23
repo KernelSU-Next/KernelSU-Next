@@ -6,11 +6,14 @@
 #include <linux/lockdep.h>
 #include <linux/slab.h>
 #include <linux/string.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
+#include <uapi/linux/sched/types.h>
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0)
 #include <linux/sched/types.h>
+#else
+#include <linux/sched.h>
 #endif
 #include <linux/stop_machine.h>
-#include <uapi/linux/sched/types.h>
 
 #include "uapi/selinux.h"
 #include "klog.h" // IWYU pragma: keep
@@ -79,6 +82,13 @@ static inline rwlock_t *ksu_get_policy_rwlock(void) { extern rwlock_t policy_rwl
 #else
 static inline rwlock_t *ksu_get_policy_rwlock(void) { return NULL; }
 #endif
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 2, 0) || defined(KSU_COMPAT_HAS_BACKPORTED_CPUS_PTR)
+static inline const cpumask_t *ksu_get_current_cpumask_t() { return current->cpus_ptr; }
+#else
+static inline cpumask_t *ksu_get_current_cpumask_t() { return &current->cpus_allowed; }
+#endif
+
 #endif // #ifndef SELINUX_POLICY_INSTEAD_SELINUX_SS
 
 static int apply_kernelsu_rules_fn(void *ptr)
@@ -205,25 +215,23 @@ void apply_kernelsu_rules()
 out_unlock:
 	mutex_unlock(&selinux_state.policy_mutex);
 #else
-    cpumask_t old_mask;
+
+	cpumask_t old_mask;
 	db = get_policydb();
 	rwlock_t *lock = ksu_get_policy_rwlock();
 	
 	if (!lock)
 		goto do_stop_machine;
 
-    /*
+	/*
 	 * HACK: write_lock() is held with preempt enabled. DO NOT let the
 	 * task be migrated to any other CPU than the current CPU. And since
 	 * set_cpus_allowed_ptr() can sleep, use raw_smp_processor_id() to get
 	 * current CPU and bypass preemption checks.
 	 */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 2, 0)
-	cpumask_copy(&old_mask, current->cpus_ptr);
-#else
-	cpumask_copy(&old_mask, &current->cpus_allowed);
-#endif
+	cpumask_copy(&old_mask, ksu_get_current_cpumask_t());
 	set_cpus_allowed_ptr(current, cpumask_of(raw_smp_processor_id()));
+
 	write_lock(lock);
 	preempt_enable();
 
@@ -249,7 +257,7 @@ has_current_mm:
 out_unlock:
 	preempt_disable();
 	write_unlock(lock);
-    set_cpus_allowed_ptr(current, &old_mask);
+	set_cpus_allowed_ptr(current, &old_mask);
 	goto out_flush;
 
 do_stop_machine:
@@ -714,7 +722,7 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 	u8 *payload;
 	int ret = 0;
 	int success_cmd_count = 0;
-    cpumask_t old_mask;
+	cpumask_t old_mask;
 
 	if (!user_data || !data_len)
 		return -EINVAL;
@@ -750,12 +758,9 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 	 * set_cpus_allowed_ptr() can sleep, use raw_smp_processor_id() to get
 	 * current CPU and bypass preemption checks.
 	 */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 2, 0)
-	cpumask_copy(&old_mask, current->cpus_ptr);
-#else
-	cpumask_copy(&old_mask, &current->cpus_allowed);
-#endif
+	cpumask_copy(&old_mask, ksu_get_current_cpumask_t());
 	set_cpus_allowed_ptr(current, cpumask_of(raw_smp_processor_id()));
+
 	write_lock(lock);
 	preempt_enable();
 
@@ -779,7 +784,7 @@ has_current_mm:
 out_unlock:
 	preempt_disable();
 	write_unlock(lock);
-    set_cpus_allowed_ptr(current, &old_mask);
+	set_cpus_allowed_ptr(current, &old_mask);
 	goto out_done;
 
 do_stop_machine:
