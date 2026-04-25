@@ -541,6 +541,16 @@ private fun ModuleList(
     val hasShownWarning =
         rememberSaveable { mutableStateOf(prefs.getBoolean("has_shown_warning", false)) }
 
+    var developerOptionsEnabled by rememberSaveable {
+        mutableStateOf(
+            prefs.getBoolean("enable_developer_options", false)
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        developerOptionsEnabled = prefs.getBoolean("enable_developer_options", false)
+    }
+
     val loadingDialog = rememberLoadingDialog()
     val confirmDialog = rememberConfirmDialog()
 
@@ -766,9 +776,11 @@ private fun ModuleList(
                             onClick = {
                                 onClickModule(it.id, it.name, it.hasWebUi)
                             },
-                            expanded = expandedModuleId == module.id,
+                            expanded = (developerOptionsEnabled == true) || (expandedModuleId == module.id),
                             onExpandToggle = {
-                                expandedModuleId = if (expandedModuleId == module.id) null else module.id
+                                if (developerOptionsEnabled != true) {
+                                    expandedModuleId = if (expandedModuleId == module.id) null else module.id
+                                }
                             }
                         )
 
