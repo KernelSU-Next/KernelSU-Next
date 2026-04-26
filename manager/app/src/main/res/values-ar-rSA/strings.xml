@@ -15,7 +15,7 @@
   <string name="home_working_version">ألإصدار%1$s(%2$d)</string>
   <string name="home_module_update_count">تحديثات: %d</string>
   <string name="home_failure">غير مدعوم | غير مدمج</string>
-  <string name="home_failure_tip">نواة غير GKI غير مدعومة. قم بدمج تعريفات كيرنل-نيكست القديم في النواة الخاصة بك!</string>
+  <string name="home_failure_tip">نواة غير GKI غير مدعومة. قم بدمج تعريفات نواة-نكست القديم في النواة الخاصة بك!</string>
   <string name="home_kernel">إصدار النواة</string>
   <string name="hook_mode">وضع الارتباط</string>
   <string name="enable">تمكين</string>
@@ -66,7 +66,7 @@
   <string name="module_author">المطور</string>
   <string name="module_id">ID</string>
   <string name="module_version_code">رَقْم الإصدار</string>
-  <string name="module_update_json">تحديث جيسون</string>
+  <string name="module_update_json">تحديث تدوين كائنات جافا سكربت</string>
   <string name="module_update_json_empty">فارغ</string>
   <string name="enable_developer_options">تفعيل خيارات المطور</string>
   <string name="enable_developer_options_summary">إظهار الإعدادات المخفية و معلومات التصحيح الخاصة بالمطورين فقط.</string>
@@ -106,7 +106,7 @@
   <string name="profile_umount_modules">إلغاء تحميل الإضافات</string>
   <string name="failed_to_update_app_profile">فشل تحديث مِلَفّ تعريف التطبيق لـ %s</string>
   <string name="settings_umount_modules_default">إلغاء تحميل الإضافات</string>
-  <string name="settings_umount_modules_default_summary">القيمة الافتراضية العامة لـ\"إلغاء تركيب الإضافات\" في ملفات تعريف التطبيقات. إذا تم تمكينه، إزالة جميع تعديلات الإضافات على النظام للتطبيقات التي لا تحتوي على مجموعة مِلَفّ تعريف.</string>
+  <string name="settings_umount_modules_default_summary">القيمة الافتراضية العامة لـ \"إلغاء تركيب الإضافات\" في ملفات تعريف التطبيقات. إذا تم تمكينه، إزالة جميع تعديلات الإضافات على النظام للتطبيقات التي لا تحتوي على مجموعة مِلَفّ تعريف.</string>
   <string name="profile_selinux_domain">النطاق</string>
   <string name="profile_selinux_rules">القواعد</string>
   <string name="module_update">تحديث</string>
@@ -117,14 +117,14 @@
   <string name="new_version_available">النسخة الجديدة %1$s (%2$d) متوفرة، انقر للترقية!</string>
   <string name="launch_app">البَدْء</string>
   <string name="close">إغلاق</string>
-  <string name="force_stop_app">إيقاف اجباري</string>
+  <string name="force_stop_app">أيقاف أجباري</string>
   <string name="restart_app">إعادة تشغيل</string>
   <string name="settings_amoled_mode">وضع AMOLED</string>
   <string name="settings_amoled_mode_summary">تمكين سمة سوداء نقية مفيدة لشاشات AMOLED لتقليل إجهاد العين وحفظ البطارية.</string>
   <string name="restart_required">مطلوب إعادة التشغيل</string>
   <string name="restart_app_message">يحتاج التطبيق إلى إعادة التشغيل لتطبيق هذا التغيير.</string>
   <string name="failed_to_update_sepolicy">فشل تحديث قواعد SELinux لـ %s</string>
-  <string name="su_not_allowed">تعذر منح أذونات الروت لـ%s</string>
+  <string name="su_not_allowed">تعذر منح مأذونات الجذر لـ%s</string>
   <string name="module_changelog">سِجل التغييرات</string>
   <string name="settings_profile_template">قالب مِلَفّ التعريف للتطبيق</string>
   <string name="settings_profile_template_summary">إدارة قالب محلي وعلى الإنترنت لملف التعريف.</string>
@@ -159,10 +159,10 @@
   <string name="direct_install">تثبيت مباشر (موصى به)</string>
   <string name="select_file">تحديد مِلَفّ</string>
   <string name="flash_module">تثبيت الإضافة</string>
-  <string name="flash_anykernel">تثبيت AnyKernel (.zip)</string>
+  <string name="flash_anykernel">فلاش أي نواة (مِلَفّ مضغوط)</string>
   <string name="install_inactive_slot">تثبيت إلى خانة غير نشطة (بعد OTA)</string>
   <string name="install_inactive_slot_warning">سيتم **إجبار** جهازك على الإقلاع إلى الفُتْحَة الحالية الغير نشطة بعد إعادة التشغيل!
-\nاستخدم هذا الخِيار فقط بعد انتهاء التحديث الهوائي (OTA).
+\nاستخدم هذا الخِيار فقط بعد انتهاء التحديث الهوائي OTA.
 \nإستمرار؟</string>
   <string name="install_next">التالي</string>
   <string name="select_file_tip">يوصى باستخدام صورة القسم %1$s!</string>
@@ -184,10 +184,10 @@
   <string name="settings_banner_summary">إظهار خلفيات اللافتات للإضافات.</string>
   <string name="customization">التخصيص</string>
   <string name="developer">المطور</string>
-  <string name="sucompat_disabled">توافق الجذر معطّل (SUCOMPAT)</string>
-  <string name="zygisk_required">Zygisk مطلوب</string>
-  <string name="zygisk_status">حقن Zygisk</string>
-  <string name="zygisk">Zygisk</string>
+  <string name="sucompat_disabled">توافق الجذر معطّل</string>
+  <string name="zygisk_required">زيج يسك مطلوب</string>
+  <string name="zygisk_status">حقن زيج يسك</string>
+  <string name="zygisk">زيج يسك</string>
   <string name="home_superuser_count_singular">مستخدم خارق</string>
   <string name="home_superuser_count_plural">المستخدمون الخارقون</string>
   <string name="home_module_count_singular">الإضافة</string>
@@ -195,9 +195,9 @@
   <string name="module_sort_enabled_first">فرز (المُمكّن أولاً)</string>
   <string name="module_sort_action_first">فرز (الإجراءات أولاً)</string>
   <string name="module_sort_webui_first">فرز (واجهات الويب أولاً)</string>
-  <string name="meta_module">Meta</string>
+  <string name="meta_module">ميتا</string>
   <string name="donate">تبرع</string>
-  <string name="meta_module_screen">Meta Module</string>
+  <string name="meta_module_screen">وحدة ميتا</string>
   <string name="latest_version">أحدث إصدار</string>
   <string name="module_repo_screen">مستودع الإضافة</string>
   <string name="loading">تحميل...</string>
@@ -220,7 +220,7 @@
   <string name="module_shortcut_icon_select_from_gallery">اختيار من المَعْرِض</string>
   <string name="module_shortcut_pick_icon">اختر أيقونة</string>
   <string name="set_selinux">الوضع المسموح</string>
-  <string name="set_selinux_summary">تعيين SELinux لوضع Permissive.</string>
+  <string name="set_selinux_summary">تعيين SELinux لوضع متساهل.</string>
   <string name="main">الرئيسية</string>
   <string name="spoofed">منتحل</string>
   <string name="select_build_type">حدد نوع البناء</string>
@@ -231,25 +231,25 @@
   <string name="add_repository">أضف مستودعًا</string>
   <string name="reset_to_default">إعادة التعيين إلى الوضع الافتراضي</string>
   <string name="supported">مدعوم</string>
-  <string name="home_susfs_version">إصدار SuSFS</string>
+  <string name="home_susfs_version">إصدار نظام ملفات إخفاء الجذر</string>
   <string name="settings_enable_su">توافق الجذر</string>
   <string name="settings_enable_su_summary">إيقاف مؤقت لقدرة أي تطبيق على الحصول على صلاحيات الجذر عبر أمر الجذر (لن تتأثر عمليات الجذر الحالية).</string>
-  <string name="settings_enable_kernel_umount">Kernel umount</string>
-  <string name="settings_enable_kernel_umount_summary">جمع الإضافات على مستوى النواة..</string>
+  <string name="settings_enable_kernel_umount">فصل النواة</string>
+  <string name="settings_enable_kernel_umount_summary">جمع الإضافات على مستوى النواة.</string>
   <string name="settings_enable_avc_spoof">تزييف AVC</string>
-  <string name="settings_enable_avc_spoof_summary">إصلاح تسرب SELinux context بسبب رفض AVC في سجل المراجعة.</string>
+  <string name="settings_enable_avc_spoof_summary">إصلاح تسرب لينكس المحسن أمنيا سياق بسبب رفض الوصول إلى ذاكرة التخزين المؤقت للمتجهات في سجل المراجعة.</string>
   <string name="manage_repositories">إدارة المستودعات</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">!</string>
-  <string name="profile_umount_modules_summary">.</string>
-  <string name="settings_uninstall_temporary_message"></string>
+  <string name="require_kernel_version">إصدار النواة نكست الحالي %1$d قديم جدًا ولا يسمح للمدير بالعمل بشكل صحيح. يُرجى الترقية إلى الإصدار %2$d أو أحدث!</string>
+  <string name="profile_umount_modules_summary">سيؤدي تمكين هذا الخِيار إلى السماح لـ النواة نكست باستعادة أي ملفات تم تعديلها بواسطة الوحدات النمطية لهذا التطبيق.</string>
+  <string name="settings_uninstall_temporary_message">إلغاء تثبيت النواة نكست مؤقتًا، ثم أعد تشغيل النظام إلى حالته الأصلية بعد إعادة التشغيل التالية.</string>
   <string name="settings_uninstall_permanent_message">إلغاء تثبيت كير نل ني كست (الجذر وجميع الوحدات) بشكل كامل ودائم.</string>
   <string name="settings_restore_stock_image_message">استعادة صورة المصنع الأصلية (إذا كانت هناك نسخة احتياطية)، تُستخدم عادةً قبل التحديث عبر الهواء (OTA)؛ إذا كنت بحاجة إلى إلغاء تثبيت كير نل ني كست، فيُرجى استخدام \"إلغاء التثبيت بشكل دائم\".</string>
   <string name="backup_success">النسخ الاحتياطي اكتمل بنجاح</string>
   <string name="backup_failed">النسخ الاحتياطي فشل</string>
   <string name="restore_success">استعادة اكتملت بنجاح</string>
   <string name="restore_failed">استعادة فشلت</string>
-  <string name="jailbreak_mode">Jailbreak mode</string>
+  <string name="jailbreak_mode">وضع الجيلبريك</string>
   <string name="contributors">المتطوعون</string>
   <string name="support">الدعم</string>
 </resources>
