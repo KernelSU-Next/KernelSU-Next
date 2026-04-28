@@ -77,7 +77,6 @@
   <string name="safe_mode">Безопасный режим</string>
   <string name="reboot_to_apply">Перезагрузите для применения изменений</string>
   <string name="module_magisk_conflict">Модули недоступны из-за конфликта с Magisk!</string>
-  <string name="home_mount_system">Система монтирования</string>
   <string name="unavailable">Недоступно</string>
   <string name="module_restore">Восстановить модуль</string>
   <string name="module_restore_message">Восстановить модули из последней резервной копии.</string>
@@ -250,4 +249,5 @@
   <string name="jailbreak_mode">Режим Jailbreak</string>
   <string name="contributors">Участники</string>
   <string name="support">Поддержка</string>
+  <string name="home_metamodule_status">Metamodule status</string>
 </resources>
