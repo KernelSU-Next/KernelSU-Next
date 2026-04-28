@@ -77,7 +77,6 @@
   <string name="safe_mode">Mode securisé</string>
   <string name="reboot_to_apply">Redémarrez pour appliquer les modifications</string>
   <string name="module_magisk_conflict">Les modules ne sont pas disponibles en raison d\'un conflit avec Magisk !</string>
-  <string name="home_mount_system">Système de montage</string>
   <string name="unavailable">Indisponible</string>
   <string name="module_restore">Rétablir le module</string>
   <string name="module_restore_message">Restaurer les modules à partir de la sauvegarde récente.</string>
@@ -250,4 +249,5 @@
   <string name="jailbreak_mode">Jailbreak mode</string>
   <string name="contributors">Contributors</string>
   <string name="support">Support</string>
+  <string name="home_metamodule_status">Metamodule status</string>
 </resources>
