@@ -77,7 +77,6 @@
   <string name="safe_mode">সেইফ মোড</string>
   <string name="reboot_to_apply">কার্যকর করতে রিবুট করুন</string>
   <string name="module_magisk_conflict">ম্যাজিস্কের সাথে দ্বন্দ্বের কারণে মডিউলগুলি অপ্রাপ্য</string>
-  <string name="home_mount_system">মাউন্ট সিস্টেম</string>
   <string name="unavailable">আন-আভেইলাবেল </string>
   <string name="module_restore">মডিউল পুনরুদ্ধার করুন</string>
   <string name="module_restore_message">সাম্প্রতিক ব্যাকআপ থেকে মডিউল পুনরুদ্ধার করুন</string>
@@ -250,4 +249,5 @@
   <string name="jailbreak_mode">Jailbreak mode</string>
   <string name="contributors">Contributors</string>
   <string name="support">Support</string>
+  <string name="home_metamodule_status">Metamodule status</string>
 </resources>
