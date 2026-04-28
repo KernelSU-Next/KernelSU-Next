@@ -77,7 +77,6 @@
   <string name="safe_mode">Chế độ an toàn</string>
   <string name="reboot_to_apply">Khởi động lại để có hiệu lực</string>
   <string name="module_magisk_conflict">Các mô-đun không khả dụng do xung đột với Magisk!</string>
-  <string name="home_mount_system">Hệ thống gắn kết</string>
   <string name="unavailable">Không khả dụng</string>
   <string name="module_restore">Khôi phục mô-đun</string>
   <string name="module_restore_message">Khôi phục các mô-đun từ bản sao lưu gần nhất.</string>
@@ -250,4 +249,5 @@
   <string name="jailbreak_mode">Chế độ Jailbreak</string>
   <string name="contributors">Những người đóng góp</string>
   <string name="support">Hỗ trợ</string>
+  <string name="home_metamodule_status">Metamodule status</string>
 </resources>
