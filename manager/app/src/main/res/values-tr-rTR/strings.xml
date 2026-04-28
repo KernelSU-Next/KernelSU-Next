@@ -77,7 +77,6 @@
   <string name="safe_mode">Güvenli mod</string>
   <string name="reboot_to_apply">Etkili olması için yeniden başlatın</string>
   <string name="module_magisk_conflict">Magisk ile yaşanan bir çakışma nedeniyle modüller kullanılamıyor!</string>
-  <string name="home_mount_system">Bağlama sistemi</string>
   <string name="unavailable">Mevcut değil</string>
   <string name="module_restore">Modülü geri yükle</string>
   <string name="module_restore_message">Modülleri son yedeklemeden geri yükleyin.</string>
@@ -250,4 +249,5 @@
   <string name="jailbreak_mode">Jailbreak mode</string>
   <string name="contributors">Contributors</string>
   <string name="support">Support</string>
+  <string name="home_metamodule_status">Metamodule status</string>
 </resources>
