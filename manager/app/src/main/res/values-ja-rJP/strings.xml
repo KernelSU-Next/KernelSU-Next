@@ -77,7 +77,6 @@
   <string name="safe_mode">セーフモード</string>
   <string name="reboot_to_apply">再起動後に適用されます</string>
   <string name="module_magisk_conflict">Magisk と競合しているため、モジュールは利用できません！</string>
-  <string name="home_mount_system">マウントシステム</string>
   <string name="unavailable">利用不可</string>
   <string name="module_restore">モジュールを復元</string>
   <string name="module_restore_message">最近のバックアップからモジュールを復元します。</string>
@@ -250,4 +249,5 @@
   <string name="jailbreak_mode">Jailbreak モード</string>
   <string name="contributors">貢献者</string>
   <string name="support">サポート</string>
+  <string name="home_metamodule_status">Metamodule status</string>
 </resources>
