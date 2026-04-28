@@ -79,7 +79,6 @@
   <string name="safe_mode">안전 모드</string>
   <string name="reboot_to_apply">다시 시작하여 변경사항 적용</string>
   <string name="module_magisk_conflict">모듈이 Magisk와 충돌하여 사용할 수 없습니다!</string>
-  <string name="home_mount_system">시스템 마운트</string>
   <string name="unavailable">사용할 수 없음</string>
   <string name="module_restore">모듈 복원</string>
   <string name="module_restore_message">최근 백업으로부터 모듈을 복원합니다.</string>
@@ -252,4 +251,5 @@
   <string name="jailbreak_mode">Jailbreak mode</string>
   <string name="contributors">Contributors</string>
   <string name="support">Support</string>
+  <string name="home_metamodule_status">Metamodule status</string>
 </resources>
