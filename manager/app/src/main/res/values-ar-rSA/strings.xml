@@ -77,7 +77,6 @@
   <string name="safe_mode">الوضع الآمن</string>
   <string name="reboot_to_apply">أعد التشغيل لتطبيق التغييرات</string>
   <string name="module_magisk_conflict">الإضافات غير متاحة بسبب تعارضها مع مجسك!</string>
-  <string name="home_mount_system">تركيب النظام</string>
   <string name="unavailable">غير متاح</string>
   <string name="module_restore">استعادة الإضافة</string>
   <string name="module_restore_message">استعادة الإضافات من النسخة الاحتياطية الأخيرة.</string>
@@ -252,4 +251,5 @@
   <string name="jailbreak_mode">وضع الجيلبريك</string>
   <string name="contributors">المتطوعون</string>
   <string name="support">الدعم</string>
+  <string name="home_metamodule_status">Metamodule status</string>
 </resources>
