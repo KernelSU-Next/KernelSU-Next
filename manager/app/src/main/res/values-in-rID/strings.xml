@@ -77,7 +77,6 @@
   <string name="safe_mode">Mode aman</string>
   <string name="reboot_to_apply">Mulai ulang untuk menerapkan perubahan</string>
   <string name="module_magisk_conflict">Modul tidak tersedia karena konflik dengan Magisk!</string>
-  <string name="home_mount_system">Sistem mount</string>
   <string name="unavailable">Tidak tersedia</string>
   <string name="module_restore">Pulihkan modul</string>
   <string name="module_restore_message">Pulihkan modul dari cadangan terkini.</string>
@@ -250,4 +249,5 @@
   <string name="jailbreak_mode">Jailbreak mode</string>
   <string name="contributors">Contributors</string>
   <string name="support">Support</string>
+  <string name="home_metamodule_status">Metamodule status</string>
 </resources>
