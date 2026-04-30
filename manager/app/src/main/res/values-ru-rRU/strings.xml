@@ -250,4 +250,12 @@
   <string name="contributors">Участники</string>
   <string name="support">Поддержка</string>
   <string name="home_metamodule_status">Metamodule status</string>
+  <string name="home_seccomp_status">Seccomp status</string>
+  <string name="seccomp_status_not_supported">Not supported</string>
+  <string name="seccomp_status_strict">Strict</string>
+  <string name="seccomp_status_filter">Filter</string>
+  <string name="seccomp_status_disabled">Disabled</string>
+  <string name="seccomp_status_unknown">Unknown</string>
+  <string name="module_sort_stars_low_to_high">Sort (Low → High)</string>
+  <string name="module_sort_stars_high_to_low">Sort (High → Low)</string>
 </resources>
