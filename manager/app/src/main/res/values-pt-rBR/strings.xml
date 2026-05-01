@@ -257,5 +257,5 @@
   <string name="seccomp_status_disabled">Disabled</string>
   <string name="seccomp_status_unknown">Unknown</string>
   <string name="module_sort_stars_low_to_high">Sort (Low → High)</string>
-  <string name="module_sort_stars_high_to_low">Sort (High → Low)</string>
+  <string name="module_sort_stars_high_to_low">Ordenar (Maior → Menor)</string>
 </resources>
