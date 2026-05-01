@@ -250,12 +250,12 @@
   <string name="contributors">贡献人员</string>
   <string name="support">支持</string>
   <string name="home_metamodule_status">元模块状态</string>
-  <string name="home_seccomp_status">Seccomp status</string>
-  <string name="seccomp_status_not_supported">Not supported</string>
-  <string name="seccomp_status_strict">Strict</string>
-  <string name="seccomp_status_filter">Filter</string>
-  <string name="seccomp_status_disabled">Disabled</string>
-  <string name="seccomp_status_unknown">Unknown</string>
-  <string name="module_sort_stars_low_to_high">Sort (Low → High)</string>
-  <string name="module_sort_stars_high_to_low">Sort (High → Low)</string>
+  <string name="home_seccomp_status">Seccomp 状态</string>
+  <string name="seccomp_status_not_supported">不支持</string>
+  <string name="seccomp_status_strict">严格</string>
+  <string name="seccomp_status_filter">过滤</string>
+  <string name="seccomp_status_disabled">已禁用</string>
+  <string name="seccomp_status_unknown">未知</string>
+  <string name="module_sort_stars_low_to_high">Stars (低 → 高)</string>
+  <string name="module_sort_stars_high_to_low">Stars (高 → 低)</string>
 </resources>
