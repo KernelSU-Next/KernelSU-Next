@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="issue_report_title">Gặp rắc rối à?</string>
+  <string name="issue_report_title">Gặp rắc rối?</string>
   <string name="issue_report_body">Gặp một lỗi hoặc có góp ý?</string>
   <string name="issue_report_body_2">Hãy báo cáo nhanh nhất có thể!</string>
   <string name="issue_report_github">Báo cáo trên GitHub</string>
@@ -249,13 +249,13 @@
   <string name="jailbreak_mode">Chế độ Jailbreak</string>
   <string name="contributors">Những người đóng góp</string>
   <string name="support">Hỗ trợ</string>
-  <string name="home_metamodule_status">Metamodule status</string>
-  <string name="home_seccomp_status">Seccomp status</string>
-  <string name="seccomp_status_not_supported">Not supported</string>
-  <string name="seccomp_status_strict">Strict</string>
-  <string name="seccomp_status_filter">Filter</string>
-  <string name="seccomp_status_disabled">Disabled</string>
-  <string name="seccomp_status_unknown">Unknown</string>
-  <string name="module_sort_stars_low_to_high">Sort (Low → High)</string>
-  <string name="module_sort_stars_high_to_low">Sort (High → Low)</string>
+  <string name="home_metamodule_status">Trạng thái mô-đun meta</string>
+  <string name="home_seccomp_status">Trạng thái Seccomp</string>
+  <string name="seccomp_status_not_supported">Không được hỗ trợ</string>
+  <string name="seccomp_status_strict">Nghiêm ngặt</string>
+  <string name="seccomp_status_filter">Bộ lọc</string>
+  <string name="seccomp_status_disabled">Đã tắt</string>
+  <string name="seccomp_status_unknown">Không xác định</string>
+  <string name="module_sort_stars_low_to_high">Sắp xếp (Thấp → Cao)</string>
+  <string name="module_sort_stars_high_to_low">Sắp xếp (Cao → Thấp)</string>
 </resources>
