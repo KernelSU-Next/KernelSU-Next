@@ -249,13 +249,13 @@
   <string name="jailbreak_mode">Режим Jailbreak</string>
   <string name="contributors">Участники</string>
   <string name="support">Поддержка</string>
-  <string name="home_metamodule_status">Metamodule status</string>
-  <string name="home_seccomp_status">Seccomp status</string>
-  <string name="seccomp_status_not_supported">Not supported</string>
-  <string name="seccomp_status_strict">Strict</string>
-  <string name="seccomp_status_filter">Filter</string>
-  <string name="seccomp_status_disabled">Disabled</string>
-  <string name="seccomp_status_unknown">Unknown</string>
-  <string name="module_sort_stars_low_to_high">Sort (Low → High)</string>
-  <string name="module_sort_stars_high_to_low">Sort (High → Low)</string>
+  <string name="home_metamodule_status">Статус мета модуля</string>
+  <string name="home_seccomp_status">Статус Seccomp</string>
+  <string name="seccomp_status_not_supported">Не поддерживается</string>
+  <string name="seccomp_status_strict">Точный</string>
+  <string name="seccomp_status_filter">Фильтр</string>
+  <string name="seccomp_status_disabled">Выключен</string>
+  <string name="seccomp_status_unknown">Неизвестен</string>
+  <string name="module_sort_stars_low_to_high">Сортировка (Низкий → Высокий)</string>
+  <string name="module_sort_stars_high_to_low">Сортировка (Высокий → Низкий)</string>
 </resources>
