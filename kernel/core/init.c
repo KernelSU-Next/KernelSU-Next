@@ -13,6 +13,7 @@
 #include "manager/manager_observer.h"
 #include "manager/throne_tracker.h"
 #include "hook/syscall_hook_manager.h"
+#include "hook/lsm_hook.h"
 #include "runtime/ksud.h"
 #include "runtime/ksud_boot.h"
 #include "supercall/supercall.h"
@@ -123,6 +124,8 @@ int __init kernelsu_init(void)
 
 	ksu_feature_init();
 
+	ksu_lsm_hook_init();
+
 	ksu_selinux_hide_init();
 
 	ksu_supercalls_init();
@@ -197,6 +200,8 @@ void __exit kernelsu_exit(void)
 	ksu_allowlist_exit();
 
 	ksu_selinux_hide_exit();
+
+	ksu_lsm_hook_exit();
 
 	ksu_feature_exit();
 

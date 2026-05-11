@@ -254,7 +254,7 @@
   <string name="advanced_options">高级选项</string>
   <string name="expand">展开</string>
   <string name="settings_selinux_hide">隐藏 SELinux 修改</string>
-  <string name="settings_selinux_hide_summary">阻止应用通过 selinuxfs 检测 SELinux 修改</string>
+  <string name="settings_selinux_hide_summary">阻止应用检测 SELinux 修改</string>
   <string name="settings_selinux_hide_reboot_required">重启生效</string>
   <string name="settings_selinux_hide_failed">错误： %d</string>
 </resources>

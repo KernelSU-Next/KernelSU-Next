@@ -204,7 +204,7 @@
     <string name="settings_enable_kernel_umount">Kernel umount</string>
     <string name="settings_enable_kernel_umount_summary">Umount modules at kernel-level.</string>
     <string name="settings_selinux_hide">Hide SELinux modification</string>
-    <string name="settings_selinux_hide_summary">Prevent applications from detecting SELinux modifications via selinuxfs</string>
+    <string name="settings_selinux_hide_summary">Prevent applications from detecting SELinux modifications</string>
     <string name="settings_selinux_hide_reboot_required">Reboot to take effect</string>
     <string name="settings_selinux_hide_failed">Error: %d</string>
     <string name="settings_enable_avc_spoof">AVC spoofing</string>
