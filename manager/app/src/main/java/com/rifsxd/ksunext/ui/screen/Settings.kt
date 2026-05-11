@@ -3,6 +3,7 @@ package com.rifsxd.ksunext.ui.screen
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.system.OsConstants
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -115,11 +116,13 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     var avcSpoofStatus by rememberSaveable { mutableStateOf("") }
     var suCompatStatus by rememberSaveable { mutableStateOf("") }
     var kernelUmountStatus by rememberSaveable { mutableStateOf("") }
+    var selinuxHideStatus by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         avcSpoofStatus = getFeatureStatus("avc_spoof")
         suCompatStatus = getFeatureStatus("su_compat")
         kernelUmountStatus = getFeatureStatus("kernel_umount")
+        selinuxHideStatus = getFeatureStatus("selinux_hide")
     }
 
     Scaffold(
@@ -151,7 +154,9 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 KernelFeaturesCard(
                     suCompatStatus = suCompatStatus,
                     kernelUmountStatus = kernelUmountStatus,
-                    avcSpoofStatus = avcSpoofStatus
+                    avcSpoofStatus = avcSpoofStatus,
+                    selinuxHideStatus = selinuxHideStatus,
+                    scope = scope
                 )
                 SecurityCard(
                     navigator = navigator,
@@ -178,7 +183,9 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 private fun KernelFeaturesCard(
     suCompatStatus: String,
     kernelUmountStatus: String,
-    avcSpoofStatus: String
+    avcSpoofStatus: String,
+    selinuxHideStatus: String,
+    scope: kotlinx.coroutines.CoroutineScope
 ) {
     val context = LocalContext.current
 
@@ -242,6 +249,43 @@ private fun KernelFeaturesCard(
                         execKsud("feature save", true)
                         prefsLocal.edit { putInt("kernel_umount_mode", if (checked) 0 else 2) }
                         isKernelUmountEnabled = checked
+                    }
+                }
+            }
+
+            if (selinuxHideStatus == "supported") {
+                var isSelinuxHideEnabled by rememberSaveable {
+                    mutableStateOf(Natives.isSelinuxHideEnabled())
+                }
+                SwitchItem(
+                    icon = Icons.Filled.Policy,
+                    title = stringResource(id = R.string.settings_selinux_hide),
+                    summary = stringResource(id = R.string.settings_selinux_hide_summary),
+                    checked = isSelinuxHideEnabled,
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                ) { checked ->
+                    scope.launch(Dispatchers.IO) {
+                        val prefsLocal = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                        val status = Natives.setSelinuxHideEnabled(checked)
+                        execKsud("feature save", true)
+                        prefsLocal.edit { putInt("selinux_hide_mode", if (checked) 0 else 2) }
+                        isSelinuxHideEnabled = checked
+                        when (status) {
+                            0 -> {}
+                            -OsConstants.EAGAIN -> {
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(context, R.string.settings_selinux_hide_reboot_required,
+                                        Toast.LENGTH_LONG).show()
+                                }
+                            }
+                            else -> {
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(context, context.getString(R.string.settings_selinux_hide_failed, status),
+                                        Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        }
                     }
                 }
             }

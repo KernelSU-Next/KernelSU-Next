@@ -1,3 +1,4 @@
+#include "feature/selinux_hide.h"
 #include <linux/err.h>
 #include <linux/fs.h>
 #include <linux/namei.h>
@@ -67,5 +68,6 @@ void on_boot_completed(void)
     ksu_boot_completed = true;
     pr_info("on_boot_completed!\n");
     track_throne(true);
+    ksu_selinux_hide_drop_backup_if_unused();
     ksu_avc_spoof_late_init();
 }

@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <climits>
 #include <sys/syscall.h>
+#include <cerrno>
 #include "ksu.h"
 
 static int fd = -1;
@@ -206,6 +207,25 @@ bool is_kernel_umount_enabled() {
     uint64_t value = 0;
     bool supported = false;
     if (!get_feature(KSU_FEATURE_KERNEL_UMOUNT, &value, &supported)) {
+        return false;
+    }
+    if (!supported) {
+        return false;
+    }
+    return value != 0;
+}
+
+int set_selinux_hide_enabled(bool enabled) {
+    if (!set_feature(KSU_FEATURE_SELINUX_HIDE, enabled ? 1 : 0)) {
+        return -errno;
+    }
+    return 0;
+}
+
+bool is_selinux_hide_enabled() {
+    uint64_t value = 0;
+    bool supported = false;
+    if (!get_feature(KSU_FEATURE_SELINUX_HIDE, &value, &supported)) {
         return false;
     }
     if (!supported) {

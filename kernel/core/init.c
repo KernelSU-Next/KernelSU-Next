@@ -20,6 +20,7 @@
 #include "infra/file_wrapper.h"
 #include "selinux/selinux.h"
 #include "hook/syscall_hook.h"
+#include "feature/selinux_hide.h"
 
 #if defined(__x86_64__)
 #include <asm/cpufeature.h>
@@ -122,6 +123,8 @@ int __init kernelsu_init(void)
 
 	ksu_feature_init();
 
+	ksu_selinux_hide_init();
+
 	ksu_supercalls_init();
 
 	if (ksu_late_loaded) {
@@ -192,6 +195,8 @@ void __exit kernelsu_exit(void)
 	ksu_throne_tracker_exit();
 
 	ksu_allowlist_exit();
+
+	ksu_selinux_hide_exit();
 
 	ksu_feature_exit();
 
