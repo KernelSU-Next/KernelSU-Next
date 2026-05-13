@@ -27,8 +27,8 @@
   <string name="home_abi">Lista ABI</string>
   <string name="home_selinux_status">Status SELinux</string>
   <string name="selinux_status_disabled">Wyłączony</string>
-  <string name="selinux_status_enforcing">Wymuszanie</string>
-  <string name="selinux_status_permissive">Pobłażliwy</string>
+  <string name="selinux_status_enforcing">Wymuszający</string>
+  <string name="selinux_status_permissive">Przyzwalający</string>
   <string name="selinux_status_unknown">Nieznany</string>
   <string name="superuser">Super użytkownik</string>
   <string name="module_failed_to_enable">Nie udało się włączyć modułu: %s</string>
@@ -61,12 +61,12 @@
   <string name="module_uninstall_failed">Nie można odinstalować: %s</string>
   <string name="module_restore_confirm">Czy na pewno chcesz przywrócić moduł %s?</string>
   <string name="module_restore_success">%s przywrócony</string>
-  <string name="module_restore_failed">Nie można przywrócić: %s</string>
+  <string name="module_restore_failed">Nie udało się przywrócić: %s</string>
   <string name="module_version">Wersja</string>
   <string name="module_author">Autor</string>
   <string name="module_id">Identyfikator</string>
   <string name="module_version_code">Kod</string>
-  <string name="module_update_json">Aktualizuj Json</string>
+  <string name="module_update_json">Zaktualizuj json</string>
   <string name="module_update_json_empty">Pusty</string>
   <string name="enable_developer_options">Włącz opcje programisty</string>
   <string name="enable_developer_options_summary">Pokaż ukryte ustawienia i informacje debugowania tylko dla programistów.</string>
@@ -183,7 +183,7 @@
   <string name="developer">Programista</string>
   <string name="sucompat_disabled">SUCOMPAT WYŁĄCZONY</string>
   <string name="zygisk_required">Wymagany Zygisk</string>
-  <string name="zygisk_status">Wstrzykiwanie Zygisk</string>
+  <string name="zygisk_status">Wstrzyknięcie Zygisk</string>
   <string name="zygisk">Zygisk</string>
   <string name="home_superuser_count_singular">Super użytkownik</string>
   <string name="home_superuser_count_plural">Super użytkownicy</string>
