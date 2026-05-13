@@ -4,6 +4,7 @@ import android.os.Parcelable
 import androidx.annotation.Keep
 import androidx.compose.runtime.Immutable
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
 /**
  * @author weishu
@@ -17,6 +18,7 @@ object Natives {
     // 10977: change groups_count and groups to avoid overflow write
     // 11071: Fix the issue of failing to set a custom SELinux type.
     // 12797: zygisk query and get manager uid.
+    // 12143: breaking: new supercall impl
     // 32310: new get_allow_list ioctl
     // 33070: SET_SEPOLICY ioctl
     // 33075: add set_init_pgrp ioctl
@@ -35,11 +37,6 @@ object Natives {
     val version: Int
         external get
 
-    // deprecated
-    // get the uid list of allowed su processes.
-    val allowList: IntArray
-        external get
-
     val isSafeMode: Boolean
         external get
 
@@ -52,15 +49,12 @@ object Natives {
     val isManager: Boolean
         external get
 
+    val isPrBuild: Boolean
+        external get
+
     external fun uidShouldUmount(uid: Int): Boolean
 
-    /**
-     * Get the UID of the current root manager.
-     * @return manager UID, or 0 if unavailable.
-     */
-    external fun getManagerAppid(): Int
-
-    /**
+     /**
      * Get a string indicating the SU hook mode enabled in kernel.
      * The return values are:
      * - "Manual": Manual hooks was enabled.
@@ -121,15 +115,6 @@ object Natives {
      */
     external fun getUserName(uid: Int): String?
 
-    /**
-     * Avc spoof can be enabled/disabled.
-     *  0: disabled
-     *  1: enabled
-     *  negative : error
-     */
-    external fun isAvcSpoofEnabled(): Boolean
-    external fun setAvcSpoofEnabled(enabled: Boolean): Boolean
-
     external fun getSuperuserCount(): Int
 
     private const val NON_ROOT_DEFAULT_PROFILE_KEY = "$"
@@ -156,11 +141,10 @@ object Natives {
         return version != -1 && version < MINIMAL_SUPPORTED_KERNEL
     }
 
-    val KSU_WORK_DIR = "/data/adb/ksu/"
-
+    @Keep
     @Immutable
     @Parcelize
-    @Keep
+    @Serializable
     data class Profile(
         // and there is a default profile for root and non-root
         val name: String,

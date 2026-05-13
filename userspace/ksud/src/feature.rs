@@ -1,4 +1,4 @@
-
+use crate::sulog;
 use anyhow::{Context, Result, bail};
 use const_format::concatcp;
 use std::collections::HashMap;
@@ -18,9 +18,9 @@ const FEATURE_VERSION: u32 = 1;
 pub enum FeatureId {
     SuCompat = 0,
     KernelUmount = 1,
-    EnhancedSecurity = 2,
+    Sulog = 2,
+    AdbRoot = 3,
     SelinuxHide = 4,
-    AvcSpoof = 10003,
 }
 
 impl FeatureId {
@@ -28,9 +28,9 @@ impl FeatureId {
         match id {
             0 => Some(Self::SuCompat),
             1 => Some(Self::KernelUmount),
-            2 => Some(Self::EnhancedSecurity),
+            2 => Some(Self::Sulog),
+            3 => Some(Self::AdbRoot),
             4 => Some(Self::SelinuxHide),
-            10003 => Some(Self::AvcSpoof),
             _ => None,
         }
     }
@@ -39,9 +39,9 @@ impl FeatureId {
         match self {
             Self::SuCompat => "su_compat",
             Self::KernelUmount => "kernel_umount",
-            Self::EnhancedSecurity => "enhanced_security",
+            Self::Sulog => "sulog",
+            Self::AdbRoot => "adb_root",
             Self::SelinuxHide => "selinux_hide",
-            Self::AvcSpoof => "avc_spoof",
         }
     }
 
@@ -53,14 +53,12 @@ impl FeatureId {
             Self::KernelUmount => {
                 "Kernel Umount - controls whether kernel automatically unmounts modules when not needed"
             }
-            Self::EnhancedSecurity => {
-                "Enhanced Security - disable non‑KSU root elevation and unauthorized UID downgrades"
+            Self::Sulog => {
+                "SU Log - streams kernel sulog events to userspace and persists them to disk"
             }
+            Self::AdbRoot => "ADB Root - Enable adbd root",
             Self::SelinuxHide => {
                 "SELinux Hide - sanitize /sys/fs/selinux access results for app UIDs"
-            }
-            Self::AvcSpoof => {
-                "AVC Spoof - fix selinux context leak due to avc denial"
             }
         }
     }
@@ -70,11 +68,25 @@ fn parse_feature_id(name: &str) -> Result<FeatureId> {
     match name {
         "su_compat" | "0" => Ok(FeatureId::SuCompat),
         "kernel_umount" | "1" => Ok(FeatureId::KernelUmount),
-        "enhanced_security" | "2" => Ok(FeatureId::EnhancedSecurity),
+        "sulog" | "2" => Ok(FeatureId::Sulog),
+        "adb_root" | "3" => Ok(FeatureId::AdbRoot),
         "selinux_hide" | "4" => Ok(FeatureId::SelinuxHide),
-        "avc_spoof" | "10003" => Ok(FeatureId::AvcSpoof),
         _ => bail!("Unknown feature: {name}"),
     }
+}
+
+fn set_kernel_feature(feature_id: FeatureId, value: u64) -> Result<()> {
+    crate::ksucalls::set_feature(feature_id as u32, value)
+        .with_context(|| format!("Failed to set feature {} to {value}", feature_id.name()))?;
+
+    if feature_id == FeatureId::Sulog
+        && value != 0
+        && let Err(err) = sulog::ensure_sulogd_running()
+    {
+        log::warn!("failed to ensure sulogd is running after feature init: {err:#}");
+    }
+
+    Ok(())
 }
 
 pub fn load_binary_config() -> Result<HashMap<u32, u64>> {
@@ -92,7 +104,7 @@ pub fn load_binary_config() -> Result<HashMap<u32, u64>> {
     let magic = u32::from_le_bytes(magic_buf);
 
     if magic != FEATURE_MAGIC {
-        bail!("Invalid feature config magic: expected 0x{FEATURE_MAGIC:08x}, got 0x{magic:08x}",);
+        bail!("Invalid feature config magic: expected 0x{FEATURE_MAGIC:08x}, got 0x{magic:08x}");
     }
 
     let mut version_buf = [0u8; 4];
@@ -167,18 +179,25 @@ pub fn apply_config(features: &HashMap<u32, u64>) {
 
     let mut applied = 0;
     for (&id, &value) in features {
-        match crate::ksucalls::set_feature(id, value) {
-            Ok(()) => {
-                if let Some(feature_id) = FeatureId::from_u32(id) {
+        match FeatureId::from_u32(id) {
+            Some(feature_id) => match set_kernel_feature(feature_id, value) {
+                Ok(()) => {
                     log::info!("Set feature {} to {value}", feature_id.name());
-                } else {
-                    log::info!("Set feature {id} to {value}");
+                    applied += 1;
                 }
-                applied += 1;
-            }
-            Err(e) => {
-                log::warn!("Failed to set feature {id}: {e}");
-            }
+                Err(e) => {
+                    log::warn!("Failed to set feature {}: {e}", feature_id.name());
+                }
+            },
+            None => match crate::ksucalls::set_feature(id, value) {
+                Ok(()) => {
+                    log::info!("Set feature {id} to {value}");
+                    applied += 1;
+                }
+                Err(e) => {
+                    log::warn!("Failed to set feature {id}: {e}");
+                }
+            },
         }
     }
 
@@ -263,8 +282,7 @@ pub fn set_feature(id: &str, value: u64) -> Result<()> {
         }
     }
 
-    crate::ksucalls::set_feature(feature_id as u32, value)
-        .with_context(|| format!("Failed to set feature {id} to {value}"))?;
+    set_kernel_feature(feature_id, value)?;
 
     println!(
         "Feature '{}' set to {value} ({})",
@@ -296,9 +314,9 @@ pub fn list_features() {
     let all_features = [
         FeatureId::SuCompat,
         FeatureId::KernelUmount,
-        FeatureId::EnhancedSecurity,
+        FeatureId::Sulog,
+        FeatureId::AdbRoot,
         FeatureId::SelinuxHide,
-        FeatureId::AvcSpoof,
     ];
 
     for feature_id in &all_features {
@@ -359,9 +377,9 @@ pub fn save_config() -> Result<()> {
     let all_features = [
         FeatureId::SuCompat,
         FeatureId::KernelUmount,
-        FeatureId::EnhancedSecurity,
+        FeatureId::Sulog,
+        FeatureId::AdbRoot,
         FeatureId::SelinuxHide,
-        FeatureId::AvcSpoof,
     ];
 
     for feature_id in &all_features {

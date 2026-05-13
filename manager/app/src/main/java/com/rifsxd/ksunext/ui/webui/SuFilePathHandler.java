@@ -1,12 +1,14 @@
 package com.rifsxd.ksunext.ui.webui;
 
 import android.content.Context;
-import android.os.Build;
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.webkit.WebResourceResponse;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.WorkerThread;
 import androidx.webkit.WebViewAssetLoader;
+
 import com.topjohnwu.superuser.Shell;
 import com.topjohnwu.superuser.io.SuFile;
 import com.topjohnwu.superuser.io.SuFileInputStream;
@@ -39,13 +41,11 @@ import java.util.zip.GZIPInputStream;
  * </pre>
  */
 public final class SuFilePathHandler implements WebViewAssetLoader.PathHandler {
-    private static final String TAG = "SuFilePathHandler";
-
     /**
      * Default value to be used as MIME type if guessing MIME type failed.
      */
     public static final String DEFAULT_MIME_TYPE = "text/plain";
-
+    private static final String TAG = "SuFilePathHandler";
     /**
      * Forbidden subdirectories of {@link Context#getDataDir} that cannot be exposed by this
      * handler. They are forbidden as they often contain sensitive information.
@@ -53,24 +53,15 @@ public final class SuFilePathHandler implements WebViewAssetLoader.PathHandler {
      * Note: Any future addition to this list will be considered breaking changes to the API.
      */
     private static final String[] FORBIDDEN_DATA_DIRS =
-            new String[] {"/data/data", "/data/system"};
+            new String[]{"/data/data", "/data/system"};
 
     @NonNull
     private final File mDirectory;
 
     private final Shell mShell;
-    private final Context mContext;
     private final InsetsSupplier mInsetsSupplier;
     private final OnInsetsRequestedListener mOnInsetsRequestedListener;
-
-    public interface InsetsSupplier {
-        @NonNull
-        Insets get();
-    }
-
-    public interface OnInsetsRequestedListener {
-        void onInsetsRequested(boolean enable);
-    }
+    private final Context mContext;
 
     /**
      * Creates PathHandler for app's internal storage.
@@ -89,15 +80,14 @@ public final class SuFilePathHandler implements WebViewAssetLoader.PathHandler {
      * The application should typically use a dedicated subdirectory for the files it intends to
      * expose and keep them separate from other files.
      *
-     * @param context {@link Context} that is used to access app's internal storage.
-     * @param directory the absolute path of the exposed app internal storage directory from
-     *                  which files can be loaded.
-     * @param rootShell {@link Shell} instance with root access to read files.
-     * @param insetsSupplier {@link InsetsSupplier} to provide window insets for styling web content.
+     * @param context                   {@link Context} that is used to access app's internal storage.
+     * @param directory                 the absolute path of the exposed app internal storage directory from
+     *                                  which files can be loaded.
+     * @param rootShell                 {@link Shell} instance with root access to read files.
+     * @param insetsSupplier            {@link InsetsSupplier} to provide window insets for styling web content.
      * @param onInsetsRequestedListener {@link OnInsetsRequestedListener} to notify when insets are requested.
      * @throws IllegalArgumentException if the directory is not allowed.
      */
-
     public SuFilePathHandler(@NonNull Context context, @NonNull File directory, Shell rootShell, @NonNull InsetsSupplier insetsSupplier, OnInsetsRequestedListener onInsetsRequestedListener) {
         try {
             mContext = context;
@@ -114,6 +104,48 @@ public final class SuFilePathHandler implements WebViewAssetLoader.PathHandler {
                     "Failed to resolve the canonical path for the given directory: "
                             + directory.getPath(), e);
         }
+    }
+
+    public static String getCanonicalDirPath(@NonNull File file) throws IOException {
+        String canonicalPath = file.getCanonicalPath();
+        if (!canonicalPath.endsWith("/")) canonicalPath += "/";
+        return canonicalPath;
+    }
+
+    public static File getCanonicalFileIfChild(@NonNull File parent, @NonNull String child)
+            throws IOException {
+        String parentCanonicalPath = getCanonicalDirPath(parent);
+        String childCanonicalPath = new File(parent, child).getCanonicalPath();
+        if (childCanonicalPath.startsWith(parentCanonicalPath)) {
+            return new File(childCanonicalPath);
+        }
+        return null;
+    }
+
+    @NonNull
+    private static InputStream handleSvgzStream(@NonNull String path,
+                                                @NonNull InputStream stream) throws IOException {
+        return path.endsWith(".svgz") ? new GZIPInputStream(stream) : stream;
+    }
+
+    public static InputStream openFile(@NonNull File file, @NonNull Shell shell) throws IOException {
+        SuFile suFile = new SuFile(file.getAbsolutePath());
+        suFile.setShell(shell);
+        InputStream fis = SuFileInputStream.open(suFile);
+        return handleSvgzStream(file.getPath(), fis);
+    }
+
+    /**
+     * Use {@link MimeUtil#getMimeFromFileName} to guess MIME type or return the
+     * {@link #DEFAULT_MIME_TYPE} if it can't guess.
+     *
+     * @param filePath path of the file to guess its MIME type.
+     * @return MIME type guessed from file extension or {@link #DEFAULT_MIME_TYPE}.
+     */
+    @NonNull
+    public static String guessMimeType(@NonNull String filePath) {
+        String mimeType = MimeUtil.getMimeFromFileName(filePath);
+        return mimeType == null ? DEFAULT_MIME_TYPE : mimeType;
     }
 
     private boolean isAllowedInternalStorageDir(@NonNull Context context) throws IOException {
@@ -161,15 +193,19 @@ public final class SuFilePathHandler implements WebViewAssetLoader.PathHandler {
                     new ByteArrayInputStream(css.getBytes(StandardCharsets.UTF_8))
             );
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if ("internal/colors.css".equals(path)) {
-                String css = MonetColorsProvider.INSTANCE.getColorsCss(mContext);
-                return new WebResourceResponse(
-                        "text/css",
-                        "utf-8",
-                        new ByteArrayInputStream(css.getBytes(StandardCharsets.UTF_8))
-                );
+        if ("internal/colors.css".equals(path)) {
+            SharedPreferences prefs = mContext.getSharedPreferences("settings", Context.MODE_PRIVATE);
+            int colorMode = prefs.getInt("color_mode", 0);
+            String uiMode = prefs.getString("ui_mode", "miuix");
+            String css = "";
+            if ((colorMode >= 3 && colorMode <= 6) || "material".equals(uiMode)) {
+                css = MonetColorsProvider.INSTANCE.getColorsCss();
             }
+            return new WebResourceResponse(
+                    "text/css",
+                    "utf-8",
+                    new ByteArrayInputStream(css.getBytes(StandardCharsets.UTF_8))
+            );
         }
         try {
             File file = getCanonicalFileIfChild(mDirectory, path);
@@ -188,45 +224,12 @@ public final class SuFilePathHandler implements WebViewAssetLoader.PathHandler {
         return new WebResourceResponse(null, null, null);
     }
 
-    public static String getCanonicalDirPath(@NonNull File file) throws IOException {
-        String canonicalPath = file.getCanonicalPath();
-        if (!canonicalPath.endsWith("/")) canonicalPath += "/";
-        return canonicalPath;
+    public interface InsetsSupplier {
+        @NonNull
+        Insets get();
     }
 
-    public static File getCanonicalFileIfChild(@NonNull File parent, @NonNull String child)
-            throws IOException {
-        String parentCanonicalPath = getCanonicalDirPath(parent);
-        String childCanonicalPath = new File(parent, child).getCanonicalPath();
-        if (childCanonicalPath.startsWith(parentCanonicalPath)) {
-            return new File(childCanonicalPath);
-        }
-        return null;
-    }
-
-    @NonNull
-    private static InputStream handleSvgzStream(@NonNull String path,
-                                                @NonNull InputStream stream) throws IOException {
-        return path.endsWith(".svgz") ? new GZIPInputStream(stream) : stream;
-    }
-
-    public static InputStream openFile(@NonNull File file, @NonNull Shell shell) throws IOException {
-        SuFile suFile = new SuFile(file.getAbsolutePath());
-        suFile.setShell(shell);
-        InputStream fis = SuFileInputStream.open(suFile);
-        return handleSvgzStream(file.getPath(), fis);
-    }
-
-    /**
-     * Use {@link MimeUtil#getMimeFromFileName} to guess MIME type or return the
-     * {@link #DEFAULT_MIME_TYPE} if it can't guess.
-     *
-     * @param filePath path of the file to guess its MIME type.
-     * @return MIME type guessed from file extension or {@link #DEFAULT_MIME_TYPE}.
-     */
-    @NonNull
-    public static String guessMimeType(@NonNull String filePath) {
-        String mimeType = MimeUtil.getMimeFromFileName(filePath);
-        return mimeType == null ? DEFAULT_MIME_TYPE : mimeType;
+    public interface OnInsetsRequestedListener {
+        void onInsetsRequested(boolean enable);
     }
 }

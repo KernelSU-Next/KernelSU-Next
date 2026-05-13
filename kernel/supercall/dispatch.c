@@ -19,20 +19,23 @@
 #include "infra/file_wrapper.h"
 #include "hook/tp_marker.h"
 #include "policy/app_profile.h"
+#include "sulog/event.h"
+#include "sulog/fd.h"
 #include "supercall/supercall.h"
-
-#include "tiny_sulog.h"
 
 static int do_grant_root(void __user *arg)
 {
+    int ret;
+    __u32 audit_uid = current_uid().val;
+    __u32 audit_euid = current_euid().val;
+
     // we already check uid above on allowed_for_su()
 
-    write_sulog('i'); // log ioctl escalation
+    pr_info("allow root for: %d\n", audit_uid);
+    ret = escape_with_root_profile();
+    ksu_sulog_emit_grant_root(ret, audit_uid, audit_euid, GFP_KERNEL);
 
-    pr_info("allow root for: %d\n", current_uid().val);
-    escape_with_root_profile();
-
-    return 0;
+    return ret;
 }
 
 static int do_get_info(void __user *arg)
@@ -42,9 +45,6 @@ static int do_get_info(void __user *arg)
 #ifdef MODULE
     cmd.flags |= KSU_GET_INFO_FLAG_LKM;
 #endif
-
-    if (ksuver_override)
-        cmd.version = ksuver_override;
 
     if (is_manager()) {
         cmd.flags |= KSU_GET_INFO_FLAG_MANAGER;
@@ -595,59 +595,6 @@ static int add_try_umount(void __user *arg)
         return 0;
     }
 
-    // this way userspace can deduce the memory it has to prepare.
-    case KSU_UMOUNT_GETSIZE: {
-        // check for pointer first
-        if (!cmd.arg)
-            return -EFAULT;
-
-        size_t total_size = 0; // size of list in bytes
-
-        down_read(&mount_list_lock);
-        list_for_each_entry(entry, &mount_list, list) {
-            total_size = total_size + strlen(entry->umountable) + 1; // + 1 for \0
-        }
-        up_read(&mount_list_lock);
-
-        // debug
-        // pr_info("cmd_add_try_umount: total_size: %zu\n", total_size);
-
-        if (copy_to_user((size_t __user *)cmd.arg, &total_size, sizeof(total_size)))
-            return -EFAULT;
-
-        return 0;
-    }
-
-    // WARNING! this is straight up pointerwalking.
-    // this way we dont need to redefine the ioctl defs.
-    // this also avoids us needing to kmalloc
-    // userspace have to send pointer to memory (malloc/alloca) or pointer to a VLA.
-    case KSU_UMOUNT_GETLIST: {
-        // check for pointer first
-        if (!cmd.arg)
-            return -EFAULT;
-
-        char *user_buf = (char *)cmd.arg;
-
-        down_read(&mount_list_lock);
-        list_for_each_entry(entry, &mount_list, list) {
-
-            //debug
-            //pr_info("cmd_add_try_umount: entry: %s\n", entry->umountable);
-
-            if (copy_to_user((char __user *)user_buf, entry->umountable, strlen(entry->umountable) + 1 )) {
-                up_read(&mount_list_lock);
-                return -EFAULT;
-            }
-
-            // walk it! +1 for null terminator
-            user_buf = user_buf + strlen(entry->umountable) + 1;
-        }
-        up_read(&mount_list_lock);
-
-        return 0;
-    }
-
     default: {
         pr_err("cmd_add_try_umount: invalid operation %u\n", cmd.mode);
         return -EINVAL;
@@ -723,14 +670,31 @@ out:
     return err;
 }
 
+static int do_get_sulog_fd(void __user *arg)
+{
+    struct ksu_get_sulog_fd_cmd cmd;
+
+    if (copy_from_user(&cmd, arg, sizeof(cmd))) {
+        pr_err("get_sulog_fd: copy_from_user failed\n");
+        return -EFAULT;
+    }
+
+    if (cmd.flags) {
+        pr_err("get_sulog_fd: unsupported flags 0x%x\n", cmd.flags);
+        return -EINVAL;
+    }
+
+    return ksu_install_sulog_fd();
+}
+
 // IOCTL handlers mapping table
 // clang-format off
 static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
-    {
+    { 
         .cmd = KSU_IOCTL_GRANT_ROOT,
         .name = "GRANT_ROOT",
         .handler = do_grant_root,
-        .perm_check = allowed_for_su
+        .perm_check = allowed_for_su 
     },
     {
         .cmd = KSU_IOCTL_GET_INFO,
@@ -853,6 +817,12 @@ static const struct ksu_ioctl_cmd_map ksu_ioctl_handlers[] = {
         .perm_check = only_root
     },
     {
+        .cmd = KSU_IOCTL_GET_SULOG_FD,
+        .name = "GET_SULOG_FD",
+        .handler = do_get_sulog_fd,
+        .perm_check = only_root
+    },
+        {
         .cmd = KSU_IOCTL_GET_HOOK_MODE,
         .name = "GET_HOOK_MODE",
         .handler = do_get_hook_mode,

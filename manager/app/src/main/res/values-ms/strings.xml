@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="selinux_status_unknown">Tidak Diketahui</string>
+    <string name="selinux_status_disabled">Lumpuhkan</string>
+    <string name="selinux_status_permissive">Permisif</string>
+    <string name="reboot_download">Reboot ke Download</string>
+    <string name="module_failed_to_enable">Modul tidak berjaya diaktifkan: %s</string>
+    <string name="reboot_edl">Reboot ke EDL</string>
+    <string name="selinux_status_enforcing">Enforcing</string>
+    <string name="home_fingerprint">Cap Jari</string>
+    <string name="reboot_recovery">Reboot ke Recovery</string>
+    <string name="reboot_userspace">Soft Reboot</string>
+    <string name="uninstall">Padam</string>
+    <string name="module_install">Pasang</string>
+    <string name="home_click_to_install">Tekan untuk memasang</string>
+    <string name="module">Modul</string>
+    <string name="about">Tentang</string>
+    <string name="home_working_version">Versi: %d</string>
+    <string name="reboot">Reboot</string>
+    <string name="home_unsupported_reason">KernelSU ketika ini hanya menyokong kernel GKI</string>
+    <string name="home_selinux_status">Status SELinux</string>
+    <string name="home_unsupported">Tidak Disokong</string>
+    <string name="home">Layar Utama</string>
+    <string name="module_uninstall_confirm">Apakah anda pasti ingin membuang modul %s\?</string>
+    <string name="superuser">Superuser</string>
+    <string name="settings">Tetapan</string>
+    <string name="home_working">Berjalan</string>
+    <string name="module_failed_to_disable">Gagal mematikan modul: %s</string>
+    <string name="module_empty">Tiada modul dipasang</string>
+    <string name="install">Pasang</string>
+    <string name="home_kernel">Kernel</string>
+    <string name="home_not_installed">Tidak terpasang</string>
+    <string name="reboot_bootloader">Reboot ke Bootloader</string>
+    <string name="home_manager_version">Versi manager</string>
+    <string name="save_log">Simpan Log</string>
+    <string name="settings_sucompat">Ubaḥ hala binari su</string>
+    <string name="settings_sucompat_summary">Ubaḥ hala /system/bin/su ke ksud untuk aplikasi yang diberikan kebenaran Superuser dalam Profil Aplikasi; berkesan untuk proses baharu sahaja.</string>
+    <string name="settings_kernel_umount">Umount kernel</string>
+    <string name="settings_kernel_umount_summary">Tingkah laku umount peringkat kernel dikawal oleh KernelSU</string>
+</resources>

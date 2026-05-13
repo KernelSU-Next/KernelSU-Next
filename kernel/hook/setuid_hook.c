@@ -39,8 +39,7 @@ int ksu_handle_setresuid(uid_t old_uid, uid_t new_uid)
     }
 
     if (ksu_is_allow_uid_for_current(new_uid)) {
-        if (current->seccomp.mode == SECCOMP_MODE_FILTER &&
-            current->seccomp.filter) {
+        if (current->seccomp.mode == SECCOMP_MODE_FILTER && current->seccomp.filter) {
             spin_lock_irq(&current->sighand->siglock);
             ksu_seccomp_allow_cache(current->seccomp.filter, __NR_reboot);
             spin_unlock_irq(&current->sighand->siglock);

@@ -123,6 +123,14 @@ bool is_manager() {
     return legacy_get_info().first > 0;
 }
 
+bool is_pr_build() {
+    auto info = get_info();
+    if (info.version > 0) {
+        return (info.flags & KSU_GET_INFO_FLAG_PR_BUILD) != 0;
+    }
+    return false;
+}
+
 bool uid_should_umount(int uid) {
     struct ksu_uid_should_umount_cmd cmd = {};
     cmd.uid = uid;
@@ -153,25 +161,6 @@ bool set_su_enabled(bool enabled) {
 bool is_su_enabled() {
     struct ksu_get_feature_cmd cmd = {};
     cmd.feature_id = KSU_FEATURE_SU_COMPAT;
-    if (ksuctl(KSU_IOCTL_GET_FEATURE, &cmd) != 0) {
-        return false;
-    }
-    if (!cmd.supported) {
-        return false;
-    }
-    return cmd.value != 0;
-}
-
-bool set_avc_spoof_enabled(bool enabled) {
-    struct ksu_set_feature_cmd cmd = {};
-    cmd.feature_id = KSU_FEATURE_AVC_SPOOF;
-    cmd.value = enabled ? 1 : 0;
-    return ksuctl(KSU_IOCTL_SET_FEATURE, &cmd) == 0;
-}
-
-bool is_avc_spoof_enabled() {
-    struct ksu_get_feature_cmd cmd = {};
-    cmd.feature_id = KSU_FEATURE_AVC_SPOOF;
     if (ksuctl(KSU_IOCTL_GET_FEATURE, &cmd) != 0) {
         return false;
     }
@@ -242,16 +231,6 @@ const char* get_hook_mode(void)
         return cmd.mode;
 
     return "Unknown";
-}
-
-uid_t get_manager_appid(void)
-{
-    static struct ksu_get_manager_appid_cmd cmd = {0};
-
-    if (ksuctl(KSU_IOCTL_GET_MANAGER_APPID, &cmd) == 0)
-        return cmd.appid;
-
-    return 0;
 }
 
 const char* get_version_tag(void)

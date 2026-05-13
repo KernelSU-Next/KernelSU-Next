@@ -1,6 +1,7 @@
 kernelsu-objs := core/init.o
 
 kernelsu-objs += feature/kernel_umount.o
+kernelsu-objs += feature/sulog.o
 kernelsu-objs += feature/sucompat.o
 
 kernelsu-objs += hook/lsm_hook.o
@@ -15,10 +16,9 @@ else ifeq ($(CONFIG_X86_64),y)
 kernelsu-objs += hook/x86_64/patch_memory.o
 kernelsu-objs += hook/x86_64/syscall_hook.o
 endif
-kernelsu-objs += extras.o
-kernelsu-objs += tiny_sulog.o
 
 kernelsu-objs += infra/file_wrapper.o
+kernelsu-objs += infra/event_queue.o
 kernelsu-objs += infra/seccomp_cache.o
 kernelsu-objs += infra/su_mount_ns.o
 kernelsu-objs += infra/symbol_resolver.o
@@ -40,9 +40,14 @@ kernelsu-objs += selinux/selinux.o
 kernelsu-objs += selinux/rules.o
 kernelsu-objs += selinux/sepolicy.o
 
+kernelsu-objs += sulog/event.o
+kernelsu-objs += sulog/fd.o
+
 kernelsu-objs += supercall/dispatch.o
 kernelsu-objs += supercall/perm.o
 kernelsu-objs += supercall/supercall.o
+
+kernelsu-objs += feature/adb_root.o
 
 kernelsu-objs += feature/selinux_hide.o
 
@@ -71,74 +76,78 @@ ccflags-y += -I$(KSU_KERNEL_DIR) -I$(KSU_KERNEL_DIR)/include
 
 obj-$(CONFIG_KSU) += kernelsu.o
 
-LPATH := /usr/bin/env PATH="$$PATH":/usr/bin:/usr/local/bin
 MDIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
+# Workaround bazel
+# https://github.com/tiann/KernelSU/pull/316#issuecomment-1479043219
+GIT := $(shell PATH="$$PATH":/usr/bin:/usr/local/bin which git)
+ifneq ($(GIT),)
 # Check if this is a git repository
 # Try to detect Git repo intelligently
-GIT_ROOT := $(shell cd $(MDIR) && $(LPATH) git rev-parse --show-toplevel 2>/dev/null)
+GIT_ROOT := $(shell cd $(MDIR) && $(GIT) rev-parse --show-toplevel 2>/dev/null)
 ifneq ($(GIT_ROOT),)
-KERNEL_GIT_ROOT := $(shell cd $(srctree) && $(LPATH) git rev-parse --show-toplevel 2>/dev/null)
+KERNEL_GIT_ROOT := $(shell cd $(srctree) && $(GIT) rev-parse --show-toplevel 2>/dev/null)
 ifneq ($(GIT_ROOT),$(KERNEL_GIT_ROOT))
 # Only set version if it's a different repo from kernel
-$(shell cd $(GIT_ROOT) && [ -f .git/shallow ] && $(LPATH) git fetch --unshallow 2>/dev/null || true)
-KSU_GIT_VERSION := $(shell cd $(GIT_ROOT) && $(LPATH) git rev-list --count HEAD 2>/dev/null)
-KSU_GIT_TAG := $(shell cd $(GIT_ROOT) && $(LPATH) git describe --tags --abbrev=0 2>/dev/null)
+$(shell cd $(GIT_ROOT) && [ -f .git/shallow ] && $(GIT) fetch --unshallow 2>/dev/null || true)
+KSU_GIT_VERSION := $(shell cd $(GIT_ROOT) && $(GIT) rev-list --count HEAD 2>/dev/null)
 KSU_GIT_VERSION_VALID := 1
-$(info -- KernelSU-Next Git repo detected at: $(GIT_ROOT))
+$(info -- KernelSU: Git repo detected at $(GIT_ROOT))
 endif
 endif
+else
+$(warning -- KernelSU: Git not detected, make sure git is installed in your PATH!)
+endif
+
 
 # Calculate version if git version is available
 ifdef KSU_GIT_VERSION_VALID
-# ksu_version: major * 30000 + git version for historical reasons
+# ksu_version: major * 10000 + git version + 200 for historical reasons
 $(eval KSU_VERSION=$(shell expr 30000 + $(KSU_GIT_VERSION)))
-$(info -- KernelSU-Next version: $(KSU_VERSION))
+$(info -- KernelSU version: $(KSU_VERSION))
 ccflags-y += -DKSU_VERSION=$(KSU_VERSION)
 else
 # If there is no .git directory, use default version
-$(warning "KSU_GIT_VERSION not defined! It is better to make KernelSU-Next a git repository!")
-KSU_VERSION_FALLBACK := 1
-$(info -- KernelSU-Next version fallback: $(KSU_VERSION_FALLBACK))
-ccflags-y += -DKSU_VERSION=$(KSU_VERSION_FALLBACK)
-endif
-
-ifdef KSU_GIT_VERSION_VALID
-$(eval KSU_VERSION_TAG=$(KSU_GIT_TAG))
-$(info -- KernelSU-Next tag: $(KSU_VERSION_TAG))
-ccflags-y += -DKSU_VERSION_TAG=\"$(KSU_VERSION_TAG)\"
-else
-$(warning "KSU_VERSION_TAG not defined! It is better to make KernelSU-Next a git submodule!")
-KSU_VERSION_TAG_FALLBACK := v0.0.1
-$(info -- KernelSU-Next tag fallback: $(KSU_VERSION_TAG_FALLBACK))
-ccflags-y += -DKSU_VERSION_TAG=\"$(KSU_VERSION_TAG_FALLBACK)\"
+$(warning "KSU_GIT_VERSION not defined! It is better to make KernelSU a git repository!")
+ccflags-y += -DKSU_VERSION=16
 endif
 
 KSU_NEW_DCACHE_FLUSH := $(shell grep -q __flush_dcache_area $(srctree)/arch/arm64/include/asm/cacheflush.h ; echo $$?)
-$(info -- KernelSU-Next new DCACHE flush: $(KSU_NEW_DCACHE_FLUSH))
+$(info -- KSU_NEW_DCACHE_FLUSH: $(KSU_NEW_DCACHE_FLUSH))
 
-ifndef KSU_NEXT_MANAGER_SIZE
-KSU_NEXT_MANAGER_SIZE := 0x3e6
+
+ifndef KSU_EXPECTED_SIZE
+KSU_EXPECTED_SIZE := 0x033b
 endif
 
-ifndef KSU_NEXT_MANAGER_HASH
-KSU_NEXT_MANAGER_HASH := 79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7
+ifndef KSU_EXPECTED_HASH
+KSU_EXPECTED_HASH := c371061b19d8c7d7d6133c6a9bafe198fa944e50c1b31c9d8daa8d7f1fc2d2d6
 endif
 
 ifdef KSU_MANAGER_PACKAGE
 ccflags-y += -DKSU_MANAGER_PACKAGE=\"$(KSU_MANAGER_PACKAGE)\"
-$(info -- KernelSU-Next Manager package name: $(KSU_MANAGER_PACKAGE))
+$(info -- KernelSU Manager package name: $(KSU_MANAGER_PACKAGE))
 endif
 
-$(info -- KernelSU-Next Manager signature size: $(KSU_NEXT_MANAGER_SIZE))
-$(info -- KernelSU-Next Manager signature hash: $(KSU_NEXT_MANAGER_HASH))
+$(info -- KernelSU Manager signature size: $(KSU_EXPECTED_SIZE))
+$(info -- KernelSU Manager signature hash: $(KSU_EXPECTED_HASH))
 
-ccflags-y += -DEXPECTED_MANAGER_SIZE=$(KSU_NEXT_MANAGER_SIZE)
-ccflags-y += -DEXPECTED_MANAGER_HASH=\"$(KSU_NEXT_MANAGER_HASH)\"
+ccflags-y += -DEXPECTED_SIZE=$(KSU_EXPECTED_SIZE)
+ccflags-y += -DEXPECTED_HASH=\"$(KSU_EXPECTED_HASH)\"
+
+ifdef KSU_EXPECTED_SIZE2
+ifndef KSU_EXPECTED_HASH2
+$(error KSU_EXPECTED_HASH2 must be set when KSU_EXPECTED_SIZE2 is set)
+endif
+ccflags-y += -DEXPECTED_SIZE2=$(KSU_EXPECTED_SIZE2)
+ccflags-y += -DEXPECTED_HASH2=\"$(KSU_EXPECTED_HASH2)\"
+$(info -- KernelSU Manager signature size2: $(KSU_EXPECTED_SIZE2))
+$(info -- KernelSU Manager signature hash2: $(KSU_EXPECTED_HASH2))
+endif
 
 ccflags-y += -DKSU_NEW_DCACHE_FLUSH=$(KSU_NEW_DCACHE_FLUSH)
 
 ccflags-y += -Wno-strict-prototypes -Wno-int-conversion -Wno-gcc-compat -Wno-missing-prototypes
-ccflags-y += -Wno-declaration-after-statement -Wno-unused-function -Wno-unused-variable
+ccflags-y += -Wno-declaration-after-statement -Wno-unused-function
 
 # Keep a new line here!! Because someone may append config

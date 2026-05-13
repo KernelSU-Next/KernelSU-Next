@@ -1,146 +1,148 @@
 package com.rifsxd.ksunext.ui.webui
 
-import android.content.Context
-import android.content.res.Configuration
-import android.os.Build
-import androidx.annotation.RequiresApi
-
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
-
-import com.rifsxd.ksunext.ui.theme.AMOLED_BLACK
+import com.rifsxd.ksunext.ui.LocalUiMode
+import com.rifsxd.ksunext.ui.UiMode
+import top.yukonga.miuix.kmp.theme.MiuixTheme
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * @author rifsxd
  * @date 2025/6/2.
  */
 object MonetColorsProvider {
-    @RequiresApi(Build.VERSION_CODES.S)
-    fun getColorsCss(context: Context): String {
 
-        val isDark = (context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+    private val colorsCss: AtomicReference<String?> = AtomicReference(null)
 
-        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-        val amoledMode = prefs.getBoolean("enable_amoled", false)
+    fun getColorsCss(): String {
+        return colorsCss.get() ?: ""
+    }
 
-        val colorScheme = if (isDark) {
-            dynamicDarkColorScheme(context)
-        } else {
-            dynamicLightColorScheme(context)
+    @Composable
+    fun UpdateCss() {
+        when (LocalUiMode.current) {
+            UiMode.Miuix -> UpdateCssMiuix()
+            UiMode.Material -> UpdateCssMaterial()
         }
+    }
 
-        fun blend(c1: Color, c2: Color, ratio: Float): Color {
-            val inv = 1f - ratio
-            return Color(
-                red = c1.red * inv + c2.red * ratio,
-                green = c1.green * inv + c2.green * ratio,
-                blue = c1.blue * inv + c2.blue * ratio,
-                alpha = c1.alpha
-            )
-        }
+    @Composable
+    private fun UpdateCssMiuix() {
+        val colorScheme = MiuixTheme.colorScheme
 
-        val monetColors = if (isDark && amoledMode) {
-            mapOf(
-                "primary" to colorScheme.primary.toArgb().toHex(),
-                "onPrimary" to colorScheme.onPrimary.toArgb().toHex(),
-                "primaryContainer" to colorScheme.primaryContainer.toArgb().toHex(),
-                "onPrimaryContainer" to colorScheme.onPrimaryContainer.toArgb().toHex(),
-                "inversePrimary" to colorScheme.inversePrimary.toArgb().toHex(),
-                "secondary" to colorScheme.secondary.toArgb().toHex(),
-                "onSecondary" to colorScheme.onSecondary.toArgb().toHex(),
-                "secondaryContainer" to colorScheme.secondaryContainer.toArgb().toHex(),
-                "onSecondaryContainer" to colorScheme.onSecondaryContainer.toArgb().toHex(),
-                "tertiary" to colorScheme.tertiary.toArgb().toHex(),
-                "onTertiary" to colorScheme.onTertiary.toArgb().toHex(),
-                "tertiaryContainer" to colorScheme.tertiaryContainer.toArgb().toHex(),
-                "onTertiaryContainer" to colorScheme.onTertiaryContainer.toArgb().toHex(),
-                "background" to AMOLED_BLACK.toArgb().toHex(),
-                "onBackground" to colorScheme.onBackground.toArgb().toHex(),
-                "surface" to AMOLED_BLACK.toArgb().toHex(),
-                "tonalSurface" to blend(colorScheme.surfaceColorAtElevation(1.dp), AMOLED_BLACK, 0.8f).toArgb().toHex(),
-                "onSurface" to colorScheme.onSurface.toArgb().toHex(),
-                "surfaceVariant" to blend(colorScheme.surfaceVariant, AMOLED_BLACK, 0.8f).toArgb().toHex(),
-                "onSurfaceVariant" to colorScheme.onSurfaceVariant.toArgb().toHex(),
-                "surfaceTint" to colorScheme.surfaceTint.toArgb().toHex(),
-                "inverseSurface" to colorScheme.inverseSurface.toArgb().toHex(),
-                "inverseOnSurface" to colorScheme.inverseOnSurface.toArgb().toHex(),
-                "error" to colorScheme.error.toArgb().toHex(),
-                "onError" to colorScheme.onError.toArgb().toHex(),
-                "errorContainer" to colorScheme.errorContainer.toArgb().toHex(),
-                "onErrorContainer" to colorScheme.onErrorContainer.toArgb().toHex(),
-                "outline" to colorScheme.outline.toArgb().toHex(),
-                "outlineVariant" to colorScheme.outlineVariant.toArgb().toHex(),
-                "scrim" to colorScheme.scrim.toArgb().toHex(),
-                "surfaceBright" to blend(colorScheme.surfaceBright, AMOLED_BLACK, 0.8f).toArgb().toHex(),
-                "surfaceDim" to blend(colorScheme.surfaceDim, AMOLED_BLACK, 0.8f).toArgb().toHex(),
-                "surfaceContainer" to blend(colorScheme.surfaceContainer, AMOLED_BLACK, 0.8f).toArgb().toHex(),
-                "surfaceContainerHigh" to blend(colorScheme.surfaceContainerHigh, AMOLED_BLACK, 0.8f).toArgb().toHex(),
-                "surfaceContainerHighest" to blend(colorScheme.surfaceContainerHighest, AMOLED_BLACK, 0.8f).toArgb().toHex(),
-                "surfaceContainerLow" to blend(colorScheme.surfaceContainerLow, AMOLED_BLACK, 0.8f).toArgb().toHex(),
-                "surfaceContainerLowest" to blend(colorScheme.surfaceContainerLowest, AMOLED_BLACK, 0.8f).toArgb().toHex(),
-                "filledTonalButtonContentColor" to colorScheme.onPrimaryContainer.toArgb().toHex(),
-                "filledTonalButtonContainerColor" to blend(colorScheme.secondaryContainer, AMOLED_BLACK, 0.8f).toArgb().toHex(),
-                "filledTonalButtonDisabledContentColor" to colorScheme.onSurfaceVariant.toArgb().toHex(),
-                "filledTonalButtonDisabledContainerColor" to blend(colorScheme.surfaceVariant, AMOLED_BLACK, 0.8f).toArgb().toHex(),
-                "filledCardContentColor" to colorScheme.onPrimaryContainer.toArgb().toHex(),
-                "filledCardContainerColor" to blend(colorScheme.primaryContainer, AMOLED_BLACK, 0.8f).toArgb().toHex(),
-                "filledCardDisabledContentColor" to colorScheme.onSurfaceVariant.toArgb().toHex(),
-                "filledCardDisabledContainerColor" to blend(colorScheme.surfaceVariant, AMOLED_BLACK, 0.8f).toArgb().toHex()
+        LaunchedEffect(colorScheme) {
+            val monetColors = mapOf(
+                "primary" to colorScheme.primary.toCssValue(),
+                "onPrimary" to colorScheme.onPrimary.toCssValue(),
+                "primaryContainer" to colorScheme.primaryContainer.toCssValue(),
+                "onPrimaryContainer" to colorScheme.onPrimaryContainer.toCssValue(),
+                "inversePrimary" to colorScheme.primaryVariant.toCssValue(),
+                "secondary" to colorScheme.secondary.toCssValue(),
+                "onSecondary" to colorScheme.onSecondary.toCssValue(),
+                "secondaryContainer" to colorScheme.secondaryContainer.toCssValue(),
+                "onSecondaryContainer" to colorScheme.onSecondaryContainer.toCssValue(),
+                "tertiary" to colorScheme.tertiaryContainerVariant.toCssValue(),
+                "onTertiary" to colorScheme.tertiaryContainer.toCssValue(),
+                "tertiaryContainer" to colorScheme.tertiaryContainer.toCssValue(),
+                "onTertiaryContainer" to colorScheme.onTertiaryContainer.toCssValue(),
+                "background" to colorScheme.background.toCssValue(),
+                "onBackground" to colorScheme.onBackground.toCssValue(),
+                "surface" to colorScheme.surface.toCssValue(),
+                "tonalSurface" to colorScheme.surfaceContainer.toCssValue(),
+                "onSurface" to colorScheme.onSurface.toCssValue(),
+                "surfaceVariant" to colorScheme.surfaceVariant.toCssValue(),
+                "onSurfaceVariant" to colorScheme.onSurfaceVariantSummary.toCssValue(),
+                "surfaceTint" to colorScheme.primary.toCssValue(),
+                "inverseSurface" to colorScheme.disabledOnSurface.toCssValue(),
+                "inverseOnSurface" to colorScheme.surfaceContainer.toCssValue(),
+                "error" to colorScheme.error.toCssValue(),
+                "onError" to colorScheme.onError.toCssValue(),
+                "errorContainer" to colorScheme.errorContainer.toCssValue(),
+                "onErrorContainer" to colorScheme.onErrorContainer.toCssValue(),
+                "outline" to colorScheme.outline.toCssValue(),
+                "outlineVariant" to colorScheme.dividerLine.toCssValue(),
+                "scrim" to colorScheme.windowDimming.toCssValue(),
+                "surfaceBright" to colorScheme.surface.toCssValue(),
+                "surfaceDim" to colorScheme.surface.toCssValue(),
+                "surfaceContainer" to colorScheme.surfaceContainer.toCssValue(),
+                "surfaceContainerHigh" to colorScheme.surfaceContainerHigh.toCssValue(),
+                "surfaceContainerHighest" to colorScheme.surfaceContainerHighest.toCssValue(),
+                "surfaceContainerLow" to colorScheme.surfaceContainer.toCssValue(),
+                "surfaceContainerLowest" to colorScheme.surfaceContainer.toCssValue(),
+                "filledTonalButtonContentColor" to colorScheme.onPrimaryContainer.toCssValue(),
+                "filledTonalButtonContainerColor" to colorScheme.secondaryContainer.toCssValue(),
+                "filledTonalButtonDisabledContentColor" to colorScheme.onSurfaceVariantSummary.toCssValue(),
+                "filledTonalButtonDisabledContainerColor" to colorScheme.surfaceVariant.toCssValue(),
+                "filledCardContentColor" to colorScheme.onPrimaryContainer.toCssValue(),
+                "filledCardContainerColor" to colorScheme.primaryContainer.toCssValue(),
+                "filledCardDisabledContentColor" to colorScheme.onSurfaceVariantSummary.toCssValue(),
+                "filledCardDisabledContainerColor" to colorScheme.surfaceVariant.toCssValue()
             )
-        } else {
-            mapOf(
-                "primary" to colorScheme.primary.toArgb().toHex(),
-                "onPrimary" to colorScheme.onPrimary.toArgb().toHex(),
-                "primaryContainer" to colorScheme.primaryContainer.toArgb().toHex(),
-                "onPrimaryContainer" to colorScheme.onPrimaryContainer.toArgb().toHex(),
-                "inversePrimary" to colorScheme.inversePrimary.toArgb().toHex(),
-                "secondary" to colorScheme.secondary.toArgb().toHex(),
-                "onSecondary" to colorScheme.onSecondary.toArgb().toHex(),
-                "secondaryContainer" to colorScheme.secondaryContainer.toArgb().toHex(),
-                "onSecondaryContainer" to colorScheme.onSecondaryContainer.toArgb().toHex(),
-                "tertiary" to colorScheme.tertiary.toArgb().toHex(),
-                "onTertiary" to colorScheme.onTertiary.toArgb().toHex(),
-                "tertiaryContainer" to colorScheme.tertiaryContainer.toArgb().toHex(),
-                "onTertiaryContainer" to colorScheme.onTertiaryContainer.toArgb().toHex(),
-                "background" to colorScheme.background.toArgb().toHex(),
-                "onBackground" to colorScheme.onBackground.toArgb().toHex(),
-                "surface" to colorScheme.surface.toArgb().toHex(),
-                "tonalSurface" to colorScheme.surfaceColorAtElevation(1.dp).toArgb().toHex(),
-                "onSurface" to colorScheme.onSurface.toArgb().toHex(),
-                "surfaceVariant" to colorScheme.surfaceVariant.toArgb().toHex(),
-                "onSurfaceVariant" to colorScheme.onSurfaceVariant.toArgb().toHex(),
-                "surfaceTint" to colorScheme.surfaceTint.toArgb().toHex(),
-                "inverseSurface" to colorScheme.inverseSurface.toArgb().toHex(),
-                "inverseOnSurface" to colorScheme.inverseOnSurface.toArgb().toHex(),
-                "error" to colorScheme.error.toArgb().toHex(),
-                "onError" to colorScheme.onError.toArgb().toHex(),
-                "errorContainer" to colorScheme.errorContainer.toArgb().toHex(),
-                "onErrorContainer" to colorScheme.onErrorContainer.toArgb().toHex(),
-                "outline" to colorScheme.outline.toArgb().toHex(),
-                "outlineVariant" to colorScheme.outlineVariant.toArgb().toHex(),
-                "scrim" to colorScheme.scrim.toArgb().toHex(),
-                "surfaceBright" to colorScheme.surfaceBright.toArgb().toHex(),
-                "surfaceDim" to colorScheme.surfaceDim.toArgb().toHex(),
-                "surfaceContainer" to colorScheme.surfaceContainer.toArgb().toHex(),
-                "surfaceContainerHigh" to colorScheme.surfaceContainerHigh.toArgb().toHex(),
-                "surfaceContainerHighest" to colorScheme.surfaceContainerHighest.toArgb().toHex(),
-                "surfaceContainerLow" to colorScheme.surfaceContainerLow.toArgb().toHex(),
-                "surfaceContainerLowest" to colorScheme.surfaceContainerLowest.toArgb().toHex(),
-                "filledTonalButtonContentColor" to colorScheme.onPrimaryContainer.toArgb().toHex(),
-                "filledTonalButtonContainerColor" to colorScheme.secondaryContainer.toArgb().toHex(),
-                "filledTonalButtonDisabledContentColor" to colorScheme.onSurfaceVariant.toArgb().toHex(),
-                "filledTonalButtonDisabledContainerColor" to colorScheme.surfaceVariant.toArgb().toHex(),
-                "filledCardContentColor" to colorScheme.onPrimaryContainer.toArgb().toHex(),
-                "filledCardContainerColor" to colorScheme.primaryContainer.toArgb().toHex(),
-                "filledCardDisabledContentColor" to colorScheme.onSurfaceVariant.toArgb().toHex(),
-                "filledCardDisabledContainerColor" to colorScheme.surfaceVariant.toArgb().toHex()
-            )
+
+            colorsCss.set(monetColors.toCssVars())
         }
-        return monetColors.toCssVars()
+    }
+
+    @Composable
+    private fun UpdateCssMaterial() {
+        val colorScheme = MaterialTheme.colorScheme
+
+        LaunchedEffect(colorScheme) {
+            val monetColors = mapOf(
+                "primary" to colorScheme.primary.toCssValue(),
+                "onPrimary" to colorScheme.onPrimary.toCssValue(),
+                "primaryContainer" to colorScheme.primaryContainer.toCssValue(),
+                "onPrimaryContainer" to colorScheme.onPrimaryContainer.toCssValue(),
+                "inversePrimary" to colorScheme.inversePrimary.toCssValue(),
+                "secondary" to colorScheme.secondary.toCssValue(),
+                "onSecondary" to colorScheme.onSecondary.toCssValue(),
+                "secondaryContainer" to colorScheme.secondaryContainer.toCssValue(),
+                "onSecondaryContainer" to colorScheme.onSecondaryContainer.toCssValue(),
+                "tertiary" to colorScheme.tertiary.toCssValue(),
+                "onTertiary" to colorScheme.onTertiary.toCssValue(),
+                "tertiaryContainer" to colorScheme.tertiaryContainer.toCssValue(),
+                "onTertiaryContainer" to colorScheme.onTertiaryContainer.toCssValue(),
+                "background" to colorScheme.background.toCssValue(),
+                "onBackground" to colorScheme.onBackground.toCssValue(),
+                "surface" to colorScheme.surface.toCssValue(),
+                "tonalSurface" to colorScheme.surfaceColorAtElevation(1.dp).toCssValue(),
+                "onSurface" to colorScheme.onSurface.toCssValue(),
+                "surfaceVariant" to colorScheme.surfaceVariant.toCssValue(),
+                "onSurfaceVariant" to colorScheme.onSurfaceVariant.toCssValue(),
+                "surfaceTint" to colorScheme.surfaceTint.toCssValue(),
+                "inverseSurface" to colorScheme.inverseSurface.toCssValue(),
+                "inverseOnSurface" to colorScheme.inverseOnSurface.toCssValue(),
+                "error" to colorScheme.error.toCssValue(),
+                "onError" to colorScheme.onError.toCssValue(),
+                "errorContainer" to colorScheme.errorContainer.toCssValue(),
+                "onErrorContainer" to colorScheme.onErrorContainer.toCssValue(),
+                "outline" to colorScheme.outline.toCssValue(),
+                "outlineVariant" to colorScheme.outlineVariant.toCssValue(),
+                "scrim" to colorScheme.scrim.toCssValue(),
+                "surfaceBright" to colorScheme.surfaceBright.toCssValue(),
+                "surfaceDim" to colorScheme.surfaceDim.toCssValue(),
+                "surfaceContainer" to colorScheme.surfaceContainer.toCssValue(),
+                "surfaceContainerHigh" to colorScheme.surfaceContainerHigh.toCssValue(),
+                "surfaceContainerHighest" to colorScheme.surfaceContainerHighest.toCssValue(),
+                "surfaceContainerLow" to colorScheme.surfaceContainerLow.toCssValue(),
+                "surfaceContainerLowest" to colorScheme.surfaceContainerLowest.toCssValue(),
+                "filledTonalButtonContentColor" to colorScheme.onPrimaryContainer.toCssValue(),
+                "filledTonalButtonContainerColor" to colorScheme.secondaryContainer.toCssValue(),
+                "filledTonalButtonDisabledContentColor" to colorScheme.onSurfaceVariant.toCssValue(),
+                "filledTonalButtonDisabledContainerColor" to colorScheme.surfaceVariant.toCssValue(),
+                "filledCardContentColor" to colorScheme.onPrimaryContainer.toCssValue(),
+                "filledCardContainerColor" to colorScheme.primaryContainer.toCssValue(),
+                "filledCardDisabledContentColor" to colorScheme.onSurfaceVariant.toCssValue(),
+                "filledCardDisabledContainerColor" to colorScheme.surfaceVariant.toCssValue()
+            )
+
+            colorsCss.set(monetColors.toCssVars())
+        }
     }
 
     private fun Map<String, String>.toCssVars(): String {
@@ -153,7 +155,14 @@ object MonetColorsProvider {
         }
     }
 
-    private fun Int.toHex(): String {
-        return String.format("#%06X", 0xFFFFFF and this)
+    private fun Color.toCssValue(): String {
+        fun Float.toHex(): String {
+            return (this * 255).toInt().coerceIn(0, 255).toString(16).padStart(2, '0')
+        }
+        return if (alpha == 1f) {
+            "#${red.toHex()}${green.toHex()}${blue.toHex()}"
+        } else {
+            "#${red.toHex()}${green.toHex()}${blue.toHex()}${alpha.toHex()}"
+        }
     }
 }

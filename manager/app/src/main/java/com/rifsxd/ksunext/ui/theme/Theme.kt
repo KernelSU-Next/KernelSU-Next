@@ -1,118 +1,133 @@
 package com.rifsxd.ksunext.ui.theme
 
-import android.os.Build
-import androidx.activity.ComponentActivity
-import androidx.activity.SystemBarStyle
-import androidx.activity.enableEdgeToEdge
+import android.content.Context
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
+import com.materialkolor.PaletteStyle
+import com.materialkolor.dynamiccolor.ColorSpec
+import com.rifsxd.ksunext.ui.LocalUiMode
+import com.rifsxd.ksunext.ui.UiMode
 
-private val DarkColorScheme = darkColorScheme(
-    primary = PRIMARY,
-    secondary = PRIMARY_DARK,
-    tertiary = SECONDARY_DARK
+enum class ColorMode(val value: Int) {
+    SYSTEM(0),
+    LIGHT(1),
+    DARK(2),
+    MONET_SYSTEM(3),
+    MONET_LIGHT(4),
+    MONET_DARK(5),
+    DARK_AMOLED(6);
+
+    companion object {
+        fun fromValue(value: Int) = entries.find { it.value == value } ?: SYSTEM
+    }
+
+    val isSystem: Boolean get() = value == 0 || value == 3
+    val isDark: Boolean get() = value == 2 || value == 5 || value == 6
+    val isAmoled: Boolean get() = value == 6
+    val isMonet: Boolean get() = value >= 3
+
+    fun toNonMonetMode(): Int = when (this) {
+        MONET_SYSTEM -> 0
+        MONET_LIGHT -> 1
+        MONET_DARK, DARK_AMOLED -> 2
+        else -> value
+    }
+
+    fun toMonetMode(): Int = when (this) {
+        SYSTEM -> 3
+        LIGHT -> 4
+        DARK -> 5
+        else -> value
+    }
+}
+
+data class AppSettings(
+    val colorMode: ColorMode,
+    val keyColor: Int,
+    val paletteStyle: PaletteStyle,
+    val colorSpec: ColorSpec.SpecVersion,
+    val enableSmoothCorner: Boolean,
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = PRIMARY,
-    secondary = PRIMARY_LIGHT,
-    tertiary = SECONDARY_LIGHT
-)
+object ThemeController {
+    fun getAppSettings(context: Context): AppSettings {
+        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+        val uiMode = prefs.getString("ui_mode", UiMode.DEFAULT_VALUE) ?: UiMode.DEFAULT_VALUE
+        var colorModeValue = prefs.getInt("color_mode", ColorMode.SYSTEM.value)
 
-fun Color.blend(other: Color, ratio: Float): Color {
-    val inverse = 1f - ratio
-    return Color(
-        red = red * inverse + other.red * ratio,
-        green = green * inverse + other.green * ratio,
-        blue = blue * inverse + other.blue * ratio,
-        alpha = alpha
-    )
+        if (uiMode == "miuix") {
+            val miuixMonet = prefs.getBoolean("miuix_monet", false)
+            val colorMode = ColorMode.fromValue(colorModeValue)
+            colorModeValue = if (!miuixMonet && colorMode.isMonet) {
+                colorMode.toNonMonetMode()
+            } else if (miuixMonet && !colorMode.isMonet) {
+                colorMode.toMonetMode()
+            } else {
+                colorModeValue
+            }
+        }
+
+        val colorMode = ColorMode.fromValue(colorModeValue)
+        val keyColor = prefs.getInt("key_color", 0)
+        val paletteStyleStr = prefs.getString("color_style", PaletteStyle.TonalSpot.name)
+        val paletteStyle = try {
+            PaletteStyle.valueOf(paletteStyleStr!!)
+        } catch (_: Exception) {
+            PaletteStyle.TonalSpot
+        }
+        val colorSpecStr = prefs.getString("color_spec", ColorSpec.SpecVersion.Default.name)
+        val colorSpec = try {
+            ColorSpec.SpecVersion.valueOf(colorSpecStr!!)
+        } catch (_: Exception) {
+            ColorSpec.SpecVersion.Default
+        }
+
+        val enableSmoothCorner = prefs.getBoolean("enable_smooth_corner", true)
+
+        return AppSettings(colorMode, keyColor, paletteStyle, colorSpec, enableSmoothCorner)
+    }
 }
 
 @Composable
 fun KernelSUTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
-    amoledMode: Boolean = false,
+    appSettings: AppSettings? = null,
+    uiMode: UiMode = LocalUiMode.current,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        amoledMode && darkTheme && dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            val dynamicScheme = dynamicDarkColorScheme(context)
-            dynamicScheme.copy(
-                background = AMOLED_BLACK,
-                surface = AMOLED_BLACK,
-                surfaceVariant = dynamicScheme.surfaceVariant.blend(AMOLED_BLACK, 0.6f),
-                surfaceContainer = dynamicScheme.surfaceContainer.blend(AMOLED_BLACK, 0.6f),
-                surfaceContainerLow = dynamicScheme.surfaceContainerLow.blend(AMOLED_BLACK, 0.6f),
-                surfaceContainerLowest = dynamicScheme.surfaceContainerLowest.blend(AMOLED_BLACK, 0.6f),
-                surfaceContainerHigh = dynamicScheme.surfaceContainerHigh.blend(AMOLED_BLACK, 0.6f),
-                surfaceContainerHighest = dynamicScheme.surfaceContainerHighest.blend(AMOLED_BLACK, 0.6f)
-            )
-        }
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        amoledMode && darkTheme -> {
-            DarkColorScheme.copy(
-                background = AMOLED_BLACK,
-                surface = AMOLED_BLACK,
-                surfaceVariant = DARK_GREY.blend(AMOLED_BLACK, 0.8f),
-                surfaceContainer = DARK_GREY.blend(AMOLED_BLACK, 0.8f),
-                surfaceContainerLow = DARK_GREY.blend(AMOLED_BLACK, 0.8f),
-                surfaceContainerLowest = DARK_GREY.blend(AMOLED_BLACK, 0.8f),
-                surfaceContainerHigh = DARK_GREY.blend(AMOLED_BLACK, 0.8f),
-                surfaceContainerHighest = DARK_GREY.blend(AMOLED_BLACK, 0.8f),
-            )
-        }
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
-    SystemBarStyle(
-        darkMode = darkTheme
-    )
-
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
-}
-
-@Composable
-private fun SystemBarStyle(
-    darkMode: Boolean,
-    statusBarScrim: Color = Color.Transparent,
-    navigationBarScrim: Color = Color.Transparent,
-) {
     val context = LocalContext.current
-    val activity = context as ComponentActivity
+    val currentAppSettings = appSettings ?: ThemeController.getAppSettings(context)
 
-    SideEffect {
-        activity.enableEdgeToEdge(
-            statusBarStyle = SystemBarStyle.auto(
-                statusBarScrim.toArgb(),
-                statusBarScrim.toArgb(),
-            ) { darkMode },
-            navigationBarStyle = when {
-                darkMode -> SystemBarStyle.dark(
-                    navigationBarScrim.toArgb()
-                )
+    when (uiMode) {
+        UiMode.Miuix -> MiuixKernelSUTheme(
+            appSettings = currentAppSettings,
+            content = content
+        )
 
-                else -> SystemBarStyle.light(
-                    navigationBarScrim.toArgb(),
-                    navigationBarScrim.toArgb(),
-                )
-            }
+        UiMode.Material -> MaterialKernelSUTheme(
+            appSettings = currentAppSettings,
+            content = content
         )
     }
 }
+
+@Composable
+@ReadOnlyComposable
+fun isInDarkTheme(): Boolean {
+    return when (LocalColorMode.current) {
+        1, 4 -> false  // Force light mode
+        2, 5, 6 -> true   // Force dark mode
+        else -> isSystemInDarkTheme()  // Follow system (0 or default)
+    }
+}
+
+
+val LocalColorMode = staticCompositionLocalOf { 0 }
+
+val LocalEnableBlur = staticCompositionLocalOf { false }
+
+val LocalEnableFloatingBottomBar = staticCompositionLocalOf { false }
+
+val LocalEnableFloatingBottomBarBlur = staticCompositionLocalOf { false }

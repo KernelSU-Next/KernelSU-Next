@@ -35,11 +35,10 @@ static int patch_syscall_table(int nr, syscall_fn_t fn)
     if (nr < 0 || nr >= __NR_syscalls)
         return -EINVAL;
 
-    pr_info("patch syscall %d, 0x%lx -> 0x%lx\n", nr,
-            (unsigned long)READ_ONCE(ksu_syscall_table[nr]), (unsigned long)fn);
+    pr_info("patch syscall %d, 0x%lx -> 0x%lx\n", nr, (unsigned long)READ_ONCE(ksu_syscall_table[nr]),
+            (unsigned long)fn);
 
-    if (ksu_patch_text(&ksu_syscall_table[nr], &fn, sizeof(fn),
-                       KSU_PATCH_TEXT_FLUSH_DCACHE)) {
+    if (ksu_patch_text(&ksu_syscall_table[nr], &fn, sizeof(fn), KSU_PATCH_TEXT_FLUSH_DCACHE)) {
         pr_err("patch syscall %d failed\n", nr);
         return -EIO;
     }
@@ -79,9 +78,7 @@ void ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
             hooked_entries[hooked_count].orig = orig;
             hooked_count++;
         } else {
-            pr_warn(
-                "hooked_entries full, cannot track syscall %d for restoration\n",
-                nr);
+            pr_warn("hooked_entries full, cannot track syscall %d for restoration\n", nr);
         }
     }
 
@@ -142,7 +139,7 @@ static int __init ksu_find_ni_syscall_slots(int *out_slots, int max_slots)
     return count;
 }
 
-// Unified dispatcher: reads original NR from x8/orig_ax, dispatches to handler.
+// Unified dispatcher: reads original NR from x8, dispatches to handler.
 // Validates that syscallno matches our dispatcher slot (i.e. we redirected it),
 // otherwise it's a spurious call — return -ENOSYS.
 static long __nocfi ksu_syscall_dispatcher(const struct pt_regs *regs)
@@ -219,8 +216,7 @@ void __init ksu_syscall_hook_init(void)
     }
 
     ksu_dispatcher_nr = ni_slot;
-    ksu_syscall_table_hook(ksu_dispatcher_nr,
-                           (syscall_fn_t)ksu_syscall_dispatcher, NULL);
+    ksu_syscall_table_hook(ksu_dispatcher_nr, (syscall_fn_t)ksu_syscall_dispatcher, NULL);
     pr_info("dispatcher installed at slot %d\n", ksu_dispatcher_nr);
 }
 
@@ -239,8 +235,7 @@ void __exit ksu_syscall_hook_exit(void)
         syscall_fn_t orig = hooked_entries[i].orig;
 
         pr_info("restore syscall %d to 0x%lx\n", nr, (unsigned long)orig);
-        if (ksu_patch_text(&ksu_syscall_table[nr], &orig, sizeof(orig),
-                           KSU_PATCH_TEXT_FLUSH_DCACHE)) {
+        if (ksu_patch_text(&ksu_syscall_table[nr], &orig, sizeof(orig), KSU_PATCH_TEXT_FLUSH_DCACHE)) {
             pr_err("restore syscall %d failed\n", nr);
         }
     }

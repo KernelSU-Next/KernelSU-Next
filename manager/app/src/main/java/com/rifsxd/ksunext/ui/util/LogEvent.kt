@@ -3,10 +3,9 @@ package com.rifsxd.ksunext.ui.util
 import android.content.Context
 import android.os.Build
 import android.system.Os
-import com.rifsxd.ksunext.Natives
-import com.rifsxd.ksunext.ui.screen.getManagerVersion
-import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
+import com.rifsxd.ksunext.Natives
+import com.rifsxd.ksunext.ui.screen.home.getManagerVersion
 import java.io.File
 import java.io.FileWriter
 import java.io.PrintWriter
@@ -40,7 +39,7 @@ fun getBugreportFile(context: Context): File {
     val bootConfig = File(bugreportDir, "boot_config.txt")
     val kernelConfig = File(bugreportDir, "defconfig.gz")
 
-    val shell = createRootShell(true)
+    val shell = getRootShell(true)
 
     // busybox ps has very few features for embed devices
     shell.newJob().add("toybox ps -T -A -w -o PID,TID,UID,COMM,CMDLINE,CMD,LABEL,STAT,WCHAN > ${processFile.absolutePath}").exec()
@@ -65,7 +64,7 @@ fun getBugreportFile(context: Context): File {
     shell.newJob().add("cp /proc/bootconfig ${bootConfig.absolutePath}").exec()
     shell.newJob().add("cp /proc/config.gz ${kernelConfig.absolutePath}").exec()
 
-    val selinux = ShellUtils.fastCmd("getenforce")
+    val selinux = ShellUtils.fastCmd(shell, "getenforce")
 
     // basic information
     val buildInfo = File(bugreportDir, "basic.txt")
@@ -75,7 +74,6 @@ fun getBugreportFile(context: Context): File {
         pw.println("MODEL: " + Build.MODEL)
         pw.println("PRODUCT: " + Build.PRODUCT)
         pw.println("MANUFACTURER: " + Build.MANUFACTURER)
-        pw.println("ANDROID: " + Build.VERSION.RELEASE)
         pw.println("SDK: " + Build.VERSION.SDK_INT)
         pw.println("PREVIEW_SDK: " + Build.VERSION.PREVIEW_SDK_INT)
         pw.println("FINGERPRINT: " + Build.FINGERPRINT)
@@ -105,11 +103,11 @@ fun getBugreportFile(context: Context): File {
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
     val current = LocalDateTime.now().format(formatter)
 
-    val targetFile = File(context.cacheDir, "KernelSU_Next_bugreport_${current}.tar.gz")
+    val targetFile = File(context.cacheDir, "KernelSU_bugreport_${current}.tar.gz")
 
-    Shell.cmd("tar czf ${targetFile.absolutePath} -C ${bugreportDir.absolutePath} .").exec()
-    Shell.cmd("rm -rf ${bugreportDir.absolutePath}").exec()
-    Shell.cmd("chmod 0644 ${targetFile.absolutePath}").exec()
+    shell.newJob().add("tar czf ${targetFile.absolutePath} -C ${bugreportDir.absolutePath} .").exec()
+    shell.newJob().add("rm -rf ${bugreportDir.absolutePath}").exec()
+    shell.newJob().add("chmod 0644 ${targetFile.absolutePath}").exec()
 
     return targetFile
 }

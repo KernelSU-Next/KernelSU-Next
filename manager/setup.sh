@@ -15,7 +15,7 @@
     echo 'android.r8.maxWorkers=4'
 } >> gradle.properties
 
-./gradlew clean assembleRelease
+./gradlew clean assembleDebug
 
 > gradle.properties
 

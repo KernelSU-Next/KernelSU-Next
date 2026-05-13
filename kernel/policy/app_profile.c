@@ -77,8 +77,7 @@ static void disable_seccomp(void)
     // When disabling Seccomp, ensure that current->sighand->siglock is held during the operation.
     spin_lock_irq(&current->sighand->siglock);
     // disable seccomp
-#if defined(CONFIG_GENERIC_ENTRY) &&                                           \
-    LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+#if defined(CONFIG_GENERIC_ENTRY) && LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
     clear_syscall_work(SECCOMP);
 #else
     clear_thread_flag(TIF_SECCOMP);
