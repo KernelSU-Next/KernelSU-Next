@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="issue_report_title">問題が発生しましたか？</string>
-  <string name="issue_report_body">バグに遭遇しましたか？改善案を思い付きましたか？</string>
+  <string name="issue_report_body">バグに遭遇やフィードバックがありますか？</string>
   <string name="issue_report_body_2">できるだけ早急にご報告ください！</string>
   <string name="issue_report_github">GitHub で報告</string>
   <string name="issue_report_telegram">Telegram で問い合わせる</string>
@@ -14,8 +14,8 @@
   <string name="home_working">動作中</string>
   <string name="home_working_version">バージョン: %1$s (%2$d)</string>
   <string name="home_module_update_count">更新: %d</string>
-  <string name="home_failure">未対応 | 統合されていません</string>
-  <string name="home_failure_tip">GKI 以外のカーネルはサポートされていません。KernelSU-Next レガシードライバをカーネルに統合してください！</string>
+  <string name="home_failure">非対応 | 統合されていません</string>
+  <string name="home_failure_tip">GKI 以外のカーネルは非対応です。KernelSU-Next レガシードライバをカーネルに統合してください！</string>
   <string name="home_kernel">カーネルバージョン</string>
   <string name="hook_mode">フックモード</string>
   <string name="enable">有効化</string>
@@ -37,10 +37,10 @@
   <string name="module">モジュール</string>
   <string name="module_install_prompt_with_name">%1$s がインストールされます</string>
   <string name="anykernel_flash_prompt">以下のカーネル zip ファイルがフラッシュされます: %1$s</string>
-  <string name="module_sort_a_to_z">並べ替え (A → Z)</string>
-  <string name="module_sort_z_to_a">並べ替え (A → Z)</string>
-  <string name="module_size_low_to_high">並べ替え (サイズ 小 → 大)</string>
-  <string name="module_size_high_to_low">並べ替え (サイズ 大 → 小)</string>
+  <string name="module_sort_a_to_z">並べ替え (アルファベット順 A → Z)</string>
+  <string name="module_sort_z_to_a">並べ替え (アルファベット順 Z → A)</string>
+  <string name="module_size_low_to_high">並べ替え (サイズ順 低 → 高)</string>
+  <string name="module_size_high_to_low">並べ替え (サイズ順 高 → 低)</string>
   <string name="uninstall">アンインストール</string>
   <string name="restore">復元</string>
   <string name="module_install">インストール</string>
@@ -89,7 +89,7 @@
   <string name="allowlist_backup_message">バックアップは現在許可リストを設定しています。</string>
   <string name="proceed">続行</string>
   <string name="cancel">キャンセル</string>
-  <string name="about_source_code">%1$s でソースコードを見る</string>
+  <string name="about_source_code">%1$s でソースコードを表示する</string>
   <string name="profile">アプリプロファイル</string>
   <string name="profile_default">デフォルト</string>
   <string name="profile_template">テンプレート</string>
@@ -182,7 +182,7 @@
   <string name="customization">カスタマイズ</string>
   <string name="developer">開発者</string>
   <string name="sucompat_disabled">SUCOMPAT が無効</string>
-  <string name="zygisk_required">Zygisk 必須</string>
+  <string name="zygisk_required">Zygisk が必要です</string>
   <string name="zygisk_status">Zygisk インジェクション</string>
   <string name="zygisk">Zygisk</string>
   <string name="home_superuser_count_singular">スーパーユーザー</string>
@@ -248,7 +248,7 @@
   <string name="restore_failed">復元に失敗しました</string>
   <string name="jailbreak_mode">Jailbreak モード</string>
   <string name="contributors">貢献者</string>
-  <string name="support">サポート</string>
+  <string name="support">対応</string>
   <string name="home_metamodule_status">Meta モジュールのステータス</string>
   <string name="home_seccomp_status">Seccomp のステータス</string>
   <string name="seccomp_status_not_supported">非対応</string>
@@ -256,6 +256,6 @@
   <string name="seccomp_status_filter">フィルター</string>
   <string name="seccomp_status_disabled">無効</string>
   <string name="seccomp_status_unknown">不明</string>
-  <string name="module_sort_stars_low_to_high">Sort (Low → High)</string>
-  <string name="module_sort_stars_high_to_low">Sort (High → Low)</string>
+  <string name="module_sort_stars_low_to_high">並べ替え (ステータス順 低 → 高)</string>
+  <string name="module_sort_stars_high_to_low">並べ替え (ステータス順 高 → 低)</string>
 </resources>
