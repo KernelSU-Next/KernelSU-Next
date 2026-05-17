@@ -22,6 +22,7 @@
 #include "selinux/selinux.h"
 #include "hook/syscall_hook.h"
 #include "feature/selinux_hide.h"
+#include "infra/symbol_resolver.h"
 
 #if defined(__x86_64__)
 #include <asm/cpufeature.h>
@@ -120,6 +121,7 @@ int __init kernelsu_init(void)
 		pr_err("prepare cred failed!\n");
 	}
 
+	ksu_init_symbol_resolver();
 	ksu_syscall_hook_init();
 
 	ksu_feature_init();
