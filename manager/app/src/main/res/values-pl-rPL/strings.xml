@@ -17,7 +17,7 @@
   <string name="home_failure">Nieobsługiwane | Niezintegrowane</string>
   <string name="home_failure_tip">Jądra inne niż GKI nie są obsługiwane. Zintegruj starszy sterownik KernelSU-Next ze swoim jądrem!</string>
   <string name="home_kernel">Wersja jądra</string>
-  <string name="hook_mode">Tryb zaczepu</string>
+  <string name="hook_mode">Tryb przechwytywania</string>
   <string name="enable">Włącz</string>
   <string name="disable">Wyłącz</string>
   <string name="enabled">Włączony</string>
