@@ -235,6 +235,10 @@
   <string name="settings_enable_kernel_umount">内核处理卸载模块</string>
   <string name="settings_enable_kernel_umount_summary">在内核层面卸载模块。</string>
   <string name="settings_adb_root_summary">以 root 权限运行 adbd 守护进程</string>
+  <string name="settings_selinux_hide">隐藏 SELinux 修改</string>
+  <string name="settings_selinux_hide_summary">阻止应用检测 SELinux 修改</string>
+  <string name="settings_selinux_hide_reboot_required">重启生效</string>
+  <string name="settings_selinux_hide_failed">错误： %d</string>
   <string name="settings_enable_avc_spoof">AVC 日志伪装</string>
   <string name="settings_enable_avc_spoof_summary">修复日志中 avc denial 导致的 SELinux 上下文泄漏。</string>
   <string name="manage_repositories">管理仓库</string>
@@ -254,8 +258,4 @@
   <string name="enable_adb_summary">强制允许 USB 调试并取消 adb 认证，非必要请勿开启。</string>
   <string name="advanced_options">高级选项</string>
   <string name="expand">展开</string>
-  <string name="settings_selinux_hide">隐藏 SELinux 修改</string>
-  <string name="settings_selinux_hide_summary">阻止应用检测 SELinux 修改</string>
-  <string name="settings_selinux_hide_reboot_required">重启生效</string>
-  <string name="settings_selinux_hide_failed">错误： %d</string>
 </resources>
