@@ -251,8 +251,8 @@
   <string name="contributors">Współtwórcy</string>
   <string name="support">Wsparcie</string>
   <string name="home_metamodule_status">Status meta modułu</string>
-  <string name="home_seccomp_status">Status seccomp</string>
-  <string name="seccomp_status_not_supported">Nieobsługiwane</string>
+  <string name="home_seccomp_status">Status trybu bezpiecznego przetwarzania</string>
+  <string name="seccomp_status_not_supported">Nieobsługiwany</string>
   <string name="seccomp_status_strict">Ścisły</string>
   <string name="seccomp_status_filter">Filtr</string>
   <string name="seccomp_status_disabled">Wyłączony</string>
