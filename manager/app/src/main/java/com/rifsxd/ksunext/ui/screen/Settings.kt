@@ -113,18 +113,18 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         }
     }
 
-    var avcSpoofStatus by rememberSaveable { mutableStateOf("") }
     var suCompatStatus by rememberSaveable { mutableStateOf("") }
     var kernelUmountStatus by rememberSaveable { mutableStateOf("") }
     var adbRootStatus by rememberSaveable { mutableStateOf("") }
     var selinuxHideStatus by rememberSaveable { mutableStateOf("") }
+    var avcSpoofStatus by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
-        avcSpoofStatus = getFeatureStatus("avc_spoof")
         suCompatStatus = getFeatureStatus("su_compat")
         kernelUmountStatus = getFeatureStatus("kernel_umount")
         adbRootStatus = getFeatureStatus("adb_root")
         selinuxHideStatus = getFeatureStatus("selinux_hide")
+        avcSpoofStatus = getFeatureStatus("avc_spoof")
     }
 
     Scaffold(
@@ -157,8 +157,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     suCompatStatus = suCompatStatus,
                     kernelUmountStatus = kernelUmountStatus,
                     adbRootStatus = adbRootStatus,
-                    avcSpoofStatus = avcSpoofStatus,
                     selinuxHideStatus = selinuxHideStatus,
+                    avcSpoofStatus = avcSpoofStatus,
                     scope = scope
                 )
                 SecurityCard(
@@ -187,8 +187,8 @@ private fun KernelFeaturesCard(
     suCompatStatus: String,
     kernelUmountStatus: String,
     adbRootStatus: String,
-    avcSpoofStatus: String,
     selinuxHideStatus: String,
+    avcSpoofStatus: String,
     scope: kotlinx.coroutines.CoroutineScope
 ) {
     val context = LocalContext.current
