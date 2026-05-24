@@ -29,7 +29,7 @@
     <string name="allowlist_restore">還原超級使用者列表</string>
     <string name="allowlist_restore_message">從最近的備份中還原超級使用者列表。</string>
     <string name="anykernel_flash_prompt">即將刷入以下內核 ZIP：%1$s</string>
-    <string name="app_name">KSUN</string>
+    <string name="app_name">KernelSU-Next</string>
     <string name="app_profile_export_to_clipboard">匯出至剪貼簿</string>
     <string name="app_profile_import_export">匯入／匯出</string>
     <string name="app_profile_import_from_clipboard">從剪貼簿匯入</string>
@@ -134,7 +134,7 @@
     <string name="indeterminate">部分檢查</string>
     <string name="install">安裝</string>
     <string name="install_inactive_slot">安裝到非使用中的槽位（OTA 更新後）</string>
-    <string name="install_inactive_slot_warning">將在重啟後 **強制** 切換到另一個槽位！注意只能在 OTA 更新完成後的重啟之前使用。\n確認？</string>
+    <string name="install_inactive_slot_warning">將在重新啟動後 **強制** 切換到另一個槽位！注意只能在 OTA 更新完成後的重新啟動之前使用。\n確認？</string>
     <string name="install_next">下一步</string>
     <string name="installed">已安裝</string>
     <string name="issue_report_body">發現錯誤或者有改進建議？</string>
@@ -199,7 +199,7 @@
     <string name="module_update_available">更新可用</string>
     <string name="module_update_json">更新配置</string>
     <string name="module_update_json_empty">無更新配置</string>
-    <string name="module_updated">重啟以完成更新</string>
+    <string name="module_updated">重新啟動以完成更新</string>
     <string name="module_version">版本</string>
     <string name="module_version_code">模組版本</string>
     <string name="mtrl_chip_close_icon_content_description">移除 %1$s</string>
@@ -227,7 +227,7 @@
     <string name="profile_selinux_rules">規則</string>
     <string name="profile_template">範本</string>
     <string name="profile_umount_modules">移除模組</string>
-    <string name="profile_umount_modules_summary">啟用後將允許 KernelSU-Next 為本應用還原被模組修改過的檔案。</string>
+    <string name="profile_umount_modules_summary">啟用選項後，KernelSU 會將應用程式內遭模組修改的檔案恢復原狀。</string>
     <string name="range_end">範圍終點</string>
     <string name="range_start">範圍起點</string>
     <string name="reboot">重新啟動</string>
@@ -254,7 +254,7 @@
     <string name="seccomp_status_disabled">已停用</string>
     <string name="seccomp_status_filter">篩選器</string>
     <string name="seccomp_status_not_supported">未支援</string>
-    <string name="seccomp_status_strict">嚴格</string>
+    <string name="seccomp_status_strict">嚴格的</string>
     <string name="seccomp_status_unknown">未知的</string>
     <string name="select_a_option">選擇一個選項</string>
     <string name="select_build_type">選擇建置類型</string>
