@@ -17,7 +17,7 @@
   <string name="home_failure">Не поддерживается | Не интегрирован</string>
   <string name="home_failure_tip">Ядра, отличные от GKI, не поддерживаются. Для корректной работы добавьте поддержку legacy драйвера KernelSU-Next в ваше ядро!</string>
   <string name="home_kernel">Версия ядра</string>
-  <string name="hook_mode">Режим перехвата</string>
+  <string name="hook_mode">Режим хуков</string>
   <string name="enable">Включить</string>
   <string name="disable">Выключить</string>
   <string name="enabled">Включён</string>
