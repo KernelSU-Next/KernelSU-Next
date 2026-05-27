@@ -6,6 +6,7 @@ use android_logger::Config;
 use log::{LevelFilter, info};
 
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
+use crate::module::regenerate_preinit_rc;
 use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, sulog, susfsd, utils};
 
 /// KernelSU Next userspace cli
@@ -122,6 +123,12 @@ enum Commands {
         /// Arguments passed to resetprop
         #[arg(trailing_var_arg = true, allow_hyphen_values = true, num_args = 0..)]
         args: Vec<String>,
+    },
+
+    /// Manage initrc injection
+    Initrc {
+        #[command(subcommand)]
+        command: Initrc,
     },
 
     /// Emulate soft reboot (ksud; zygote)
@@ -472,6 +479,12 @@ enum SusfsAction {
     Features,
 }
 
+#[derive(clap::Subcommand, Debug)]
+enum Initrc {
+    /// Regenerate preinit rc file
+    Refresh,
+}
+
 pub fn run() -> Result<()> {
     android_logger::init_once(
         Config::default()
@@ -747,6 +760,9 @@ pub fn run() -> Result<()> {
                 ksucalls::report_module_mounted();
                 Ok(())
             }
+        },
+        Commands::Initrc { command } => match command {
+            Initrc::Refresh => regenerate_preinit_rc(),
         },
     };
 
