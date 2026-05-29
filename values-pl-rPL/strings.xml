@@ -248,4 +248,28 @@
   <string name="backup_failed">Nie udało się wykonać kopii zapasowej</string>
   <string name="restore_success">Przywracanie ukończone pomyślnie</string>
   <string name="restore_failed">Przywracanie nie powiodło się</string>
+  <string name="jailbreak_mode">Tryb Jailbreak</string>
+  <string name="settings_adb_root" translatable="false">ADB Root</string>
+  <string name="settings_adb_root_summary">Uruchom adbd daemon z uprawnieniami roota</string>
+  <string name="settings_selinux_hide">Ukryj modyfikację zasad bezpieczeństwa</string>
+  <string name="settings_selinux_hide_summary">Zapobiegaj wykrywaniu modyfikacji zasad bezpieczeństwa przez aplikacje</string>
+  <string name="settings_selinux_hide_reboot_required">Zrestartuj, aby zastosować zmiany</string>
+  <string name="settings_selinux_hide_failed">Błąd: %d</string>
+  <string name="contributors">Współtwórcy</string>
+  <string name="support">Wsparcie</string>
+  <string name="home_metamodule_status">Status metamodułu</string>
+  <string name="home_seccomp_status">Status Seccomp</string>
+  <string name="seccomp_status_not_supported">Nieobsługiwany</string>
+  <string name="seccomp_status_strict">Ścisły</string>
+  <string name="seccomp_status_filter">Filtr</string>
+  <string name="seccomp_status_disabled">Wyłączony</string>
+  <string name="seccomp_status_unknown">Nieznany</string>
+  <string name="module_sort_stars_low_to_high">Sortuj (Niski → Wysoki)</string>
+  <string name="module_sort_stars_high_to_low">Sortuj (wysoki → niski)</string>
+  <string name="allow_shell">Zawsze udzielaj uprawnień roota dla powłoki</string>
+  <string name="allow_shell_summary">Zawsze zezwalaj powłoce adb na wywołanie su. Nie włączaj tej opcji, chyba że jest to absolutnie konieczne.</string>
+  <string name="enable_adb">Wymuś włączenie adb podczas rozruchu</string>
+  <string name="enable_adb_summary">Wymuś włączenie debugowania USB i wyłącz uwierzytelnianie ADB. Nie włączaj tej opcji, chyba że jest to absolutnie konieczne.</string>
+  <string name="advanced_options">Opcje zaawansowane</string>
+  <string name="expand">Rozwiń</string>
 </resources>
