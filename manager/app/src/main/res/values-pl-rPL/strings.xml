@@ -4,7 +4,7 @@
   <string name="issue_report_body">Znalazłeś błąd lub chcesz podzielić się opinią?</string>
   <string name="issue_report_body_2">Zgłoś to jak najszybciej!</string>
   <string name="issue_report_github">Zgłoś na GitHub</string>
-  <string name="issue_report_telegram">Skontaktuj się przez Telegram</string>
+  <string name="issue_report_telegram">Kontakt przez Telegram</string>
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
   <string name="confirm">Potwierdź</string>
@@ -59,7 +59,7 @@
   <string name="about">O aplikacji</string>
   <string name="module_uninstall_confirm">Czy na pewno chcesz odinstalować moduł %s?</string>
   <string name="module_uninstall_success">%s odinstalowany</string>
-  <string name="module_uninstall_failed">Nie można odinstalować: %s</string>
+  <string name="module_uninstall_failed">Nie udało się odinstalować: %s</string>
   <string name="module_restore_confirm">Czy na pewno chcesz przywrócić moduł %s?</string>
   <string name="module_restore_success">%s przywrócony</string>
   <string name="module_restore_failed">Nie udało się przywrócić: %s</string>
@@ -67,7 +67,7 @@
   <string name="module_author">Autor</string>
   <string name="module_id">Identyfikator</string>
   <string name="module_version_code">Kod</string>
-  <string name="module_update_json">Zaktualizuj json</string>
+  <string name="module_update_json">Aktualizacja json</string>
   <string name="module_update_json_empty">Pusty</string>
   <string name="enable_developer_options">Włącz opcje programisty</string>
   <string name="enable_developer_options_summary">Pokaż ukryte ustawienia i informacje debugowania tylko dla programistów.</string>
@@ -88,7 +88,7 @@
   <string name="allowlist_restore_message">Przywróć listę dozwolonych z ostatniej kopii zapasowej.</string>
   <string name="allowlist_backup">Kopia zapasowa listy dozwolonych</string>
   <string name="allowlist_backup_message">Kopia zapasowa obecnie skonfigurowanej listy dozwolonych.</string>
-  <string name="proceed">Pracuje</string>
+  <string name="proceed">Kontynuuj</string>
   <string name="cancel">Anuluj</string>
   <string name="about_source_code">Zobacz kod źródłowy na %1$s</string>
   <string name="profile">Profil aplikacji</string>
