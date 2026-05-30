@@ -136,7 +136,7 @@
   <string name="app_profile_template_description">Opis</string>
   <string name="app_profile_template_save">Zapisz</string>
   <string name="app_profile_template_delete">Usuń</string>
-  <string name="app_profile_template_view">Wyświetl szablon</string>
+  <string name="app_profile_template_view">Zobacz szablon</string>
   <string name="app_profile_template_readonly">Tylko do odczytu</string>
   <string name="app_profile_template_id_exist">Szablon o takim identyfikatorze już istnieje!</string>
   <string name="app_profile_import_export">Importuj/eksportuj</string>
@@ -148,7 +148,7 @@
   <string name="app_profile_template_save_failed">Nie udało się zapisać szablonu</string>
   <string name="app_profile_template_import_empty">Schowek jest pusty!</string>
   <string name="module_changelog_failed">Pobranie dziennika zmian nie powiodło się: %s</string>
-  <string name="settings_check_update">Sprawdź, czy są dostępne aktualizacje</string>
+  <string name="settings_check_update">Sprawdzanie aktualizacji</string>
   <string name="settings_check_update_summary">Automatycznie sprawdzaj dostępność aktualizacji podczas otwierania aplikacji.</string>
   <string name="grant_root_failed">Nie udało się przyznać roota! Naciśnij, aby zrestartować proces menedżera.</string>
   <string name="action">Akcja</string>
@@ -159,7 +159,7 @@
   <string name="direct_install">Zainstaluj bezpośrednio (zalecane)</string>
   <string name="select_file">Wybierz plik</string>
   <string name="flash_module">Wgraj moduł</string>
-  <string name="flash_anykernel">Wgraj AnyKernel (.zip)</string>
+  <string name="flash_anykernel">Wgraj jakiekolwiek jądro (.zip)</string>
   <string name="install_inactive_slot">Zainstaluj do nieaktywnego gniazda (po OTA)</string>
   <string name="install_inactive_slot_warning">Urządzenie zostanie **zmuszone** do uruchomienia się z bieżącego nieaktywnego gniazda po restarcie!\nUżyj tej opcji dopiero po zakończeniu operacji OTA.\nKontynuować?</string>
   <string name="install_next">Dalej</string>
@@ -170,7 +170,7 @@
   <string name="settings_uninstall_permanent">Odinstaluj trwale</string>
   <string name="settings_restore_stock_image">Przywróć obraz fabryczny</string>
   <string name="flashing">Wgrywanie</string>
-  <string name="flash_success">Flashowanie ukończone pomyślnie</string>
+  <string name="flash_success">Wgrano pomyślnie</string>
   <string name="flash_failed">Wgrywanie nie powiodło się</string>
   <string name="selected_lkm">Wybrano ładujący moduł jądra: %s</string>
   <string name="save_log">Zapisz dzienniki</string>
@@ -182,7 +182,7 @@
   <string name="settings_banner_summary">Pokaż banery w tle dla modułów.</string>
   <string name="customization">Personalizacja</string>
   <string name="developer">Programista</string>
-  <string name="sucompat_disabled">SUCOMPAT WYŁĄCZONY</string>
+  <string name="sucompat_disabled">Sucompat wyłączony</string>
   <string name="zygisk_required">Wymagany Zygisk</string>
   <string name="zygisk_status">Wstrzyknięcie Zygisk</string>
   <string name="zygisk">Zygisk</string>
@@ -194,9 +194,9 @@
   <string name="module_sort_action_first">Sortuj (najpierw z akcją)</string>
   <string name="module_sort_webui_first">Sortuj (najpierw z WebUI)</string>
   <string name="meta_module">Meta</string>
-  <string name="donate">Przekaż darowiznę</string>
+  <string name="donate">Wesprzyj</string>
   <string name="meta_module_screen">Moduł meta</string>
-  <string name="latest_version">Ostatnia wersja</string>
+  <string name="latest_version">Najnowsza wersja</string>
   <string name="module_repo_screen">Repozytorium modułu</string>
   <string name="loading">Ładowanie...</string>
   <string name="retry">Ponów</string>
@@ -227,7 +227,7 @@
   <string name="non_free_repo_summary">Dołącz moduły z licencjami płatnymi.</string>
   <string name="no_repositories_configured">Nie skonfigurowano repozytoriów. Dodaj je poniżej.</string>
   <string name="add_repository">Dodaj repozytorium</string>
-  <string name="reset_to_default">Zresetuj do ustawień domyślnych</string>
+  <string name="reset_to_default">Zresetuj do domyślnych</string>
   <string name="supported">Obsługiwane</string>
   <string name="home_susfs_version">Wersja SuSFS</string>
   <string name="settings_enable_su">Kompatybilność SU</string>
@@ -243,9 +243,9 @@
   <string name="settings_uninstall_temporary_message">Tymczasowo odinstaluj KernelSU-Next, przywróć do stanu oryginalnego po następnym restarcie.</string>
   <string name="settings_uninstall_permanent_message">Odinstaluj KernelSU-Next (root i wszystkie moduły) całkowicie i nieodwracalnie.</string>
   <string name="settings_restore_stock_image_message">Przywróć domyślny obraz fabryczny (jeżeli istnieje), zwykle używany przed OTA; jeśli chcesz odinstalować KernelSU-Next, użyj \"Odinstaluj na stałe\".</string>
-  <string name="backup_success">Kopia zapasowa zakończona sukcesem</string>
+  <string name="backup_success">Kopia zapasowa ukończona pomyślnie</string>
   <string name="backup_failed">Nie udało się wykonać kopii zapasowej</string>
-  <string name="restore_success">Przywracanie zostało pomyślnie ukończone</string>
+  <string name="restore_success">Przywracanie ukończone pomyślnie</string>
   <string name="restore_failed">Przywracanie nie powiodło się</string>
   <string name="jailbreak_mode">Tryb Jailbreak</string>
   <string name="contributors">Współtwórcy</string>
