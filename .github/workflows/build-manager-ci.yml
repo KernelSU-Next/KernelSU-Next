@@ -140,7 +140,7 @@ jobs:
           cp -f ../x86_64-linux-android/release/ksud ../manager/app/src/main/jniLibs/x86_64/libksud.so
 
       - name: Build with Gradle
-        run: ./gradlew clean assembleRelease -Pandroid.injected.version.name="v3.2.0-40-gf1b64f44" -Pandroid.injected.version.code=33169
+        run: ./gradlew clean assembleRelease
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v5
