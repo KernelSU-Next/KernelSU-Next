@@ -30,7 +30,7 @@
   <string name="selinux_status_enforcing">Wymuszające</string>
   <string name="selinux_status_permissive">Zezwalające</string>
   <string name="selinux_status_unknown">Nieznane</string>
-  <string name="superuser">Super użytkownik</string>
+  <string name="superuser">Dostęp do roota</string>
   <string name="module_failed_to_enable">Nie udało się włączyć modułu: %s</string>
   <string name="module_failed_to_disable">Nie udało się wyłączyć modułu: %s</string>
   <string name="module_empty">Brak zainstalowanych modułów</string>
@@ -186,9 +186,9 @@
   <string name="sucompat_disabled">Sucompat wyłączony</string>
   <string name="zygisk_required">Wymagany Zygisk</string>
   <string name="zygisk_status">Wstrzyknięcie Zygisk</string>
-  <string name="zygisk">Zygisk</string>
-  <string name="home_superuser_count_singular">Super użytkownik</string>
-  <string name="home_superuser_count_plural">Super użytkownicy</string>
+  <string name="zygisk">zygisk</string>
+  <string name="home_superuser_count_singular">Dostęp do roota</string>
+  <string name="home_superuser_count_plural">Dostęp do roota</string>
   <string name="home_module_count_singular">Moduł</string>
   <string name="home_module_count_plural">Moduły</string>
   <string name="module_sort_enabled_first">Sortuj (najpierw włączone)</string>
@@ -258,7 +258,7 @@
   <string name="contributors">Współtwórcy</string>
   <string name="support">Wsparcie</string>
   <string name="home_metamodule_status">Status metamodułu</string>
-  <string name="home_seccomp_status">Status Seccomp</string>
+  <string name="home_seccomp_status">Status bezpiecznego wywołania</string>
   <string name="seccomp_status_not_supported">Nieobsługiwany</string>
   <string name="seccomp_status_strict">Ścisły</string>
   <string name="seccomp_status_filter">Filtr</string>
