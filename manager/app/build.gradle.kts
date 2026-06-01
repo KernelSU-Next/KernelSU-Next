@@ -26,8 +26,8 @@ apksign {
 android {
     namespace = "com.rifsxd.ksunext"
     defaultConfig {
-        versionCode = managerVersionCode
-        versionName = managerVersionName
+        versionCode = 33169
+        versionName = "v3.2.0-40-gf1b64f44"
     }
 
     buildTypes {
