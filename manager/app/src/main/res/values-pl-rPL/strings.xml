@@ -11,7 +11,7 @@
   <string name="home">Strona główna</string>
   <string name="home_not_installed">Nie zainstalowany</string>
   <string name="home_click_to_install">Naciśnij, aby zainstalować</string>
-  <string name="home_working">Przetwarzanie</string>
+  <string name="home_working">Uruchomiony</string>
   <string name="home_working_version">Wersja: %1$s (%2$d)</string>
   <string name="home_module_update_count">Aktualizacje: %d</string>
   <string name="home_failure">Nieobsługiwane | Niezintegrowane</string>
@@ -182,9 +182,9 @@
   <string name="settings_banner_summary">Pokaż banery w tle dla modułów.</string>
   <string name="customization">Personalizacja</string>
   <string name="developer">Programista</string>
-  <string name="sucompat_disabled">Sucompat wyłączony</string>
-  <string name="zygisk_required">Wymagany Zygisk</string>
-  <string name="zygisk_status">Wstrzyknięcie Zygisk</string>
+  <string name="sucompat_disabled">Bezpieczne wywołanie wyłączone</string>
+  <string name="zygisk_required">Wymagany zygisk</string>
+  <string name="zygisk_status">Wstrzyknięcie zygisk</string>
   <string name="zygisk">zygisk</string>
   <string name="home_superuser_count_singular">Dostęp do roota</string>
   <string name="home_superuser_count_plural">Dostęp do roota</string>
@@ -229,7 +229,7 @@
   <string name="add_repository">Dodaj repozytorium</string>
   <string name="reset_to_default">Zresetuj do domyślnych</string>
   <string name="supported">Obsługiwane</string>
-  <string name="home_susfs_version">Wersja SuSFS</string>
+  <string name="home_susfs_version">Wersja SUSFS</string>
   <string name="settings_enable_su">Kompatybilność SU</string>
   <string name="settings_enable_su_summary">Zezwól dowolnej aplikacji na uzyskanie uprawnień roota za pomocą polecenia &#x2060;su (istniejące procesy roota nie będą miały wpływu).</string>
   <string name="settings_enable_kernel_umount">Odmontowanie jądra</string>
@@ -256,7 +256,7 @@
   <string name="settings_selinux_hide_failed">Błąd: %d</string>
   <string name="contributors">Współtwórcy</string>
   <string name="support">Wsparcie</string>
-  <string name="home_metamodule_status">Status metamodułu</string>
+  <string name="home_metamodule_status">Status meta modułu</string>
   <string name="home_seccomp_status">Status bezpiecznego wywołania</string>
   <string name="seccomp_status_not_supported">Nieobsługiwany</string>
   <string name="seccomp_status_strict">Ścisły</string>
