@@ -141,8 +141,8 @@ jobs:
 
       - name: Build with Gradle
               - name: Build with Gradle
+              - name: Build with Gradle
         run: ./gradlew clean assembleRelease -Pandroid.injected.version.name="v3.2.0-40-gf1b64f44" -Pandroid.injected.version.code=33169
-
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v5
