@@ -88,8 +88,7 @@
   <string name="allowlist_restore_message">Przywróć listę dozwolonych z ostatniej kopii zapasowej.</string>
   <string name="allowlist_backup">Kopia zapasowa listy dozwolonych</string>
   <string name="allowlist_backup_message">Kopia zapasowa obecnie skonfigurowanej listy dozwolonych.</string>
-  <string name="proceed">Kontynuuj
-</string>
+  <string name="proceed">Kontynuuj</string>
   <string name="cancel">Anuluj</string>
   <string name="about_source_code">Zobacz kod źródłowy na %1$s</string>
   <string name="profile">Profil aplikacji</string>
