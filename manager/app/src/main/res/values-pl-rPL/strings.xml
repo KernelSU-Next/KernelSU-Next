@@ -14,7 +14,7 @@
   <string name="home_working">Uruchomiony</string>
   <string name="home_working_version">Wersja: %1$s (%2$d)</string>
   <string name="home_module_update_count">Aktualizacje: %d</string>
-  <string name="home_failure">Nieobsługiwane | Niezintegrowane</string>
+  <string name="home_failure">Nieobsługiwany | Niezintegrowany</string>
   <string name="home_failure_tip">Jądra inne niż GKI nie są obsługiwane. Zintegruj starszy sterownik KernelSU-Next ze swoim jądrem!</string>
   <string name="home_kernel">Wersja jądra</string>
   <string name="hook_mode">Tryb przechwytywania</string>
@@ -34,7 +34,7 @@
   <string name="module_failed_to_enable">Nie udało się włączyć modułu: %s</string>
   <string name="module_failed_to_disable">Nie udało się wyłączyć modułu: %s</string>
   <string name="module_empty">Brak zainstalowanych modułów</string>
-  <string name="module">Moduł</string>
+  <string name="module">Moduły</string>
   <string name="module_install_prompt_with_name">Następujące moduły zostaną zainstalowane: %1$s</string>
   <string name="anykernel_flash_prompt">Następujący zip jądra zostanie wgrany: %1$s</string>
   <string name="module_sort_a_to_z">Sortuj (A → Z)</string>
@@ -47,7 +47,7 @@
   <string name="install">Zainstaluj</string>
   <string name="reinstall">Reinstaluj</string>
   <string name="reboot">Zrestartuj</string>
-  <string name="installed">Zainstalowane</string>
+  <string name="installed">Zainstalowany</string>
   <string name="uninstalled">Odinstalowane</string>
   <string name="settings">Ustawienia</string>
   <string name="reboot_userspace">Szybki restart</string>
@@ -67,7 +67,7 @@
   <string name="module_id">Identyfikator</string>
   <string name="module_version_code">Kod</string>
   <string name="module_update_json">Aktualizacja json</string>
-  <string name="module_update_json_empty">Pusty</string>
+  <string name="module_update_json_empty">Pusto</string>
   <string name="enable_developer_options">Włącz opcje programisty</string>
   <string name="enable_developer_options_summary">Pokaż ukryte ustawienia i informacje debugowania tylko dla programistów.</string>
   <string name="refresh">Odśwież</string>
@@ -79,10 +79,10 @@
   <string name="module_magisk_conflict">Moduły są niedostępne z powodu konfliktu z Magisk!</string>
   <string name="home_mount_system">Montowanie systemu</string>
   <string name="unavailable">Niedostępne</string>
-  <string name="module_restore">Przywróć moduł</string>
+  <string name="module_restore">Przywróć moduły</string>
   <string name="module_restore_message">Przywróć moduły z ostatniej kopii zapasowej.</string>
   <string name="backup_restore">Kopia zapasowa i przywracanie</string>
-  <string name="module_backup">Kopia zapasowa modułu</string>
+  <string name="module_backup">Kopia zapasowa modułów</string>
   <string name="module_backup_message">Kopia zapasowa aktualnie zainstalowanych modułów.</string>
   <string name="allowlist_restore">Przywróć listę dozwolonych</string>
   <string name="allowlist_restore_message">Przywróć listę dozwolonych z ostatniej kopii zapasowej.</string>
@@ -124,7 +124,7 @@
   <string name="restart_required">Wymagany restart</string>
   <string name="restart_app_message">Aplikacja wymaga restartu, aby zmiany została wprowadzona.</string>
   <string name="failed_to_update_sepolicy">Nie udało się zaktualizować zasad bezpieczeństwa dla %s</string>
-  <string name="su_not_allowed">Nie można przyznać dostępu super użytkownika do %s</string>
+  <string name="su_not_allowed">Nie można przyznać dostępu roota do %s</string>
   <string name="module_changelog">Dziennik zmian</string>
   <string name="settings_profile_template">Szablon profilu aplikacji</string>
   <string name="settings_profile_template_summary">Zarządzaj lokalnym i internetowym szablonem profilu aplikacji.</string>
@@ -188,16 +188,16 @@
   <string name="zygisk">zygisk</string>
   <string name="home_superuser_count_singular">Dostęp do roota</string>
   <string name="home_superuser_count_plural">Dostęp do roota</string>
-  <string name="home_module_count_singular">Moduł</string>
+  <string name="home_module_count_singular">Moduły</string>
   <string name="home_module_count_plural">Moduły</string>
   <string name="module_sort_enabled_first">Sortuj (najpierw włączone)</string>
   <string name="module_sort_action_first">Sortuj (najpierw z akcją)</string>
   <string name="module_sort_webui_first">Sortuj (najpierw z WebUI)</string>
   <string name="meta_module">Meta</string>
   <string name="donate">Wesprzyj</string>
-  <string name="meta_module_screen">Moduł meta</string>
+  <string name="meta_module_screen">Meta moduły</string>
   <string name="latest_version">Najnowsza wersja</string>
-  <string name="module_repo_screen">Repozytorium modułu</string>
+  <string name="module_repo_screen">Repozytorium modułów</string>
   <string name="loading">Ładowanie...</string>
   <string name="retry">Ponów</string>
   <string name="error_loading_modules">Błąd ładowania modułów</string>
@@ -228,7 +228,7 @@
   <string name="no_repositories_configured">Nie skonfigurowano repozytoriów. Dodaj je poniżej.</string>
   <string name="add_repository">Dodaj repozytorium</string>
   <string name="reset_to_default">Zresetuj do domyślnych</string>
-  <string name="supported">Obsługiwane</string>
+  <string name="supported">Obsługiwana</string>
   <string name="home_susfs_version">Wersja SUSFS</string>
   <string name="settings_enable_su">Kompatybilność SU</string>
   <string name="settings_enable_su_summary">Zezwól dowolnej aplikacji na uzyskanie uprawnień roota za pomocą polecenia &#x2060;su (istniejące procesy roota nie będą miały wpływu).</string>
@@ -247,7 +247,7 @@
   <string name="backup_failed">Nie udało się wykonać kopii zapasowej</string>
   <string name="restore_success">Przywracanie ukończone pomyślnie</string>
   <string name="restore_failed">Przywracanie nie powiodło się</string>
-  <string name="jailbreak_mode">Tryb Jailbreak</string>
+  <string name="jailbreak_mode">Tryb jailbreak</string>
   <string name="settings_adb_root" translatable="false">ADB Root</string>
   <string name="settings_adb_root_summary">Uruchom adbd daemon z uprawnieniami roota</string>
   <string name="settings_selinux_hide">Ukryj modyfikację zasad bezpieczeństwa</string>
@@ -258,11 +258,11 @@
   <string name="support">Wsparcie</string>
   <string name="home_metamodule_status">Status meta modułu</string>
   <string name="home_seccomp_status">Status bezpiecznego wywołania</string>
-  <string name="seccomp_status_not_supported">Nieobsługiwany</string>
-  <string name="seccomp_status_strict">Ścisły</string>
-  <string name="seccomp_status_filter">Filtr</string>
-  <string name="seccomp_status_disabled">Wyłączony</string>
-  <string name="seccomp_status_unknown">Nieznany</string>
+  <string name="seccomp_status_not_supported">Nieobsługiwana</string>
+  <string name="seccomp_status_strict">Ścisłe</string>
+  <string name="seccomp_status_filter">Filtrowane</string>
+  <string name="seccomp_status_disabled">Wyłączone</string>
+  <string name="seccomp_status_unknown">Nieznane</string>
   <string name="module_sort_stars_low_to_high">Sortuj (Niski → Wysoki)</string>
   <string name="module_sort_stars_high_to_low">Sortuj (wysoki → niski)</string>
   <string name="allow_shell">Zawsze udzielaj uprawnień roota dla powłoki</string>
@@ -271,5 +271,4 @@
   <string name="enable_adb_summary">Wymuś włączenie debugowania USB i wyłącz uwierzytelnianie ADB. Nie włączaj tej opcji, chyba że jest to absolutnie konieczne.</string>
   <string name="advanced_options">Opcje zaawansowane</string>
   <string name="expand">Rozwiń</string>
-  <string name="mode_hybrid">Hybrydowy</string>
 </resources>
