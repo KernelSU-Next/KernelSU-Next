@@ -271,4 +271,5 @@
   <string name="enable_adb_summary">Wymuś włączenie debugowania USB i wyłącz uwierzytelnianie ADB. Nie włączaj tej opcji, chyba że jest to absolutnie konieczne.</string>
   <string name="advanced_options">Opcje zaawansowane</string>
   <string name="expand">Rozwiń</string>
+  <string name="mode_hybrid">Hybrydowy</string>
 </resources>
