@@ -12,8 +12,9 @@ plugins {
     id("kotlin-parcelize")
 }
 
-val managerVersionCode: Int by rootProject.extra
-val managerVersionName: String by rootProject.extra
+val managerVersionCode: Int = 33169
+val managerVersionName: String = "v3.2.0-40-gf1b64f44"
+
 
 apksign {
     storeFileProperty = "KEYSTORE_FILE"
@@ -24,6 +25,10 @@ apksign {
 
 android {
     namespace = "com.rifsxd.ksunext"
+    defaultConfig {
+        versionCode = managerVersionCode
+        versionName = managerVersionName
+    }
 
     buildTypes {
         release {
