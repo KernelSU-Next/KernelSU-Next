@@ -12,6 +12,8 @@ void ksu_syscall_hook_manager_exit(void);
 // extras.c
 void ksu_avc_spoof_init(void);
 void ksu_avc_spoof_exit(void);
+void ksu_selinux_hide_status_init(void);
+void ksu_selinux_hide_status_exit(void);
 
 #ifdef KSU_KPROBES_HOOK
 // Process marking for tracepoint
