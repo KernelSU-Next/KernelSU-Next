@@ -64,6 +64,18 @@ Java_com_rifsxd_ksunext_Natives_getVersionTag(JNIEnv *env, jobject) {
 
 extern "C"
 JNIEXPORT jint JNICALL
+Java_com_rifsxd_ksunext_Natives_getKernelUAPIVersion(JNIEnv *env, jobject) {
+    return get_kernel_uapi_version();
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_rifsxd_ksunext_Natives_getManagerUAPIVersion(JNIEnv *env, jobject) {
+    return get_manager_uapi_version();
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
 Java_com_rifsxd_ksunext_Natives_getSuperuserCount(JNIEnv *env, jobject) {
     struct ksu_new_get_allow_list_cmd cmd = {
         .count = 0

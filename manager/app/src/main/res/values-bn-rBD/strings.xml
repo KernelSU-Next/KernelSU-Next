@@ -12,7 +12,7 @@
   <string name="home_not_installed">ইন্সটল হয়নি</string>
   <string name="home_click_to_install">ইন্সটলের জন্য ক্লিক করুন</string>
   <string name="home_working">কার্যরত</string>
-  <string name="home_working_version">ভার্সন: %1$s (%2$d)</string>
+  <string name="home_working_version">সংস্করণ: %s</string>
   <string name="home_module_update_count">আপডেটস: %d</string>
   <string name="home_failure">অসমর্থিত | ইন্টিগ্রেটেড নয়</string>
   <string name="home_failure_tip">Non-GKI কার্নেলগুলি সমর্থিত নয়। আপনার কার্নেলে KernelSU-Next লিগ্যাসি ড্রাইভার ইন্টিগ্রেট করুন!</string>

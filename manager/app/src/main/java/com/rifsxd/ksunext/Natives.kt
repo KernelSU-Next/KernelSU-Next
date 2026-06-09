@@ -20,8 +20,8 @@ object Natives {
     // 32310: new get_allow_list ioctl
     // 33070: SET_SEPOLICY ioctl
     // 33075: add set_init_pgrp ioctl
-    // 33110: bump app profile version, migrate selinux domain
-    const val MINIMAL_SUPPORTED_KERNEL = 33110
+    // 33188: add uapi version
+    const val MINIMAL_SUPPORTED_KERNEL = 33188
 
     const val KERNEL_SU_DOMAIN = "u:r:ksu:s0"
 
@@ -161,8 +161,18 @@ object Natives {
         }
     }
 
+    val kernelUAPIVersion: Int
+        external get
+
+    val managerUAPIVersion: Int
+        external get
+
+    fun checkUAPIMismatch(): Boolean {
+        return kernelUAPIVersion != managerUAPIVersion
+    }
+
     fun requireNewKernel(): Boolean {
-        return version != -1 && version < MINIMAL_SUPPORTED_KERNEL
+        return (version != -1 && version < MINIMAL_SUPPORTED_KERNEL) || checkUAPIMismatch()
     }
 
     val KSU_WORK_DIR = "/data/adb/ksu/"
