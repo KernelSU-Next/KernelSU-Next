@@ -9,6 +9,7 @@
 #include "runtime/ksud.h"
 #include "manager/manager_observer.h"
 #include "manager/throne_tracker.h"
+#include "selinux/selinux.h"
 
 bool ksu_module_mounted __read_mostly = false;
 bool ksu_boot_completed __read_mostly = false;
@@ -28,6 +29,7 @@ void on_post_fs_data(void)
 
 	ksu_load_allow_list();
 	ksu_observer_init();
+	ksu_selinux_hide_status_handle_post_fs_data();
 	// sanity check, this may influence the performance
 	stop_input_hook();
 }

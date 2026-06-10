@@ -340,3 +340,192 @@ void susfs_set_priv_app_sid(void)
     susfs_set_sid(KERNEL_PRIV_APP_DOMAIN, &susfs_priv_app_sid);
 }
 #endif // #ifdef CONFIG_KSU_SUSFS
+
+/* --------------- fake SELinux status page --------------- */
+
+#include <linux/fs.h>
+#include <linux/jump_label.h>
+#include <linux/kallsyms.h>
+#include <linux/mm.h>
+#include <linux/mutex.h>
+#include <linux/slab.h>
+#include "policy/feature.h"
+#include "include/ksu.h"
+
+static DEFINE_STATIC_KEY_FALSE(fake_status_initialize_key);
+static struct page *fake_status = NULL;
+static DEFINE_MUTEX(fake_status_init_mutex);
+static bool ksu_selinux_hide_status_enabled = true;
+
+static void initialize_fake_status(void)
+{
+	if (READ_ONCE(fake_status))
+		return;
+
+	mutex_lock(&fake_status_init_mutex);
+	if (fake_status) /* double-check after lock */
+		goto out;
+
+	struct page *real_page = selinux_kernel_status_page(&selinux_state);
+	if (!real_page) {
+		pr_warn("ksu_selinux_hide: status_page not exist\n");
+		goto out;
+	}
+
+	struct selinux_kernel_status *status = page_address(real_page);
+	if (!status->enforcing && !ksu_late_loaded) {
+		pr_warn("ksu_selinux_hide: skip not enforcing\n");
+		goto out;
+	}
+
+	struct page *new_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
+	if (!new_page) {
+		pr_err("ksu_selinux_hide: failed to allocate fake status page\n");
+		goto out;
+	}
+
+	struct selinux_kernel_status *new_status = page_address(new_page);
+	memcpy(new_status, status, sizeof(*status));
+	if (ksu_late_loaded && !new_status->enforcing) {
+		/*
+		 * In late_load mode we may be loaded after setenforce 0.
+		 * Adjust sequence to look like a normal enforcing boot.
+		 * Assumes setenforce 0 was called exactly once.
+		 */
+		new_status->enforcing = 1;
+		new_status->sequence = 4;
+	}
+
+	WRITE_ONCE(fake_status, new_page);
+	pr_info("ksu_selinux_hide: fake status ready: sequence=%d policyload=%d enforcing=%d\n",
+		new_status->sequence, new_status->policyload,
+		new_status->enforcing);
+out:
+	mutex_unlock(&fake_status_init_mutex);
+}
+
+typedef int (*sel_open_handle_status_fn)(struct inode *inode,
+					 struct file *filp);
+static sel_open_handle_status_fn orig_sel_open_handle_status = NULL;
+
+static int my_sel_open_handle_status(struct inode *inode, struct file *filp)
+{
+	if (likely(current_uid().val >= 10000 &&
+		   ksu_selinux_hide_status_enabled)) {
+		struct page *data = READ_ONCE(fake_status);
+		if (data) {
+			filp->private_data = page_address(data);
+			return 0;
+		}
+	}
+
+	int ret = orig_sel_open_handle_status(inode, filp);
+	if (static_branch_unlikely(&fake_status_initialize_key) && !ret &&
+	    !fake_status) {
+		initialize_fake_status();
+	}
+	return ret;
+}
+
+static void hook_selinux_status_open(void)
+{
+	if (orig_sel_open_handle_status)
+		return;
+
+	struct file_operations *ops =
+		(struct file_operations *)kallsyms_lookup_name(
+			"sel_handle_status_ops");
+	if (!ops) {
+		pr_err("ksu_selinux_hide: sel_handle_status_ops not found, fake status disabled\n");
+		return;
+	}
+
+	orig_sel_open_handle_status = ops->open;
+	ops->open = my_sel_open_handle_status;
+	pr_info("ksu_selinux_hide: hooked sel_handle_status_ops->open\n");
+}
+
+static void unhook_selinux_status_open(void)
+{
+	if (!orig_sel_open_handle_status)
+		return;
+
+	struct file_operations *ops =
+		(struct file_operations *)kallsyms_lookup_name(
+			"sel_handle_status_ops");
+	if (!ops) {
+		pr_err("ksu_selinux_hide: sel_handle_status_ops not found on unhook\n");
+		return;
+	}
+
+	ops->open = orig_sel_open_handle_status;
+	orig_sel_open_handle_status = NULL;
+	pr_info("ksu_selinux_hide: unhooked sel_handle_status_ops->open\n");
+}
+
+static int selinux_hide_status_feature_get(u64 *value)
+{
+	*value = ksu_selinux_hide_status_enabled ? 1 : 0;
+	return 0;
+}
+
+static int selinux_hide_status_feature_set(u64 value)
+{
+	bool enable = !!value;
+	if (enable == ksu_selinux_hide_status_enabled) {
+		pr_info("ksu_selinux_hide: no need to change\n");
+		return 0;
+	}
+	ksu_selinux_hide_status_enabled = enable;
+	pr_info("ksu_selinux_hide: set to %d\n", enable);
+	return 0;
+}
+
+static const struct ksu_feature_handler selinux_hide_status_handler = {
+	.feature_id = KSU_FEATURE_SELINUX_HIDE_STATUS,
+	.name = "selinux_hide_status",
+	.get_handler = selinux_hide_status_feature_get,
+	.set_handler = selinux_hide_status_feature_set,
+};
+
+void ksu_selinux_hide_status_handle_second_stage(void)
+{
+	initialize_fake_status();
+	if (READ_ONCE(fake_status)) {
+		static_key_disable(&fake_status_initialize_key.key);
+	} else {
+		pr_warn("ksu_selinux_hide: fake status needs late initialization\n");
+	}
+}
+
+void ksu_selinux_hide_status_handle_post_fs_data(void)
+{
+	static_key_disable(&fake_status_initialize_key.key);
+	if (!READ_ONCE(fake_status))
+		pr_err("ksu_selinux_hide: fake status not initialized after post-fs-data!\n");
+}
+
+void __init ksu_selinux_hide_status_init(void)
+{
+	if (ksu_register_feature_handler(&selinux_hide_status_handler))
+		pr_err("ksu_selinux_hide: failed to register feature handler\n");
+
+	if (ksu_late_loaded) {
+		initialize_fake_status();
+	} else {
+		static_key_enable(&fake_status_initialize_key.key);
+	}
+	hook_selinux_status_open();
+}
+
+void __exit ksu_selinux_hide_status_exit(void)
+{
+	ksu_unregister_feature_handler(KSU_FEATURE_SELINUX_HIDE_STATUS);
+	unhook_selinux_status_open();
+	mutex_lock(&fake_status_init_mutex);
+	if (fake_status) {
+		__free_page(fake_status);
+		fake_status = NULL;
+	}
+	mutex_unlock(&fake_status_init_mutex);
+}

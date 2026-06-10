@@ -47,6 +47,11 @@ bool getenforce();
 
 void cache_sid(void);
 
+void ksu_selinux_hide_status_init(void);
+void ksu_selinux_hide_status_exit(void);
+void ksu_selinux_hide_status_handle_second_stage(void);
+void ksu_selinux_hide_status_handle_post_fs_data(void);
+
 bool is_task_ksu_domain(const struct cred* cred);
 
 bool is_ksu_domain();
