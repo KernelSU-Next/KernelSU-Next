@@ -201,6 +201,7 @@ Java_com_rifsxd_ksunext_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
     auto capabilitiesField = env->GetFieldID(cls, "capabilities", "Ljava/util/List;");
     auto domainField = env->GetFieldID(cls, "context", "Ljava/lang/String;");
     auto namespacesField = env->GetFieldID(cls, "namespace", "I");
+    jfieldID flagsField = env->GetFieldID(cls, "flags", "J");
 
     auto nonRootUseDefaultField = env->GetFieldID(cls, "nonRootUseDefault", "Z");
     auto umountModulesField = env->GetFieldID(cls, "umountModules", "Z");
@@ -252,6 +253,7 @@ Java_com_rifsxd_ksunext_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
                 env->NewStringUTF(profile.rp_config.profile.selinux_domain));
         env->SetIntField(obj, namespacesField, profile.rp_config.profile.namespaces);
         env->SetBooleanField(obj, allowSuField, profile.allow_su);
+        env->SetLongField(obj, flagsField, (jlong) profile.rp_config.profile.flags);
     } else {
         env->SetBooleanField(obj, nonRootUseDefaultField,
                 (jboolean) profile.nrp_config.use_default);
@@ -279,6 +281,7 @@ Java_com_rifsxd_ksunext_Natives_setAppProfile(JNIEnv *env, jobject clazz, jobjec
     auto capabilitiesField = env->GetFieldID(cls, "capabilities", "Ljava/util/List;");
     auto domainField = env->GetFieldID(cls, "context", "Ljava/lang/String;");
     auto namespacesField = env->GetFieldID(cls, "namespace", "I");
+    jfieldID flagsField = env->GetFieldID(cls, "flags", "J");
 
     auto nonRootUseDefaultField = env->GetFieldID(cls, "nonRootUseDefault", "Z");
     auto umountModulesField = env->GetFieldID(cls, "umountModules", "Z");
@@ -340,6 +343,8 @@ Java_com_rifsxd_ksunext_Natives_setAppProfile(JNIEnv *env, jobject clazz, jobjec
         env->ReleaseStringUTFChars((jstring) domain, cdomain);
 
         p.rp_config.profile.namespaces = env->GetIntField(profile, namespacesField);
+
+        p.rp_config.profile.flags = env->GetLongField(profile, flagsField);
     } else {
         p.nrp_config.use_default = env->GetBooleanField(profile, nonRootUseDefaultField);
         p.nrp_config.profile.umount_modules = umountModules;
