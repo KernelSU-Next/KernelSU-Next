@@ -6,7 +6,7 @@
   <img src="/assets/kernelsu_next.png" width="96" alt="KernelSU Next Logo">
 
   <h2>KernelSU Next</h2>
-  <p><strong>Решение root на базе ядра для устройств Android.</strong></p>
+  <p><strong>Root решение на базе ядра для устройств Android.</strong></p>
 
   <p>
     <a href="https://github.com/KernelSU-Next/KernelSU-Next/releases/latest">
