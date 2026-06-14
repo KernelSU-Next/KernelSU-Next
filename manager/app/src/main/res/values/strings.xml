@@ -133,6 +133,8 @@
     <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
     <string name="profile_selinux_domain">Domain</string>
     <string name="profile_selinux_rules">Rules</string>
+    <string name="profile_flags">Flags</string>
+    <string name="profile_flags_desc_no_new_privs">Prevent further privilege escalation via KernelSU from within the context of this root profile.</string>
     <string name="module_update">Update</string>
     <string name="module_update_available">Update</string>
     <string name="module_updated">Updated</string>
