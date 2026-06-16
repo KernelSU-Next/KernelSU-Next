@@ -258,4 +258,16 @@
   <string name="seccomp_status_unknown">Unknown</string>
   <string name="module_sort_stars_low_to_high">Sort (Low → High)</string>
   <string name="module_sort_stars_high_to_low">Sort (High → Low)</string>
+  <string name="settings_adb_root">ADB Root</string>
+  <string name="settings_adb_root_summary">Run adbd daemon with root privileges</string>
+  <string name="settings_selinux_hide">Hide SELinux modification</string>
+  <string name="settings_selinux_hide_summary">Prevent applications from detecting SELinux modifications</string>
+  <string name="settings_selinux_hide_reboot_required">Reboot to take effect</string>
+  <string name="settings_selinux_hide_failed">Error: %d</string>
+  <string name="allow_shell">Always grant root to Shell</string>
+  <string name="allow_shell_summary">Always allow adb shell to call su. Do not enable this unless absolutely necessary.</string>
+  <string name="enable_adb">Force enable adb on boot</string>
+  <string name="enable_adb_summary">Force enable USB debugging and disable adb authentication. Do not enable this unless absolutely necessary.</string>
+  <string name="advanced_options">Advanced Options</string>
+  <string name="expand">Expand</string>
 </resources>
