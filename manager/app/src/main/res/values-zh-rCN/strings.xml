@@ -233,11 +233,6 @@
   <string name="settings_enable_su_summary">允许任何应用通过 su 命令获取 root 权限（已有的 root 进程不受影响）。</string>
   <string name="settings_enable_kernel_umount">内核处理卸载模块</string>
   <string name="settings_enable_kernel_umount_summary">在内核层面卸载模块。</string>
-  <string name="settings_adb_root_summary">以 root 权限运行 adbd 守护进程</string>
-  <string name="settings_selinux_hide">隐藏 SELinux 修改</string>
-  <string name="settings_selinux_hide_summary">阻止应用检测 SELinux 修改</string>
-  <string name="settings_selinux_hide_reboot_required">重启生效</string>
-  <string name="settings_selinux_hide_failed">错误： %d</string>
   <string name="settings_enable_avc_spoof">AVC 日志伪装</string>
   <string name="settings_enable_avc_spoof_summary">修复日志中 avc denial 导致的 SELinux 上下文泄漏。</string>
   <string name="manage_repositories">管理仓库</string>
@@ -263,10 +258,16 @@
   <string name="seccomp_status_unknown">未知</string>
   <string name="module_sort_stars_low_to_high">Stars (低 → 高)</string>
   <string name="module_sort_stars_high_to_low">Stars (高 → 低)</string>
-  <string name="allow_shell">总是给 shell 授予 root 权限</string>
-  <string name="allow_shell_summary">总是允许 adb shell 调用 su ，非必要请勿开启。</string>
-  <string name="enable_adb">启动时强制启用 ADB 调试</string>
-  <string name="enable_adb_summary">强制允许 USB 调试并取消 adb 认证，非必要请勿开启。</string>
-  <string name="advanced_options">高级选项</string>
-  <string name="expand">展开</string>
+  <string name="settings_adb_root">ADB Root</string>
+  <string name="settings_adb_root_summary">Run adbd daemon with root privileges</string>
+  <string name="settings_selinux_hide">Hide SELinux modification</string>
+  <string name="settings_selinux_hide_summary">Prevent applications from detecting SELinux modifications</string>
+  <string name="settings_selinux_hide_reboot_required">Reboot to take effect</string>
+  <string name="settings_selinux_hide_failed">Error: %d</string>
+  <string name="allow_shell">Always grant root to Shell</string>
+  <string name="allow_shell_summary">Always allow adb shell to call su. Do not enable this unless absolutely necessary.</string>
+  <string name="enable_adb">Force enable adb on boot</string>
+  <string name="enable_adb_summary">Force enable USB debugging and disable adb authentication. Do not enable this unless absolutely necessary.</string>
+  <string name="advanced_options">Advanced Options</string>
+  <string name="expand">Expand</string>
 </resources>
