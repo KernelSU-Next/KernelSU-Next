@@ -16,7 +16,6 @@ kernelsu-objs += hook/x86_64/patch_memory.o
 kernelsu-objs += hook/x86_64/syscall_hook.o
 endif
 kernelsu-objs += extras.o
-kernelsu-objs += tiny_sulog.o
 
 kernelsu-objs += infra/file_wrapper.o
 kernelsu-objs += infra/seccomp_cache.o

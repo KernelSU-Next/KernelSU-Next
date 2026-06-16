@@ -21,13 +21,9 @@
 #include "policy/app_profile.h"
 #include "supercall/supercall.h"
 
-#include "tiny_sulog.h"
-
 static int do_grant_root(void __user *arg)
 {
     // we already check uid above on allowed_for_su()
-
-    write_sulog('i'); // log ioctl escalation
 
     pr_info("allow root for: %d\n", current_uid().val);
     escape_with_root_profile();
