@@ -158,6 +158,8 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     var sortAToZ by remember { mutableStateOf(prefs.getBoolean("module_sort_a_to_z", true)) }
     var sortZToA by remember { mutableStateOf(prefs.getBoolean("module_sort_z_to_a", false)) }
+    var sortStarsLowToHigh by remember { mutableStateOf(prefs.getBoolean("module_sort_stars_low_to_high", false)) }
+    var sortStarsHighToLow by remember { mutableStateOf(prefs.getBoolean("module_sort_stars_high_to_low", false)) }
 
     DownloadListener(context) { uri ->
         downloadedUri = uri
@@ -491,8 +493,12 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
                                 onClick = {
                                     sortAToZ = !sortAToZ
                                     sortZToA = false
+                                    sortStarsLowToHigh = false
+                                    sortStarsHighToLow = false
                                     prefs.edit().putBoolean("module_sort_a_to_z", sortAToZ).apply()
                                     prefs.edit().putBoolean("module_sort_z_to_a", false).apply()
+                                    prefs.edit().putBoolean("module_sort_stars_low_to_high", false).apply()
+                                    prefs.edit().putBoolean("module_sort_stars_high_to_low", false).apply()
                                 }
                             )
 
@@ -506,8 +512,49 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
                                 onClick = {
                                     sortZToA = !sortZToA
                                     sortAToZ = false
+                                    sortStarsLowToHigh = false
+                                    sortStarsHighToLow = false
                                     prefs.edit().putBoolean("module_sort_z_to_a", sortZToA).apply()
                                     prefs.edit().putBoolean("module_sort_a_to_z", false).apply()
+                                    prefs.edit().putBoolean("module_sort_stars_low_to_high", false).apply()
+                                    prefs.edit().putBoolean("module_sort_stars_high_to_low", false).apply()
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(stringResource(R.string.module_sort_stars_low_to_high))
+                                },
+                                trailingIcon = {
+                                    Checkbox(checked = sortStarsLowToHigh, onCheckedChange = null)
+                                },
+                                onClick = {
+                                    sortStarsLowToHigh = !sortStarsLowToHigh
+                                    sortStarsHighToLow = false
+                                    sortAToZ = false
+                                    sortZToA = false
+                                    prefs.edit().putBoolean("module_sort_stars_low_to_high", sortStarsLowToHigh).apply()
+                                    prefs.edit().putBoolean("module_sort_stars_high_to_low", false).apply()
+                                    prefs.edit().putBoolean("module_sort_a_to_z", false).apply()
+                                    prefs.edit().putBoolean("module_sort_z_to_a", false).apply()
+                                }
+                            )
+
+                            DropdownMenuItem(
+                                text = {
+                                    Text(stringResource(R.string.module_sort_stars_high_to_low))
+                                },
+                                trailingIcon = {
+                                    Checkbox(checked = sortStarsHighToLow, onCheckedChange = null)
+                                },
+                                onClick = {
+                                    sortStarsHighToLow = !sortStarsHighToLow
+                                    sortStarsLowToHigh = false
+                                    sortAToZ = false
+                                    sortZToA = false
+                                    prefs.edit().putBoolean("module_sort_stars_high_to_low", sortStarsHighToLow).apply()
+                                    prefs.edit().putBoolean("module_sort_stars_low_to_high", false).apply()
+                                    prefs.edit().putBoolean("module_sort_a_to_z", false).apply()
+                                    prefs.edit().putBoolean("module_sort_z_to_a", false).apply()
                                 }
                             )
                         }
@@ -544,6 +591,8 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
                 val sortedModules = when {
                     sortAToZ -> filteredModules.sortedBy { it.name.lowercase() }
                     sortZToA -> filteredModules.sortedByDescending { it.name.lowercase() }
+                    sortStarsLowToHigh -> filteredModules.sortedWith(compareBy { if (it.stars < 0) Int.MAX_VALUE else it.stars })
+                    sortStarsHighToLow -> filteredModules.sortedWith(compareByDescending { if (it.stars < 0) Int.MIN_VALUE else it.stars })
                     else -> filteredModules
                 }
 

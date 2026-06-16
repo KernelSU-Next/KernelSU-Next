@@ -112,10 +112,9 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
         }
     }
 
-    val isSafeMode = Natives.isSafeMode
     val hasMagisk = hasMagisk()
 
-    val hideInstallButton = isSafeMode || hasMagisk
+    val hideInstallButton = hasMagisk
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
@@ -538,8 +537,7 @@ private fun ModuleList(
 
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
-    val hasShownWarning =
-        rememberSaveable { mutableStateOf(prefs.getBoolean("has_shown_warning", false)) }
+    val developerOptionsEnabled = prefs.getBoolean("enable_developer_options", false)
 
     val loadingDialog = rememberLoadingDialog()
     val confirmDialog = rememberConfirmDialog()
@@ -766,9 +764,11 @@ private fun ModuleList(
                             onClick = {
                                 onClickModule(it.id, it.name, it.hasWebUi)
                             },
-                            expanded = expandedModuleId == module.id,
+                            expanded = if (developerOptionsEnabled) true else expandedModuleId == module.id,
                             onExpandToggle = {
-                                expandedModuleId = if (expandedModuleId == module.id) null else module.id
+                                if (!developerOptionsEnabled) {
+                                    expandedModuleId = if (expandedModuleId == module.id) null else module.id
+                                }
                             }
                         )
 
@@ -1038,21 +1038,9 @@ fun ModuleItem(
             Column {
                 val interactionSource = remember { MutableInteractionSource() }
 
-                var developerOptionsEnabled by rememberSaveable {
-                    mutableStateOf(
-                        prefs.getBoolean("enable_developer_options", false)
-                    )
-                }
+                val developerOptionsEnabled = prefs.getBoolean("enable_developer_options", false)
 
                 val filterZygiskModules = Natives.isZygiskEnabled() || !module.zygiskRequired
-                
-                val zygiskImpl by produceState(key1 = module.id, initialValue = "") {
-                    value = withContext(Dispatchers.IO) { getZygiskImplementation("name") }
-                }
-                
-                LaunchedEffect(Unit) {
-                    developerOptionsEnabled = prefs.getBoolean("enable_developer_options", false)
-                }
 
                 Column(
                     modifier = Modifier
@@ -1106,7 +1094,7 @@ fun ModuleItem(
                                         )
                                     )
                                 }
-                                if (zygiskImpl.isNotBlank() && zygiskImpl != "None" && module.name == zygiskImpl && !module.remove) {
+                                if (module.isZygisk && !module.remove) {
                                     LabelItem(
                                         text = stringResource(R.string.zygisk),
                                         style = LabelItemDefaults.style.copy(
@@ -1454,7 +1442,8 @@ fun ModuleItemPreview() {
         isMetaModule = false,
         actionIconPath = null,
         webUiIconPath = null,
-        donate = ""
+        donate = "",
+        isZygisk = false,
     )
     ModuleItem(
         EmptyDestinationsNavigator,

@@ -12,6 +12,7 @@ import android.os.SystemClock
 import android.provider.OpenableColumns
 import android.system.Os
 import android.util.Log
+import com.rifsxd.ksunext.BuildConfig
 import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.ksuApp
 import com.topjohnwu.superuser.CallbackList
@@ -35,10 +36,6 @@ private const val BUSYBOX = "/data/adb/ksu/bin/busybox"
 
 private fun getKsuDaemonPath(): String {
     return ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksud.so"
-}
-
-private val suSFSDaemonPath by lazy {
-    "${ksuApp.applicationInfo.nativeLibraryDir}${File.separator}libsusfsd.so"
 }
 
 data class FlashResult(val code: Int, val err: String, val showReboot: Boolean) {
@@ -120,8 +117,8 @@ suspend fun getFeaturePersistValue(feature: String): Long? = withContext(Dispatc
 
 fun install() {
     val start = SystemClock.elapsedRealtime()
-    val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so").absolutePath
-    val result = execKsud("install --magiskboot $magiskboot", true)
+    val libadbroot = File(ksuApp.applicationInfo.nativeLibraryDir, "libadbroot.so").absolutePath
+    val result = execKsud("install --libadbroot $libadbroot", true)
     Log.w(TAG, "install result: $result, cost: ${SystemClock.elapsedRealtime() - start}ms")
 }
 
@@ -301,16 +298,14 @@ fun runModuleAction(
 fun restoreBoot(
     onStdout: (String) -> Unit, onStderr: (String) -> Unit
 ): FlashResult {
-    val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
-    val result = flashWithIO("${getKsuDaemonPath()} boot-restore -f --magiskboot $magiskboot", onStdout, onStderr)
+    val result = flashWithIO("${getKsuDaemonPath()} boot-restore -f", onStdout, onStderr)
     return FlashResult(result)
 }
 
 fun uninstallPermanently(
     onStdout: (String) -> Unit, onStderr: (String) -> Unit
 ): FlashResult {
-    val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
-    val result = flashWithIO("${getKsuDaemonPath()} uninstall --magiskboot $magiskboot", onStdout, onStderr)
+    val result = flashWithIO("${getKsuDaemonPath()} uninstall --package-name ${BuildConfig.APPLICATION_ID}", onStdout, onStderr)
     return FlashResult(result)
 }
 
@@ -325,6 +320,8 @@ fun installBoot(
     bootUri: Uri?,
     lkm: LkmSelection,
     ota: Boolean,
+    allowShell: Boolean,
+    enableAdb: Boolean,
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit,
 ): FlashResult {
@@ -341,14 +338,21 @@ fun installBoot(
         }
     }
 
-    val magiskboot = File(ksuApp.applicationInfo.nativeLibraryDir, "libmagiskboot.so")
-    var cmd = "boot-patch --magiskboot ${magiskboot.absolutePath}"
+    var cmd = "boot-patch"
 
     cmd += if (bootFile == null) {
         // no boot.img, use -f to force install
         " -f"
     } else {
         " -b ${bootFile.absolutePath}"
+    }
+
+    if (allowShell) {
+        cmd += " --allow-shell"
+    }
+
+    if (enableAdb) {
+        cmd += " --enable-adbd"
     }
 
     if (ota) {
@@ -591,29 +595,8 @@ fun zygiskRequired(dir: File): Boolean {
     return (SuFile(dir, "zygisk").listFiles()?.size ?: 0) > 0
 }
 
-fun getZygiskImplementation(property: String): String {
-    val modulesPath = "/data/adb/modules"
-    val zygiskModuleIds = arrayOf("rezygisk", "zygisksu")
-
-    for (moduleId in zygiskModuleIds) {
-        val moduleDir = SuFile.open("$modulesPath/$moduleId")
-        if (!moduleDir.isDirectory) continue
-        if (SuFile.open("$modulesPath/$moduleId/disable").isFile ||
-            SuFile.open("$modulesPath/$moduleId/remove").isFile
-        ) continue
-
-        val propFile = SuFile.open("$modulesPath/$moduleId/module.prop")
-        if (!propFile.isFile) continue
-
-        val prop = Properties().apply { load(propFile.newInputStream()) }
-        prop.getProperty(property)?.let {
-            Log.i(TAG, "Zygisk $property: $it")
-            return it
-        }
-    }
-
-    Log.i(TAG, "Zygisk $property: None")
-    return "None"
+fun isZygiskImpl(dir: File): Boolean {
+    return SuFile(dir, "bin/zygiskd").exists() || SuFile(dir, "bin/zygiskd64").exists()
 }
 
 fun refreshActivity(context: Context) {
@@ -637,19 +620,23 @@ fun restartActivity(context: Context) {
 }
 
 fun getSuSFS(): String {
-    return ShellUtils.fastCmd("$suSFSDaemonPath support")
+    return ShellUtils.fastCmd("${getKsuDaemonPath()} susfs support")
 }
 
 fun getSuSFSVersion(): String {
-    return ShellUtils.fastCmd("$suSFSDaemonPath version")
+    return ShellUtils.fastCmd("${getKsuDaemonPath()} susfs version")
 }
 
 fun getSuSFSVariant(): String {
-    return ShellUtils.fastCmd("$suSFSDaemonPath variant")
+    return ShellUtils.fastCmd("${getKsuDaemonPath()} susfs variant")
 }
 
 fun getSuSFSFeatures(): String {
-    return ShellUtils.fastCmd("$suSFSDaemonPath features")
+    return ShellUtils.fastCmd("${getKsuDaemonPath()} susfs features")
+}
+
+fun getMetaModule(): String {
+    return ShellUtils.fastCmd("${getKsuDaemonPath()} module metamodule")
 }
 
 fun setAppProfileTemplate(id: String, template: String): Boolean {

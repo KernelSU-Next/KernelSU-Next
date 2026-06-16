@@ -1,5 +1,13 @@
 package com.rifsxd.ksunext.ui.screen
 
+import androidx.core.net.toUri
+import androidx.compose.foundation.Image
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -51,6 +59,8 @@ import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.dergoogler.mmrl.ui.component.LabelItem
 import com.dergoogler.mmrl.ui.component.LabelItemDefaults
 import com.dergoogler.mmrl.ui.component.text.TextRow
@@ -75,11 +85,10 @@ import com.rifsxd.ksunext.ui.LocalScrollState
 import com.rifsxd.ksunext.ui.screen.BottomBarDestination
 import com.rifsxd.ksunext.ui.trackScroll 
 import com.rifsxd.ksunext.ui.rememberScrollConnection
+import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import java.util.*
-import androidx.core.net.toUri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Destination<RootGraph>(start = true)
@@ -220,6 +229,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
 
             InfoCard(autoExpand = developerOptionsEnabled)
             IssueReportCard()
+            ContributorsCard()
             Spacer(Modifier)
         }
     }
@@ -996,26 +1006,21 @@ private fun InfoCard(autoExpand: Boolean = false) {
                 }
 
                 if (ksuVersion != null) {
-                    Spacer(Modifier.height(16.dp))
-                    
+                    val metaModule = getMetaModule()
                     val moduleViewModel: ModuleViewModel = viewModel()
-                    val meta = moduleViewModel.moduleList.firstOrNull {
-                        it.isMetaModule && it.enabled && !it.remove
-                    }
-
-                    val mountSystem = currentMountSystem()
-                        .ifBlank { stringResource(R.string.unavailable) }
-
-                    val content = listOfNotNull(
-                        mountSystem,
-                        meta?.name?.takeIf { it.isNotBlank() }
-                            ?: stringResource(R.string.home_not_installed),
-                        meta?.version?.takeIf { it.isNotBlank() }
-                    ).joinToString(" | ")
-
+                    val metaInfo = moduleViewModel.moduleList.firstOrNull { it.isMetaModule }
+                    val metaDetail = if (metaInfo != null) " | ${metaInfo.name} | ${metaInfo.version}" else ""
+                    Spacer(Modifier.height(16.dp))
                     InfoCardItem(
-                        label = stringResource(R.string.home_mount_system),
-                        content = content,
+                        label = stringResource(R.string.home_metamodule_status),
+                        content = when {
+                            metaModule == "Installed" && metaInfo != null && !metaInfo.enabled ->
+                                stringResource(R.string.disabled) + metaDetail
+                            metaModule == "Installed" ->
+                                stringResource(R.string.installed) + metaDetail
+                            else ->
+                                stringResource(R.string.home_not_installed)
+                        },
                         icon = Icons.Filled.SettingsSuggest
                     )
 
@@ -1031,9 +1036,11 @@ private fun InfoCard(autoExpand: Boolean = false) {
 
                     if (Natives.isZygiskEnabled()) {
                         Spacer(Modifier.height(16.dp))
+                        val zygiskInfo = moduleViewModel.moduleList.firstOrNull { it.isZygisk && it.enabled }
+                        val zygiskDetail = if (zygiskInfo != null) " | ${zygiskInfo.name} | ${zygiskInfo.version}" else ""
                         InfoCardItem(
                             label = stringResource(R.string.zygisk_status),
-                            content = "${stringResource(R.string.enabled)} | ${getZygiskImplementation("name")} | ${getZygiskImplementation("version")}",
+                            content = stringResource(R.string.enabled) + zygiskDetail,
                             icon = Icons.Filled.Vaccines
                         )
                     }
@@ -1069,6 +1076,26 @@ private fun InfoCard(autoExpand: Boolean = false) {
                             content = getSELinuxStatus(),
                             icon = Icons.Filled.Security,
                         )
+
+                        
+                        val statusInt = kotlin.runCatching {
+                            Os.prctl(21, 0, 0, 0, 0)
+                        }.getOrDefault(-1)
+
+                        val seccompStatus = when (statusInt) {
+                            -1 -> stringResource(R.string.seccomp_status_not_supported)
+                            0 -> stringResource(R.string.seccomp_status_disabled)
+                            1 -> stringResource(R.string.seccomp_status_strict)
+                            2 -> stringResource(R.string.seccomp_status_filter)
+                            else -> stringResource(R.string.seccomp_status_unknown)
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+                        InfoCardItem(
+                            label = stringResource(R.string.home_seccomp_status),
+                            content = seccompStatus,
+                            icon = Icons.Filled.LocalPolice
+                        )
                     }
                 }
 
@@ -1097,6 +1124,181 @@ private fun InfoCard(autoExpand: Boolean = false) {
                     }
                 }
             }
+        }
+    }
+}
+
+data class Contributor(
+    val login: String,
+    val name: String? = null,
+    val githubUrl: String,
+    val role: String,
+    val donationUrl: String
+)
+
+@Composable
+fun ContributorsCard() {
+    val uriHandler = LocalUriHandler.current
+
+    val contributors = listOf(
+        Contributor(
+            login = "rifsxd",
+            name = "Rifat Azad",
+            githubUrl = "https://github.com/rifsxd",
+            role = "Lead Developer",
+            donationUrl = "https://github.com/KernelSU-Next/KernelSU-Next/tree/dev?tab=readme-ov-file#-donations"
+        ),
+        Contributor(
+            login = "tiann",
+            name = "Weishu",
+            githubUrl = "https://github.com/tiann",
+            role = "KernelSU Author",
+            donationUrl = "https://www.patreon.com/weishu"
+        ),
+        Contributor(
+            login = "fatalcoder524",
+            githubUrl = "https://github.com/fatalcoder524",
+            role = "Frontend Maintainer",
+            donationUrl = "https://github.com/sponsors/fatalcoder524"
+        ),
+        Contributor(
+            login = "pershoot",
+            githubUrl = "https://github.com/pershoot",
+            role = "Backend Maintainer",
+            donationUrl = "https://github.com/sponsors/pershoot"
+        ),
+        Contributor(
+            login = "maxsteeel",
+            name = "Max",
+            githubUrl = "https://github.com/maxsteeel",
+            role = "Legacy Maintainer",
+            donationUrl = "https://github.com/sponsors/maxsteeel"
+        )
+    )
+
+    Card {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.contributors),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold
+            )
+
+            contributors.forEach { contributor ->
+                ContributorRow(
+                    contributor = contributor,
+                    onProfileClick = { uriHandler.openUri(contributor.githubUrl) },
+                    onDonateClick = { uriHandler.openUri(contributor.donationUrl) }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ContributorRow(
+    contributor: Contributor,
+    onProfileClick: () -> Unit,
+    onDonateClick: () -> Unit
+) {
+    var imageLoadFailed by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        // Avatar + name/role
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .clip(RoundedCornerShape(8.dp))
+                .clickable { onProfileClick() }
+                .padding(vertical = 4.dp, horizontal = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            // Avatar
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(CircleShape)
+                    .border(
+                        width = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                if (!imageLoadFailed) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data("https://avatars.githubusercontent.com/${contributor.login}?s=80")
+                            .crossfade(true)
+                            .build(),
+                        contentDescription = contributor.login,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                        onError = { imageLoadFailed = true }
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.secondaryContainer),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Person,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
+                }
+            }
+
+            // Name + role
+            Column {
+                Text(
+                    text = contributor.name?.takeIf { it.isNotBlank() }
+                        ?.let { "${contributor.login} ($it)" }
+                        ?: contributor.login,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    text = contributor.role,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        OutlinedButton(
+            onClick = onDonateClick,
+            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+            modifier = Modifier.height(30.dp),
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Favorite,
+                contentDescription = null,
+                modifier = Modifier.size(13.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.width(5.dp))
+            Text(
+                text = stringResource(R.string.support),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

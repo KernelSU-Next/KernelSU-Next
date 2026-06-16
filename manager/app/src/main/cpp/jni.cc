@@ -169,7 +169,7 @@ Java_com_rifsxd_ksunext_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
     profile.version = KSU_APP_PROFILE_VER;
 
     strcpy(profile.key, key);
-    profile.current_uid = uid;
+    profile.curr_uid = uid;
 
     bool useDefaultProfile = get_app_profile(&profile) != 0;
 
@@ -194,7 +194,7 @@ Java_com_rifsxd_ksunext_Natives_getAppProfile(JNIEnv *env, jobject, jstring pkg,
     auto umountModulesField = env->GetFieldID(cls, "umountModules", "Z");
 
     env->SetObjectField(obj, keyField, env->NewStringUTF(profile.key));
-    env->SetIntField(obj, currentUidField, profile.current_uid);
+    env->SetIntField(obj, currentUidField, profile.curr_uid);
 
     if (useDefaultProfile) {
         // no profile found, so just use default profile:
@@ -299,7 +299,7 @@ Java_com_rifsxd_ksunext_Natives_setAppProfile(JNIEnv *env, jobject clazz, jobjec
 
     strcpy(p.key, p_key);
     p.allow_su = allowSu;
-    p.current_uid = currentUid;
+    p.curr_uid = currentUid;
 
     if (allowSu) {
         p.rp_config.use_default = env->GetBooleanField(profile, rootUseDefaultField);
@@ -367,6 +367,30 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_rifsxd_ksunext_Natives_setKernelUmountEnabled(JNIEnv *env, jobject thiz, jboolean enabled) {
     return set_kernel_umount_enabled(enabled);
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_rifsxd_ksunext_Natives_isAdbRootEnabled(JNIEnv *env, jobject thiz) {
+    return is_adb_root_enabled();
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_rifsxd_ksunext_Natives_setAdbRootEnabled(JNIEnv *env, jobject thiz, jboolean enabled) {
+    return set_adb_root_enabled(enabled);
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_rifsxd_ksunext_Natives_isSelinuxHideEnabled(JNIEnv *env, jobject thiz) {
+    return is_selinux_hide_enabled();
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_rifsxd_ksunext_Natives_setSelinuxHideEnabled(JNIEnv *env, jobject thiz, jboolean enabled) {
+    return set_selinux_hide_enabled(enabled);
 }
 
 extern "C"

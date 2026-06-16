@@ -16,25 +16,24 @@ if [ ! "$ARCH" = "arm64-v8a" ]; then
     exit 1
 fi
 
-# Extract ksud and magiskboot
-unzip -o "$3" "lib/$ARCH/libksud.so" "lib/$ARCH/libmagiskboot.so" -d $TMPDIR >&2
+# Extract ksud
+unzip -o "$3" "lib/$ARCH/libksud.so" -d $TMPDIR >&2
 
 KSUD="$TMPDIR/lib/$ARCH/libksud.so"
-MAGISKBOOT="$TMPDIR/lib/$ARCH/libmagiskboot.so"
 
-chmod 755 "$KSUD" "$MAGISKBOOT"
+chmod 755 "$KSUD"
 
 # use ksud to install or uninstall
 case "$3" in
   *uninstall*|*Uninstall*)
     ui_print "- Uninstalling KernelSU-Next..."
-    "$KSUD" uninstall --magiskboot "$MAGISKBOOT" 2>&1 | while read -r line; do
+    "$KSUD" uninstall 2>&1 | while read -r line; do
       ui_print "$line"
     done
     ;;
   *)
     ui_print "- Installing KernelSU-Next..."
-    "$KSUD" boot-patch --magiskboot "$MAGISKBOOT" --flash 2>&1 | while read -r line; do
+    "$KSUD" boot-patch --flash 2>&1 | while read -r line; do
       ui_print "$line"
     done
     ;;

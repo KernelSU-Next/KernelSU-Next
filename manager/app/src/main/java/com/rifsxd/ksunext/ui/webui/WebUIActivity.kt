@@ -15,6 +15,7 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -284,6 +285,10 @@ class WebUIActivity : ComponentActivity() {
                     return assetLoader.shouldInterceptRequest(request.url)
                 }
 
+                override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                    return false
+                }
+
                 override fun onPageFinished(view: WebView?, url: String?) {
                     if (developerOptionsEnabled && enableWebDebugging) {
                         view?.evaluateJavascript(erudaConsole(this@WebUIActivity), null)
@@ -295,6 +300,8 @@ class WebUIActivity : ComponentActivity() {
             loadUrl("https://mui.kernelsu.org/index.html")
         }
 
+        setupWebUIBackHandler()
+        
         container.addView(webView)
         setContentView(container)
 
@@ -311,6 +318,21 @@ class WebUIActivity : ComponentActivity() {
                 }
             }
         }
+    }
+    private fun setupWebUIBackHandler() {
+        val backCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                val currentWebView = webView
+                if (currentWebView != null && currentWebView.canGoBack()) {
+                    currentWebView.goBack()
+                } else {
+                    isEnabled = false
+                    finish()
+                }
+            }
+        }
+
+        onBackPressedDispatcher.addCallback(this, backCallback)
     }
 
     private fun extractMimeTypeAndBase64Data(dataUrl: String): Pair<String, String>? {

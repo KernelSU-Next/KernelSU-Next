@@ -6,7 +6,14 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -14,6 +21,7 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import com.rifsxd.ksunext.ui.LocalScrollState
@@ -43,6 +52,7 @@ import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import com.rifsxd.ksunext.*
 import com.rifsxd.ksunext.R
 import com.rifsxd.ksunext.ui.component.DialogHandle
+import com.rifsxd.ksunext.ui.component.SwitchItem
 import com.rifsxd.ksunext.ui.component.rememberConfirmDialog
 import com.rifsxd.ksunext.ui.component.rememberCustomDialog
 import com.rifsxd.ksunext.ui.util.*
@@ -65,6 +75,10 @@ fun InstallScreen(navigator: DestinationsNavigator) {
         mutableStateOf<LkmSelection>(LkmSelection.KmiNone)
     }
 
+    var advancedOptionsShown by rememberSaveable { mutableStateOf(false) }
+    var allowShell by rememberSaveable { mutableStateOf(false) }
+    var enableAdb by rememberSaveable { mutableStateOf(false) }
+
     val context = LocalContext.current
 
     val onInstall = {
@@ -81,7 +95,9 @@ fun InstallScreen(navigator: DestinationsNavigator) {
             val flashIt = FlashIt.FlashBoot(
                 boot = if (method is InstallMethod.SelectFile) method.uri else null,
                 lkm = lkmSelection,
-                ota = method is InstallMethod.DirectInstallToInactiveSlot
+                ota = method is InstallMethod.DirectInstallToInactiveSlot,
+                allowShell = allowShell,
+                enableAdb = enableAdb
             )
             navigator.navigate(FlashScreenDestination(flashIt))
         }
@@ -167,8 +183,44 @@ fun InstallScreen(navigator: DestinationsNavigator) {
                 }
                 .verticalScroll(rememberScrollState())
         ) {
-            SelectInstallMethod { method ->
+            SelectInstallMethod(installMethod) { method ->
                 installMethod = method
+            }
+
+            val rotationState by animateFloatAsState(
+                targetValue = if (advancedOptionsShown) 180f else 0f,
+                label = "RotationAnimation"
+            )
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.advanced_options)) },
+                trailingContent = {
+                    Icon(
+                        imageVector = Icons.Filled.ExpandMore,
+                        contentDescription = stringResource(R.string.expand),
+                        modifier = Modifier.graphicsLayer { rotationZ = rotationState }
+                    )
+                },
+                modifier = Modifier.clickable { advancedOptionsShown = !advancedOptionsShown }
+            )
+            AnimatedVisibility(
+                visible = advancedOptionsShown,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column {
+                    SwitchItem(
+                        title = stringResource(id = R.string.allow_shell),
+                        summary = stringResource(id = R.string.allow_shell_summary),
+                        checked = allowShell,
+                        onCheckedChange = { allowShell = it }
+                    )
+                    SwitchItem(
+                        title = stringResource(id = R.string.enable_adb),
+                        summary = stringResource(id = R.string.enable_adb_summary),
+                        checked = enableAdb,
+                        onCheckedChange = { enableAdb = it }
+                    )
+                }
             }
 
             Column(
@@ -227,7 +279,7 @@ sealed class InstallMethod {
 }
 
 @Composable
-private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
+private fun SelectInstallMethod(selectedMethod: InstallMethod?, onSelected: (InstallMethod) -> Unit = {}) {
     val rootAvailable = rootAvailable()
     val isAbDevice = produceState(initialValue = false) {
         value = isAbDevice()
@@ -255,14 +307,12 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
         radioOptions.add(InstallMethod.AnyKernel())
     }
 
-    var selectedOption by remember { mutableStateOf<InstallMethod?>(null) }
     val selectImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) {
         if (it.resultCode == Activity.RESULT_OK) {
             it.data?.data?.let { uri ->
                 val option = InstallMethod.SelectFile(uri, summary = selectFileTip)
-                selectedOption = option
                 onSelected(option)
             }
         }
@@ -274,14 +324,12 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
         if (it.resultCode == Activity.RESULT_OK) {
             it.data?.data?.let { uri ->
                 val option = InstallMethod.AnyKernel(uri)
-                selectedOption = option
                 onSelected(option)
             }
         }
     }
 
     val confirmDialog = rememberConfirmDialog(onConfirm = {
-        selectedOption = InstallMethod.DirectInstallToInactiveSlot
         onSelected(InstallMethod.DirectInstallToInactiveSlot)
     }, onDismiss = null)
     val dialogTitle = stringResource(id = android.R.string.dialog_alert_title)
@@ -305,7 +353,6 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
             }
 
             is InstallMethod.DirectInstall -> {
-                selectedOption = option
                 onSelected(option)
             }
 
@@ -323,7 +370,7 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .toggleable(
-                        value = option.javaClass == selectedOption?.javaClass,
+                        value = option.javaClass == selectedMethod?.javaClass,
                         onValueChange = {
                             onClick(option)
                         },
@@ -333,7 +380,7 @@ private fun SelectInstallMethod(onSelected: (InstallMethod) -> Unit = {}) {
                     )
             ) {
                 RadioButton(
-                    selected = option.javaClass == selectedOption?.javaClass,
+                    selected = option.javaClass == selectedMethod?.javaClass,
                     onClick = {
                         onClick(option)
                     },

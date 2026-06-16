@@ -12,6 +12,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.animation.*
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -21,6 +25,7 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -108,6 +113,44 @@ fun rememberScrollConnection(
             }
         }
     }
+}
+
+fun Modifier.horizontalSwipeNavigator(
+    currentRoute: String?,
+    destinations: List<BottomBarDestination>,
+    onNavigate: (Int) -> Unit
+): Modifier = pointerInput(currentRoute) {
+
+    var totalDrag = 0f
+
+    detectHorizontalDragGestures(
+        onDragStart = { totalDrag = 0f },
+        onHorizontalDrag = { change, dragAmount ->
+            change.consume()
+            totalDrag += dragAmount
+        },
+        onDragEnd = {
+            val threshold = 150f
+
+            if (kotlin.math.abs(totalDrag) > threshold) {
+                val currentIndex = destinations.indexOfFirst {
+                    it.direction.route == currentRoute
+                }
+
+                if (currentIndex == -1) return@detectHorizontalDragGestures
+
+                if (totalDrag < 0) {
+                    val next = (currentIndex + 1)
+                        .coerceAtMost(destinations.lastIndex)
+                    if (next != currentIndex) onNavigate(next)
+                } else {
+                    val prev = (currentIndex - 1)
+                        .coerceAtLeast(0)
+                    if (prev != currentIndex) onNavigate(prev)
+                }
+            }
+        }
+    )
 }
 
 fun Modifier.trackScroll(
@@ -206,6 +249,9 @@ class MainActivity : ComponentActivity() {
                 }
                 val navigator = navController.rememberDestinationsNavigator()
 
+                val isManager = Natives.isManager
+                val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
+
                 val currentBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = currentBackStackEntry?.destination?.route
 
@@ -258,9 +304,27 @@ class MainActivity : ComponentActivity() {
 
                     if (zipUri.isNullOrEmpty() && navigateLoc != null) {
                         when (navigateLoc) {
-                            NavigateLocation.SUPERUSER -> navigator.navigate(SuperUserScreenDestination)
-                            NavigateLocation.MODULES -> navigator.navigate(ModuleScreenDestination)
-                            NavigateLocation.SETTINGS -> navigator.navigate(SettingScreenDestination)
+                            NavigateLocation.SUPERUSER -> navigator.navigate(SuperUserScreenDestination) {
+                                    popUpTo(NavGraphs.root.startRoute) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            NavigateLocation.MODULES -> navigator.navigate(ModuleScreenDestination) {
+                                    popUpTo(NavGraphs.root.startRoute) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            NavigateLocation.SETTINGS -> navigator.navigate(SettingScreenDestination) {
+                                    popUpTo(NavGraphs.root.startRoute) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
                             else -> { /* no-op for exhaustiveness */ }
                         }
                         navigateLoc = null
@@ -285,10 +349,34 @@ class MainActivity : ComponentActivity() {
                                 previousScrollOffset = previousScrollOffset
                             )
                         ) {
+                            val visibleDestinations = remember(fullFeatured) {
+                                BottomBarDestination.entries.filter { fullFeatured || !it.rootRequired }
+                            }
+
+                            fun navigateToIndex(index: Int) {
+                                val destination = visibleDestinations.getOrNull(index) ?: return
+                                if (destination.direction.route == currentRoute) return
+
+                                navigator.navigate(destination.direction) {
+                                    popUpTo(NavGraphs.root.startRoute) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            }
+
+                            val hostModifier = Modifier
+                                .padding(innerPadding)
+                                .fillMaxSize()
+                                .horizontalSwipeNavigator(
+                                    currentRoute = currentRoute,
+                                    destinations = visibleDestinations,
+                                    onNavigate = { navigateToIndex(it) }
+                                )
+
                             DestinationsNavHost(
-                                modifier = Modifier
-                                    .padding(innerPadding)
-                                    .fillMaxSize(),
+                                modifier = hostModifier,
                                 navGraph = NavGraphs.root,
                                 navController = navController,
                                 defaultTransitions = object : NavHostAnimatedDestinationStyle() {
@@ -456,32 +544,40 @@ private fun BottomBar(
         navController.isRouteOnBackStackAsState(destination.direction).value
     }
 
-    // Prefer an exact current-route match; fall back to whichever tab is on the back stack.
     val selectedIndex = run {
         val exactMatch = visibleDestinations.indexOfFirst { it.direction.route == currentRoute }
         if (exactMatch != -1) exactMatch
-        else isOnBackStack.indexOfLast { it } // last tab whose route is somewhere on the stack
+        else isOnBackStack.indexOfLast { it }
     }
 
-    // Persist the selection so the indicator doesn't jump while the navbar is animating out/in.
-    if (selectedIndex != -1) {
-        lastValidSelection.value = selectedIndex
-    }
-
-    // Use current selection if on navbar, otherwise use last valid selection
+    if (selectedIndex != -1) lastValidSelection.value = selectedIndex
     val effectiveSelectedIndex = if (selectedIndex != -1) selectedIndex else lastValidSelection.value
-    
-    // Animate the indicator position with jelly/spring effect
+
+    // Drag state
+    var isDraggingPill by remember { mutableStateOf(false) }
+    var dragTargetIndex by remember { mutableStateOf(effectiveSelectedIndex) }
+
+    // During drag, animate toward dragTargetIndex; otherwise animate toward effectiveSelectedIndex
     val animatedSelectedIndex by animateFloatAsState(
-        targetValue = effectiveSelectedIndex.toFloat(),
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioMediumBouncy,
-            stiffness = Spring.StiffnessLow
-        ),
+        targetValue = (if (isDraggingPill) dragTargetIndex else effectiveSelectedIndex).toFloat(),
+        animationSpec = if (isDraggingPill) {
+            spring(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMedium)
+        } else {
+            spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
+        },
         label = "selectedIndex"
     )
 
-    // Responsive padding based on screen width
+    fun navigateToIndex(index: Int) {
+        val destination = visibleDestinations.getOrNull(index) ?: return
+        if (destination.direction.route == currentRoute) return
+        navigator.navigate(destination.direction) {
+            popUpTo(NavGraphs.root.startRoute) { saveState = true }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxWidth()
@@ -493,11 +589,11 @@ private fun BottomBar(
     ) {
         val screenWidth = maxWidth
         val horizontalScreenPadding = when {
-            screenWidth > 600.dp -> 32.dp // Tablet/Large screen
-            screenWidth > 400.dp -> 24.dp // Normal phone
-            else -> 16.dp // Small phone
+            screenWidth > 600.dp -> 32.dp
+            screenWidth > 400.dp -> 24.dp
+            else -> 16.dp
         }
-        
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -506,54 +602,90 @@ private fun BottomBar(
         ) {
             Surface(
                 modifier = Modifier.wrapContentWidth(),
-                shape = MaterialTheme.shapes.large,
+                shape = RoundedCornerShape(24.dp),
                 tonalElevation = 3.dp,
                 shadowElevation = 8.dp
             ) {
                 val itemSize = 56.dp
                 val itemSpacing = 4.dp
-                val containerPadding = 7.dp // Reduced to match vertical padding
-                
-                // Calculate exact width based on items
-                val navBarWidth = (itemSize * visibleDestinations.size) + 
-                                 (itemSpacing * (visibleDestinations.size - 1)) + 
-                                 (containerPadding * 2)
-                
+                val containerPadding = 7.dp
+
+                val navBarWidth = (itemSize * visibleDestinations.size) +
+                        (itemSpacing * (visibleDestinations.size - 1)) +
+                        (containerPadding * 2)
+
+                val density = LocalDensity.current
+                val itemSizePx = with(density) { itemSize.toPx() }
+                val itemSpacingPx = with(density) { itemSpacing.toPx() }
+                val containerPaddingPx = with(density) { containerPadding.toPx() }
+
                 Box(
                     modifier = Modifier
                         .width(navBarWidth)
                         .height(72.dp)
+                        .pointerInput(visibleDestinations, effectiveSelectedIndex) {
+                            detectDragGestures(
+                                onDragStart = { offset ->
+                                    val extraTouchArea = with(density) { 20.dp.toPx() }
+
+                                    val pillLeft = containerPaddingPx +
+                                            effectiveSelectedIndex * (itemSizePx + itemSpacingPx) - extraTouchArea
+
+                                    val pillRight = pillLeft + itemSizePx + (extraTouchArea * 2)
+
+                                    if (offset.x in pillLeft..pillRight) {
+                                        isDraggingPill = true
+                                        dragTargetIndex = effectiveSelectedIndex
+                                    }
+                                },
+                                onDragEnd = {
+                                    if (isDraggingPill) {
+                                        navigateToIndex(dragTargetIndex)
+                                        isDraggingPill = false
+                                    }
+                                },
+                                onDragCancel = {
+                                    isDraggingPill = false
+                                },
+                                onDrag = { change, _ ->
+                                    if (isDraggingPill) {
+                                        change.consume()
+                                        // Map finger X to nearest icon index
+                                        val index = ((change.position.x - containerPaddingPx) /
+                                                (itemSizePx + itemSpacingPx))
+                                            .toInt()
+                                            .coerceIn(0, visibleDestinations.lastIndex)
+                                        dragTargetIndex = index
+                                    }
+                                }
+                            )
+                        }
                 ) {
                     var totalWidth by remember { mutableStateOf(0) }
-                    
+
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(horizontal = containerPadding)
-                            .onSizeChanged { size ->
-                                totalWidth = size.width
-                            }
+                            .onSizeChanged { totalWidth = it.width }
                     ) {
-                        // Animated sliding indicator
+                        // Sliding pill indicator
                         if (totalWidth > 0 && visibleDestinations.isNotEmpty()) {
-                            val density = LocalDensity.current
-                            val itemSizePx = with(density) { itemSize.toPx() }
-                            val itemSpacingPx = with(density) { itemSpacing.toPx() }
-                            
-                            // Calculate offset: each item position = (itemSize + spacing) * index
                             val indicatorOffset = (itemSizePx + itemSpacingPx) * animatedSelectedIndex
-                            
+
                             Box(
                                 modifier = Modifier
                                     .fillMaxHeight()
                                     .padding(vertical = 8.dp)
                                     .offset {
-                                        androidx.compose.ui.unit.IntOffset(
-                                            x = indicatorOffset.toInt(),
-                                            y = 0
-                                        )
+                                        IntOffset(x = indicatorOffset.toInt(), y = 0)
                                     }
-                                    .width(itemSize),
+                                    .width(itemSize)
+                                    // Subtle scale-up when dragging, like iOS
+                                    .graphicsLayer {
+                                        scaleX = if (isDraggingPill) 1.1f else 1f
+                                        scaleY = if (isDraggingPill) 1.1f else 1f
+                                    },
                                 contentAlignment = Alignment.Center
                             ) {
                                 Box(
@@ -561,12 +693,11 @@ private fun BottomBar(
                                         .size(itemSize)
                                         .background(
                                             color = MaterialTheme.colorScheme.secondaryContainer,
-                                            shape = MaterialTheme.shapes.large
+                                            shape = RoundedCornerShape(16.dp)
                                         )
                                 )
                             }
                         }
-                        
                         // Navigation items
                         Row(
                             modifier = Modifier.fillMaxSize(),
@@ -574,26 +705,15 @@ private fun BottomBar(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             visibleDestinations.forEachIndexed { index, destination ->
-                                    // Determine selection by checking if this is the effective selected index
-                                    val isSelected = index == effectiveSelectedIndex
-                                
+                                val isSelected = index == (if (isDraggingPill) dragTargetIndex else effectiveSelectedIndex)
+
                                 Box(
                                     modifier = Modifier
                                         .size(itemSize)
                                         .clip(MaterialTheme.shapes.large)
                                         .clickable {
-                                            // If already on this destination, do nothing to avoid reopening
                                             if (destination.direction.route == currentRoute) return@clickable
-
-                                            // Always recreate the destination to avoid keeping saved state
-                                            // which reduces memory usage by closing old destinations.
-                                            navigator.navigate(destination.direction) {
-                                                popUpTo(NavGraphs.root.startRoute) {
-                                                    saveState = true
-                                                }
-                                                launchSingleTop = true
-                                                restoreState = true
-                                            }
+                                            navigateToIndex(index)
                                         },
                                     contentAlignment = Alignment.Center
                                 ) {

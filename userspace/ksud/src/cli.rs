@@ -6,7 +6,7 @@ use android_logger::Config;
 use log::{LevelFilter, info};
 
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
-use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, utils};
+use crate::{apk_sign, assets, debug, defs, init_event, ksucalls, module, module_config, susfsd, utils};
 
 /// KernelSU Next userspace cli
 #[derive(Parser, Debug)]
@@ -39,7 +39,7 @@ enum Commands {
     /// Install KernelSU Next userspace component to system
     Install {
         #[arg(long, default_value = None)]
-        magiskboot: Option<PathBuf>,
+        libadbroot: Option<PathBuf>,
     },
 
     /// Unload KernelSU Next kernel module (LKM Only)
@@ -47,9 +47,8 @@ enum Commands {
 
     /// Uninstall KernelSU Next modules and itself(LKM Only)
     Uninstall {
-        /// magiskboot path, if not specified, will search from $PATH
-        #[arg(long, default_value = None)]
-        magiskboot: Option<PathBuf>,
+        #[arg(long, default_value_t = String::from("com.rifsxd.ksunext"))]
+        package_name: String,
     },
 
     /// SELinux policy Patch tool
@@ -103,6 +102,12 @@ enum Commands {
     /// Emulate soft reboot (ksud; zygote)
     #[command(name = "soft-reboot")]
     SoftReboot,
+
+    /// Susfs management
+    Susfs {
+        #[command(subcommand)]
+        command: SusfsAction,
+    },
 }
 
 #[derive(clap::Subcommand, Debug)]
@@ -265,8 +270,8 @@ enum Module {
         id: String,
     },
 
-    /// current mount system
-    Mount,
+    /// check metemodule status
+    Metamodule,
 
     /// list all modules
     List,
@@ -364,7 +369,7 @@ enum Profile {
 enum Feature {
     /// Get feature value and support status
     Get {
-        /// Feature ID or name (su_compat, kernel_umount)
+        /// Feature ID or name (su_compat, kernel_umount, sulog, adb_root, selinux_hide)
         id: String,
         /// Read from config file
         #[arg(long, default_value_t = false)]
@@ -384,7 +389,7 @@ enum Feature {
 
     /// Check feature status (supported/unsupported/managed)
     Check {
-        /// Feature ID or name (su_compat, kernel_umount)
+        /// Feature ID or name (su_compat, kernel_umount, sulog, adb_root, selinux_hide)
         id: String,
     },
 
@@ -430,6 +435,18 @@ enum UmountOp {
     Wipe,
 }
 
+#[derive(clap::Subcommand, Debug)]
+enum SusfsAction {
+    /// Show if susfs is supported
+    Support,
+    /// Show susfs version
+    Version,
+    /// Show susfs variant
+    Variant,
+    /// Show enabled features
+    Features,
+}
+
 pub fn run() -> Result<()> {
     android_logger::init_once(
         Config::default()
@@ -468,7 +485,7 @@ pub fn run() -> Result<()> {
                 Module::Enable { id } => module::enable_module(&id),
                 Module::Disable { id } => module::disable_module(&id),
                 Module::Action { id } => module::run_action(&id),
-                Module::Mount => module::mount_system(),
+                Module::Metamodule => module::is_metamodule_installed(),
                 Module::List => module::list_modules(),
                 Module::Config { command } => {
                     // Get module ID from environment variable
@@ -557,9 +574,9 @@ pub fn run() -> Result<()> {
                 }
             }
         }
-        Commands::Install { magiskboot } => utils::install(magiskboot),
+        Commands::Install { libadbroot } => utils::install(libadbroot),
         Commands::Unload => crate::unload::unload(),
-        Commands::Uninstall { magiskboot } => utils::uninstall(magiskboot),
+        Commands::Uninstall { package_name } => utils::uninstall(&package_name),
         Commands::Sepolicy { command } => match command {
             Sepolicy::Patch { sepolicy } => crate::sepolicy::live_patch(&sepolicy),
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
@@ -678,6 +695,13 @@ pub fn run() -> Result<()> {
             crate::resetprop::resetprop_main(&full_args)
         }
         Commands::SoftReboot => init_event::soft_reboot(),
+
+        Commands::Susfs { command } => match command {
+            SusfsAction::Support => susfsd::show_features(true),
+            SusfsAction::Version => susfsd::show_version(),
+            SusfsAction::Variant => susfsd::show_variant(),
+            SusfsAction::Features => susfsd::show_features(false),
+        },
 
         Commands::Kernel { command } => match command {
             Kernel::NukeExt4Sysfs { mnt } => ksucalls::nuke_ext4_sysfs(&mnt),

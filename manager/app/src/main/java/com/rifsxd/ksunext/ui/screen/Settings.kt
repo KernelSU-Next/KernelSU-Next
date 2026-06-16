@@ -3,6 +3,7 @@ package com.rifsxd.ksunext.ui.screen
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.system.OsConstants
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -112,14 +113,18 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         }
     }
 
-    var avcSpoofStatus by rememberSaveable { mutableStateOf("") }
     var suCompatStatus by rememberSaveable { mutableStateOf("") }
     var kernelUmountStatus by rememberSaveable { mutableStateOf("") }
+    var adbRootStatus by rememberSaveable { mutableStateOf("") }
+    var selinuxHideStatus by rememberSaveable { mutableStateOf("") }
+    var avcSpoofStatus by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
-        avcSpoofStatus = getFeatureStatus("avc_spoof")
         suCompatStatus = getFeatureStatus("su_compat")
         kernelUmountStatus = getFeatureStatus("kernel_umount")
+        adbRootStatus = getFeatureStatus("adb_root")
+        selinuxHideStatus = getFeatureStatus("selinux_hide")
+        avcSpoofStatus = getFeatureStatus("avc_spoof")
     }
 
     Scaffold(
@@ -151,7 +156,10 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 KernelFeaturesCard(
                     suCompatStatus = suCompatStatus,
                     kernelUmountStatus = kernelUmountStatus,
-                    avcSpoofStatus = avcSpoofStatus
+                    adbRootStatus = adbRootStatus,
+                    selinuxHideStatus = selinuxHideStatus,
+                    avcSpoofStatus = avcSpoofStatus,
+                    scope = scope
                 )
                 SecurityCard(
                     navigator = navigator,
@@ -178,7 +186,10 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 private fun KernelFeaturesCard(
     suCompatStatus: String,
     kernelUmountStatus: String,
-    avcSpoofStatus: String
+    adbRootStatus: String,
+    selinuxHideStatus: String,
+    avcSpoofStatus: String,
+    scope: kotlinx.coroutines.CoroutineScope
 ) {
     val context = LocalContext.current
 
@@ -242,6 +253,65 @@ private fun KernelFeaturesCard(
                         execKsud("feature save", true)
                         prefsLocal.edit { putInt("kernel_umount_mode", if (checked) 0 else 2) }
                         isKernelUmountEnabled = checked
+                    }
+                }
+            }
+
+            if (adbRootStatus == "supported") {
+                var isAdbRootEnabled by rememberSaveable {
+                    mutableStateOf(Natives.isAdbRootEnabled())
+                }
+                SwitchItem(
+                    icon = Icons.Filled.Usb,
+                    title = stringResource(id = R.string.settings_adb_root),
+                    summary = stringResource(id = R.string.settings_adb_root_summary),
+                    checked = isAdbRootEnabled,
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                ) { checked ->
+                    val prefsLocal = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                    if (Natives.setAdbRootEnabled(checked)) {
+                        execKsud("feature save", true)
+                        prefsLocal.edit { putInt("adb_root_mode", if (checked) 0 else 2) }
+                        com.topjohnwu.superuser.ShellUtils.fastCmd("setprop ctl.restart adbd")
+                        isAdbRootEnabled = checked
+                    }
+                }
+            }
+
+            if (selinuxHideStatus == "supported") {
+                var isSelinuxHideEnabled by rememberSaveable {
+                    mutableStateOf(Natives.isSelinuxHideEnabled())
+                }
+                SwitchItem(
+                    icon = Icons.Filled.Policy,
+                    title = stringResource(id = R.string.settings_selinux_hide),
+                    summary = stringResource(id = R.string.settings_selinux_hide_summary),
+                    checked = isSelinuxHideEnabled,
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+                ) { checked ->
+                    scope.launch(Dispatchers.IO) {
+                        val prefsLocal = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+                        val status = Natives.setSelinuxHideEnabled(checked)
+                        execKsud("feature save", true)
+                        prefsLocal.edit { putInt("selinux_hide_mode", if (checked) 0 else 2) }
+                        isSelinuxHideEnabled = checked
+                        when (status) {
+                            0 -> {}
+                            -OsConstants.EAGAIN -> {
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(context, R.string.settings_selinux_hide_reboot_required,
+                                        Toast.LENGTH_LONG).show()
+                                }
+                            }
+                            else -> {
+                                withContext(Dispatchers.Main) {
+                                    Toast.makeText(context, context.getString(R.string.settings_selinux_hide_failed, status),
+                                        Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        }
                     }
                 }
             }
