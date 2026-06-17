@@ -115,11 +115,13 @@ int ksu_observer_init(void)
 		return PTR_ERR(g);
 
 	ret = watch_one_dir(&g_watch);
+	if (ret)
+		pr_warn("observer: failed to watch /data/system: %d\n", ret);
 	pr_info("observer init done\n");
-	return 0;
+	return ret;
 }
 
-void __exit ksu_observer_exit(void)
+void ksu_observer_exit(void)
 {
 	unwatch_one_dir(&g_watch);
 	fsnotify_put_group(g);
