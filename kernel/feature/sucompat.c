@@ -80,6 +80,9 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user,
 		return 0;
 	}
 
+	if (unlikely(!filename_user))
+		return 0;
+
 	char path[sizeof(su) + 1];
 	memset(path, 0, sizeof(path));
 	strncpy_from_user_nofault(path, *filename_user, sizeof(path));
@@ -146,8 +149,6 @@ long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, 
 	if (likely(memcmp(path, su, sizeof(su))))
 		goto do_orig_execve;
 
-	write_sulog('x');
-
 	pr_info("sys_execve su found\n");
 	*filename_user = ksud_user_path();
 
@@ -161,7 +162,9 @@ long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, 
 	if (ret < 0) {
 		pr_err("failed to execve ksud as su: %ld, fallback to sh\n", ret);
 		*filename_user = sh_user_path();
+		write_sulog('x');
 	} else {
+		write_sulog('x');
 		return ret;
 	}
 
