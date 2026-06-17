@@ -260,15 +260,15 @@
   <string name="module_sort_stars_low_to_high">Sortuj (Małe → Duże)</string>
   <string name="module_sort_stars_high_to_low">Sortuj (Duże → Małe)</string>
   <string name="settings_adb_root">ADB Root</string>
-  <string name="settings_adb_root_summary">Run adbd daemon with root privileges</string>
-  <string name="settings_selinux_hide">Hide SELinux modification</string>
-  <string name="settings_selinux_hide_summary">Prevent applications from detecting SELinux modifications</string>
-  <string name="settings_selinux_hide_reboot_required">Reboot to take effect</string>
-  <string name="settings_selinux_hide_failed">Error: %d</string>
-  <string name="allow_shell">Always grant root to Shell</string>
-  <string name="allow_shell_summary">Always allow adb shell to call su. Do not enable this unless absolutely necessary.</string>
-  <string name="enable_adb">Force enable adb on boot</string>
-  <string name="enable_adb_summary">Force enable USB debugging and disable adb authentication. Do not enable this unless absolutely necessary.</string>
-  <string name="advanced_options">Advanced Options</string>
-  <string name="expand">Expand</string>
+  <string name="settings_adb_root_summary">Uruchom daemon adbd z uprawnieniami roota</string>
+  <string name="settings_selinux_hide">Ukryj modyfikacje zasad bezpieczeństwa</string>
+  <string name="settings_selinux_hide_summary">Zapobiegaj wykrywaniu modyfikacji zasad bezpieczeństwa przez aplikacje</string>
+  <string name="settings_selinux_hide_reboot_required">Zrestartuj, aby zastosować zmiany</string>
+  <string name="settings_selinux_hide_failed">Błąd: %d</string>
+  <string name="allow_shell">Zawsze udzielaj uprawnień roota dla powłoki</string>
+  <string name="allow_shell_summary">Zawsze zezwalaj powłoce adb na wywołanie su. Nie włączaj tej opcji, chyba że jest to absolutnie konieczne.</string>
+  <string name="enable_adb">Wymuś adb podczas uruchamiania</string>
+  <string name="enable_adb_summary">Wymuś włączenie debugowania USB i wyłącz uwierzytelnianie ADB. Nie włączaj tej opcji, chyba że jest to absolutnie konieczne.</string>
+  <string name="advanced_options">Opcje zaawansowane</string>
+  <string name="expand">Rozwiń</string>
 </resources>
