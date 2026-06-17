@@ -64,7 +64,6 @@ void write_sulog(uint8_t sym)
 	if (!sulog_buf_ptr)
 		return;
 
-	unsigned int offset = sulog_index_next * sizeof(struct sulog_entry);
 	struct sulog_entry entry = {0};
 
 	// WARNING!!! this is LE only!
@@ -72,23 +71,25 @@ void write_sulog(uint8_t sym)
 	entry.data = (uint32_t)current_uid().val;
 	*((char *)&entry.data + 3) = sym;
 
-	// we can perform this write atomic on 64-bit
-	// however this still has to be locked for exclusion as theres a reader
-
 	spin_lock(&sulog_lock);
+
+	// offset must be computed inside the lock: if two callers race and both
+	// read sulog_index_next before either increments it, they will compute
+	// the same offset and one entry will be silently overwritten.
+	unsigned int offset = sulog_index_next * sizeof(struct sulog_entry);
 
 #ifdef CONFIG_64BIT
 	*(volatile uint64_t *)(sulog_buf_ptr + offset) = *(volatile uint64_t *)&entry;
 #else
 	__builtin_memcpy(sulog_buf_ptr + offset, &entry, sizeof(entry));
 #endif
-	spin_unlock(&sulog_lock);
 
-	// move ptr for next iteration
+	// increment must also be inside the lock for the same reason
 	sulog_index_next = sulog_index_next + 1;
-
 	if (sulog_index_next >= SULOG_ENTRY_MAX)
 		sulog_index_next = 0;
+
+	spin_unlock(&sulog_lock);
 }
 
 struct sulog_entry_rcv_ptr {
