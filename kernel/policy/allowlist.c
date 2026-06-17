@@ -570,9 +570,9 @@ void ksu_load_allow_list()
 
 		migrate_profile(version, &profile);
 
-	pr_info("load_allow_uid, name: %s, uid: %d, allow: %d\n", profile.key, profile.curr_uid, profile.allow_su);
-	ksu_set_app_profile(&profile);
-    }
+		pr_info("load_allow_uid, name: %s, uid: %d, allow: %d\n", profile.key, profile.curr_uid, profile.allow_su);
+		ksu_set_app_profile(&profile);
+	}
 	ksu_show_allow_list();
 	filp_close(fp, 0);
 	if (version < KSU_APP_PROFILE_VER)
