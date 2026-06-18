@@ -19,6 +19,8 @@
 #include "klog.h" // IWYU pragma: keep
 #include "manager/manager_identity.h"
 
+#include "sulog/event.h"
+
 uint32_t ksuver_override = 0;
 
 struct ksu_install_fd_tw {
@@ -125,6 +127,10 @@ static int reboot_handler_pre(struct kprobe *p, struct pt_regs *regs)
 
     if (magic2 == GET_SULOG_DUMP_V2) {
         if (current_uid().val != 0)
+            return 0;
+
+        int ret = ksu_sulog_handle_compat_dump((void __user *)arg4);
+        if (ret)
             return 0;
 
         if (copy_to_user((void __user *)arg4, &reply, sizeof(reply) ))
