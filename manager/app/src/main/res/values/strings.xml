@@ -13,7 +13,7 @@
     <string name="home_not_installed">Not installed</string>
     <string name="home_click_to_install">Click to install</string>
     <string name="home_working">Working</string>
-    <string name="home_working_version">Version: %s</string>
+    <string name="home_working_version">Version: %1$s (%2$d)</string>
     <string name="home_module_update_count">Updates: %d</string>
     <string name="home_failure">Unsupported | Not integrated</string>
     <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate KernelSU-Next legacy driver in your kernel!</string>

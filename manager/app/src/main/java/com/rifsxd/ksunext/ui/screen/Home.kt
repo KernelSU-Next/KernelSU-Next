@@ -880,7 +880,8 @@ private fun StatusCard(
                         val uapiVer = uapiVerParam ?: 0
                         val versionText = stringResource(
                             R.string.home_working_version,
-                            "$ksuVer-$uapiVer"
+                            "$ksuVer-$uapiVer",
+                            ksuVer
                         )
                         Text(
                             text = versionText,
