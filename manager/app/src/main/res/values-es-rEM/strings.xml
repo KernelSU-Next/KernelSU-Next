@@ -237,7 +237,7 @@
   <string name="settings_enable_avc_spoof_summary">Se soluciona la fuga de contenido de Selinux causada por la denegación de Avc en el registro de auditoría.</string>
   <string name="manage_repositories">Gestionar repositorios</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">%2$d</string>
+  <string name="require_kernel_version">La versión actual de KernelSU-Next %1$d es demasiado antigua. ¡Actualice a la versión %2$d o superior!</string>
   <string name="profile_umount_modules_summary">Activar esta opción permitirá a KernelSU Next restaurar cualquier archivo modificado por los módulos para esta apliacion.</string>
   <string name="settings_uninstall_temporary_message">Desinstalar temporalmente KernelSU Next, restaurar al estado original después del próximo reinicio.</string>
   <string name="settings_uninstall_permanent_message">Desinstalar KernelSU Next (root y todos los módulos) de forma completa y permanente.</string>
