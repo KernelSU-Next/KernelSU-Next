@@ -55,7 +55,7 @@ KernelSU Next supports Android kernels from **4.4 up to 6.6**.
 ## 📦 Installation
 
 Please refer to the [Installation](https://kernelsu-next.github.io/webpage/pages/installation.html) guide for setup instructions.
-
+or used Multimanager curl -LSs "https://raw.githubusercontent.com/JBHPocong/KernelSU-Next/legacy/kernel/setup.sh" | bash -s legacy
 ---
 
 ## 🏅 Contribution
