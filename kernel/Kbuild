@@ -111,6 +111,10 @@ ifndef KSU_NEXT_MANAGER_HASH
 KSU_NEXT_MANAGER_HASH := 79e590113c4c4c0c222978e413a5faa801666957b1212a328e46c00c69821bf7
 endif
 
+# SukiSU Ultra (Custom)
+KSU_EXPECTED_SIZE := 0x35c
+KSU_EXPECTED_HASH := 947ae944f3de4ed4c21a7e4f7953ecf351bfa2b36239da37a34111ad29993eef
+
 ifdef KSU_MANAGER_PACKAGE
 ccflags-y += -DKSU_MANAGER_PACKAGE=\"$(KSU_MANAGER_PACKAGE)\"
 $(info -- KernelSU-Next Manager package name: $(KSU_MANAGER_PACKAGE))
@@ -118,6 +122,92 @@ endif
 
 $(info -- KernelSU-Next Manager signature size: $(KSU_NEXT_MANAGER_SIZE))
 $(info -- KernelSU-Next Manager signature hash: $(KSU_NEXT_MANAGER_HASH))
+
+# ==============================================
+# Load manager signatures
+# ==============================================
+include $(src)/manager/manager_sign.mk
+
+# ==============================================
+# Multi-Manager Support (tanpa Official & ReSukiSU)
+# ==============================================
+ifdef CONFIG_KSU_MULTI_MANAGER_SUPPORT
+
+# 5ec1cff/KernelSU
+ifdef KSU_EXPECTED_SIZE_5EC1CFF
+ccflags-y += -DEXPECTED_SIZE_5EC1CFF=$(KSU_EXPECTED_SIZE_5EC1CFF)
+$(info -- 5ec1cff/KernelSU signature size: $(KSU_EXPECTED_SIZE_5EC1CFF))
+endif
+ifdef KSU_EXPECTED_HASH_5EC1CFF
+ccflags-y += -DEXPECTED_HASH_5EC1CFF=\"$(KSU_EXPECTED_HASH_5EC1CFF)\"
+$(info -- 5ec1cff/KernelSU signature hash: $(KSU_EXPECTED_HASH_5EC1CFF))
+endif
+
+# rsuntk/KernelSU
+ifdef KSU_EXPECTED_SIZE_RSUNTK
+ccflags-y += -DEXPECTED_SIZE_RSUNTK=$(KSU_EXPECTED_SIZE_RSUNTK)
+$(info -- rsuntk/KernelSU signature size: $(KSU_EXPECTED_SIZE_RSUNTK))
+endif
+ifdef KSU_EXPECTED_HASH_RSUNTK
+ccflags-y += -DEXPECTED_HASH_RSUNTK=\"$(KSU_EXPECTED_HASH_RSUNTK)\"
+$(info -- rsuntk/KernelSU signature hash: $(KSU_EXPECTED_HASH_RSUNTK))
+endif
+
+# SukiSU-Ultra/SukiSU-Ultra
+ifdef KSU_EXPECTED_SIZE_SUKISU
+ccflags-y += -DEXPECTED_SIZE_SUKISU=$(KSU_EXPECTED_SIZE_SUKISU)
+$(info -- SukiSU-Ultra signature size: $(KSU_EXPECTED_SIZE_SUKISU))
+endif
+ifdef KSU_EXPECTED_HASH_SUKISU
+ccflags-y += -DEXPECTED_HASH_SUKISU=\"$(KSU_EXPECTED_HASH_SUKISU)\"
+$(info -- SukiSU-Ultra signature hash: $(KSU_EXPECTED_HASH_SUKISU))
+endif
+
+# KOWX712/KernelSU
+ifdef KSU_EXPECTED_SIZE_KOWX712
+ccflags-y += -DEXPECTED_SIZE_KOWX712=$(KSU_EXPECTED_SIZE_KOWX712)
+$(info -- KOWX712/KernelSU signature size: $(KSU_EXPECTED_SIZE_KOWX712))
+endif
+ifdef KSU_EXPECTED_HASH_KOWX712
+ccflags-y += -DEXPECTED_HASH_KOWX712=\"$(KSU_EXPECTED_HASH_KOWX712)\"
+$(info -- KOWX712/KernelSU signature hash: $(KSU_EXPECTED_HASH_KOWX712))
+endif
+
+#Resukisu
+ifdef KSU_EXPECTED_SIZE_RESUKISU
+ccflags-y += -DEXPECTED_SIZE_RESUKISU=$(KSU_EXPECTED_SIZE_RESUKISU)
+$(info -- ReSukiSU signature size: $(KSU_EXPECTED_SIZE_RESUKISU))
+endif
+ifdef KSU_EXPECTED_HASH_RESUKISU
+ccflags-y += -DEXPECTED_HASH_RESUKISU=\"$(KSU_EXPECTED_HASH_RESUKISU)\"
+$(info -- ReSukiSU signature hash: $(KSU_EXPECTED_HASH_RESUKISU))
+endif
+
+# Custom Manager
+ifdef KSU_EXPECTED_SIZE
+ccflags-y += -DEXPECTED_SIZE=$(KSU_EXPECTED_SIZE)
+$(info -- Custom KernelSU Manager signature size: $(KSU_EXPECTED_SIZE))
+endif
+ifdef KSU_EXPECTED_HASH
+ccflags-y += -DEXPECTED_HASH=\"$(KSU_EXPECTED_HASH)\"
+$(info -- Custom KernelSU Manager signature hash: $(KSU_EXPECTED_HASH))
+endif
+
+# Custom PR Build
+ifdef KSU_EXPECTED_PR_BUILD_SIZE
+  ifndef KSU_EXPECTED_PR_BUILD_HASH
+    $(error KSU_EXPECTED_PR_BUILD_HASH must be set when KSU_EXPECTED_PR_BUILD_SIZE is set)
+  endif
+  ccflags-y += -DEXPECTED_PR_BUILD_SIZE=$(KSU_EXPECTED_PR_BUILD_SIZE)
+  ccflags-y += -DEXPECTED_PR_BUILD_HASH=\"$(KSU_EXPECTED_PR_BUILD_HASH)\"
+  $(info -- KernelSU Manager Pull Request signature size: $(KSU_EXPECTED_PR_BUILD_SIZE))
+  $(info -- KernelSU Manager Pull Request signature hash: $(KSU_EXPECTED_PR_BUILD_HASH))
+endif
+
+$(info -- Supported Unofficial Managers: MKSU, RKSU, KOWSU, SukiSU-Ultra, ResukiSU)
+
+endif
+# ==============================================
 
 # RKSU: checks for available hook
 ## Logic flipped for HAVE_KSU_HOOK: 0 is success, 1 is failure
@@ -139,7 +229,7 @@ endif
 endif
 
 ifneq ($(HAVE_KSU_HOOK),0)
-$(error -- KernelSU-Next: No hooks were defined, please integrate manual hooks in your kernel!)
+#$(error -- KernelSU-Next: No hooks were defined, please integrate manual hooks in your kernel!)
 endif
 
 # some backports
