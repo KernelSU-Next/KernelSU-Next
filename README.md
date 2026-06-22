@@ -93,4 +93,4 @@ If you'd like to support the project:
 - [Diamorphine](https://github.com/m0nad/Diamorphine) – Rootkit techniques
 - [KernelSU](https://github.com/tiann/KernelSU) – The original base that made KernelSU Next possible
 - [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs) – For Magic Mount support
-- [Multimanager] (JuBaHPocong) – Implementation Multimanager
+- [JuBaHPocong] – Implementation Multimanager
