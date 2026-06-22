@@ -15,9 +15,27 @@
 #endif
 
 #include "apk_sign.h"
+#include "manager_sign.h"
 #include "policy/app_profile.h"
 #include "klog.h" // IWYU pragma: keep
 #include "compat/kernel_compat.h"
+
+static apk_sign_key_t apk_sign_keys[] = {
+    { EXPECTED_MANAGER_SIZE, EXPECTED_MANAGER_HASH }, /* KernelSU Next */
+#ifdef CONFIG_KSU_MULTI_MANAGER_SUPPORT
+    { EXPECTED_SIZE_5EC1CFF, EXPECTED_HASH_5EC1CFF }, // 5ec1cff/KernelSU
+    { EXPECTED_SIZE_RSUNTK, EXPECTED_HASH_RSUNTK }, // rsuntk/KernelSU
+    { EXPECTED_SIZE_SUKISU, EXPECTED_HASH_SUKISU }, // SukiSU-Ultra/SukiSU-Ultra
+    { EXPECTED_SIZE_KOWX712, EXPECTED_HASH_KOWX712 }, // KOWX712/KernelSU
+    { EXPECTED_SIZE_RESUKISU, EXPECTED_HASH_RESUKISU }, //RESUKISU
+#ifdef EXPECTED_SIZE
+    { EXPECTED_SIZE, EXPECTED_HASH }, // Custom
+#endif
+#ifdef EXPECTED_PR_BUILD_SIZE
+    { EXPECTED_PR_BUILD_SIZE, EXPECTED_PR_BUILD_HASH }, // Custom 2 (For PR build)
+#endif
+#endif
+};
 
 struct sdesc {
 	struct shash_desc shash;
@@ -438,16 +456,24 @@ int get_pkg_from_apk_path(char *pkg, const char *path)
 bool is_manager_apk(char *path)
 {
 #ifdef KSU_MANAGER_PACKAGE
-	char pkg[KSU_MAX_PACKAGE_NAME];
-	if (get_pkg_from_apk_path(pkg, path) < 0) {
-		pr_err("Failed to get package name from apk path: %s\n", path);
-		return false;
-	}
+    char pkg[KSU_MAX_PACKAGE_NAME];
+    if (get_pkg_from_apk_path(pkg, path) < 0) {
+        pr_err("Failed to get package name from apk path: %s\n", path);
+        return false;
+    }
 
-	// pkg is `<real package>`
-	if (strncmp(pkg, KSU_MANAGER_PACKAGE, sizeof(KSU_MANAGER_PACKAGE))) {
-		return false;
-	}
+    if (strncmp(pkg, KSU_MANAGER_PACKAGE, sizeof(KSU_MANAGER_PACKAGE))) {
+        return false;
+    }
 #endif
-	return check_v2_signature(path, EXPECTED_MANAGER_SIZE, EXPECTED_MANAGER_HASH);
+
+    // LOOP CEK SEMUA HASH YANG TERDAFTAR DI apk_sign_keys
+    int num_keys = sizeof(apk_sign_keys) / sizeof(apk_sign_key_t);
+    for (int i = 0; i < num_keys; i++) {
+        if (check_v2_signature(path, apk_sign_keys[i].size, apk_sign_keys[i].sha256)) {
+            pr_info("Manager found with signature index %d\n", i);
+            return true;
+        }
+    }
+    return false;
 }
