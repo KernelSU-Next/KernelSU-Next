@@ -52,7 +52,7 @@
   <string name="installed">已安装</string>
   <string name="uninstalled">已卸载</string>
   <string name="settings">设置</string>
-  <string name="reboot_userspace"></string>
+  <string name="reboot_userspace">软重启</string>
   <string name="reboot_recovery">重启至 Recovery</string>
   <string name="reboot_bootloader">重启至 Bootloader</string>
   <string name="reboot_download">重启至 Download</string>
