@@ -103,7 +103,7 @@
   <string name="profile_capabilities">Возможности</string>
   <string name="profile_selinux_context">Контекст SELinux</string>
   <string name="profile_umount_modules">Размонтировать модули</string>
-  <string name="failed_to_update_app_profile">Не удалось обновить профиль приложения для %s</string>
+  <string name="failed_to_update_app_profile">Не удалось обновить профиль приложения для </string>
   <string name="settings_umount_modules_default">Размонтировать модули</string>
   <string name="settings_umount_modules_default_summary">Глобальное значение по умолчанию для параметра \"Размонтировать модули\" в профиле приложения. Если этот параметр включён, то все изменения, внесённые модулями, будут скрыты для приложений без установленного профиля.</string>
   <string name="profile_selinux_domain">Домен</string>
@@ -126,7 +126,8 @@
   <string name="su_not_allowed">Предоставление прав суперпользователя запрещено для: %s</string>
   <string name="module_changelog">Журнал изменений</string>
   <string name="settings_profile_template">Шаблон доступа</string>
-  <string name="settings_profile_template_summary">Управление локальными и онлайн шаблонами root-доступа.</string>
+  <string name="settings_profile_template_summary">
+правление локальными и онлайн шаблонами root-доступа.</string>
   <string name="app_profile_template_create">Создать шаблон</string>
   <string name="app_profile_template_edit">Изменить шаблон</string>
   <string name="app_profile_template_id">ID</string>
@@ -261,13 +262,13 @@
   <string name="settings_adb_root">ADB Root</string>
   <string name="settings_adb_root_summary">Run adbd daemon with root privileges</string>
   <string name="settings_selinux_hide">Hide SELinux modification</string>
-  <string name="settings_selinux_hide_summary">Prevent applications from detecting SELinux modifications</string>
-  <string name="settings_selinux_hide_reboot_required">Reboot to take effect</string>
-  <string name="settings_selinux_hide_failed">Error: %d</string>
-  <string name="allow_shell">Always grant root to Shell</string>
+  <string name="settings_selinux_hide_summary">57</string>
+  <string name="settings_selinux_hide_reboot_required">21</string>
+  <string name="settings_selinux_hide_failed">5</string>
+  <string name="allow_shell">26</string>
   <string name="allow_shell_summary">Always allow adb shell to call su. Do not enable this unless absolutely necessary.</string>
-  <string name="enable_adb">Force enable adb on boot</string>
-  <string name="enable_adb_summary">Force enable USB debugging and disable adb authentication. Do not enable this unless absolutely necessary.</string>
-  <string name="advanced_options">Advanced Options</string>
-  <string name="expand">Expand</string>
+  <string name="enable_adb">24</string>
+  <string name="enable_adb_summary">106</string>
+  <string name="advanced_options">16</string>
+  <string name="expand">6</string>
 </resources>
