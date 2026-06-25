@@ -100,7 +100,7 @@ static inline ssize_t __strscpy_pad(char *dest, const char *src, size_t count)
     if (count == 0)
         return -E2BIG;
 
-    strncpy(dest, src, count);
+    memcpy(dest, src, count);
     dest[count - 1] = '\0';
     return strlen(dest);
 #endif
