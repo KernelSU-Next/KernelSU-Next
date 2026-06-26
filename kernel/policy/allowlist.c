@@ -32,7 +32,7 @@
 #include "compat/kernel_compat.h"
 
 #define FILE_MAGIC 0x7f4b5355 // ' KSU', u32
-#define FILE_FORMAT_VERSION 3 // u32
+#define FILE_FORMAT_VERSION 4 // u32
 
 #define KSU_APP_PROFILE_PRESERVE_UID 9999 // NOBODY_UID
 #define KSU_DEFAULT_SELINUX_DOMAIN "u:r:" KERNEL_SU_DOMAIN ":s0"
@@ -79,6 +79,7 @@ static void init_default_profiles()
 
 	// This means that we will umount modules by default!
 	default_non_root_profile.umount_modules = true;
+    	default_root_profile.flags = 0;
 }
 
 struct perm_data {
@@ -157,19 +158,12 @@ static bool profile_valid(struct app_profile *profile)
 		return false;
 	}
 
-	bool need_migrate_su_domain = false;
-
-	if (unlikely(profile->version == 2)) {
-		profile->version = KSU_APP_PROFILE_VER;
-		need_migrate_su_domain = true;
-	}
-
 	if (strnlen(profile->key, sizeof(profile->key)) >= sizeof(profile->key)) {
 		pr_err("invalid app_profile key\n");
 		return false;
 	}
 
-	if (profile->version < KSU_APP_PROFILE_VER) {
+	if (profile->version != KSU_APP_PROFILE_VER) {
 		pr_info("Unsupported profile version: %d\n", profile->version);
 		return false;
 	}
@@ -181,15 +175,8 @@ static bool profile_valid(struct app_profile *profile)
 			return false;
 		}
 
-		char *domain = profile->rp_config.profile.selinux_domain;
 		static const size_t domain_len = sizeof(profile->rp_config.profile.selinux_domain);
-		if (unlikely(need_migrate_su_domain)) {
-			if (strncmp(domain, "u:r:su:s0", domain_len) == 0) {
-				__strscpy_pad(domain, KSU_DEFAULT_SELINUX_DOMAIN, domain_len);
-				pr_info("migrated profile domain: %s\n", profile->key);
-			}
-		}
-		size_t len = strnlen(domain, domain_len);
+		size_t len = strnlen(profile->rp_config.profile.selinux_domain, domain_len);
 
 		if (len == 0 || len >= domain_len) {
 			pr_err("invalid selinux_domain in app_profile: %s\n", profile->key);
@@ -314,6 +301,31 @@ out:
 out_unlock:
     mutex_unlock(&allowlist_mutex);
     return result;
+}
+
+static void migrate_profile(u32 version, struct app_profile *profile)
+{
+    char *domain;
+    static const size_t domain_len = sizeof(profile->rp_config.profile.selinux_domain);
+
+    switch (version) {
+    case 2:
+        if (profile->allow_su) {
+            domain = profile->rp_config.profile.selinux_domain;
+            if (strncmp(domain, "u:r:su:s0", domain_len) == 0) {
+                strscpy_pad(domain, KSU_DEFAULT_SELINUX_DOMAIN, domain_len);
+                pr_info("migrated domain of profile: %s\n", profile->key);
+            }
+        }
+        fallthrough;
+    case 3:
+        if (profile->allow_su) {
+            profile->rp_config.profile.flags = FLAG_KSU_NO_NEW_PRIVS;
+        }
+        break;
+    }
+
+    profile->version = KSU_APP_PROFILE_VER;
 }
 
 bool __ksu_is_allow_uid(uid_t uid)
@@ -509,6 +521,7 @@ void ksu_load_allow_list()
 	struct file *fp = NULL;
 	u32 magic;
 	u32 version;
+    size_t app_profile_size;
 
 #ifdef CONFIG_KSU_DEBUG
 	// always allow adb shell by default
@@ -534,22 +547,40 @@ void ksu_load_allow_list()
 		goto exit;
 	}
 
+    if (version < 2 || version > KSU_APP_PROFILE_VER) {
+		pr_err("invalid allowlist version: %d\n", version);
+		goto exit;
+	}
+
 	pr_info("allowlist version: %d\n", version);
+
+
+	static const size_t kAppProfileSizePreV4 = 776;
+	app_profile_size = version < KSU_APP_PROFILE_VER ? kAppProfileSizePreV4 : sizeof(struct app_profile);
 
 	while (true) {
 		struct app_profile profile;
 
-		ret = ksu_kernel_read_compat(fp, &profile, sizeof(profile), &off);
+		ret = ksu_kernel_read_compat(fp, &profile, app_profile_size, &off);
 
-		if (ret <= 0) {
-			pr_info("load_allow_list read err: %zd\n", ret);
+		if (ret != app_profile_size) {
+			if (ret != 0)
+				pr_info("load_allow_list read err: %zd\n", ret);
 			break;
 		}
+
+        migrate_profile(version, &profile);
 
         pr_info("load_allow_uid, name: %s, uid: %d, allow: %d\n", profile.key,
                 profile.current_uid, profile.allow_su);
         ksu_set_app_profile(&profile);
     }
+
+	ksu_show_allow_list();
+	filp_close(fp, 0);
+	if (version < KSU_APP_PROFILE_VER)
+		ksu_persistent_allow_list();
+	return;
 
 exit:
 	ksu_show_allow_list();
