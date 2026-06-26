@@ -2,6 +2,7 @@ kernelsu-objs := core/init.o
 
 kernelsu-objs += compat/kernel_compat.o
 kernelsu-objs += feature/kernel_umount.o
+kernelsu-objs += feature/sulog.o
 kernelsu-objs += feature/sucompat.o
 
 kernelsu-objs += hook/hook_manager.o
@@ -11,6 +12,7 @@ kernelsu-objs += extras.o
 kernelsu-objs += tiny_sulog.o
 
 kernelsu-objs += infra/file_wrapper.o
+kernelsu-objs += infra/event_queue.o
 kernelsu-objs += infra/seccomp_cache.o
 kernelsu-objs += infra/su_mount_ns.o
 
@@ -30,6 +32,9 @@ kernelsu-objs += runtime/ksud_integration.o
 kernelsu-objs += selinux/selinux.o
 kernelsu-objs += selinux/rules.o
 kernelsu-objs += selinux/sepolicy.o
+
+kernelsu-objs += sulog/event.o
+kernelsu-objs += sulog/fd.o
 
 kernelsu-objs += supercall/dispatch.o
 kernelsu-objs += supercall/perm.o

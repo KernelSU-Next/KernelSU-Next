@@ -17,6 +17,7 @@
 #include "runtime/ksud_boot.h"
 #include "supercall/supercall.h"
 #include "ksu.h"
+#include "feature/sulog.h"
 #include "infra/file_wrapper.h"
 #include "selinux/selinux.h"
 
@@ -98,6 +99,8 @@ int __init kernelsu_init(void)
 
 	ksu_feature_init();
 
+	ksu_sulog_init();
+
 	ksu_supercalls_init();
 
 	
@@ -175,6 +178,8 @@ void __exit kernelsu_exit(void)
 	ksu_throne_tracker_exit();
 
 	ksu_allowlist_exit();
+
+	ksu_sulog_exit();
 
 	ksu_feature_exit();
 
