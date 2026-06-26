@@ -80,7 +80,7 @@
   <string name="unavailable">No disponible</string>
   <string name="module_restore">Restaurar módulo</string>
   <string name="module_restore_message">Restaurar módulos desde una copia de seguridad reciente.</string>
-  <string name="backup_restore">Copia de seguridad y Restauración</string>
+  <string name="backup_restore">Copia de seguridad &amp; Restauración</string>
   <string name="module_backup">Respaldar módulo</string>
   <string name="module_backup_message">Respaldar los módulos actualmente instalados.</string>
   <string name="allowlist_restore">Restaurar lista blanca</string>
@@ -162,7 +162,7 @@
   <string name="install_inactive_slot">Instalar al ranura inactiva (Después de OTA)</string>
   <string name="install_inactive_slot_warning">¡Tu dispositivo será **FORZADO** a iniciar en la ranura inactiva actual después de reiniciar!\nUsa esta opción solo después de haber realizado una OTA.\n¿Continuar?</string>
   <string name="install_next">Siguiente</string>
-  <string name="select_file_tip">Se recomienda la imagen de partición %1$s!</string>
+  <string name="select_file_tip">¡Se recomienda la imagen de partición %1$s!</string>
   <string name="select_kmi">Seleccionar KMI</string>
   <string name="settings_uninstall">Desinstalar</string>
   <string name="settings_uninstall_temporary">Desinstalar temporalmente</string>
@@ -237,7 +237,7 @@
   <string name="settings_enable_avc_spoof_summary">Se soluciona la fuga de contenido de Selinux causada por la denegación de Avc en el registro de auditoría.</string>
   <string name="manage_repositories">Gestionar repositorios</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">La versión actual de KernelSU-Next %1$d es demasiado antigua. ¡Actualice a la versión %2$d o superior!</string>
+  <string name="require_kernel_version">La versión actual de KernelSU-Next %1$d es demasiado baja para que el administrador funcione correctamente. ¡Actualice a la versión %2$d o superior!</string>
   <string name="profile_umount_modules_summary">Activar esta opción permitirá a KernelSU Next restaurar cualquier archivo modificado por los módulos para esta apliacion.</string>
   <string name="settings_uninstall_temporary_message">Desinstalar temporalmente KernelSU Next, restaurar al estado original después del próximo reinicio.</string>
   <string name="settings_uninstall_permanent_message">Desinstalar KernelSU Next (root y todos los módulos) de forma completa y permanente.</string>
@@ -259,15 +259,15 @@
   <string name="module_sort_stars_low_to_high">Ordenar (Menor → Mayor)</string>
   <string name="module_sort_stars_high_to_low">Ordenar (Mayor → Menor)</string>
   <string name="settings_adb_root">ADB Root</string>
-  <string name="settings_adb_root_summary">Run adbd daemon with root privileges</string>
-  <string name="settings_selinux_hide">Hide SELinux modification</string>
-  <string name="settings_selinux_hide_summary">Prevent applications from detecting SELinux modifications</string>
-  <string name="settings_selinux_hide_reboot_required">Reboot to take effect</string>
+  <string name="settings_adb_root_summary">Ejecuta demonio adbd con privilegios de root</string>
+  <string name="settings_selinux_hide">Ocultar modificación de SELinux</string>
+  <string name="settings_selinux_hide_summary">Evitar que las aplicaciones detecten modificaciones de SELinux</string>
+  <string name="settings_selinux_hide_reboot_required">Reiniciar para que surta efecto</string>
   <string name="settings_selinux_hide_failed">Error: %d</string>
-  <string name="allow_shell">Always grant root to Shell</string>
-  <string name="allow_shell_summary">Always allow adb shell to call su. Do not enable this unless absolutely necessary.</string>
-  <string name="enable_adb">Force enable adb on boot</string>
-  <string name="enable_adb_summary">Force enable USB debugging and disable adb authentication. Do not enable this unless absolutely necessary.</string>
-  <string name="advanced_options">Advanced Options</string>
-  <string name="expand">Expand</string>
+  <string name="allow_shell">Siempre otorgar root al Shell</string>
+  <string name="allow_shell_summary">Permitir siempre que el shell adb llame a su. No habilitar esto a menos que sea absolutamente necesario.</string>
+  <string name="enable_adb">Forzar la activación de adb al arrancar</string>
+  <string name="enable_adb_summary">Forzar la activación de la depuración USB y deshabilitar la autenticación adb. No lo habilite a menos que sea absolutamente necesario.</string>
+  <string name="advanced_options">Opciones Avanzadas</string>
+  <string name="expand">Expandir</string>
 </resources>
