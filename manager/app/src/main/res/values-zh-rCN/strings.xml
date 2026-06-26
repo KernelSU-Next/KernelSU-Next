@@ -12,7 +12,7 @@
   <string name="home_not_installed">未安装</string>
   <string name="home_click_to_install">点击安装</string>
   <string name="home_working">工作中</string>
-  <string name="home_working_version">版本：%s</string>
+  <string name="home_working_version">版本：%1$s (%2$d)</string>
   <string name="home_module_update_count">%d 个模块可更新</string>
   <string name="home_failure">不支持 | 未集成</string>
   <string name="home_failure_tip">不支持非 GKI 内核。请将 KernelSU-Next 传统驱动程序集成到您的内核中！</string>
@@ -31,8 +31,6 @@
   <string name="selinux_status_permissive">宽容模式</string>
   <string name="selinux_status_unknown">未知</string>
   <string name="superuser">超级用户</string>
-  <string name="feature_status_unsupported_summary">内核不支持此功能</string>
-  <string name="feature_status_managed_summary">此功能由模块管理</string>
   <string name="module_failed_to_enable">启用模块失败：%s</string>
   <string name="module_failed_to_disable">禁用模块失败：%s</string>
   <string name="module_empty">未安装模块</string>
@@ -52,7 +50,7 @@
   <string name="installed">已安装</string>
   <string name="uninstalled">已卸载</string>
   <string name="settings">设置</string>
-  <string name="reboot_userspace">软重启</string>
+  <string name="reboot_userspace"></string>
   <string name="reboot_recovery">重启至 Recovery</string>
   <string name="reboot_bootloader">重启至 Bootloader</string>
   <string name="reboot_download">重启至 Download</string>
@@ -102,13 +100,10 @@
   <string name="profile_namespace_global">全局</string>
   <string name="profile_namespace_individual">独立</string>
   <string name="profile_groups">组</string>
-  <string name="profile_flags">标签</string>
   <string name="profile_capabilities">权能</string>
   <string name="profile_selinux_context">SELinux 上下文</string>
   <string name="profile_umount_modules">卸载模块</string>
   <string name="failed_to_update_app_profile">更新 %s 的 App Profile 失败</string>
-  <string name="uapi_mismatch">管理器 uapi 版本 (%1$d) 与 KernelSU 驱动 uapi 版本 (%2$d) 不匹配。</string>
-  <string name="require_manager_version">当前 KernelSU 管理器版本 %1$d 过低，KernelSU 无法正常工作. 请将 KernelSU 管理器版本升级至 %2$d 或以上!</string>
   <string name="settings_umount_modules_default">默认卸载模块</string>
   <string name="settings_umount_modules_default_summary">App Profile 中“卸载模块”的全局默认值，如果启用，将会为没有设置 Profile 的应用移除所有模块针对系统的修改。</string>
   <string name="profile_selinux_domain">域</string>
@@ -275,5 +270,4 @@
   <string name="enable_adb_summary">Force enable USB debugging and disable adb authentication. Do not enable this unless absolutely necessary.</string>
   <string name="advanced_options">Advanced Options</string>
   <string name="expand">Expand</string>
-  <string name="profile_flags_desc_no_new_privs">禁止从此 Root Profile 的上下文中通过 KernelSU 进一步提升权限</string>
 </resources>
