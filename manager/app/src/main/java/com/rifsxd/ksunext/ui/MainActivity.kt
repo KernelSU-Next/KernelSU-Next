@@ -61,6 +61,7 @@ import com.ramcosta.composedestinations.generated.destinations.SuperUserScreenDe
 import com.ramcosta.composedestinations.generated.destinations.SettingScreenDestination
 import com.ramcosta.composedestinations.utils.isRouteOnBackStackAsState
 import com.ramcosta.composedestinations.utils.rememberDestinationsNavigator
+import com.ramcosta.composedestinations.generated.destinations.SulogScreenDestination
 import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.ui.screen.BottomBarDestination
@@ -334,6 +335,7 @@ class MainActivity : ComponentActivity() {
                 val showBottomBar = when (currentDestination?.route) {
                     FlashScreenDestination.route -> false // Hide for FlashScreenDestination
                     ExecuteModuleActionScreenDestination.route -> false // Hide for ExecuteModuleActionScreen
+                    SulogScreenDestination.route -> false
                     else -> !isScrollingDown.value
                 }
 
