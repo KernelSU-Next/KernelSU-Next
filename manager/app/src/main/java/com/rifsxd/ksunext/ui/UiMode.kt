@@ -3,8 +3,8 @@ package com.rifsxd.ksunext.ui
 import androidx.compose.runtime.staticCompositionLocalOf
 
 enum class UiMode(val value: String) {
-    Miuix("miuix"),
-    Material("material");
+    Material("material"),
+    Miuix("miuix");
 
     companion object {
         fun fromValue(value: String): UiMode = when (value) {

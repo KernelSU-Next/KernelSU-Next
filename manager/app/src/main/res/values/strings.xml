@@ -275,4 +275,11 @@
     <string name="download_install">Install</string>
     <string name="settings_adb_root" translatable="false">ADB Root</string>
     <string name="settings_adb_root_summary">Run adbd daemon with root privileges</string>
+    <string name="unavailable">Unavailable</string>
+    <string name="enabled">Enabled</string>
+    <string name="installed">Installed</string>
+    <string name="not_installed">Not installed</string>
+    <string name="home_hook_mode">Hook mode</string>
+    <string name="home_zygisk_status">Zygisk status</string>
+    <string name="home_meta_module_status">Meta module status</string>
 </resources>

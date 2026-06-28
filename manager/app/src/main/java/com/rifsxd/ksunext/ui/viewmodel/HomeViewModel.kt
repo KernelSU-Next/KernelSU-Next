@@ -20,9 +20,11 @@ import com.rifsxd.ksunext.ui.screen.home.HomeUiState
 import com.rifsxd.ksunext.ui.screen.home.SystemInfo
 import com.rifsxd.ksunext.ui.screen.home.getManagerVersion
 import com.rifsxd.ksunext.ui.util.checkNewVersion
+import com.rifsxd.ksunext.ui.util.getMetaModuleStatus
 import com.rifsxd.ksunext.ui.util.getModuleCount
 import com.rifsxd.ksunext.ui.util.getSELinuxStatusRaw
 import com.rifsxd.ksunext.ui.util.getSuperuserCount
+import com.rifsxd.ksunext.ui.util.KsuCli
 import com.rifsxd.ksunext.ui.util.module.LatestVersionInfo
 import com.rifsxd.ksunext.ui.util.rootAvailable
 
@@ -45,16 +47,19 @@ class HomeViewModel : ViewModel() {
     private fun buildState(): HomeUiState {
         val kernelVersion = getKernelVersion()
         val isManager = Natives.isManager
-        val ksuVersion = if (isManager) Natives.version else null
         val ksuVersionTag = if (isManager) Natives.getVersionTag() else null
+        val ksuVersion = if (isManager) Natives.version else null
         val lkmMode = ksuVersion?.let { if (kernelVersion.isGKI()) Natives.isLkmMode else null }
         val isRootAvailable = rootAvailable()
         val managerVersion = getManagerVersion(ksuApp)
+        val hookMode = if (isManager) Natives.getHookMode() else null
+        val zygiskEnabled = if (isManager) Natives.isZygiskEnabled() else false
+        val metaModuleStatus = if (isManager) getMetaModuleStatus() else null
 
         return HomeUiState(
             kernelVersion = kernelVersion,
-            ksuVersion = ksuVersion,
             ksuVersionTag = ksuVersionTag,
+            ksuVersion = ksuVersion,
             lkmMode = lkmMode,
             isManager = isManager,
             isManagerPrBuild = BuildConfig.IS_PR_BUILD,
@@ -78,6 +83,9 @@ class HomeViewModel : ViewModel() {
                     Os.prctl(21 /* PR_GET_SECCOMP */, 0, 0, 0, 0)
                 }.getOrDefault(-1),
             ),
+            hookMode = hookMode,
+            zygiskEnabled = zygiskEnabled,
+            metaModuleStatus = metaModuleStatus,
         )
     }
 }

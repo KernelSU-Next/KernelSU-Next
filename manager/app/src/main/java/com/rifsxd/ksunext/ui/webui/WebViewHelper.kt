@@ -78,7 +78,8 @@ internal suspend fun prepareWebView(
             webView.setBackgroundColor(Color.TRANSPARENT)
 
             val prefs = activity.getSharedPreferences("settings", Context.MODE_PRIVATE)
-            WebView.setWebContentsDebuggingEnabled(prefs.getBoolean("enable_web_debugging", false))
+            val enableWebDebugging = prefs.getBoolean("enable_web_debugging", false)
+            WebView.setWebContentsDebuggingEnabled(enableWebDebugging)
 
             webView.settings.apply {
                 javaScriptEnabled = true
@@ -120,6 +121,13 @@ internal suspend fun prepareWebView(
                         }
                     }
                     return webViewAssetLoader.shouldInterceptRequest(url)
+                }
+
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    if (enableWebDebugging) {
+                        view?.evaluateJavascript(erudaConsole(activity), null)
+                        view?.evaluateJavascript("eruda.init();", null)
+                    }
                 }
 
                 override fun doUpdateVisitedHistory(view: WebView?, url: String?, isReload: Boolean) {
@@ -177,4 +185,8 @@ internal suspend fun prepareWebView(
             webUIState.uiEvent = WebUIEvent.WebViewReady
         }
     }
+}
+
+private fun erudaConsole(context: Context): String {
+    return context.assets.open("eruda.min.js").bufferedReader().use { it.readText() }
 }

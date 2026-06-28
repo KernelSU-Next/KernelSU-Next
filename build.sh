@@ -10,7 +10,9 @@ export BINDGEN_EXTRA_CLANG_ARGS_aarch64_linux_android="--sysroot=$ANDROID_NDK_RO
 
 cross build --target aarch64-linux-android --release
 
-cp userspace/ksud/target/aarch64-linux-android/release/ksud manager/app/src/main/jniLibs/arm64-v8a/libksud.so
+cp target/aarch64-linux-android/release/ksud manager/app/src/main/jniLibs/arm64-v8a/libksud.so
+
+cp target/aarch64-linux-android/release/ksuinit manager/app/src/main/jniLibs/arm64-v8a/libksuinit.so
 
 cd manager
 
@@ -18,4 +20,4 @@ cd manager
 
 cd ..
 
-adb install manager/app/build/outputs/apk/release/KernelSU_Next_v*.apk
+adb install manager/app/build/outputs/apk/debug/KernelSU_Next_v*.apk

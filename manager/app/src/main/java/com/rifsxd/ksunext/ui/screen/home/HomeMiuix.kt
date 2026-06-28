@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.sp
 import com.rifsxd.ksunext.KernelVersion
 import com.rifsxd.ksunext.R
 import com.rifsxd.ksunext.ui.component.dialog.rememberConfirmDialog
+import com.rifsxd.ksunext.ui.component.KsuIsValid
 import com.rifsxd.ksunext.ui.component.miuix.WarningCard
 import com.rifsxd.ksunext.ui.component.rebootlistpopup.RebootListPopupMiuix
 import com.rifsxd.ksunext.ui.component.statustag.StatusTag
@@ -153,7 +154,7 @@ fun HomePagerMiuix(
                         if (state.checkUpdateEnabled) {
                             UpdateCard(state = state, actions = actions)
                         }
-                        InfoCard(systemInfo = state.systemInfo)
+                        InfoCard(state = state, systemInfo = state.systemInfo)
                         // DonateCard(onOpenUrl = actions.onOpenUrl)
                         // LearnMoreCard(onOpenUrl = actions.onOpenUrl)
                     }
@@ -226,9 +227,9 @@ private fun StatusCard(
     Column {
         when {
             state.ksuVersion != null -> {
-                val modeBg = colorScheme.tertiaryContainer.copy(alpha = 0.6f)
+                val workingModeBg = colorScheme.tertiaryContainer.copy(alpha = 0.6f)
 
-                val stateBg = colorScheme.secondaryContainer.copy(alpha = 0.8f)
+                val jailBreakModeBg = colorScheme.secondaryContainer.copy(alpha = 0.8f)
 
                 val safeModeStateBg = if (isInDarkTheme)
                     Color.White.copy(alpha = 0.4f)
@@ -240,7 +241,7 @@ private fun StatusCard(
                 val workingModeName = when (state.lkmMode) {
                     null -> null
                     true -> "LKM"
-                    else -> "GKI"
+                    else -> "BUILT-IN"
                 }
 
                 Column(
@@ -296,7 +297,7 @@ private fun StatusCard(
                                             color = updateTint,
                                             modifier = Modifier
                                                 .clip(miuixShape(6.dp))
-                                                .background(modeBg)
+                                                .background(workingModeBg)
                                                 .padding(horizontal = 6.dp, vertical = 2.dp),
                                             fontWeight = FontWeight(750),
                                             maxLines = 1,
@@ -324,7 +325,7 @@ private fun StatusCard(
                                             color = updateTint,
                                             modifier = Modifier
                                                 .clip(miuixShape(6.dp))
-                                                .background(stateBg)
+                                                .background(jailBreakModeBg)
                                                 .padding(horizontal = 6.dp, vertical = 2.dp),
                                             fontWeight = FontWeight(750),
                                             maxLines = 1,
@@ -365,7 +366,7 @@ private fun StatusCard(
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
                                     text = stringResource(R.string.superuser),
-                                    fontSize = 20.sp,
+                                    fontSize = 18.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = colorScheme.onSurface,
                                 )
@@ -373,7 +374,7 @@ private fun StatusCard(
                                     modifier = Modifier.fillMaxWidth(),
                                     text = state.superuserCount.toString(),
                                     fontWeight = FontWeight.Medium,
-                                    fontSize = 18.sp,
+                                    fontSize = 16.sp,
                                     color = colorScheme.onSurfaceVariantSummary,
                                 )
                             }
@@ -393,7 +394,7 @@ private fun StatusCard(
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
                                     text = stringResource(R.string.module),
-                                    fontSize = 20.sp,
+                                    fontSize = 18.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = colorScheme.onSurface,
                                     
@@ -402,7 +403,7 @@ private fun StatusCard(
                                     modifier = Modifier.fillMaxWidth(),
                                     text = state.moduleCount.toString(),
                                     fontWeight = FontWeight.Medium,
-                                    fontSize = 18.sp,
+                                    fontSize = 16.sp,
                                     color = colorScheme.onSurfaceVariantSummary,
                                 )
                             }
@@ -517,7 +518,7 @@ private fun StatusCard(
 // }
 
 @Composable
-private fun InfoCard(systemInfo: SystemInfo) {
+private fun InfoCard(state: HomeUiState, systemInfo: SystemInfo) {
     @Composable
     fun InfoText(
         title: String,
@@ -547,6 +548,30 @@ private fun InfoCard(systemInfo: SystemInfo) {
             InfoText(title = stringResource(R.string.home_kernel), content = systemInfo.kernelVersion)
             InfoText(title = stringResource(R.string.home_manager_version), content = systemInfo.managerVersion)
             // InfoText(title = stringResource(R.string.home_fingerprint), content = systemInfo.fingerprint)
+
+            KsuIsValid {
+                InfoText(
+                    title   = stringResource(R.string.home_hook_mode),
+                    content = state.hookMode ?: stringResource(R.string.unavailable)
+                )
+
+                InfoText(
+                    title = stringResource(R.string.home_meta_module_status),
+                    content = if (state.metaModuleStatus == "Installed") {
+                        stringResource(R.string.installed)
+                    } else {
+                        stringResource(R.string.not_installed)
+                    }
+                )
+
+                if (state.zygiskEnabled) {
+                    InfoText(
+                        title   = stringResource(R.string.home_zygisk_status),
+                        content = stringResource(R.string.enabled)
+                    )
+                }
+            }
+
             val selinuxDisplay = when (systemInfo.selinuxStatus) {
                 "Enforcing" -> stringResource(R.string.selinux_status_enforcing)
                 "Permissive" -> stringResource(R.string.selinux_status_permissive)
@@ -577,23 +602,23 @@ private fun InfoCard(systemInfo: SystemInfo) {
 @Composable
 private fun StatusCardActivatedPreview() {
     StatusCard(
-        state = previewHomeScreenState(ksuVersion = 12345, lkmMode = true, superuserCount = 5, moduleCount = 10),
-        actions = HomeActions({}, {}, {}, {})
+        state = previewHomeScreenState(ksuVersion = 12345, lkmMode = true, superuserCount = 5, moduleCount = 10, zygiskEnabled = true),
+        actions = HomeActions({}, {}, {}, {}, {})
     )
 }
 
 @Preview(name = "Not Activated")
 @Composable
 private fun StatusCardNotActivatedPreview() {
-    StatusCard(state = previewHomeScreenState(ksuVersion = null, lkmMode = null), actions = HomeActions({}, {}, {}, {}))
+    StatusCard(state = previewHomeScreenState(ksuVersion = null, lkmMode = null, zygiskEnabled = true), actions = HomeActions({}, {}, {}, {}, {}))
 }
 
 @Preview(name = "Permissive")
 @Composable
 private fun StatusCardPermissivePreview() {
     StatusCard(
-        state = previewHomeScreenState(ksuVersion = null, lkmMode = null, selinuxStatus = "Permissive"),
-        actions = HomeActions({}, {}, {}, {})
+        state = previewHomeScreenState(ksuVersion = null, lkmMode = null, selinuxStatus = "Permissive", zygiskEnabled = true),
+        actions = HomeActions({}, {}, {}, {}, {})
     )
 }
 
@@ -601,8 +626,8 @@ private fun StatusCardPermissivePreview() {
 @Composable
 private fun StatusCardJailbreakPreview() {
     StatusCard(
-        state = previewHomeScreenState(ksuVersion = 12345, lkmMode = true, isLateLoadMode = true, superuserCount = 5, moduleCount = 10),
-        actions = HomeActions({}, {}, {}, {})
+        state = previewHomeScreenState(ksuVersion = 12345, lkmMode = true, isLateLoadMode = true, superuserCount = 5, moduleCount = 10, zygiskEnabled = true),
+        actions = HomeActions({}, {}, {}, {}, {})
     )
 }
 
@@ -628,6 +653,9 @@ private fun HomeScreenPreviewContent(
     superuserCount: Int = 0,
     moduleCount: Int = 0,
     selinuxStatus: String = "Enforcing",
+    hookMode: String? = "Unavailable",
+    zygiskEnabled: Boolean = false,
+    metaModuleStatus: String? = "Unavailable"
 ) {
     CompositionLocalProvider(LocalUriHandler provides previewUriHandler) {
         Column(
@@ -645,10 +673,25 @@ private fun HomeScreenPreviewContent(
                     superuserCount = superuserCount,
                     moduleCount = moduleCount,
                     selinuxStatus = selinuxStatus,
+                    zygiskEnabled = zygiskEnabled,
                 ),
                 actions = actions
             )
-            InfoCard(previewSystemInfo.copy(selinuxStatus = selinuxStatus))
+            InfoCard(
+                state = previewHomeScreenState(
+                    ksuVersion = ksuVersion,
+                    lkmMode = lkmMode,
+                    isSafeMode = isSafeMode,
+                    isLateLoadMode = isLateLoadMode,
+                    superuserCount = superuserCount,
+                    moduleCount = moduleCount,
+                    selinuxStatus = selinuxStatus,
+                    hookMode = hookMode,
+                    zygiskEnabled = zygiskEnabled,
+                    metaModuleStatus = metaModuleStatus,
+                ), 
+                systemInfo = previewSystemInfo.copy(selinuxStatus = selinuxStatus)
+            )
             // DonateCard(onOpenUrl = {})
             // LearnMoreCard(onOpenUrl = {})
         }
@@ -688,6 +731,9 @@ private fun previewHomeScreenState(
     superuserCount: Int = 0,
     moduleCount: Int = 0,
     selinuxStatus: String = "Enforcing",
+    hookMode: String? = "Unavailable",
+    zygiskEnabled: Boolean,
+    metaModuleStatus: String? = "Unavailable",
 ) = HomeUiState(
     kernelVersion = KernelVersion(6, 1, 0),
     ksuVersionTag = ksuVersionTag,
@@ -706,4 +752,7 @@ private fun previewHomeScreenState(
     superuserCount = superuserCount,
     moduleCount = moduleCount,
     systemInfo = previewSystemInfo.copy(selinuxStatus = selinuxStatus),
+    hookMode = hookMode,
+    zygiskEnabled = zygiskEnabled,
+    metaModuleStatus = metaModuleStatus,
 )

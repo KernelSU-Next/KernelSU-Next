@@ -129,7 +129,7 @@ fun SettingPagerMaterial(
                             title = stringResource(id = R.string.settings_ui_mode),
                             summary = stringResource(id = R.string.settings_ui_mode_summary),
                             items = UiMode.entries.map { it.name },
-                            selectedIndex = if (uiState.uiMode == UiMode.Material.value) 1 else 0,
+                            selectedIndex = if (uiState.uiMode == UiMode.Material.value) 0 else 1,
                             onItemSelected = actions.onSetUiModeIndex
                         )
                     }

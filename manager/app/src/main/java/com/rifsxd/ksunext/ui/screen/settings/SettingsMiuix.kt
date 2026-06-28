@@ -159,7 +159,7 @@ fun SettingPagerMiuix(
                                     tint = colorScheme.onBackground
                                 )
                             },
-                            selectedIndex = if (uiState.uiMode == UiMode.Material.value) 1 else 0,
+                            selectedIndex = if (uiState.uiMode == UiMode.Material.value) 0 else 1,
                             onSelectedIndexChange = actions.onSetUiModeIndex
                         )
                         ArrowPreference(
@@ -268,7 +268,7 @@ fun SettingPagerMiuix(
                                         Icons.Rounded.Policy,
                                         modifier = Modifier.padding(end = 6.dp),
                                         contentDescription = stringResource(id = R.string.settings_selinux_hide),
-                                        tint = colorScheme.onBackground
+                                        tint = if (uiState.selinuxHideStatus == "supported") colorScheme.onBackground else colorScheme.disabledOnSecondaryVariant
                                     )
                                 },
                                 enabled = uiState.selinuxHideStatus == "supported",
@@ -310,7 +310,7 @@ fun SettingPagerMiuix(
                                         Icons.Rounded.Adb,
                                         modifier = Modifier.padding(end = 6.dp),
                                         contentDescription = stringResource(id = R.string.settings_adb_root),
-                                        tint = colorScheme.onBackground
+                                        tint = if (uiState.adbRootStatus == "supported") colorScheme.onBackground else colorScheme.disabledOnSecondaryVariant
                                     )
                                 },
                                 enabled = uiState.adbRootStatus == "supported",

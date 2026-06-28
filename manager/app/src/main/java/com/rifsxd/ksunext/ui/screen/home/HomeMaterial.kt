@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.rifsxd.ksunext.KernelVersion
 import com.rifsxd.ksunext.R
+import com.rifsxd.ksunext.ui.component.KsuIsValid
 import com.rifsxd.ksunext.ui.component.dialog.rememberConfirmDialog
 import com.rifsxd.ksunext.ui.component.material.TonalCard
 import com.rifsxd.ksunext.ui.component.rebootlistpopup.RebootListPopup
@@ -110,7 +111,7 @@ fun HomePagerMaterial(
             if (state.checkUpdateEnabled) {
                 UpdateCard(state = state, actions = actions)
             }
-            InfoCard(systemInfo = state.systemInfo)
+            InfoCard(state = state, systemInfo = state.systemInfo)
             // DonateCard(onOpenUrl = actions.onOpenUrl)
             // LearnMoreCard(onOpenUrl = actions.onOpenUrl)
             Spacer(Modifier.height(bottomInnerPadding))
@@ -197,7 +198,7 @@ private fun StatusCard(
                         val workingMode = when (state.lkmMode) {
                             null -> ""
                             true -> "LKM"
-                            else -> "GKI"
+                            else -> "BUILT-IN"
                         }
 
                         Icon(Icons.Outlined.CheckCircle, stringResource(R.string.home_working))
@@ -365,53 +366,53 @@ private fun WarningCard(
     }
 }
 
-@Composable
-private fun LearnMoreCard(onOpenUrl: (String) -> Unit) {
-    val url = stringResource(R.string.home_learn_kernelsu_url)
-    TonalCard(onClick = { onOpenUrl(url) }) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(text = stringResource(R.string.home_learn_kernelsu), style = MaterialTheme.typography.titleSmall)
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.home_click_to_learn_kernelsu),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.outline
-                )
-            }
-        }
-    }
-}
+// @Composable
+// private fun LearnMoreCard(onOpenUrl: (String) -> Unit) {
+//     val url = stringResource(R.string.home_learn_kernelsu_url)
+//     TonalCard(onClick = { onOpenUrl(url) }) {
+//         Row(
+//             modifier = Modifier
+//                 .fillMaxWidth()
+//                 .padding(24.dp),
+//             verticalAlignment = Alignment.CenterVertically
+//         ) {
+//             Column {
+//                 Text(text = stringResource(R.string.home_learn_kernelsu), style = MaterialTheme.typography.titleSmall)
+//                 Spacer(Modifier.height(4.dp))
+//                 Text(
+//                     text = stringResource(R.string.home_click_to_learn_kernelsu),
+//                     style = MaterialTheme.typography.bodyMedium,
+//                     color = MaterialTheme.colorScheme.outline
+//                 )
+//             }
+//         }
+//     }
+// }
+
+// @Composable
+// private fun DonateCard(onOpenUrl: (String) -> Unit) {
+//     TonalCard(onClick = { onOpenUrl("https://patreon.com/weishu") }) {
+//         Row(
+//             modifier = Modifier
+//                 .fillMaxWidth()
+//                 .padding(24.dp),
+//             verticalAlignment = Alignment.CenterVertically
+//         ) {
+//             Column {
+//                 Text(text = stringResource(R.string.home_support_title), style = MaterialTheme.typography.titleSmall)
+//                 Spacer(Modifier.height(4.dp))
+//                 Text(
+//                     text = stringResource(R.string.home_support_content),
+//                     style = MaterialTheme.typography.bodyMedium,
+//                     color = MaterialTheme.colorScheme.outline
+//                 )
+//             }
+//         }
+//     }
+// }
 
 @Composable
-private fun DonateCard(onOpenUrl: (String) -> Unit) {
-    TonalCard(onClick = { onOpenUrl("https://patreon.com/weishu") }) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column {
-                Text(text = stringResource(R.string.home_support_title), style = MaterialTheme.typography.titleSmall)
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.home_support_content),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.outline
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun InfoCard(systemInfo: SystemInfo) {
+private fun InfoCard(state: HomeUiState, systemInfo: SystemInfo) {
     TonalCard {
         Column(
             modifier = Modifier
@@ -433,6 +434,27 @@ private fun InfoCard(systemInfo: SystemInfo) {
             InfoCardItem(stringResource(R.string.home_manager_version), systemInfo.managerVersion)
             // Spacer(Modifier.height(16.dp))
             // InfoCardItem(stringResource(R.string.home_fingerprint), systemInfo.fingerprint)
+
+            KsuIsValid{
+                Spacer(Modifier.height(16.dp))
+                InfoCardItem(stringResource(R.string.home_hook_mode), state.hookMode ?: stringResource(R.string.unavailable))
+
+                Spacer(Modifier.height(16.dp))
+                InfoCardItem(
+                    stringResource(R.string.home_meta_module_status),
+                    if (state.metaModuleStatus == "Installed") {
+                        stringResource(R.string.installed)
+                    } else {
+                        stringResource(R.string.not_installed)
+                    }
+                )
+
+                if (state.zygiskEnabled) {
+                    Spacer(Modifier.height(16.dp))
+                    InfoCardItem(stringResource(R.string.home_zygisk_status), stringResource(R.string.enabled))
+                }
+            }
+
             Spacer(Modifier.height(16.dp))
             val selinuxDisplay = when (systemInfo.selinuxStatus) {
                 "Enforcing" -> stringResource(R.string.selinux_status_enforcing)
@@ -509,6 +531,9 @@ private fun HomeScreenPreviewContent(
     superuserCount: Int = 0,
     moduleCount: Int = 0,
     selinuxStatus: String = "Enforcing",
+    hookMode: String? = "Unavailable",
+    zygiskEnabled: Boolean = false,
+    metaModuleStatus: String? = "Unavailable",
 ) {
     CompositionLocalProvider(LocalUriHandler provides previewUriHandler) {
         Column(
@@ -525,12 +550,28 @@ private fun HomeScreenPreviewContent(
                     superuserCount = superuserCount,
                     moduleCount = moduleCount,
                     selinuxStatus = selinuxStatus,
+                    hookMode = hookMode,
+                    zygiskEnabled = zygiskEnabled,
                 ),
                 actions = actions
             )
-            InfoCard(previewSystemInfo.copy(selinuxStatus = selinuxStatus))
-            DonateCard(onOpenUrl = {})
-            LearnMoreCard(onOpenUrl = {})
+            InfoCard(
+                state = previewHomeScreenState(
+                    ksuVersion = ksuVersion,
+                    lkmMode = lkmMode,
+                    isSafeMode = isSafeMode,
+                    isLateLoadMode = isLateLoadMode,
+                    superuserCount = superuserCount,
+                    moduleCount = moduleCount,
+                    selinuxStatus = selinuxStatus,
+                    hookMode = hookMode,
+                    zygiskEnabled = zygiskEnabled,
+                    metaModuleStatus = metaModuleStatus,
+                ), 
+                systemInfo = previewSystemInfo.copy(selinuxStatus = selinuxStatus)
+            )
+            // DonateCard(onOpenUrl = {})
+            // LearnMoreCard(onOpenUrl = {})
         }
     }
 }
@@ -538,25 +579,25 @@ private fun HomeScreenPreviewContent(
 @Preview(name = "Home Activated", showBackground = true)
 @Composable
 private fun HomeScreenActivatedPreview() {
-    HomeScreenPreviewContent(ksuVersion = 12345, lkmMode = true, superuserCount = 5, moduleCount = 10)
+    HomeScreenPreviewContent(ksuVersion = 12345, lkmMode = true, superuserCount = 5, moduleCount = 10, zygiskEnabled = true)
 }
 
 @Preview(name = "Home Not Activated", showBackground = true)
 @Composable
 private fun HomeScreenNotActivatedPreview() {
-    HomeScreenPreviewContent(ksuVersion = null, lkmMode = null)
+    HomeScreenPreviewContent(ksuVersion = null, lkmMode = null, zygiskEnabled = false)
 }
 
 @Preview(name = "Home Permissive", showBackground = true)
 @Composable
 private fun HomeScreenPermissivePreview() {
-    HomeScreenPreviewContent(ksuVersion = null, lkmMode = null, selinuxStatus = "Permissive")
+    HomeScreenPreviewContent(ksuVersion = null, lkmMode = null, selinuxStatus = "Permissive", zygiskEnabled = true)
 }
 
 @Preview(name = "Home Jailbreak", showBackground = true)
 @Composable
 private fun HomeScreenJailbreakPreview() {
-    HomeScreenPreviewContent(ksuVersion = 12345, lkmMode = true, isLateLoadMode = true, superuserCount = 5, moduleCount = 10)
+    HomeScreenPreviewContent(ksuVersion = 12345, lkmMode = true, isLateLoadMode = true, superuserCount = 5, moduleCount = 10, zygiskEnabled = true)
 }
 
 private fun previewHomeScreenState(
@@ -568,6 +609,9 @@ private fun previewHomeScreenState(
     superuserCount: Int = 0,
     moduleCount: Int = 0,
     selinuxStatus: String = "Enforcing",
+    hookMode: String? = "Unavailable",
+    zygiskEnabled: Boolean = false,
+    metaModuleStatus: String? = "Unavailable",
 ) = HomeUiState(
     kernelVersion = KernelVersion(6, 1, 0),
     ksuVersionTag = ksuVersionTag,
@@ -586,4 +630,7 @@ private fun previewHomeScreenState(
     superuserCount = superuserCount,
     moduleCount = moduleCount,
     systemInfo = previewSystemInfo.copy(selinuxStatus = selinuxStatus),
+    hookMode = hookMode,
+    zygiskEnabled = zygiskEnabled,
+    metaModuleStatus = metaModuleStatus,
 )

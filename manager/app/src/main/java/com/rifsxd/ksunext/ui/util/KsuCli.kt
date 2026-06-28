@@ -13,6 +13,7 @@ import android.util.Log
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
+import com.topjohnwu.superuser.io.SuFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
@@ -27,6 +28,8 @@ import java.io.File
  * @date 2023/1/1.
  */
 private const val TAG = "KsuCli"
+
+private const val BUSYBOX = "/data/adb/ksu/bin/busybox"
 
 private fun getKsuDaemonPath(): String {
     return ksuApp.applicationInfo.nativeLibraryDir + File.separator + "libksud.so"
@@ -468,6 +471,43 @@ fun getAppProfileTemplate(id: String): String {
     val shell = getRootShell()
     return shell.newJob().add("${getKsuDaemonPath()} profile get-template '${id}'")
         .to(ArrayList(), null).exec().out.joinToString("\n")
+}
+
+fun getModuleSize(dir: File): Long {
+    val result = ShellUtils.fastCmd("$BUSYBOX du -sb '${dir.absolutePath}' | awk '{print $1}'").trim()
+    return result.toLongOrNull() ?: 0L
+}
+
+fun isSuCompatDisabled(): Boolean {
+    return !Natives.isSuEnabled()
+}
+
+fun zygiskRequired(dir: File): Boolean {
+    return (SuFile(dir, "zygisk").listFiles()?.size ?: 0) > 0
+}
+
+fun isZygiskImpl(dir: File): Boolean {
+    return SuFile(dir, "bin/zygiskd").exists() || SuFile(dir, "bin/zygiskd64").exists()
+}
+
+fun getSuSFS(): String {
+    return ShellUtils.fastCmd("${getKsuDaemonPath()} susfs support")
+}
+
+fun getSuSFSVersion(): String {
+    return ShellUtils.fastCmd("${getKsuDaemonPath()} susfs version")
+}
+
+fun getSuSFSVariant(): String {
+    return ShellUtils.fastCmd("${getKsuDaemonPath()} susfs variant")
+}
+
+fun getSuSFSFeatures(): String {
+    return ShellUtils.fastCmd("${getKsuDaemonPath()} susfs features")
+}
+
+fun getMetaModuleStatus(): String {
+    return ShellUtils.fastCmd("${getKsuDaemonPath()} module metamodule")
 }
 
 fun setAppProfileTemplate(id: String, template: String): Boolean {
