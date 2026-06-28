@@ -4,7 +4,7 @@
   <string name="issue_report_body">هل واجهت خطأ أو لديك تعليقات؟</string>
   <string name="issue_report_body_2">بلغ في اسرع وقت ممكن!</string>
   <string name="issue_report_github">بلغ في GitHub</string>
-  <string name="issue_report_telegram">تواصل عبر تيلي جرام</string>
+  <string name="issue_report_telegram">تواصل عبر تيليغرام </string>
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
   <string name="confirm">تأكيد</string>
