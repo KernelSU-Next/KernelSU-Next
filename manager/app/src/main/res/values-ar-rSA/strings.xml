@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="issue_report_title">هل لديك مشكلة؟</string>
+  <string name="issue_report_title">هل لديك مشكلة Sorry! Root access is not properly installed on this device.
+
+النتائج المقدمة من الإصدار Root Checker Basic 6.5.11 من joeykrim في Google Play - http://goo.gl/6QTF1D  على الجهاز الخاص بك: Infinix X6876 - الأندرويد 16
+
+Device diagnostics: Error: IOException: java.io.IOException: Cannot run program \"su\": error=13, Permission denied</string>
   <string name="issue_report_body">هل واجهت خطأ أو لديك تعليقات؟</string>
   <string name="issue_report_body_2">بلغ في اسرع وقت ممكن!</string>
   <string name="issue_report_github">بلغ في GitHub</string>
