@@ -22,7 +22,7 @@
   <string name="disable">Deaktivieren</string>
   <string name="enabled">Aktiviert</string>
   <string name="disabled">Deaktiviert</string>
-  <string name="home_android">Android version</string>
+  <string name="home_android">Android-Version</string>
   <string name="home_manager_version">Manager version</string>
   <string name="home_abi">ABI list</string>
   <string name="home_selinux_status">SELinux status</string>
@@ -73,7 +73,7 @@
   <string name="refresh">Refresh</string>
   <string name="show_system_apps">Show system apps</string>
   <string name="hide_system_apps">Hide system apps</string>
-  <string name="export_log">Export logs</string>
+  <string name="export_log">Logs exportieren</string>
   <string name="safe_mode">Safe mode</string>
   <string name="reboot_to_apply">Reboot to take effect</string>
   <string name="module_magisk_conflict">Modules are unavailable due to a conflict with Magisk!</string>
@@ -100,7 +100,7 @@
   <string name="profile_namespace_global">Global</string>
   <string name="profile_namespace_individual">Individual</string>
   <string name="profile_groups">Groups</string>
-  <string name="profile_capabilities">Capabilities</string>
+  <string name="profile_capabilities">Fähigkeiten</string>
   <string name="profile_selinux_context">SELinux context</string>
   <string name="profile_umount_modules">Umount modules</string>
   <string name="failed_to_update_app_profile">Failed to update App Profile for %s</string>
