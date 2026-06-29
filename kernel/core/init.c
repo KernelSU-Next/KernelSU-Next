@@ -20,6 +20,7 @@
 #include "feature/sulog.h"
 #include "infra/file_wrapper.h"
 #include "selinux/selinux.h"
+#include "feature/adb_root.h"
 
 extern void __init ksu_lsm_hook_init(void);
 extern int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
@@ -140,6 +141,8 @@ int __init kernelsu_init(void)
 		
 		ksu_lsm_hook_init();
 
+		ksu_adb_root_init();
+
 		ksu_selinux_hide_status_init();
 
 		ksu_allowlist_init();
@@ -180,6 +183,8 @@ void __exit kernelsu_exit(void)
 	ksu_allowlist_exit();
 
 	ksu_sulog_exit();
+
+	ksu_adb_root_exit();
 
 	ksu_feature_exit();
 
