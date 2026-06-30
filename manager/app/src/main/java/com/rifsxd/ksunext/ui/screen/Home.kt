@@ -878,9 +878,10 @@ private fun StatusCard(
 
                         val ksuVer = ksuVersionParam ?: 0
                         val uapiVer = uapiVerParam ?: 0
+                        val tag = if (!ksuVersionTagParam.isNullOrEmpty()) ksuVersionTagParam else "v0.0.0"
                         val versionText = stringResource(
                             R.string.home_working_version,
-                            "$ksuVer-$uapiVer",
+                            "$tag-$uapiVer",
                             ksuVer
                         )
                         Text(
