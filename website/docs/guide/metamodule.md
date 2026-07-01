@@ -424,6 +424,12 @@ Modules will no longer be mounted. Your device will boot normally, but module mo
 
 No. It provides standard overlayfs mounting compatible with most modules. You can create your own metamodule if you need different behavior.
 
+### Why does a Zygisk-related module say "KernelSU version abnormal" during installation?
+
+Some third-party Zygisk-related modules still ship installer checks that abort when the KernelSU version code reaches a fixed limit, for example `KSU_KERNEL_VER_CODE >= 20000`. On recent KernelSU Next releases, that message may mean the module has not been updated for newer KernelSU interface expectations. It does not necessarily mean that the module ZIP is corrupt, your device root is broken, or KernelSU Next itself was integrated incorrectly.
+
+Do not bypass that check blindly. If the module needs KernelSU-specific communication at runtime, it may also need support for newer KernelSU interfaces, not only a higher installer version limit. Prefer an updated module release, check the module maintainer's compatibility notes, or report the exact installer log to that module. If an older installed version of the module already works on your device, keeping it can be safer than forcing an incompatible update.
+
 ## Late-load mode {#late-load-mode}
 
 In addition to the standard boot flow described above, KernelSU supports a **late-load mode** for LKM (Loadable Kernel Module) scenarios. In this mode, the KernelSU kernel module is loaded **after the system has fully booted**, rather than during the init process.
