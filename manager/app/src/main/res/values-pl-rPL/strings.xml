@@ -25,9 +25,9 @@
   <string name="home_android">Wersja Android</string>
   <string name="home_manager_version">Wersja menedżera</string>
   <string name="home_abi">Lista interfejsu binarnego aplikacji</string>
-  <string name="home_selinux_status">Status SELinux</string>
+  <string name="home_selinux_status">Status zasad SELinux</string>
   <string name="selinux_status_disabled">Wyłączone</string>
-  <string name="selinux_status_enforcing">Wymuszający</string>
+  <string name="selinux_status_enforcing">Wymuszające</string>
   <string name="selinux_status_permissive">Pobłażliwy</string>
   <string name="selinux_status_unknown">Nieznane</string>
   <string name="superuser">Superuser</string>
