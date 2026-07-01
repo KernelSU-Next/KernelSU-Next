@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="issue_report_title">هل لديك مشكلة؟</string>
+  <string name="issue_report_title">هل لديك مشكلة Sorry! Root access is not properly installed on this device.
+
+النتائج المقدمة من الإصدار Root Checker Basic 6.5.11 من joeykrim في Google Play - http://goo.gl/6QTF1D  على الجهاز الخاص بك: Infinix X6876 - الأندرويد 16
+
+Device diagnostics: Error: IOException: java.io.IOException: Cannot run program \"su\": error=13, Permission denied</string>
   <string name="issue_report_body">هل واجهت خطأ أو لديك تعليقات؟</string>
   <string name="issue_report_body_2">بلغ في اسرع وقت ممكن!</string>
   <string name="issue_report_github">بلغ في GitHub</string>
-  <string name="issue_report_telegram">تواصل عبر تيلي جرام</string>
+  <string name="issue_report_telegram">تواصل عبر تيليغرام </string>
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
   <string name="confirm">تأكيد</string>
@@ -261,15 +265,40 @@
   <string name="module_sort_stars_low_to_high">نوع (قليل ←أعلى)</string>
   <string name="module_sort_stars_high_to_low">نوع (أعلى ← قليل)</string>
   <string name="settings_adb_root">ADB Root</string>
-  <string name="settings_adb_root_summary">Run adbd daemon with root privileges</string>
-  <string name="settings_selinux_hide">Hide SELinux modification</string>
-  <string name="settings_selinux_hide_summary">Prevent applications from detecting SELinux modifications</string>
-  <string name="settings_selinux_hide_reboot_required">Reboot to take effect</string>
-  <string name="settings_selinux_hide_failed">Error: %d</string>
-  <string name="allow_shell">Always grant root to Shell</string>
-  <string name="allow_shell_summary">Always allow adb shell to call su. Do not enable this unless absolutely necessary.</string>
-  <string name="enable_adb">Force enable adb on boot</string>
-  <string name="enable_adb_summary">Force enable USB debugging and disable adb authentication. Do not enable this unless absolutely necessary.</string>
-  <string name="advanced_options">Advanced Options</string>
-  <string name="expand">Expand</string>
+  <string name="settings_adb_root_summary">تشغيل خادم adbd بصلاحيات Root</string>
+  <string name="settings_selinux_hide">إخفاء التعديلات على SELinux</string>
+  <string name="settings_selinux_hide_summary">منع التطبيقات من اكتشاف التعديلات على SELinux</string>
+  <string name="settings_selinux_hide_reboot_required">أعد تشغيل الجهاز لتطبيق التعديلات</string>
+  <string name="settings_selinux_hide_failed">خطأ من نوع: %d</string>
+  <string name="allow_shell">Shell تشتغل دائما بصلاحيات Root</string>
+  <string name="allow_shell_summary">السماح دائماً لواجهة أوامر adb بالوصول إلى صلاحيات الروت su. لا تفعل هذا الخيار إلا إذا كنت بحاجة ماسة إليه.</string>
+  <string name="enable_adb">تشغيل adb تلقائياً وبشكل إجباري بمجرد تشغيل الجهاز</string>
+  <string name="enable_adb_summary">تشغيل وضع تصحيح USB إجبارياً وإلغاء نظام التحقق من الـ adb. لا تفعل هذا الأمر ما لم تكن بحاجة ماسة إليه.</string>
+  <string name="advanced_options">الخيارات المتقدمة</string>
+  <string name="expand">توسيع</string>
+  <string name="feature_status_unsupported_summary">نظام التشغيل الأساسي لا يدعم هذه الخاصية</string>
+  <string name="feature_status_managed_summary">هذه الميزة تُدار بواسطة وحدة خارجية</string>
+  <string name="sulog_log_files">ملفات السجل</string>
+  <string name="sulog_failed_to_load">تعذر تحميل سجل عمليات الروت</string>
+  <string name="sulog_disabled_title">سجل عمليات الروت غير نشط</string>
+  <string name="sulog_unsupported_title">سجل عمليات الروت غير مدعوم</string>
+  <string name="sulog_enable_action">تفعيل</string>
+  <string name="sulog_filter_title">تصفية بالنوع</string>
+  <string name="sulog_clean_title">مسح السجل</string>
+  <string name="sulog_filter_root_execve">الروت بواسطة execve</string>
+  <string name="sulog_filter_sucompat">طريقة الروت القديمة</string>
+  <string name="sulog_filter_ioctl_grant_root">منح صلاحيات الروت</string>
+  <string name="sulog_filter_daemon_restart">إعادة تشغيل الـ Daemon</string>
+  <string name="sulog_entry_unknown_event">عملية غير معروفة</string>
+  <string name="sulog_entry_description_sucompat">تم اعتراض طلب /system/bin/su</string>
+  <string name="sulog_entry_title_root_grant_request">طلب صلاحيات الروت</string>
+  <string name="sulog_entry_description_ioctl_grant_root">مُنح وصول الروت بواسطة KernelSU ioctl</string>
+  <string name="sulog_entry_title_daemon_restarted">تمت إعادة تشغيل الـ Daemon</string>
+  <string name="sulog_entry_title_dropped_events">الأحداث المفقودة</string>
+  <string name="uapi_mismatch">اصدار uapi (%1$d) ونواة KernelSU (%2$d) غير متوافقين.</string>
+  <string name="require_manager_version">إصدار تطبيق KernelSU الحالي %1$d منخفض جداً ليعمل الروت بشكل سليم. يرجى تحديث التطبيق إلى الإصدار %2$d أو أعلى!</string>
+  <string name="profile_flags">العلامات</string>
+  <string name="profile_flags_desc_no_new_privs">حظر أي تصعيد إضافي للصلاحيات بواسطة KernelSU من خلال حساب الروت الحالي.</string>
+  <string name="settings_sulog">سجل الروت</string>
+  <string name="settings_sulog_summary">قم بتسجيل طلبات صلاحيات الروت ضمن ملفات سجلات KernelSU.</string>
 </resources>
