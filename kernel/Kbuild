@@ -9,7 +9,6 @@ kernelsu-objs += hook/hook_manager.o
 kernelsu-objs += hook/lsm_hooks.o
 kernelsu-objs += hook/setuid_hook.o
 kernelsu-objs += extras.o
-kernelsu-objs += tiny_sulog.o
 
 kernelsu-objs += infra/file_wrapper.o
 kernelsu-objs += infra/event_queue.o

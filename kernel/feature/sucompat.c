@@ -32,7 +32,6 @@
 #include "sucompat.h"
 #include "policy/app_profile.h"
 #include "selinux/selinux.h"
-#include "tiny_sulog.h"
 #include "sulog/event.h"
 
 #define SU_PATH "/system/bin/su"
@@ -102,7 +101,7 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user,
 	strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
 	if (unlikely(!memcmp(path, su, sizeof(su)))) {
-		write_sulog('a');
+		ksu_compat_sulog('a');
 		pr_info("faccessat su->sh!\n");
 		*filename_user = sh_user_path();
 	}
@@ -128,7 +127,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 	strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
 	if (unlikely(!memcmp(path, su, sizeof(su)))) {
-		write_sulog('s');
+		ksu_compat_sulog('s');
 		pr_info("newfstatat su->sh!\n");
 		*filename_user = sh_user_path();
 	}
@@ -170,7 +169,7 @@ long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, 
 	if (likely(memcmp(path, su, sizeof(su))))
 		goto do_orig_execve;
 
-    write_sulog('x');
+	ksu_compat_sulog('x');
 
     pr_info("sys_execve su found\n");
 	pending_sucompat = ksu_sulog_capture_sucompat(*filename_user, argv_user, GFP_KERNEL);
