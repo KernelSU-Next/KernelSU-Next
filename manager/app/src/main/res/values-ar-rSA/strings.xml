@@ -16,7 +16,6 @@ Device diagnostics: Error: IOException: java.io.IOException: Cannot run program 
   <string name="home_not_installed">ليس مثبت</string>
   <string name="home_click_to_install">اضغط للتثبيت</string>
   <string name="home_working">يعمل</string>
-  <string name="home_working_version">ألإصدار%1$s(%2$d)</string>
   <string name="home_module_update_count">تحديثات: %d</string>
   <string name="home_failure">غير مدعوم | غير مدمج</string>
   <string name="home_failure_tip">نواة غير GKI غير مدعومة. قم بدمج تعريفات نواة-نكست القديم في النواة الخاصة بك!</string>
@@ -301,4 +300,17 @@ Device diagnostics: Error: IOException: java.io.IOException: Cannot run program 
   <string name="profile_flags_desc_no_new_privs">حظر أي تصعيد إضافي للصلاحيات بواسطة KernelSU من خلال حساب الروت الحالي.</string>
   <string name="settings_sulog">سجل الروت</string>
   <string name="settings_sulog_summary">قم بتسجيل طلبات صلاحيات الروت ضمن ملفات سجلات KernelSU.</string>
+  <string name="home_working_version">Version: %1$s (%2$s)</string>
+  <string name="sulog_no_log_entries">No log entries</string>
+  <string name="sulog_dropped">Dropped</string>
+  <string name="sulog_unknown">Unknown</string>
+  <string name="sulog_boot_id">Boot ID: %1$s</string>
+  <string name="sulog_timestamp">Timestamp: %1$s</string>
+  <string name="sulog_restart_number">Restart #%1$s</string>
+  <string name="sulog_daemon_restarted">Daemon restarted</string>
+  <string name="sulog_lost_count">%1$s lost</string>
+  <string name="sulog_pid">PID %1$s</string>
+  <string name="sulog_uid">UID %1$s</string>
+  <string name="sulog_status_success">Success</string>
+  <string name="sulog_status_exit">Exit %1$d</string>
 </resources>
