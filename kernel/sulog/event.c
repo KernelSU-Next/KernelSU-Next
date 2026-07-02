@@ -9,6 +9,7 @@
 #include <linux/string.h>
 #include <linux/uaccess.h>
 
+#include "compat/kernel_compat.h"
 #include "feature/sulog.h"
 #include "infra/event_queue.h"
 #include "klog.h" // IWYU pragma: keep
