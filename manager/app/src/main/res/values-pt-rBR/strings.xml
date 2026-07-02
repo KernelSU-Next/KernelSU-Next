@@ -12,7 +12,6 @@
   <string name="home_not_installed">Não instalado</string>
   <string name="home_click_to_install">Clique para instalar</string>
   <string name="home_working">Em execução</string>
-  <string name="home_working_version">Versão: %1$s (%2$d)</string>
   <string name="home_module_update_count">Atualizações: %d</string>
   <string name="home_failure">Não suportado | Não integrado</string>
   <string name="home_failure_tip">Kernels que não sejam GKI não são suportados. Integre o driver legado KernelSU-Next em seu kernel!</string>
@@ -295,4 +294,17 @@
   <string name="profile_flags_desc_no_new_privs">Impeça a escalada de privilégios adicional via KernelSU a partir do contexto deste perfil de root.</string>
   <string name="settings_sulog">Log do SU</string>
   <string name="settings_sulog_summary">Registre as solicitações de root nos arquivos sulog do KernelSU.</string>
+  <string name="home_working_version">Versão: %1$s (%2$s)</string>
+  <string name="sulog_no_log_entries">Nenhuma entrada de logs</string>
+  <string name="sulog_dropped">Dropado</string>
+  <string name="sulog_unknown">Desconhecido</string>
+  <string name="sulog_boot_id">ID de inicialização: %1$s</string>
+  <string name="sulog_timestamp">Data/Hora: %1$s</string>
+  <string name="sulog_restart_number">Reiniciar #%1$s</string>
+  <string name="sulog_daemon_restarted">O daemon foi reiniciado</string>
+  <string name="sulog_lost_count">%1$s perdido</string>
+  <string name="sulog_pid">PID %1$s</string>
+  <string name="sulog_uid">UID %1$s</string>
+  <string name="sulog_status_success">Sucesso</string>
+  <string name="sulog_status_exit">Saída %1$d</string>
 </resources>
