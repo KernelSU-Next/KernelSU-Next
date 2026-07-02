@@ -12,7 +12,6 @@
   <string name="home_not_installed">未安裝</string>
   <string name="home_click_to_install">點此開始安裝</string>
   <string name="home_working">工作中</string>
-  <string name="home_working_version">版本：%1$s (%2$d)</string>
   <string name="home_module_update_count">可更新模組： %d</string>
   <string name="home_failure">不支援 | 未整合</string>
   <string name="home_failure_tip">不支援非 GKI 核心。請將 KernelSU-Next 整合至您的核心中！</string>
@@ -295,4 +294,17 @@
   <string name="profile_flags_desc_no_new_privs">禁止從此 Root Profile 的上下文中通過 KernelSU 進一步提升權限。</string>
   <string name="settings_sulog">SU 日誌</string>
   <string name="settings_sulog_summary">將 root 請求記錄到 KernelSU 的 sulog 文件。</string>
+  <string name="home_working_version">Version: %1$s (%2$s)</string>
+  <string name="sulog_no_log_entries">No log entries</string>
+  <string name="sulog_dropped">Dropped</string>
+  <string name="sulog_unknown">Unknown</string>
+  <string name="sulog_boot_id">Boot ID: %1$s</string>
+  <string name="sulog_timestamp">Timestamp: %1$s</string>
+  <string name="sulog_restart_number">Restart #%1$s</string>
+  <string name="sulog_daemon_restarted">Daemon restarted</string>
+  <string name="sulog_lost_count">%1$s lost</string>
+  <string name="sulog_pid">PID %1$s</string>
+  <string name="sulog_uid">UID %1$s</string>
+  <string name="sulog_status_success">Success</string>
+  <string name="sulog_status_exit">Exit %1$d</string>
 </resources>
