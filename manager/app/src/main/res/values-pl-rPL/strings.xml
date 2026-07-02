@@ -12,7 +12,6 @@
   <string name="home_not_installed">Nie zainstalowany</string>
   <string name="home_click_to_install">Naciśnij, aby zainstalować</string>
   <string name="home_working">Działa</string>
-  <string name="home_working_version">Wersja: %1$s (%2$d)</string>
   <string name="home_module_update_count">Aktualizacje: %d</string>
   <string name="home_failure">Nieobsługiwany | Niezintegrowany</string>
   <string name="home_failure_tip">Jądra Non-GKI nie są obsługiwane. Zintegruj sterownik z brancha legacy KernelSU-Next ze swoim jądrem!</string>
@@ -295,4 +294,17 @@
   <string name="profile_flags_desc_no_new_privs">Zapobiegaj dalszej eskalacji uprawnień przez KernelSU w kontekście tego profilu głównego.</string>
   <string name="settings_sulog">DziennikiSU</string>
   <string name="settings_sulog_summary">Rejestruj żądania roota w plikach dziennika su KernelSU.</string>
+  <string name="home_working_version">Wersja: %1$s (%2$s)</string>
+  <string name="sulog_no_log_entries">Brak wpisów dziennika</string>
+  <string name="sulog_dropped">Porzucone</string>
+  <string name="sulog_unknown">Nieznane</string>
+  <string name="sulog_boot_id">ID rozruchu: %1$s</string>
+  <string name="sulog_timestamp">Oznaczenie czasowe: %1$s</string>
+  <string name="sulog_restart_number">Zrestartuj #%1$s</string>
+  <string name="sulog_daemon_restarted">Deamon zrestartowany</string>
+  <string name="sulog_lost_count">%1$s utracono</string>
+  <string name="sulog_pid">PID %1$s</string>
+  <string name="sulog_uid">UID %1$s</string>
+  <string name="sulog_status_success">Zakończono pomyślnie</string>
+  <string name="sulog_status_exit">Wyjdź %1$d</string>
 </resources>
