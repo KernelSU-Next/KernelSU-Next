@@ -294,17 +294,17 @@
   <string name="profile_flags_desc_no_new_privs">Предотвратить повышение привилегий через KernelSU из контекста этого root профиля.</string>
   <string name="settings_sulog">Логи SU</string>
   <string name="settings_sulog_summary">Записывать запросы root в файлы sulog KernelSU.</string>
-  <string name="home_working_version">Version: %1$s (%2$s)</string>
-  <string name="sulog_no_log_entries">No log entries</string>
-  <string name="sulog_dropped">Dropped</string>
-  <string name="sulog_unknown">Unknown</string>
+  <string name="home_working_version">Версия: %1$s (%2$s)</string>
+  <string name="sulog_no_log_entries">Записей в логе нет</string>
+  <string name="sulog_dropped">Прекращено</string>
+  <string name="sulog_unknown">Неизвестно</string>
   <string name="sulog_boot_id">Boot ID: %1$s</string>
-  <string name="sulog_timestamp">Timestamp: %1$s</string>
-  <string name="sulog_restart_number">Restart #%1$s</string>
-  <string name="sulog_daemon_restarted">Daemon restarted</string>
-  <string name="sulog_lost_count">%1$s lost</string>
+  <string name="sulog_timestamp">Время: %1$s</string>
+  <string name="sulog_restart_number">Перезапуск #%1$s</string>
+  <string name="sulog_daemon_restarted">Демон перезагружен</string>
+  <string name="sulog_lost_count">Потеряно: %1$s</string>
   <string name="sulog_pid">PID %1$s</string>
   <string name="sulog_uid">UID %1$s</string>
-  <string name="sulog_status_success">Success</string>
+  <string name="sulog_status_success">Успешно</string>
   <string name="sulog_status_exit">Exit %1$d</string>
 </resources>
