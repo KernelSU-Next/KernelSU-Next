@@ -15,7 +15,7 @@
   <string name="home_module_update_count">Updates: %d</string>
   <string name="home_failure">Nicht unterstützt | Nicht integriert</string>
   <string name="home_failure_tip">Non-GKI Kernel sind nicht unterstützt. Bitte integriere die KernelSU-Next legacy Treiber in deinen Kernel!</string>
-  <string name="home_kernel">Kernel version</string>
+  <string name="home_kernel">Kernel Version</string>
   <string name="hook_mode">Hook mode</string>
   <string name="enable">Aktivieren</string>
   <string name="disable">Deaktivieren</string>
