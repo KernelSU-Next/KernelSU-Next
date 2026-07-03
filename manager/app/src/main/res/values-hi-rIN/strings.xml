@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="issue_report_title">समस्या आ रही है?</string>
-  <string name="issue_report_body">Encountered a bug or have feedback?</string>
-  <string name="issue_report_body_2">Report it as soon as possible!</string>
-  <string name="issue_report_github">Report on GitHub</string>
-  <string name="issue_report_telegram">Contact via Telegram</string>
+  <string name="issue_report_body">क्या कोई बग मिला या कोई फ़ीडबैक है?</string>
+  <string name="issue_report_body_2">जितनी जल्दी हो सके, इसकी रिपोर्ट करें!</string>
+  <string name="issue_report_github">गिटहब पर रिपोर्ट करें</string>
+  <string name="issue_report_telegram">टेलीग्राम के ज़रिए संपर्क करें</string>
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
-  <string name="confirm">Confirm</string>
-  <string name="home">Home</string>
-  <string name="home_not_installed">Not installed</string>
-  <string name="home_click_to_install">Click to install</string>
-  <string name="home_working">Working</string>
+  <string name="confirm">पुष्टि करना</string>
+  <string name="home">घर</string>
+  <string name="home_not_installed">स्थापित नहीं हे</string>
+  <string name="home_click_to_install">स्थापित करने के लिए क्लिक करे</string>
+  <string name="home_working">कार्यरत</string>
   <string name="home_module_update_count">Updates: %d</string>
   <string name="home_failure">Unsupported | Not integrated</string>
   <string name="home_failure_tip">Non-GKI kernels are not supported. Integrate KernelSU-Next legacy driver in your kernel!</string>
