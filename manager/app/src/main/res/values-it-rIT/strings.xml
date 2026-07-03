@@ -279,7 +279,7 @@
   <string name="sulog_filter_title">Filtra per tipo</string>
   <string name="sulog_clean_title">Pulisci log</string>
   <string name="sulog_filter_root_execve">Root execve</string>
-  <string name="sulog_filter_sucompat">Classic SU</string>
+  <string name="sulog_filter_sucompat">SU classico</string>
   <string name="sulog_filter_ioctl_grant_root">Concedi root</string>
   <string name="sulog_filter_daemon_restart">Riavvia demone</string>
   <string name="sulog_entry_unknown_event">Evento sconosciuto</string>
@@ -294,17 +294,17 @@
   <string name="profile_flags_desc_no_new_privs">Evitare un\'ulteriore escalation dei privilegi tramite KernelSU nel contesto di questo profilo di root.</string>
   <string name="settings_sulog">Log SU</string>
   <string name="settings_sulog_summary">Registra le richieste di root nei file di KernelSU sulog.</string>
-  <string name="home_working_version">Version: %1$s (%2$s)</string>
-  <string name="sulog_no_log_entries">No log entries</string>
-  <string name="sulog_dropped">Dropped</string>
-  <string name="sulog_unknown">Unknown</string>
-  <string name="sulog_boot_id">Boot ID: %1$s</string>
-  <string name="sulog_timestamp">Timestamp: %1$s</string>
-  <string name="sulog_restart_number">Restart #%1$s</string>
+  <string name="home_working_version">Versione: %1$s (%2$s)</string>
+  <string name="sulog_no_log_entries">Nessuna voce di registro</string>
+  <string name="sulog_dropped">Caduto</string>
+  <string name="sulog_unknown">Sconosciuto</string>
+  <string name="sulog_boot_id">ID di avvio: %1$s</string>
+  <string name="sulog_timestamp">Marca temporale: %1$s</string>
+  <string name="sulog_restart_number">Riavvio #%1$s</string>
   <string name="sulog_daemon_restarted">Daemon restarted</string>
-  <string name="sulog_lost_count">%1$s lost</string>
+  <string name="sulog_lost_count">%1$s Perso</string>
   <string name="sulog_pid">PID %1$s</string>
   <string name="sulog_uid">UID %1$s</string>
-  <string name="sulog_status_success">Success</string>
-  <string name="sulog_status_exit">Exit %1$d</string>
+  <string name="sulog_status_success">Successo</string>
+  <string name="sulog_status_exit">Esci %1$d</string>
 </resources>
