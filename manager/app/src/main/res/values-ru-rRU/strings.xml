@@ -260,13 +260,13 @@
   <string name="settings_adb_root">ADB Root</string>
   <string name="settings_adb_root_summary">Запускать adbd демон с привилегиями суперпользователя</string>
   <string name="settings_selinux_hide">Скрыть модификации SELinux</string>
-  <string name="settings_selinux_hide_summary">57</string>
+  <string name="settings_selinux_hide_summary">Запретить приложениям обнаруживать изменения SELinux</string>
   <string name="settings_selinux_hide_reboot_required">Перезагрузите чтобы изменения применились</string>
   <string name="settings_selinux_hide_failed">Ошибка: %d</string>
   <string name="allow_shell">Всегда разрешать рут доступ в Shell</string>
   <string name="allow_shell_summary">Всегда разрешать adb shell вызывать команду su. Включайте только при необходимости!</string>
-  <string name="enable_adb">24</string>
-  <string name="enable_adb_summary">106</string>
+  <string name="enable_adb">Принудительно включить Adb при загрузке системы</string>
+  <string name="enable_adb_summary">Принудительно включить отладку по USB и отключить авторизацию ADB. Не включайте эту опцию без крайней необходимости.</string>
   <string name="advanced_options">Расширенные настройки</string>
   <string name="expand">6</string>
   <string name="feature_status_unsupported_summary">Ядро не поддерживает эту функцию</string>
@@ -306,5 +306,5 @@
   <string name="sulog_pid">PID %1$s</string>
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">Успешно</string>
-  <string name="sulog_status_exit">Exit %1$d</string>
+  <string name="sulog_status_exit">Выход %1$d</string>
 </resources>
