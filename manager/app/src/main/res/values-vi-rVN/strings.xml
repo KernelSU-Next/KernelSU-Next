@@ -295,16 +295,16 @@
   <string name="settings_sulog">Nhật ký SU</string>
   <string name="settings_sulog_summary">Ghi lại các yêu cầu quyền root vào các tệp sulog của KernelSU.</string>
   <string name="home_working_version"></string>
-  <string name="sulog_no_log_entries">No log entries</string>
-  <string name="sulog_dropped">Dropped</string>
-  <string name="sulog_unknown">Unknown</string>
+  <string name="sulog_no_log_entries">Không có mục log nào</string>
+  <string name="sulog_dropped">Đã bỏ</string>
+  <string name="sulog_unknown">Không rõ</string>
   <string name="sulog_boot_id">Boot ID: %1$s</string>
-  <string name="sulog_timestamp">Timestamp: %1$s</string>
-  <string name="sulog_restart_number">Restart #%1$s</string>
-  <string name="sulog_daemon_restarted">Daemon restarted</string>
-  <string name="sulog_lost_count">%1$s lost</string>
+  <string name="sulog_timestamp">Dấu thời gian: %1$s</string>
+  <string name="sulog_restart_number">Khởi động lại #%1$s</string>
+  <string name="sulog_daemon_restarted">Đã khởi động lại Daemon</string>
+  <string name="sulog_lost_count">%1$s mất</string>
   <string name="sulog_pid">PID %1$s</string>
   <string name="sulog_uid">UID %1$s</string>
-  <string name="sulog_status_success">Success</string>
-  <string name="sulog_status_exit">Exit %1$d</string>
+  <string name="sulog_status_success">Thành công</string>
+  <string name="sulog_status_exit">Thoát %1$d</string>
 </resources>
