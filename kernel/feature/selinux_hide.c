@@ -35,48 +35,6 @@ static int ksu_selinux_get_sids(void)
 	return (!ksu_sid || !priv_app_sid) ? -1 : 0;
 }
 
-#if defined(CONFIG_KPROBES)
-#include <linux/kprobes.h>
-static struct kprobe *slow_avc_audit_kp;
-
-static int slow_avc_audit_pre_handler(struct kprobe *p, struct pt_regs *regs)
-{
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0) && defined(KSU_COMPAT_USE_SELINUX_STATE)
-	u32 *tsid = (u32 *)&PT_REGS_PARM3(regs);
-#else
-	u32 *tsid = (u32 *)&PT_REGS_PARM2(regs);
-#endif
-	if (ksu_selinux_hide_is_enabled && *tsid == ksu_sid) {
-		*tsid = priv_app_sid;
-	}
-	return 0;
-}
-
-static struct kprobe *init_kprobe(const char *name, kprobe_pre_handler_t handler)
-{
-	struct kprobe *kp = kzalloc(sizeof(*kp), GFP_KERNEL);
-	if (!kp)
-		return NULL;
-	kp->symbol_name = name;
-	kp->pre_handler = handler;
-	if (register_kprobe(kp)) {
-		kfree(kp);
-		return NULL;
-	}
-	return kp;
-}
-
-static void destroy_kprobe(struct kprobe **kp_ptr)
-{
-	if (!*kp_ptr)
-		return;
-	unregister_kprobe(*kp_ptr);
-	synchronize_rcu();
-	kfree(*kp_ptr);
-	*kp_ptr = NULL;
-}
-#endif
-
 static void ksu_selinux_hide_enable(void)
 {
 	if (ksu_selinux_get_sids())

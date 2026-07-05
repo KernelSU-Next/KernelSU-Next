@@ -3,7 +3,7 @@
 
 #include <linux/types.h>
 
-void __init ksu_selinux_hide_init();
-void __exit ksu_selinux_hide_exit();
+void ksu_selinux_hide_init();
+void ksu_selinux_hide_exit();
 
 #endif
