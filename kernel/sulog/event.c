@@ -52,7 +52,7 @@ void ksu_compat_sulog(uint8_t sym)
     unsigned int uid = current_uid().val;
     struct timespec64 ts;
 
-#if KERNEL_VERSION(5, 4, 0) <= LINUX_VERSION_CODE
+#if KERNEL_VERSION(4, 19, 0) <= LINUX_VERSION_CODE
 	ktime_get_boottime_ts64(&ts);
 #else
 	get_monotonic_boottime(&ts);
@@ -87,7 +87,7 @@ int ksu_sulog_handle_compat_dump(void __user *uptr)
     if (!sbuf.index_ptr || !sbuf.buf_ptr || !sbuf.uptime_ptr)
         return 1;
 
-#if KERNEL_VERSION(5, 4, 0) <= LINUX_VERSION_CODE
+#if KERNEL_VERSION(4, 19, 0) <= LINUX_VERSION_CODE
 	ktime_get_boottime_ts64(&ts);
 #else
 	get_monotonic_boottime(&ts);
