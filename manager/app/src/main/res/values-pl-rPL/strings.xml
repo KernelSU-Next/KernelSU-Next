@@ -4,7 +4,7 @@
   <string name="issue_report_body">Znalazłeś błąd lub chcesz podzielić się opinią?</string>
   <string name="issue_report_body_2">Zgłoś to jak najszybciej!</string>
   <string name="issue_report_github">Zgłoś na GitHub</string>
-  <string name="issue_report_telegram">Kontakt przez Telegrama</string>
+  <string name="issue_report_telegram">Kontakt przez Telegram</string>
   <string name="issue_report_github_link">https://github.com/KernelSU-Next/KernelSU-Next/issues</string>
   <string name="issue_report_telegram_link">https://t.me/ksunext</string>
   <string name="confirm">Potwierdź</string>
