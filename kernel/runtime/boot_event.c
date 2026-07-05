@@ -29,7 +29,6 @@ void on_post_fs_data(void)
 
 	ksu_load_allow_list();
 	ksu_observer_init();
-	ksu_selinux_hide_status_handle_post_fs_data();
 	// sanity check, this may influence the performance
 	stop_input_hook();
 }

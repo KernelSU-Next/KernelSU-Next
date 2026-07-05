@@ -179,7 +179,6 @@ static void ksu_initialize_selinux_tw_func(struct callback_head *cb)
 {
 	apply_kernelsu_rules();
 	cache_sid();
-	ksu_selinux_hide_status_handle_second_stage();
 	setup_ksu_cred();
 	kfree(cb);
 }
