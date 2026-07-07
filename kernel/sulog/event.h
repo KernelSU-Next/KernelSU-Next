@@ -1,7 +1,12 @@
 #ifndef __KSU_H_SULOG_EVENT
 #define __KSU_H_SULOG_EVENT
 
+#include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 #include <linux/compiler_types.h>
+#else
+#include <linux/compiler.h>
+#endif
 #include <linux/gfp.h>
 #include <linux/init.h>
 #include <linux/types.h>

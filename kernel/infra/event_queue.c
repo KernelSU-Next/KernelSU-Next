@@ -11,6 +11,20 @@
 
 #include "infra/event_queue.h"
 
+#include <linux/version.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 16, 0)
+#ifndef EPOLLIN
+#define EPOLLIN POLLIN
+#endif
+#ifndef EPOLLRDNORM
+#define EPOLLRDNORM POLLRDNORM
+#endif
+#ifndef EPOLLHUP
+#define EPOLLHUP POLLHUP
+#endif
+#endif
+
+
 struct ksu_event_queue_node {
     struct list_head list;
     struct ksu_event_record_hdr hdr;
