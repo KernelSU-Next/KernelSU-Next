@@ -293,7 +293,7 @@ Kontynuować?"</string>
     <string name="sulog_unknown">Nieznany</string>
     <string name="sulog_unsupported_title">Dzienniki su są nieobsługiwane</string>
     <string name="superuser">Dostęp do roota</string>
-    <string name="support">Wsparcie</string>
+    <string name="support">Wesprzyj</string>
     <string name="supported">Obsługiwany</string>
     <string name="system_default">Domyślny systemowy</string>
     <string name="uapi_mismatch">Wersja interfejsu API przestrzeni użytkownika %1$d menedżera i interfejs API przestrzeni użytkownika %2$d sterownika KernelSU nie pasują do siebie.</string>
