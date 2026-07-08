@@ -37,6 +37,12 @@
 #define KSU_APP_PROFILE_PRESERVE_UID 9999 // NOBODY_UID
 #define KSU_DEFAULT_SELINUX_DOMAIN "u:r:" KERNEL_SU_DOMAIN ":s0"
 
+#if defined(KSU_NOT_HAS_FALLTHROUGH)
+#  define fallthrough __attribute__((__fallthrough__))
+# else
+#  define fallthrough do {} while (0) /* fallthrough */
+#endif
+
 static DEFINE_MUTEX(allowlist_mutex);
 
 // default profiles, these may be used frequently, so we cache it
@@ -317,7 +323,7 @@ static void migrate_profile(u32 version, struct app_profile *profile)
                 pr_info("migrated domain of profile: %s\n", profile->key);
             }
         }
-        // no fallthrough here temporarily
+        fallthrough;
     case 3:
         if (profile->allow_su) {
             profile->rp_config.profile.flags = FLAG_KSU_NO_NEW_PRIVS;
