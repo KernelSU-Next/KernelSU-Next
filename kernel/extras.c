@@ -100,10 +100,10 @@ int ksu_handle_slow_avc_audit(u32 *tsid)
 #include <linux/kprobes.h>
 #include <linux/slab.h>
 #include "arch.h"
-static struct kprobe *slow_avc_audit_kp;
+struct kprobe *slow_avc_audit_kp;
 //	.symbol_name = "slow_avc_audit",
 //	.pre_handler = slow_avc_audit_pre_handler,
-static int slow_avc_audit_pre_handler(struct kprobe *p, struct pt_regs *regs)
+int slow_avc_audit_pre_handler(struct kprobe *p, struct pt_regs *regs)
 {
 	if (atomic_read(&disable_spoof))
 		return 0;
@@ -130,7 +130,7 @@ static int slow_avc_audit_pre_handler(struct kprobe *p, struct pt_regs *regs)
 }
 
 // copied from upstream
-static struct kprobe *init_kprobe(const char *name,
+struct kprobe *init_kprobe(const char *name,
 				  kprobe_pre_handler_t handler)
 {
 	struct kprobe *kp = kzalloc(sizeof(struct kprobe), GFP_KERNEL);
@@ -148,7 +148,7 @@ static struct kprobe *init_kprobe(const char *name,
 
 	return kp;
 }
-static void destroy_kprobe(struct kprobe **kp_ptr)
+void destroy_kprobe(struct kprobe **kp_ptr)
 {
 	struct kprobe *kp = *kp_ptr;
 	if (!kp)

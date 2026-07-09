@@ -18,10 +18,21 @@
 #include "selinux/selinux.h"
 #include "feature/selinux_hide.h"
 
+#if defined(CONFIG_KPROBES)
+extern struct kprobe *init_kprobe(const char *name, int (*pre_handler)(struct kprobe *, struct pt_regs *));
+extern void destroy_kprobe(struct kprobe **kp_ptr);
+extern int slow_avc_audit_pre_handler(struct kprobe *p, struct pt_regs *regs);
+extern struct kprobe *slow_avc_audit_kp;
+#endif
+
 static struct page *fake_status = NULL;
 static DEFINE_MUTEX(fake_status_init_mutex);
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
+extern bool ksu_input_hook __read_mostly __attribute__((weak));
+#else
 extern bool ksu_input_hook __read_mostly;
+#endif
 extern struct selinux_state selinux_state;
 
 // enabled by default
@@ -32,9 +43,15 @@ static u32 priv_app_sid __read_mostly = 0;
 
 static int ksu_selinux_get_sids(void)
 {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
+	int err1 = security_context_to_sid("u:r:ksu:s0", strlen("u:r:ksu:s0"), &ksu_sid, GFP_KERNEL);
+    int err2 = security_context_to_sid("u:r:priv_app:s0:c512,c768", 
+                                       strlen("u:r:priv_app:s0:c512,c768"), &priv_app_sid, GFP_KERNEL);
+#else
 	int err1 = security_secctx_to_secid("u:r:ksu:s0", strlen("u:r:ksu:s0"), &ksu_sid);
 	int err2 = security_secctx_to_secid("u:r:priv_app:s0:c512,c768",
 					     strlen("u:r:priv_app:s0:c512,c768"), &priv_app_sid);
+#endif
 	if (!err1) pr_info("ksu_selinux_hide: ksu_sid=%u\n", ksu_sid);
 	if (!err2) pr_info("ksu_selinux_hide: priv_app_sid=%u\n", priv_app_sid);
 	return (!ksu_sid || !priv_app_sid) ? -1 : 0;
