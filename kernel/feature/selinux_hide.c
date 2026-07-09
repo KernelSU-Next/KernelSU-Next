@@ -40,22 +40,6 @@ static int ksu_selinux_get_sids(void)
 	return (!ksu_sid || !priv_app_sid) ? -1 : 0;
 }
 
-static void ksu_selinux_hide_enable(void)
-{
-	if (ksu_selinux_get_sids())
-		pr_warn("ksu_selinux_hide: sid grab failed\n");
-#if defined(CONFIG_KPROBES)
-	slow_avc_audit_kp = init_kprobe("slow_avc_audit", slow_avc_audit_pre_handler);
-#endif
-}
-
-static void ksu_selinux_hide_disable(void)
-{
-#if defined(CONFIG_KPROBES)
-	destroy_kprobe(&slow_avc_audit_kp);
-#endif
-}
-
 static void initialize_fake_status(void)
 {
 	if (READ_ONCE(fake_status))
@@ -118,7 +102,7 @@ static int __nocfi my_sel_open_handle_status(struct inode *inode, struct file *f
 		   ksu_selinux_hide_is_enabled)) {
 		struct page *data = READ_ONCE(fake_status);
 		if (data) {
-			filp->private_data = page_address(data);
+			filp->private_data = data;
 			return 0;
 		}
 	}
@@ -231,11 +215,6 @@ static int selinux_hide_status_feature_set(u64 value)
 	}
 	ksu_selinux_hide_is_enabled = enable;
 
-	if (!ksu_selinux_hide_is_enabled)
-		ksu_selinux_hide_disable();
-	else
-		ksu_selinux_hide_enable();
-
 	pr_info("ksu_selinux_hide: set to %d\n", enable);
 	return 0;
 }
@@ -253,9 +232,6 @@ static int ksu_hide_init_thread(void *data)
 
 	while (READ_ONCE(ksu_input_hook))
 		msleep(5000);
-
-	if (ksu_selinux_hide_is_enabled)
-		ksu_selinux_hide_enable();
 
 	int tries = 0;
 try_again:
@@ -287,7 +263,6 @@ void __exit ksu_selinux_hide_exit(void)
 {
 	ksu_unregister_feature_handler(KSU_FEATURE_SELINUX_HIDE_STATUS);
 	unhook_selinux_status_open();
-	ksu_selinux_hide_disable();
 	mutex_lock(&fake_status_init_mutex);
 	if (fake_status) {
 		__free_page(fake_status);
