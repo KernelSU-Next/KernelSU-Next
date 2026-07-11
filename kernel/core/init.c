@@ -26,7 +26,7 @@
 #include "feature/sulog.h"
 #include "infra/symbol_resolver.h"
 
-#if defined(__x86_64__)
+#if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
 #include <asm/cpufeature.h>
 #include <linux/version.h>
 #ifndef X86_FEATURE_INDIRECT_SAFE
@@ -86,8 +86,8 @@ module_param_named(norc, ksu_no_custom_rc, bool, 0);
 
 int __init kernelsu_init(void)
 {
-#if defined(__x86_64__)
-    // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set 
+#if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
+    // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set
     if (!boot_cpu_has(X86_FEATURE_INDIRECT_SAFE)) {
         pr_alert("*************************************************************");
         pr_alert("**     NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE NOTICE    **");
