@@ -28,7 +28,7 @@ jobs:
       run: |
         LLVM_BIN=$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin
         export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER="$LLVM_BIN/aarch64-linux-android26-clang"
-        export RUSTFLAGS="-C link-arg=-no-pie"
+        export RUSTFLAGS="-C link-arg=-Wno-unused-command-line-argument"
         cd userspace/ksuinit
         cargo build --target=aarch64-unknown-linux-musl --release
 
