@@ -88,9 +88,9 @@ fun createRootShell(globalMnt: Boolean = false): Shell {
     }
 }
 
-fun execKsud(args: String, newShell: Boolean = false): Boolean {
+fun execKsud(args: String, newShell: Boolean = false, globalMnt: Boolean = false): Boolean {
     return if (newShell) {
-        withNewRootShell {
+        withNewRootShell(globalMnt = globalMnt) {
             ShellUtils.fastCmdResult(this, "${getKsuDaemonPath()} $args")
         }
     } else {
@@ -400,7 +400,7 @@ fun installBoot(
 fun reboot(reason: String = "") {
     if (reason == "soft-reboot") {
         // ksud (userspace)
-        com.rifsxd.ksunext.ui.util.execKsud("soft-reboot")
+        com.rifsxd.ksunext.ui.util.execKsud("soft-reboot", true, true)
         return
     }
 
