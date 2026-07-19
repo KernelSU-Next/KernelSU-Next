@@ -313,7 +313,11 @@ static void migrate_profile(u32 version, struct app_profile *profile)
         if (profile->allow_su) {
             domain = profile->rp_config.profile.selinux_domain;
             if (strncmp(domain, "u:r:su:s0", domain_len) == 0) {
-                strscpy_pad(domain, KSU_DEFAULT_SELINUX_DOMAIN, domain_len);
+                strscpy(domain, KSU_DEFAULT_SELINUX_DOMAIN, domain_len);
+                /* 手动填充剩余字节为 0 */
+                size_t len = strlen(KSU_DEFAULT_SELINUX_DOMAIN);
+                if (len < domain_len)
+                    memset(domain + len, 0, domain_len - len);
                 pr_info("migrated domain of profile: %s\n", profile->key);
             }
         }
