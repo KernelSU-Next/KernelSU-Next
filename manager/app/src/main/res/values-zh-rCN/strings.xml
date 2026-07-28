@@ -305,6 +305,6 @@
   <string name="sulog_lost_count">丢失 %1$s 条</string>
   <string name="sulog_pid">PID %1$s</string>
   <string name="sulog_uid">UID %1$s</string>
-  <string name="sulog_status_success">Success</string>
-  <string name="sulog_status_exit">Exit %1$d</string>
+  <string name="sulog_status_success">成功</string>
+  <string name="sulog_status_exit">退出码 %1$d</string>
 </resources>
