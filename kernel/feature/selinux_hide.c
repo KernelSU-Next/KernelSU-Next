@@ -18,7 +18,7 @@
 #include "selinux/selinux.h"
 #include "feature/selinux_hide.h"
 
-#if defined(CONFIG_KPROBES)
+#if defined(CONFIG_KSU_KPROBES_HOOK)
 extern struct kprobe *init_kprobe(const char *name, int (*pre_handler)(struct kprobe *, struct pt_regs *));
 extern void destroy_kprobe(struct kprobe **kp_ptr);
 extern int slow_avc_audit_pre_handler(struct kprobe *p, struct pt_regs *regs);
@@ -61,14 +61,14 @@ static void ksu_selinux_hide_enable(void)
 {
 	if (ksu_selinux_get_sids())
 		pr_warn("ksu_selinux_hide: sid grab failed\n");
-#if defined(CONFIG_KPROBES)
+#if defined(CONFIG_KSU_KPROBES_HOOK)
 	slow_avc_audit_kp = init_kprobe("slow_avc_audit", slow_avc_audit_pre_handler);
 #endif
 }
 
 static void ksu_selinux_hide_disable(void)
 {
-#if defined(CONFIG_KPROBES)
+#if defined(CONFIG_KSU_KPROBES_HOOK)
 	destroy_kprobe(&slow_avc_audit_kp);
 #endif
 }
