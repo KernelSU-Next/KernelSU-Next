@@ -208,15 +208,13 @@ $(shell sed -i 's/return inode->i_security/return selinux_inode(inode)/g' $(srct
 $(shell sed -i 's/\bisec = inode->i_security;/isec = selinux_inode(inode);/' $(srctree)/security/selinux/hooks.c)
 endif
 
-ifneq ($(shell grep -q "selinux_cred" $(srctree)/security/selinux/hooks.c; echo $$?),0)
+ifneq ($(shell grep -Eq 'selinux_cred\(.*\)' $(srctree)/security/selinux/hooks.c; echo $$?),0)
 $(info -- KSU_NEXT: patching selinux/hooks.c for selinux_cred)
 $(shell sed -i 's/tsec = cred->security;/tsec = selinux_cred(cred);/g' $(srctree)/security/selinux/hooks.c)
 $(shell sed -i 's/const struct task_security_struct \*tsec = cred->security;/const struct task_security_struct *tsec = selinux_cred(cred);/g' $(srctree)/security/selinux/hooks.c)
 $(shell sed -i 's/const struct task_security_struct \*tsec = current_security();/const struct task_security_struct *tsec = selinux_cred(current_cred());/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/rc = selinux_determine_inode_label(current_security())/rc = selinux_determine_inode_label(selinux_cred(current_cred()))/g' $(srctree)/security/selinux/hooks.c)
 $(shell sed -i 's/old_tsec = current_security();/old_tsec = selinux_cred(current_cred());/g' $(srctree)/security/selinux/hooks.c)
 $(shell sed -i 's/new_tsec = bprm->cred->security;/new_tsec = selinux_cred(bprm->cred);/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/rc = selinux_determine_inode_label(old->security)/rc = selinux_determine_inode_label(selinux_cred(old))/g' $(srctree)/security/selinux/hooks.c)
 $(shell sed -i 's/tsec = new->security;/tsec = selinux_cred(new);/g' $(srctree)/security/selinux/hooks.c)
 $(shell sed -i 's/tsec = new_creds->security;/tsec = selinux_cred(new_creds);/g' $(srctree)/security/selinux/hooks.c)
 $(shell sed -i 's/old_tsec = old->security;/old_tsec = selinux_cred(old);/g' $(srctree)/security/selinux/hooks.c)
@@ -224,6 +222,8 @@ $(shell sed -i 's/const struct task_security_struct \*old_tsec = old->security;/
 $(shell sed -i 's/struct task_security_struct \*tsec = new->security;/struct task_security_struct *tsec = selinux_cred(new);/g' $(srctree)/security/selinux/hooks.c)
 $(shell sed -i 's/__tsec = current_security();/__tsec = selinux_cred(current_cred());/' $(srctree)/security/selinux/hooks.c)
 $(shell sed -i 's/__tsec = __task_cred(p)->security;/__tsec = selinux_cred(__task_cred(p));/' $(srctree)/security/selinux/hooks.c)
+$(shell sed -i 's/current_security()/selinux_cred(current_cred())/g' $(srctree)/security/selinux/hooks.c)
+$(shell sed -i 's/old->security/selinux_cred(old)/g' $(srctree)/security/selinux/hooks.c)
 endif
 
 ifneq ($(shell grep -q "selinux_inode(inode)" $(srctree)/security/selinux/selinuxfs.c; echo $$?),0)
