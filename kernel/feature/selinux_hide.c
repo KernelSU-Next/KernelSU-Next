@@ -122,10 +122,9 @@ static int __nocfi my_sel_open_handle_status(struct inode *inode, struct file *f
 
 #define FORCE_VOLATILE(x) *(volatile typeof(x) *)&(x)
 
-static int patch_fops_open(struct file_operations *ops,
-			    sel_open_handle_status_fn new_open)
+static int patch_fops_open(void *slot_addr, void *new_fn)
 {
-	unsigned long addr = (unsigned long)&ops->open;
+	unsigned long addr = (unsigned long)slot_addr;
 	unsigned long base = addr & PAGE_MASK;
 	unsigned long offset = addr & ~PAGE_MASK;
 	
@@ -141,7 +140,7 @@ void *writable_addr = vmap(&page, 1, VM_MAP, PAGE_KERNEL);
 
 	preempt_disable();
 	local_irq_disable();
-	FORCE_VOLATILE(*target_slot) = (void *)new_open;
+	FORCE_VOLATILE(*target_slot) = new_fn;
 	local_irq_enable();
 	preempt_enable();
 
@@ -170,7 +169,7 @@ static int resolve_fops(const char *path_str, struct file_operations **out_fops)
 	ret = 0;
 out:
 	path_put(&path);
-	return ret;
+		return ret;
 }
 
 static void hook_selinux_status_open(void)
@@ -190,14 +189,14 @@ static void hook_selinux_status_open(void)
 	}
 	
 	orig_sel_open_handle_status = ops->open;
-	patch_fops_open(ops, my_sel_open_handle_status);
+	patch_fops_slot(&ops->open, my_sel_open_handle_status);
 	pr_info("ksu_selinux_hide: hooked sel_handle_status_ops->open\n");
 }
 
 static void unhook_selinux_status_open(void)
 {
 	if (!orig_sel_open_handle_status)
-	return;
+		return;
 
 	struct file_operations *ops = NULL;
 	if (resolve_fops("/sys/fs/selinux/status", &ops)) {
@@ -205,9 +204,73 @@ static void unhook_selinux_status_open(void)
 		return;
 }
 
-	patch_fops_open(ops, orig_sel_open_handle_status);
+	patch_fops_slot(&ops->open, my_sel_open_handle_status);
 	orig_sel_open_handle_status = NULL;
 	pr_info("ksu_selinux_hide: unhooked sel_handle_status_ops->open\n");
+}
+
+typedef ssize_t (*selinux_transaction_write_fn)(struct file *file, const char __user *buf,
+						  size_t size, loff_t *pos);
+static selinux_transaction_write_fn orig_selinux_transaction_write = NULL;
+
+static __nocfi ssize_t my_selinux_transaction_write(struct file *file, const char __user *buf,
+						      size_t size, loff_t *pos)
+{
+	if (unlikely(!ksu_selinux_hide_is_enabled))
+		goto pass_through;
+
+	if (!test_thread_flag(TIF_SECCOMP))
+		goto pass_through;
+
+	if (current_uid().val < 10000)
+		goto pass_through;
+
+	/* Bare minimum gate: block app-uid writes outright. If you later
+	 * want selective matching (only reject contexts naming ksu/priv_app),
+	 * copy_from_user into a small stack buffer here and strstr against
+	 * ksu_sid/priv_app_sid-derived strings before deciding. */
+	pr_info("ksu_selinux_hide: blocked transaction_write from uid=%d\n", current_uid().val);
+	return -EINVAL;
+
+pass_through:
+	return orig_selinux_transaction_write(file, buf, size, pos);
+}
+
+static void hook_selinux_transaction_write(void)
+{
+	if (orig_selinux_transaction_write)
+		return;
+
+	struct file_operations *ops = NULL;
+	if (resolve_fops("/sys/fs/selinux/context", &ops)) {
+		pr_err("ksu_selinux_hide: context ops not found, write hijack disabled\n");
+		return;
+	}
+
+	if (!ops->write) {
+		pr_err("ksu_selinux_hide: context ops->write is NULL\n");
+		return;
+	}
+
+	orig_selinux_transaction_write = ops->write;
+	patch_fops_slot(&ops->write, my_selinux_transaction_write);
+	pr_info("ksu_selinux_hide: hooked context ops->write\n");
+}
+
+static void unhook_selinux_transaction_write(void)
+{
+	if (!orig_selinux_transaction_write)
+		return;
+
+	struct file_operations *ops = NULL;
+	if (resolve_fops("/sys/fs/selinux/context", &ops)) {
+		pr_err("ksu_selinux_hide: context ops not found on unhook\n");
+		return;
+	}
+
+	patch_fops_slot(&ops->write, orig_selinux_transaction_write);
+	orig_selinux_transaction_write = NULL;
+	pr_info("ksu_selinux_hide: unhooked context ops->write\n");
 }
 
 static int selinux_hide_status_feature_get(u64 *value)
@@ -245,6 +308,8 @@ static int ksu_hide_init_thread(void *data)
 		msleep(5000);
 #endif
 
+	hook_selinux_transaction_write();
+
 	int tries = 0;
 try_again:
 	initialize_fake_status();
@@ -275,6 +340,7 @@ void __exit ksu_selinux_hide_exit(void)
 {
 	ksu_unregister_feature_handler(KSU_FEATURE_SELINUX_HIDE_STATUS);
 	unhook_selinux_status_open();
+	unhook_selinux_transaction_write();
 	mutex_lock(&fake_status_init_mutex);
 	if (fake_status) {
 		__free_page(fake_status);
