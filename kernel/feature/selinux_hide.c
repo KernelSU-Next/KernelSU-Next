@@ -18,13 +18,6 @@
 #include "selinux/selinux.h"
 #include "feature/selinux_hide.h"
 
-#if defined(CONFIG_KSU_KPROBES_HOOK)
-extern struct kprobe *init_kprobe(const char *name, int (*pre_handler)(struct kprobe *, struct pt_regs *));
-extern void destroy_kprobe(struct kprobe **kp_ptr);
-extern int slow_avc_audit_pre_handler(struct kprobe *p, struct pt_regs *regs);
-extern struct kprobe *slow_avc_audit_kp;
-#endif
-
 static struct page *fake_status = NULL;
 static DEFINE_MUTEX(fake_status_init_mutex);
 
@@ -55,22 +48,6 @@ static int ksu_selinux_get_sids(void)
 	if (!err1) pr_info("ksu_selinux_hide: ksu_sid=%u\n", ksu_sid);
 	if (!err2) pr_info("ksu_selinux_hide: priv_app_sid=%u\n", priv_app_sid);
 	return (!ksu_sid || !priv_app_sid) ? -1 : 0;
-}
-
-static void ksu_selinux_hide_enable(void)
-{
-	if (ksu_selinux_get_sids())
-		pr_warn("ksu_selinux_hide: sid grab failed\n");
-#if defined(CONFIG_KSU_KPROBES_HOOK)
-	slow_avc_audit_kp = init_kprobe("slow_avc_audit", slow_avc_audit_pre_handler);
-#endif
-}
-
-static void ksu_selinux_hide_disable(void)
-{
-#if defined(CONFIG_KSU_KPROBES_HOOK)
-	destroy_kprobe(&slow_avc_audit_kp);
-#endif
 }
 
 static void initialize_fake_status(void)
@@ -248,11 +225,6 @@ static int selinux_hide_status_feature_set(u64 value)
 	}
 	ksu_selinux_hide_is_enabled = enable;
 
-	if (!ksu_selinux_hide_is_enabled)
-		ksu_selinux_hide_disable();
-	else
-		ksu_selinux_hide_enable();
-
 	pr_info("ksu_selinux_hide: set to %d\n", enable);
 	return 0;
 }
@@ -268,11 +240,10 @@ static int ksu_hide_init_thread(void *data)
 {
 	set_user_nice(current, 19);
 
+#ifndef CONFIG_KSU_KPROBES_HOOK
 	while (READ_ONCE(ksu_input_hook))
 		msleep(5000);
-
-	if (ksu_selinux_hide_is_enabled)
-		ksu_selinux_hide_enable();
+#endif
 
 	int tries = 0;
 try_again:
@@ -304,7 +275,6 @@ void __exit ksu_selinux_hide_exit(void)
 {
 	ksu_unregister_feature_handler(KSU_FEATURE_SELINUX_HIDE_STATUS);
 	unhook_selinux_status_open();
-	ksu_selinux_hide_disable();
 	mutex_lock(&fake_status_init_mutex);
 	if (fake_status) {
 		__free_page(fake_status);
