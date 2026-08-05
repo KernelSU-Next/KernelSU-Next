@@ -23,7 +23,7 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v7
 
     - name: Build kernelsu.ko
       run: |
@@ -52,7 +52,7 @@ jobs:
         echo "Size after stripping: $(du -h "$OUT_DIR/$OUTPUT_NAME" | cut -f1)"
 
     - name: Upload kernelsu.ko artifact
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v7
       with:
         name: aarch64-${{ inputs.kmi }}-lkm
         path: /github/workspace/out/aarch64/${{ inputs.kmi }}_kernelsu.ko
