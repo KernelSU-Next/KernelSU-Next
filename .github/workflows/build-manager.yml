@@ -107,7 +107,7 @@ jobs:
               echo KEY_PASSWORD='${{ secrets.KEY_PASSWORD }}'
               echo KEYSTORE_FILE='key.jks'
             } >> gradle.properties
-            echo ${{ secrets.KEYSTORE }} | base64 -d > key.jks
+            echo "${{ secrets.KEYSTORE }}" | base64 -d > key.jks
           fi
 
       - name: Setup Java
