@@ -31,7 +31,7 @@ jobs:
         export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER="$LLVM_BIN/aarch64-linux-android26-clang"
         export RUSTFLAGS="-C link-arg=-Wno-unused-command-line-argument"
         cd userspace/ksuinit
-        cargo build --target=aarch64-unknown-linux-musl --release
+        cargo build --package ksuinit --target=aarch64-unknown-linux-musl --release
 
     - name: Upload ksuinit artifact
       uses: actions/upload-artifact@v7
