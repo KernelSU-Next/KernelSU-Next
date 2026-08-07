@@ -3,6 +3,9 @@
 #include <linux/task_work.h>
 #include <asm/current.h>
 #include <linux/compat.h>
+#ifdef KSU_KPROBES_HOOK
+#include <linux/completion.h>
+#endif
 #include <linux/cred.h>
 #include <linux/dcache.h>
 #include <linux/err.h>
@@ -71,6 +74,7 @@ void stop_input_hook();
 static struct work_struct __maybe_unused stop_init_rc_hook_work;
 static struct work_struct __maybe_unused stop_execve_hook_work;
 static struct work_struct __maybe_unused stop_input_hook_work;
+DECLARE_COMPLETION(stop_input_hook_work_complete);
 #else
 bool ksu_init_rc_hook __read_mostly = true;
 bool __maybe_unused ksu_vfs_read_hook = true;
@@ -694,6 +698,7 @@ static void do_stop_execve_hook(struct work_struct *work)
 static void do_stop_input_hook(struct work_struct *work)
 {
 	unregister_kprobe(&input_event_kp);
+	complete(&stop_input_hook_work_complete);
 }
 #else
 static int ksu_execve_ksud_common(const char __user *filename_user,
