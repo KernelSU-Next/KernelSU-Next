@@ -129,7 +129,7 @@ static int __nocfi my_sel_open_handle_status(struct inode *inode, struct file *f
 
 #define FORCE_VOLATILE(x) *(volatile typeof(x) *)&(x)
 
-static int patch_fops_open(void *slot_addr, void *new_fn)
+static int patch_fops_slot(void *slot_addr, void *new_fn)
 {
 	unsigned long addr = (unsigned long)slot_addr;
 	unsigned long base = addr & PAGE_MASK;
