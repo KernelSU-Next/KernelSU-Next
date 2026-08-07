@@ -413,13 +413,11 @@ class WebViewInterface(
             val tmpFile = File.createTempFile("webuinext_write", null, context.cacheDir)
             tmpFile.writeText(content)
             val cmd = "cat '${tmpFile.absolutePath.replace("'", "'\\''")}' > '${path.replace("'", "'\\''")}'"
-            var result = ""
-            withNewRootShell(true) {
-                result = ShellUtils.fastCmd(this, cmd)
-                this.close()
+            val result = withNewRootShell(true) {
+                ShellUtils.fastCmdResult(this, cmd)
             }
             tmpFile.delete()
-            result.isNotEmpty()
+            result
         } catch (e: Exception) {
             false
         }
@@ -429,12 +427,9 @@ class WebViewInterface(
     fun removeFile(path: String): Boolean {
         return try {
             val cmd = "rm -rf '${path.replace("'", "'\\''")}'"
-            var result = ""
             withNewRootShell(true) {
-                result = ShellUtils.fastCmd(this, cmd)
-                this.close()
+                ShellUtils.fastCmdResult(this, cmd)
             }
-            result.isNotEmpty()
         } catch (e: Exception) {
             false
         }
@@ -444,12 +439,9 @@ class WebViewInterface(
     fun moveFile(src: String, dest: String): Boolean {
         return try {
             val cmd = "mv '${src.replace("'", "'\\''")}' '${dest.replace("'", "'\\''")}'"
-            var result = ""
             withNewRootShell(true) {
-                result = ShellUtils.fastCmd(this, cmd)
-                this.close()
+                ShellUtils.fastCmdResult(this, cmd)
             }
-            result.isNotEmpty()
         } catch (e: Exception) {
             false
         }
@@ -459,12 +451,9 @@ class WebViewInterface(
     fun copyFile(src: String, dest: String): Boolean {
         return try {
             val cmd = "cp -a '${src.replace("'", "'\\''")}' '${dest.replace("'", "'\\''")}'"
-            var result = ""
             withNewRootShell(true) {
-                result = ShellUtils.fastCmd(this, cmd)
-                this.close()
+                ShellUtils.fastCmdResult(this, cmd)
             }
-            result.isNotEmpty()
         } catch (e: Exception) {
             false
         }
