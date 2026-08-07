@@ -133,7 +133,7 @@ static bool check_block(struct file *fp, loff_t *pos, loff_t block_end, unsigned
 	if (ksu_sha256(cert, certificate_size, digest)) {
 		pr_info("sha256 error\n");
 		return false;
-    }
+	}
 
 	char hash_str[SHA256_DIGEST_SIZE * 2 + 1];
 	hash_str[SHA256_DIGEST_SIZE * 2] = '\0';
@@ -273,7 +273,7 @@ static __always_inline bool check_v2_signature(char *path,
 	// Each valid pair consumes an 8-byte length plus at least a 4-byte ID, so
 	// malformed entries fail below instead of spinning in place.
 	while (pos < pairs_end) {
-        uint32_t id;
+		uint32_t id;
 		u64 size_of_pair;
 		loff_t pair_end;
 
@@ -286,16 +286,16 @@ static __always_inline bool check_v2_signature(char *path,
 		if (!read_exact(fp, &id, sizeof(id), &pos, pair_end))
 			goto invalid;
 
-        if (id == 0x7109871au) {
-            v2_signing_blocks++;
-		v2_signing_valid = check_block(fp, &pos, pair_end, expected_size, expected_sha256);
-        } else if (id == 0xf05368c0u) {
-            // http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#73
-            v3_signing_exist = true;
-        } else if (id == 0x1b93ad61u) {
-            // http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#74
-            v3_1_signing_exist = true;
-        } else {
+		if (id == 0x7109871au) {
+			v2_signing_blocks++;
+			v2_signing_valid = check_block(fp, &pos, pair_end, expected_size, expected_sha256);
+		} else if (id == 0xf05368c0u) {
+			// http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#73
+			v3_signing_exist = true;
+		} else if (id == 0x1b93ad61u) {
+			// http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#74
+			v3_1_signing_exist = true;
+		} else {
 #ifdef CONFIG_KSU_DEBUG
 			pr_info("Unknown id: 0x%08x\n", id);
 #endif
@@ -305,7 +305,7 @@ static __always_inline bool check_v2_signature(char *path,
 
 	if (v2_signing_blocks != 1) {
 #ifdef CONFIG_KSU_DEBUG
-        pr_err("Unexpected v2 signature count: %d\n", v2_signing_blocks);
+		pr_err("Unexpected v2 signature count: %d\n", v2_signing_blocks);
 #endif
 		v2_signing_valid = false;
 	}
