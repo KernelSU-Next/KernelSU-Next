@@ -1,3 +1,6 @@
+#ifdef KSU_KPROBES_HOOK
+#include <linux/completion.h>
+#endif
 #include <linux/fs.h>
 #include <linux/jump_label.h>
 #include <linux/mm.h>
@@ -21,10 +24,14 @@
 static struct page *fake_status = NULL;
 static DEFINE_MUTEX(fake_status_init_mutex);
 
+#ifndef KSU_KPROBES_HOOK
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 extern bool ksu_input_hook __read_mostly __attribute__((weak));
 #else
 extern bool ksu_input_hook __read_mostly;
+#endif
+#else
+extern void ksu_wait_stop_input_hook(void);
 #endif
 extern struct selinux_state selinux_state;
 
@@ -303,9 +310,11 @@ static int ksu_hide_init_thread(void *data)
 {
 	set_user_nice(current, 19);
 
-#ifndef CONFIG_KSU_KPROBES_HOOK
+#ifndef KSU_KPROBES_HOOK
 	while (READ_ONCE(ksu_input_hook))
 		msleep(5000);
+#else
+	ksu_wait_stop_input_hook();
 #endif
 
 	hook_selinux_transaction_write();
