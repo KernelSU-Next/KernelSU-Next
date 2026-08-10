@@ -25,6 +25,11 @@ apksign {
 android {
     namespace = "com.rifsxd.ksunext"
 
+    defaultConfig {
+        versionCode = rootProject.extra["managerVersionCode"] as Int
+        versionName = rootProject.extra["managerVersionName"] as String
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
