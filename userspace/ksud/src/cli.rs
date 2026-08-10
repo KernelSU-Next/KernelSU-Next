@@ -6,6 +6,7 @@ use android_logger::Config;
 use log::{LevelFilter, info};
 
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
+use crate::lkm_image::BootPatchV2Args;
 use crate::module::regenerate_preinit_rc;
 use crate::{apk_sign, assets, debug, defs, ksu_uapi, init_event, ksucalls, module, module_config, sulog, susfsd, utils};
 
@@ -100,6 +101,11 @@ enum Commands {
 
     /// Restore boot or init_boot images patched by KernelSU
     BootRestore(BootRestoreArgs),
+
+    /// Patch KernelSU into a boot image
+    ///
+    /// Always operates on a boot image; never selects init_boot or vendor_boot.
+    BootPatchV2(BootPatchV2Args),
 
     /// Show boot information
     BootInfo {
@@ -751,6 +757,7 @@ pub fn run() -> Result<()> {
             }
         },
         Commands::BootRestore(boot_restore) => crate::boot_patch::restore(boot_restore),
+        Commands::BootPatchV2(patch) => crate::lkm_image::patch_boot(&patch),
         Commands::Resetprop { args } => {
             let mut full_args = vec!["resetprop".to_string()];
             full_args.extend(args);
