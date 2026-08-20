@@ -131,13 +131,9 @@ int __init kernelsu_init(void)
 	ksu_syscall_hook_init();
 
 	ksu_feature_init();
-
 	ksu_sulog_init();
-
 	ksu_adb_root_init();
-
 	ksu_lsm_hook_init();
-
 	ksu_selinux_hide_init();
 
 	ksu_supercalls_init();
