@@ -51,12 +51,20 @@ config KSU_MANUAL_HOOK
 
 config KSU_KPROBES_HOOK
 	bool "KernelSU tracepoint+kretprobe hook"
-	depends on KSU && !KSU_MANUAL_HOOK
+	depends on KSU && !KSU_MANUAL_HOOK && !KSU_SYSCALL_TABLE_HOOK
 	depends on KRETPROBES && KPROBES && HAVE_SYSCALL_TRACEPOINTS
 	default y if KPROBES && KRETPROBES && HAVE_SYSCALL_TRACEPOINTS
-	default y if !KSU_MANUAL_HOOK
 	help
 	  Enable KPROBES, KRETPROBES and TRACEPOINT hook for KernelSU core.
 	  This should not be used on kernel below 5.10.
+
+config KSU_SYSCALL_TABLE_HOOK
+	bool "KernelSU syscall table patching hook"
+	depends on KSU && !KSU_MANUAL_HOOK && !KSU_KPROBES_HOOK && (ARM64 || X86_64)
+	help
+	  Patch sys_call_table entries directly to hook syscalls without
+	  kprobes or tracepoints. Intended for non-GKI kernels where kprobes
+	  are unavailable or non-functional.
+	  Requires kernel >= 4.17 (pt_regs-based syscall ABI).
 
 endmenu
