@@ -492,8 +492,6 @@ static bool add_filename_trans(struct policydb *db, const char *s,
 {
     struct type_datum *src, *tgt, *def;
     struct class_datum *cls;
-    struct filename_trans_key *new_key = NULL;
-    int rc;
 
     src = symtab_search(&db->p_types, s);
     if (src == NULL) {
@@ -585,6 +583,7 @@ out:
 #else // < 5.7.0, has no filename_trans_key, but struct filename_trans
 
     struct filename_trans key;
+    struct filename_trans *new_key = NULL;
     key.ttype = tgt->value;
     key.tclass = cls->value;
     key.name = (char *)o;
@@ -598,8 +597,7 @@ out:
             pr_err("add_filename_trans: Failed to alloc datum\n");
             return false;
         }
-        struct filename_trans *new_key =
-            (struct filename_trans *)kzalloc(sizeof(*new_key), GFP_KERNEL);
+        new_key = (struct filename_trans *)kzalloc(sizeof(*new_key), GFP_KERNEL);
         if (!new_key) {
             pr_err("add_filename_trans: Failed to alloc new_key\n");
             goto free_trans_pre57;

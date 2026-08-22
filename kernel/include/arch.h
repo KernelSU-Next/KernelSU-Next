@@ -31,6 +31,7 @@
 #define REBOOT_SYMBOL "sys_reboot"
 #define SYS_READ_SYMBOL "sys_read"
 #define SYS_EXECVE_SYMBOL "sys_execve"
+#define SYS_EXECVEAT_SYMBOL "sys_execveat"
 #define SYS_SETNS_SYMBOL sys_setns
 #define SYS_FSTAT_SYMBOL "sys_newfstat"
 #endif
@@ -62,6 +63,7 @@
 #define REBOOT_SYMBOL "sys_reboot"
 #define SYS_READ_SYMBOL "sys_read"
 #define SYS_EXECVE_SYMBOL "sys_execve"
+#define SYS_EXECVEAT_SYMBOL "sys_execveat"
 #define SYS_SETNS_SYMBOL sys_setns
 #define SYS_FSTAT_SYMBOL "sys_newfstat"
 #endif

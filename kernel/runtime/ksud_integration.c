@@ -73,10 +73,13 @@ static struct work_struct __maybe_unused stop_execve_hook_work;
 static struct work_struct __maybe_unused stop_input_hook_work;
 #else
 bool ksu_init_rc_hook __read_mostly = true;
+#endif
+
+// These are referenced directly from patched kernel sources (manual hook
+// integration points), so they must exist in every build configuration
 bool __maybe_unused ksu_vfs_read_hook = true;
 bool ksu_input_hook __read_mostly = true;
 bool ksu_execveat_hook __read_mostly = true;
-#endif
 
 #define MAX_ARG_STRINGS 0x7FFFFFFF
 struct user_arg_ptr {
