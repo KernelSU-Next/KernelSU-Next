@@ -12,5 +12,6 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user,
 				int *mode, int *__unused_flags);
 int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags);
 long ksu_handle_execve_sucompat(const char __user **filename_user, int orig_nr, const struct pt_regs *regs);
+long ksu_handle_execveat_sucompat_user(const char __user **filename_user, int orig_nr, const struct pt_regs *regs);
 
 #endif

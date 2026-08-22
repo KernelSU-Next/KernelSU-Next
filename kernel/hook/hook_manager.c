@@ -1,5 +1,6 @@
 #ifdef KSU_KPROBES_HOOK
 #include "linux/printk.h"
+#include <linux/limits.h>
 #include <linux/spinlock.h>
 #include <linux/kprobes.h>
 #include <linux/tracepoint.h>
@@ -13,6 +14,7 @@
 #include "klog.h" // IWYU pragma: keep
 #include "hook_manager.h"
 #include "feature/sucompat.h"
+#include "feature/adb_root.h"
 #include "setuid_hook.h"
 #include "selinux/selinux.h"
 #include "compat/kernel_compat.h"
@@ -291,7 +293,8 @@ int ksu_handle_init_mark_tracker(const char __user **filename_user)
 	if (unlikely(strcmp(path, KSUD_PATH) == 0)) {
 		pr_info("hook_manager: escape to root for init executing ksud: %d\n", current->pid);
 		escape_to_root_for_init();
-	} else if (likely(strstr(path, "/app_process") == NULL && strstr(path, "/adbd") == NULL)) {
+	} else if (likely(strstr(path, "/app_process") == NULL && strstr(path, "/adbd") == NULL &&
+			  strstr(path, "/stub_zygote") == NULL)) {
 		pr_info("hook_manager: unmark %d exec %s\n", current->pid, path);
 		ksu_clear_task_tracepoint_flag_if_needed(current);
 	}
@@ -329,18 +332,33 @@ static void ksu_sys_enter_handler(void *data, struct pt_regs *regs, long id)
 				return;
 			}
 
-			// Handle execve (y compatibilidad con arquitecturas híbridas)
+			// Handle execve/execveat (y compatibilidad con arquitecturas híbridas)
+			// New bionic (A17 QPR2+) maps execve to
+			// execveat(AT_FDCWD, path, argv, envp, 0), so both
+			// syscalls must be handled with their own register layout.
 #ifdef __NR_execveat
 			if (id == __NR_execve || id == __NR_execveat) {
 #else
 			if (id == __NR_execve) {
 #endif
+				bool is_execveat = (id == __NR_execveat);
 				const char __user **filename_user =
-					(const char __user **)&PT_REGS_PARM1(regs);
+					is_execveat ?
+						(const char __user **)&PT_REGS_PARM2(regs) :
+						(const char __user **)&PT_REGS_PARM1(regs);
+				long adb_ret;
 				if (current->pid != 1 && is_init(current_cred())) {
 					ksu_handle_init_mark_tracker(filename_user);
+					adb_ret = is_execveat ?
+						ksu_adb_root_handle_execveat(regs) :
+						ksu_adb_root_handle_execve(regs);
+					if (adb_ret) {
+						pr_err("adb root failed: %ld\n", adb_ret);
+					}
+				} else if (is_execveat) {
+					ksu_handle_execveat_sucompat_user(filename_user, 0, regs);
 				} else {
-					ksu_handle_execve_sucompat(filename_user, NULL, NULL);
+					ksu_handle_execve_sucompat(filename_user, 0, regs);
 				}
 				return;
 			}
@@ -371,7 +389,13 @@ void __init ksu_syscall_hook_manager_init(void)
 #endif
 
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0)
+	// Register with minimum priority so perf/bpf handlers run before
+	// we modify the syscall context
+	ret = register_trace_prio_sys_enter(ksu_sys_enter_handler, NULL, INT_MIN);
+#else
 	ret = register_trace_sys_enter(ksu_sys_enter_handler, NULL);
+#endif
 #ifndef CONFIG_KRETPROBES
 	ksu_mark_running_process_locked();
 #endif
@@ -412,10 +436,14 @@ void __exit ksu_syscall_hook_manager_exit(void)
 #include "hook_manager.h"
 #include "feature/sucompat.h"
 #include "setuid_hook.h"
+#include "syscall_table_hook.h"
 
 void __init ksu_syscall_hook_manager_init(void)
 {
 	pr_info("hook_manager: initializing..\n");
+#ifdef KSU_SYSCALL_TABLE_HOOK
+	ksu_syscall_table_hook_init();
+#endif
 	ksu_setuid_hook_init();
 	ksu_sucompat_init();
 	ksu_avc_spoof_init();
@@ -425,6 +453,9 @@ void __init ksu_syscall_hook_manager_init(void)
 void __exit ksu_syscall_hook_manager_exit(void)
 {
 	pr_info("hook_manager: exiting..\n");
+#ifdef KSU_SYSCALL_TABLE_HOOK
+	ksu_syscall_table_hook_exit();
+#endif
 	ksu_sucompat_exit();
 	ksu_setuid_hook_exit();
 	ksu_avc_spoof_exit();
