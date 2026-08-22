@@ -160,7 +160,6 @@ static __always_inline bool check_v2_signature(char *path,
 	bool v3_signing_exist = false;
 	bool v3_1_signing_exist = false;
 
-	int i;
 	struct file *fp = ksu_filp_open_compat(path, O_RDONLY, 0);
 	if (IS_ERR(fp)) {
 		pr_err("open %s error.\n", path);
@@ -175,22 +174,54 @@ static __always_inline bool check_v2_signature(char *path,
 		goto clean;
 
 	// https://en.wikipedia.org/wiki/Zip_(file_format)#End_of_central_directory_record_(EOCD)
-	for (i = 0;; ++i) {
-		unsigned short comment_size;
-		u32 magic;
-		pos = file_size - i - 2;
-		if (!read_exact(fp, &comment_size, sizeof(comment_size), &pos, file_size))
+	// Buffered backward search (single read) instead of the upstream
+	// byte-by-byte loop: scanning /data/app at boot with thousands of
+	// 2-byte kernel_read() calls stalls the device for ages.
+	{
+		unsigned char *eocd_buffer;
+		long search_size;
+		long max_comment_size = 0xffff;
+		long eocd_min_size = 22;
+		bool eocd_found = false;
+
+		search_size = max_comment_size + eocd_min_size;
+		if (search_size > file_size)
+			search_size = file_size;
+
+		eocd_buffer = kvmalloc(search_size, GFP_KERNEL);
+		if (!eocd_buffer) {
+			pr_err("error: cannot allocate memory for eocd\n");
 			goto clean;
-		if (comment_size == i) {
-			pos -= 22;
-			if (!read_exact(fp, &magic, sizeof(magic), &pos, file_size))
-				goto clean;
-			if (magic == 0x06054b50) {
-				eocd_offset = pos - sizeof(magic);
-				break;
+		}
+
+		pos = file_size - search_size;
+		ksu_kernel_read_compat(fp, eocd_buffer, search_size, &pos);
+
+		if (search_size >= eocd_min_size) {
+			long j;
+			for (j = search_size - eocd_min_size; j >= 0; j--) {
+				if (eocd_buffer[j] == 0x50 &&
+				    eocd_buffer[j + 1] == 0x4b &&
+				    eocd_buffer[j + 2] == 0x05 &&
+				    eocd_buffer[j + 3] == 0x06) {
+					unsigned short comment_len =
+						eocd_buffer[j + 20] |
+						(eocd_buffer[j + 21] << 8);
+					if (comment_len ==
+					    search_size - j - eocd_min_size) {
+						eocd_offset =
+							file_size - search_size +
+							j;
+						eocd_found = true;
+						break;
+					}
+				}
 			}
 		}
-		if (i == 0xffff) {
+
+		kvfree(eocd_buffer);
+
+		if (!eocd_found) {
 			pr_info("error: cannot find eocd\n");
 			goto clean;
 		}
