@@ -13,6 +13,11 @@
 #include <linux/string.h>
 #include <linux/uaccess.h>
 
+// untagged_addr is a macro in mm.h on x86 before 6.2
+#if defined(__x86_64__) && LINUX_VERSION_CODE < KERNEL_VERSION(6, 2, 0)
+#include <linux/mm.h>
+#endif
+
 #include "compat/kernel_compat.h"
 #include "feature/sulog.h"
 #include "infra/event_queue.h"
