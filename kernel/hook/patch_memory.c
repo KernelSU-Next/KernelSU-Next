@@ -104,7 +104,8 @@ unsigned long phys_from_virt(unsigned long addr, int *err)
     if (!pte_present(*pte))
         goto fail;
 
-    return __pte_to_phys(*pte) + ((addr & ~PAGE_MASK));
+    return ((unsigned long)pte_pfn(*pte) << PAGE_SHIFT) +
+           ((addr & ~PAGE_MASK));
 
 fail:
     *err = -ENOENT;
@@ -135,7 +136,12 @@ fail:
 #define ksu_flush_icache(start, end) caches_clean_inval_pou
 #else
 #define ksu_flush_dcache(start, sz) __flush_dcache_area((void *)start, sz)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0)
 #define ksu_flush_icache(start, end) __flush_icache_range
+#else
+// older/vendor kernels may only provide flush_icache_range()
+#define ksu_flush_icache(start, end) flush_icache_range
+#endif
 #endif
 
 struct patch_text_info {
