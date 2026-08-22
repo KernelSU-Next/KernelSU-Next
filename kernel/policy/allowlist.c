@@ -575,10 +575,10 @@ void ksu_load_allow_list()
 
         migrate_profile(version, &profile);
 
-        pr_info("load_allow_uid, name: %s, uid: %d, allow: %d\n", profile.key,
+		pr_info("load_allow_uid, name: %s, uid: %d, allow: %d\n", profile.key,
                 profile.current_uid, profile.allow_su);
-        ksu_set_app_profile(&profile);
-    }
+		ksu_set_app_profile(&profile);
+	}
 
 	ksu_show_allow_list();
 	filp_close(fp, 0);

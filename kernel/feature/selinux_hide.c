@@ -113,7 +113,7 @@ static void initialize_fake_status(void)
 		 * Assumes setenforce 0 was called exactly once.
 		 */
 		new_status->enforcing = 1;
-		new_status->sequence = 4;
+		new_status->sequence = new_status->policyload ? 4 : 0;
 	}
 	
 	WRITE_ONCE(fake_status, new_page);
