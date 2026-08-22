@@ -73,3 +73,104 @@ config KSU_SYSCALL_TABLE_HOOK
 endchoice
 
 endmenu
+
+menu "KernelSU - SUSFS"
+
+config KSU_SUSFS
+	bool "KernelSU addon - SUSFS"
+	depends on KSU && KSU != m
+	default y
+	help
+	  Patch and Enable SUSFS to kernel with KernelSU.
+
+config KSU_SUSFS_HAS_MAGIC_MOUNT
+	bool "Say yes if the current KernelSU repo has magic mount implemented (default n)"
+	depends on KSU_SUSFS
+	default y
+
+config KSU_SUSFS_SUS_PATH
+	bool "Enable to hide suspicious path (NOT recommended)"
+	depends on KSU_SUSFS
+	default y
+
+config KSU_SUSFS_SUS_MOUNT
+	bool "Enable to hide suspicious mounts"
+	depends on KSU_SUSFS
+	default y
+
+config KSU_SUSFS_SUS_MOUNT_MNT_ID_REORDER
+	bool "Enable to reorder the mnt_id of sus mounts"
+	depends on KSU_SUSFS_SUS_MOUNT
+	default y
+
+config KSU_SUSFS_AUTO_ADD_SUS_KSU_DEFAULT_MOUNT
+	bool "Enable to hide KSU's default mounts automatically (experimental)"
+	depends on KSU_SUSFS_SUS_MOUNT
+	default y
+
+config KSU_SUSFS_AUTO_ADD_SUS_BIND_MOUNT
+	bool "Enable to hide suspicious bind mounts automatically (experimental)"
+	depends on KSU_SUSFS_SUS_MOUNT
+	default y
+
+config KSU_SUSFS_SUS_KSTAT
+	bool "Enable to spoof suspicious kstat"
+	depends on KSU_SUSFS
+	default y
+
+config KSU_SUSFS_SUS_MAPS
+	bool "Enable to hide suspicious maps"
+	depends on KSU_SUSFS
+	default y
+
+config KSU_SUSFS_SUS_PROC_FD_LINK
+	bool "Enable to hide suspicious proc fd link target"
+	depends on KSU_SUSFS
+	default y
+
+config KSU_SUSFS_SUS_MEMFD
+	bool "Enable to hide suspicious memfd"
+	depends on KSU_SUSFS
+	default y
+
+config KSU_SUSFS_TRY_UMOUNT
+	bool "Enable to automatically umount some modules' mounts upon app process creation"
+	depends on KSU_SUSFS
+	default y
+
+config KSU_SUSFS_AUTO_ADD_TRY_UMOUNT_FOR_BIND_MOUNT
+	bool "Enable to auto add bind mounted paths to try_umount list"
+	depends on KSU_SUSFS_TRY_UMOUNT
+	default y
+
+config KSU_SUSFS_SPOOF_UNAME
+	bool "Enable to spoof uname"
+	depends on KSU_SUSFS
+	default y
+
+config KSU_SUSFS_ENABLE_LOG
+	bool "Enable logging"
+	depends on KSU_SUSFS
+	default y
+
+config KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG
+	bool "Enable spoofing cmdline or bootconfig"
+	depends on KSU_SUSFS
+	default y
+
+config KSU_SUSFS_OPEN_REDIRECT
+	bool "Enable to redirect opened files to a fake one (NOT recommended)"
+	depends on KSU_SUSFS
+	default y
+
+config KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS
+	bool "Enable hiding ksu_susfs and susfs symbols from kallsyms"
+	depends on KSU_SUSFS
+	default y
+
+config KSU_SUSFS_SUS_OVERLAYFS
+	bool "Enable to automatically spoof kstat and kstatfs for overlayed files/directories"
+	depends on KSU_SUSFS
+	default n
+
+endmenu
