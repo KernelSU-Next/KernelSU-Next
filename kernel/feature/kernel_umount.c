@@ -21,6 +21,9 @@
 #include "runtime/ksud_boot.h"
 #include "ksu.h"
 #include "compat/kernel_compat.h"
+#ifdef CONFIG_KSU_SUSFS
+#include <linux/susfs.h>
+#endif
 
 static bool ksu_kernel_umount_enabled = true;
 
@@ -79,7 +82,9 @@ static void ksu_sys_umount(const char *mnt, int flags)
 
 #endif
 
-static void try_umount(const char *mnt, int flags)
+// Non-static: fs/susfs.c (CONFIG_KSU_SUSFS_TRY_UMOUNT) calls this for
+// entries of its own try_umount list
+void try_umount(const char *mnt, int flags)
 {
 	struct path path;
 	int err = kern_path(mnt, 0, &path);
@@ -97,12 +102,19 @@ static void try_umount(const char *mnt, int flags)
 
 struct umount_tw {
 	struct callback_head cb;
+	uid_t uid;
 };
 
 static void umount_tw_func(struct callback_head *cb)
 {
 	struct umount_tw *tw = container_of(cb, struct umount_tw, cb);
 	const struct cred *saved = override_creds(ksu_cred);
+
+#ifdef CONFIG_KSU_SUSFS_TRY_UMOUNT
+	// susfs comes first, and lastly umount by ksu, make sure
+	// umount happens in reversed order
+	susfs_try_umount(tw->uid);
+#endif
 
     struct mount_entry *entry;
     down_read(&mount_list_lock);
@@ -166,6 +178,7 @@ int ksu_handle_umount(uid_t old_uid, uid_t new_uid)
 		return 0;
 
 	tw->cb.func = umount_tw_func;
+	tw->uid = new_uid;
 
 	int err = task_work_add(current, &tw->cb, TWA_RESUME);
 	if (err) {

@@ -42,6 +42,11 @@ kernelsu-objs += supercall/supercall.o
 kernelsu-objs += feature/adb_root.o
 kernelsu-objs += feature/selinux_hide.o
 
+ifeq ($(CONFIG_KSU_SUSFS), y)
+$(info -- KernelSU-Next: SUSFS integration enabled)
+kernelsu-objs += susfs/ksu_susfs.o
+endif
+
 ifdef KBUILD_EXTMOD
 ifeq ($(CONFIG_KSU_DISABLE_MANAGER),y)
 ccflags-y += -DCONFIG_KSU_DISABLE_MANAGER=1
