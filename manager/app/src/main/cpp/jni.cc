@@ -400,6 +400,18 @@ Java_com_rifsxd_ksunext_Natives_setAdbRootEnabled(JNIEnv *env, jobject thiz, jbo
 
 extern "C"
 JNIEXPORT jboolean JNICALL
+Java_com_rifsxd_ksunext_Natives_isWebViewZygoteUmountEnabled(JNIEnv *env, jobject thiz) {
+    return is_webview_zygote_umount_enabled();
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_rifsxd_ksunext_Natives_setWebViewZygoteUmountEnabled(JNIEnv *env, jobject thiz, jboolean enabled) {
+    return set_webview_zygote_umount_enabled(enabled);
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
 Java_com_rifsxd_ksunext_Natives_isSelinuxHideEnabled(JNIEnv *env, jobject thiz) {
     return is_selinux_hide_enabled();
 }

@@ -107,6 +107,9 @@ object Natives {
     external fun isKernelUmountEnabled(): Boolean
     external fun setKernelUmountEnabled(enabled: Boolean): Boolean
 
+    external fun isWebViewZygoteUmountEnabled(): Boolean
+    external fun setWebViewZygoteUmountEnabled(enabled: Boolean): Boolean
+
     /**
      * ADB root can be enabled/disabled.
      *  0: disabled

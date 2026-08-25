@@ -116,6 +116,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
     var suCompatStatus by rememberSaveable { mutableStateOf("") }
     var kernelUmountStatus by rememberSaveable { mutableStateOf("") }
+    var webViewZygoteUmountStatus by rememberSaveable { mutableStateOf("") }
     var adbRootStatus by rememberSaveable { mutableStateOf("") }
     var selinuxHideStatus by rememberSaveable { mutableStateOf("") }
     var sulogStatus by rememberSaveable { mutableStateOf("") }
@@ -125,6 +126,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     LaunchedEffect(Unit) {
         suCompatStatus = getFeatureStatus("su_compat")
         kernelUmountStatus = getFeatureStatus("kernel_umount")
+        webViewZygoteUmountStatus = getFeatureStatus("webview_zygote_umount")
         sulogStatus = getFeatureStatus("sulog")
         isSulogEnabled = getFeaturePersistValue("sulog") == 1L
         adbRootStatus = getFeatureStatus("adb_root")
@@ -162,6 +164,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 KernelFeaturesCard(
                     suCompatStatus = suCompatStatus,
                     kernelUmountStatus = kernelUmountStatus,
+                    webViewZygoteUmountStatus = webViewZygoteUmountStatus,
                     sulogStatusParam = sulogStatus,
                     isSulogEnabled = isSulogEnabled,
                     onSulogEnabledChange = { isSulogEnabled = it },
@@ -195,6 +198,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 private fun KernelFeaturesCard(
     suCompatStatus: String,
     kernelUmountStatus: String,
+    webViewZygoteUmountStatus: String,
     sulogStatusParam: String,
     isSulogEnabled: Boolean,
     onSulogEnabledChange: (Boolean) -> Unit,
@@ -206,6 +210,7 @@ private fun KernelFeaturesCard(
     val context = LocalContext.current
     val suCompatSupported = suCompatStatus == "supported"
     val kernelUmountSupported = kernelUmountStatus == "supported"
+    val webViewZygoteUmountSupported = webViewZygoteUmountStatus == "supported"
     val sulogSupported = sulogStatusParam == "supported"
     val adbRootSupported = adbRootStatus == "supported"
     val selinuxHideSupported = selinuxHideStatus == "supported"
@@ -278,6 +283,28 @@ private fun KernelFeaturesCard(
                     execKsud("feature save", true)
                     prefsLocal.edit { putInt("kernel_umount_mode", if (checked) 0 else 2) }
                     isKernelUmountEnabled = checked
+                }
+            }
+
+            var isWebViewZygoteUmountEnabled by rememberSaveable {
+                mutableStateOf(Natives.isWebViewZygoteUmountEnabled())
+            }
+            SwitchItem(
+                icon = Icons.Filled.Language,
+                title = stringResource(id = R.string.settings_webview_zygote_umount),
+                summary = if (webViewZygoteUmountSupported) {
+                    stringResource(id = R.string.settings_webview_zygote_umount_summary)
+                } else {
+                    stringResource(id = R.string.feature_status_unsupported_summary)
+                },
+                checked = isWebViewZygoteUmountEnabled,
+                enabled = webViewZygoteUmountSupported,
+                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+            ) { checked ->
+                if (Natives.setWebViewZygoteUmountEnabled(checked)) {
+                    execKsud("feature save", true)
+                    isWebViewZygoteUmountEnabled = checked
                 }
             }
 

@@ -52,6 +52,11 @@ bool set_kernel_umount_enabled(bool enabled);
 
 bool is_kernel_umount_enabled();
 
+// WebView zygote umount
+bool set_webview_zygote_umount_enabled(bool enabled);
+
+bool is_webview_zygote_umount_enabled();
+
 // ADB root
 bool set_adb_root_enabled(bool enabled);
 
