@@ -309,6 +309,4 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">成功</string>
   <string name="sulog_status_exit">退出码 %1$d</string>
-  <string name="settings_webview_zygote_umount">为 WebView 卸载模块</string>
-  <string name="settings_webview_zygote_umount_summary">防止 WebView 进程泄露信息，但可能会导致模块失效。重启后生效</string>
 </resources>
