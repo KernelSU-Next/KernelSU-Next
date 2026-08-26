@@ -308,5 +308,5 @@
   <string name="sulog_status_success">موفقیت آمیز بود</string>
   <string name="sulog_status_exit">خروج %1$d</string>
   <string name="settings_webview_zygote_umount">Unmount for WebView</string>
-  <string name="settings_webview_zygote_umount_summary">Prevent information leaks from WebView process but may break modules. Reboot to apply</string>
+  <string name="settings_webview_zygote_umount_summary">جلوگیری از نشت اطلاعات از پروسه Webview اما ممکن باعث خرابی ماژول‌ها شود. برای اعمال راه‌اندازی مجدد کنید</string>
 </resources>
