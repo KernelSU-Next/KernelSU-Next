@@ -21,7 +21,6 @@ pub enum FeatureId {
     Sulog = 2,
     AdbRoot = 3,
     SelinuxHide = 4,
-    WebviewZygoteUmount = 5,
     AvcSpoof = 10003,
 }
 
@@ -33,7 +32,6 @@ impl FeatureId {
             2 => Some(Self::Sulog),
             3 => Some(Self::AdbRoot),
             4 => Some(Self::SelinuxHide),
-            5 => Some(Self::WebviewZygoteUmount),
             10003 => Some(Self::AvcSpoof),
             _ => None,
         }
@@ -46,7 +44,6 @@ impl FeatureId {
             Self::Sulog => "sulog",
             Self::AdbRoot => "adb_root",
             Self::SelinuxHide => "selinux_hide",
-            Self::WebviewZygoteUmount => "webview_zygote_umount",
             Self::AvcSpoof => "avc_spoof",
         }
     }
@@ -66,9 +63,6 @@ impl FeatureId {
             Self::SelinuxHide => {
                 "SELinux Hide - sanitize /sys/fs/selinux access results for app UIDs"
             }
-            Self::WebviewZygoteUmount => {
-                "WebView Zygote Umount - unmount modules from WebView zygote and its isolated children"
-            }
             Self::AvcSpoof => {
                 "AVC Spoof - fix selinux context leak due to avc denial"
             }
@@ -83,7 +77,6 @@ fn parse_feature_id(name: &str) -> Result<FeatureId> {
         "sulog" | "2" | "enhanced_security" => Ok(FeatureId::Sulog),
         "adb_root" | "3" => Ok(FeatureId::AdbRoot),
         "selinux_hide" | "4" => Ok(FeatureId::SelinuxHide),
-        "webview_zygote_umount" | "5" => Ok(FeatureId::WebviewZygoteUmount),
         "avc_spoof" | "10003" => Ok(FeatureId::AvcSpoof),
         _ => bail!("Unknown feature: {name}"),
     }
@@ -331,7 +324,6 @@ pub fn list_features() {
         FeatureId::Sulog,
         FeatureId::AdbRoot,
         FeatureId::SelinuxHide,
-        FeatureId::WebviewZygoteUmount,
         FeatureId::AvcSpoof,
     ];
 
@@ -396,7 +388,6 @@ pub fn save_config() -> Result<()> {
         FeatureId::Sulog,
         FeatureId::AdbRoot,
         FeatureId::SelinuxHide,
-        FeatureId::WebviewZygoteUmount,
         FeatureId::AvcSpoof,
     ];
 

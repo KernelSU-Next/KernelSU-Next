@@ -38,6 +38,9 @@ class SuperUserViewModel : ViewModel() {
 
     companion object {
         private const val TAG = "SuperUserViewModel"
+        const val WEBVIEW_ZYGOTE_UID = 1053
+        const val WEBVIEW_ZYGOTE_PROFILE_KEY = "webview_zygote"
+
          var apps by mutableStateOf<List<AppInfo>>(emptyList())
 
         @JvmStatic
@@ -53,21 +56,33 @@ class SuperUserViewModel : ViewModel() {
         val label: String,
         val packageInfo: PackageInfo,
         val profile: Natives.Profile?,
+        val profileKey: String = packageInfo.packageName ?: "",
+        val special: Boolean = false,
     ) : Parcelable {
         val packageName: String
-            get() = packageInfo.packageName
+            get() = packageInfo.packageName ?: ""
+
+        val displayIdentifier: String
+            get() = if (special) profileKey else packageName
+
         val uid: Int
             get() = packageInfo.applicationInfo!!.uid
 
+        val isWebViewZygote: Boolean
+            get() = special && uid == WEBVIEW_ZYGOTE_UID
+
         val allowSu: Boolean
-            get() = profile != null && profile.allowSu
+            get() = !isWebViewZygote && profile != null && profile.allowSu
+
         val hasCustomProfile: Boolean
             get() {
                 if (profile == null) {
                     return false
                 }
 
-                return if (profile.allowSu) {
+                return if (isWebViewZygote) {
+                    !profile.nonRootUseDefault
+                } else if (profile.allowSu) {
                     !profile.rootUseDefault
                 } else {
                     !profile.nonRootUseDefault
@@ -105,15 +120,16 @@ class SuperUserViewModel : ViewModel() {
 
     val appList by derivedStateOf {
         sortedList.map { app ->
-            profileOverrides[app.packageName]?.let { app.copy(profile = it) } ?: app
+            profileOverrides[app.displayIdentifier]?.let { app.copy(profile = it) } ?: app
         }.filter {
-            it.label.contains(search, true) || it.packageName.contains(
+            it.label.contains(search, true) || it.displayIdentifier.contains(
                 search,
                 true
             ) || HanziToPinyin.getInstance()
                 .toPinyinString(it.label).contains(search, true)
         }.filter {
             it.uid == 2000 // Always show shell
+                    || it.special
                     || showSystemApps || it.packageInfo.applicationInfo!!.flags.and(ApplicationInfo.FLAG_SYSTEM) == 0
         }
     }
@@ -174,15 +190,33 @@ class SuperUserViewModel : ViewModel() {
 
                 val packages = allPackages.list
 
-                apps = packages.map {
-                    val appInfo = it.applicationInfo
-                    val uid = appInfo!!.uid
+                apps = packages.filter {
+                    val ai = it.applicationInfo ?: return@filter false
+                    ai.uid != WEBVIEW_ZYGOTE_UID
+                }.map {
+                    val appInfo = it.applicationInfo!!
+                    val uid = appInfo.uid
                     val profile = Natives.getAppProfile(it.packageName, uid)
                     AppInfo(
                         label = appInfo.loadLabel(pm).toString(),
                         packageInfo = it,
                         profile = profile,
                     )
+                }.toMutableList().apply {
+                    val systemInfo = ApplicationInfo(pm.getApplicationInfo("android", 0)).apply {
+                        uid = WEBVIEW_ZYGOTE_UID
+                    }
+                    val placeholder = PackageInfo().apply {
+                        packageName = ""
+                        applicationInfo = systemInfo
+                    }
+                    add(AppInfo(
+                        label = "WebView Zygote",
+                        packageInfo = placeholder,
+                        profile = Natives.getAppProfile(WEBVIEW_ZYGOTE_PROFILE_KEY, WEBVIEW_ZYGOTE_UID),
+                        profileKey = WEBVIEW_ZYGOTE_PROFILE_KEY,
+                        special = true,
+                    ))
                 }
                 Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}")
             }

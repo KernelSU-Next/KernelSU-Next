@@ -79,9 +79,10 @@ fun AppProfileScreen(
     val suNotAllowed = stringResource(R.string.su_not_allowed).format(appInfo.label)
 
     val packageName = appInfo.packageName
-    val initialProfile = Natives.getAppProfile(packageName, appInfo.uid)
+    val profileKey = appInfo.profileKey
+    val initialProfile = Natives.getAppProfile(profileKey, appInfo.uid)
     if (initialProfile.allowSu) {
-        initialProfile.rules = getSepolicy(packageName)
+        initialProfile.rules = getSepolicy(profileKey)
     }
     var profile by rememberSaveable {
         mutableStateOf(initialProfile)
@@ -152,7 +153,7 @@ fun AppProfileScreen(
                         snackBarHost.showSnackbar(failToUpdateAppProfile.format(appInfo.uid))
                     } else {
                         profile = it
-                        viewModel.updateAppProfile(packageName, it)
+                        viewModel.updateAppProfile(profileKey, it)
                     }
                 }
             },

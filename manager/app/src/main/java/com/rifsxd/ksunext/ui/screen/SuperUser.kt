@@ -170,8 +170,8 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
                 )
             ) {
                 items(
-                    viewModel.appList.filter { it.packageName != ksuApp.packageName },
-                    key = { it.packageName + it.uid }
+                    viewModel.appList.filter { it.displayIdentifier != ksuApp.packageName },
+                    key = { it.displayIdentifier + it.uid }
                 ) { app ->
                     AppItem(app) {
                         navigator.navigate(AppProfileScreenDestination(app))
@@ -211,7 +211,7 @@ private fun AppItem(
             supportingContent = {
                 Column {
                     Text(
-                        text = app.packageName,
+                        text = app.displayIdentifier,
                         style = MaterialTheme.typography.bodySmall
                     )
 

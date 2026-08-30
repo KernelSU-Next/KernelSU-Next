@@ -307,6 +307,4 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">Thành công</string>
   <string name="sulog_status_exit">Thoát %1$d</string>
-  <string name="settings_webview_zygote_umount">Unmount for WebView</string>
-  <string name="settings_webview_zygote_umount_summary">Prevent information leaks from WebView process but may break modules. Reboot to apply</string>
 </resources>
