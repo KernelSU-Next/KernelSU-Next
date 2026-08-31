@@ -308,6 +308,4 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">성공</string>
   <string name="sulog_status_exit">Exit %1$d</string>
-  <string name="settings_webview_zygote_umount">WebView용 언마운트</string>
-  <string name="settings_webview_zygote_umount_summary">WebView 프로세스에서 정보 유출을 방지하지만 모듈이 깨질 수 있습니다. 적용하려면 다시 시작하세요</string>
 </resources>
