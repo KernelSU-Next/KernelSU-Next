@@ -421,6 +421,12 @@ fsconfig_set_string(fs， "source"， "KSU")?;  // 必需!
 
 不是。它提供与大多数模块兼容的标准 overlayfs 挂载。如果您需要不同的行为，可以创建自己的元模块。
 
+### 为什么安装 Zygisk 相关模块时提示 "KernelSU version abnormal"?
+
+一些第三方 Zygisk 相关模块仍然带有旧的安装脚本检查，会在 KernelSU 版本号达到固定阈值时中止安装，例如 `KSU_KERNEL_VER_CODE >= 20000`。在较新的 KernelSU Next 版本中，这类提示可能只是说明该模块尚未适配新的 KernelSU 接口预期。它不一定表示模块 ZIP 损坏、设备 Root 状态异常，或 KernelSU Next 本身集成错误。
+
+不要盲目绕过这个检查。如果模块在运行时需要和 KernelSU 通信，它可能还需要适配新的 KernelSU 接口，而不只是提高安装脚本里的版本上限。建议优先使用模块的新版本、查看模块维护者的兼容性说明，或把完整安装日志反馈给对应模块。如果旧版本模块已经能在设备上正常工作，保留旧版本通常比强行安装不兼容的新版本更稳妥。
+
 ## Late-load 模式 {#late-load-mode}
 
 除了上述标准启动流程外，KernelSU 还支持 **late-load 模式**，用于 LKM（可加载内核模块）场景。在该模式下，KernelSU 内核模块在**系统完全启动后**加载，而非在 init 过程中加载。
