@@ -5,6 +5,72 @@
 #include "linux/version.h"
 #include "klog.h" // IWYU pragma: keep
 #include "ksu.h"
+#include "infra/symbol_resolver.h"
+
+int ksu_security_secctx_to_secid(const char *secdata, u32 seclen, u32 *secid)
+{
+    static int (*real_func)(const char *, u32, u32 *) = NULL;
+    if (!real_func) {
+        real_func = (void *)find_kernel_symbol_exact("security_secctx_to_secid");
+        if (!real_func) pr_warn_once("KernelSU: failed to resolve security_secctx_to_secid\n");
+    }
+    if (real_func) {
+        return real_func(secdata, seclen, secid);
+    }
+    return -1;
+}
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 14, 0)
+static int ksu_security_secid_to_secctx(u32 secid, struct lsm_context *cp)
+{
+    static int (*real_func)(u32, struct lsm_context *) = NULL;
+    if (!real_func) {
+        real_func = (void *)find_kernel_symbol_exact("security_secid_to_secctx");
+        if (!real_func) pr_warn_once("KernelSU: failed to resolve security_secid_to_secctx\n");
+    }
+    if (real_func) {
+        return real_func(secid, cp);
+    }
+    return -1;
+}
+
+static void ksu_security_release_secctx(struct lsm_context *cp)
+{
+    static void (*real_func)(struct lsm_context *) = NULL;
+    if (!real_func) {
+        real_func = (void *)find_kernel_symbol_exact("security_release_secctx");
+        if (!real_func) pr_warn_once("KernelSU: failed to resolve security_release_secctx\n");
+    }
+    if (real_func) {
+        real_func(cp);
+    }
+}
+#else
+static int ksu_security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen)
+{
+    static int (*real_func)(u32, char **, u32 *) = NULL;
+    if (!real_func) {
+        real_func = (void *)find_kernel_symbol_exact("security_secid_to_secctx");
+        if (!real_func) pr_warn_once("KernelSU: failed to resolve security_secid_to_secctx\n");
+    }
+    if (real_func) {
+        return real_func(secid, secdata, seclen);
+    }
+    return -1;
+}
+
+static void ksu_security_release_secctx(char *secdata, u32 seclen)
+{
+    static void (*real_func)(char *, u32) = NULL;
+    if (!real_func) {
+        real_func = (void *)find_kernel_symbol_exact("security_release_secctx");
+        if (!real_func) pr_warn_once("KernelSU: failed to resolve security_release_secctx\n");
+    }
+    if (real_func) {
+        real_func(secdata, seclen);
+    }
+}
+#endif
 
 /*
  * Cached SID values for frequently checked contexts.
@@ -13,7 +79,7 @@
  *
  * A value of 0 means "no cached SID is available" for that context.
  * This covers both the initial "not yet cached" state and any case
- * where resolving the SID (e.g. via security_secctx_to_secid) failed.
+ * where resolving the SID (e.g. via ksu_security_secctx_to_secid) failed.
  * In all such cases we intentionally fall back to the slower
  * string-based comparison path; this degrades performance only and
  * does not cause a functional failure.
@@ -37,9 +103,9 @@ static int transive_to_domain(const char *domain, struct cred *cred, bool clear_
         pr_err("tsec == NULL!\n");
         return -1;
     }
-    error = security_secctx_to_secid(domain, strlen(domain), &sid);
+    error = ksu_security_secctx_to_secid(domain, strlen(domain), &sid);
     if (error) {
-        pr_info("security_secctx_to_secid %s -> sid: %d, error: %d\n", domain,
+        pr_info("ksu_security_secctx_to_secid %s -> sid: %d, error: %d\n", domain,
                 sid, error);
     }
     if (!error) {
@@ -97,17 +163,17 @@ struct lsm_context {
     u32 len;
 };
 
-static int __security_secid_to_secctx(u32 secid, struct lsm_context *cp)
+static int __ksu_security_secid_to_secctx(u32 secid, struct lsm_context *cp)
 {
-    return security_secid_to_secctx(secid, &cp->context, &cp->len);
+    return ksu_security_secid_to_secctx(secid, &cp->context, &cp->len);
 }
-static void __security_release_secctx(struct lsm_context *cp)
+static void __ksu_security_release_secctx(struct lsm_context *cp)
 {
-    security_release_secctx(cp->context, cp->len);
+    ksu_security_release_secctx(cp->context, cp->len);
 }
 #else
-#define __security_secid_to_secctx security_secid_to_secctx
-#define __security_release_secctx security_release_secctx
+#define __ksu_security_secid_to_secctx ksu_security_secid_to_secctx
+#define __ksu_security_release_secctx ksu_security_release_secctx
 #endif
 
 /*
@@ -119,7 +185,7 @@ void cache_sid(void)
 {
     int err;
 
-    err = security_secctx_to_secid(KERNEL_SU_CONTEXT, strlen(KERNEL_SU_CONTEXT),
+    err = ksu_security_secctx_to_secid(KERNEL_SU_CONTEXT, strlen(KERNEL_SU_CONTEXT),
                                    &cached_su_sid);
     if (err) {
         pr_warn("Failed to cache kernel su domain SID: %d\n", err);
@@ -128,7 +194,7 @@ void cache_sid(void)
         pr_info("Cached su SID: %u\n", cached_su_sid);
     }
 
-    err = security_secctx_to_secid(ZYGOTE_CONTEXT, strlen(ZYGOTE_CONTEXT),
+    err = ksu_security_secctx_to_secid(ZYGOTE_CONTEXT, strlen(ZYGOTE_CONTEXT),
                                    &cached_zygote_sid);
     if (err) {
         pr_warn("Failed to cache zygote SID: %d\n", err);
@@ -137,7 +203,7 @@ void cache_sid(void)
         pr_info("Cached zygote SID: %u\n", cached_zygote_sid);
     }
 
-    err = security_secctx_to_secid(INIT_CONTEXT, strlen(INIT_CONTEXT),
+    err = ksu_security_secctx_to_secid(INIT_CONTEXT, strlen(INIT_CONTEXT),
                                    &cached_init_sid);
     if (err) {
         pr_warn("Failed to cache init SID: %d\n", err);
@@ -146,7 +212,7 @@ void cache_sid(void)
         pr_info("Cached init SID: %u\n", cached_init_sid);
     }
 
-    err = security_secctx_to_secid(KSU_FILE_CONTEXT, strlen(KSU_FILE_CONTEXT),
+    err = ksu_security_secctx_to_secid(KSU_FILE_CONTEXT, strlen(KSU_FILE_CONTEXT),
                                    &ksu_file_sid);
     if (err) {
         pr_warn("Failed to cache ksu_file SID: %d\n", err);
@@ -183,11 +249,11 @@ static bool is_sid_match(const struct cred *cred, u32 cached_sid,
     // Slow path fallback: string comparison (only before cache is initialized)
     struct lsm_context ctx;
     bool result;
-    if (__security_secid_to_secctx(tsec->sid, &ctx)) {
+    if (__ksu_security_secid_to_secctx(tsec->sid, &ctx)) {
         return false;
     }
     result = strncmp(fallback_context, ctx.context, ctx.len) == 0;
-    __security_release_secctx(&ctx);
+    __ksu_security_release_secctx(&ctx);
     return result;
 }
 

@@ -14,6 +14,8 @@ extern bool allow_shell;
 extern struct selinux_policy *backup_sepolicy;
 extern bool ksu_no_custom_rc;
 
+int ksu_security_secctx_to_secid(const char *secdata, u32 seclen, u32 *secid);
+
 static inline int startswith(char *s, char *prefix)
 {
 	return strncmp(s, prefix, strlen(prefix));
