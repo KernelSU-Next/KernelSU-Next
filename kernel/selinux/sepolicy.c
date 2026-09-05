@@ -988,6 +988,7 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
     if (len >= kConfigOff + sizeof(u32)) {
         u32 *config_ptr = (u32 *)((unsigned long)data + kConfigOff);
         pr_info("old config: %u\n", *config_ptr);
+#ifdef POLICYDB_CONFIG_ANDROID_NETLINK_ROUTE
         if (old_pol->policydb.android_netlink_route) {
             pr_info("adding POLICYDB_CONFIG_ANDROID_NETLINK_ROUTE\n");
             *config_ptr |= POLICYDB_CONFIG_ANDROID_NETLINK_ROUTE;
@@ -996,6 +997,7 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
             pr_info("adding POLICYDB_CONFIG_ANDROID_NETLINK_GETNEIGH\n");
             *config_ptr |= POLICYDB_CONFIG_ANDROID_NETLINK_GETNEIGH;
         }
+#endif
         pr_info("new config: %u\n", *config_ptr);
     }
 #endif

@@ -74,14 +74,13 @@ ifneq ($(KBUILD_EXTMOD),)
 # 6.18 exports the external module source as srcroot when M/MO are used.
 ifneq ($(srcroot),)
 KSU_KERNEL_DIR := $(srcroot)
+else
+KSU_KERNEL_DIR := $(KBUILD_EXTMOD)
 endif
-endif
-ifndef KSU_KERNEL_DIR
-ifeq ($(filter /%,$(src)),)
+else ifeq ($(filter /%,$(src)),)
 KSU_KERNEL_DIR := $(srctree)/$(src)
 else
 KSU_KERNEL_DIR := $(src)
-endif
 endif
 
 ccflags-y += -I$(KSU_KERNEL_DIR) -I$(KSU_KERNEL_DIR)/include
@@ -155,7 +154,7 @@ ccflags-y += -DEXPECTED_MANAGER_HASH=\"$(KSU_NEXT_MANAGER_HASH)\"
 
 ccflags-y += -DKSU_NEW_DCACHE_FLUSH=$(KSU_NEW_DCACHE_FLUSH)
 
-ccflags-y += -Wno-strict-prototypes -Wno-int-conversion -Wno-gcc-compat -Wno-missing-prototypes
+ccflags-y += -Wno-strict-prototypes -Wno-int-conversion -Wno-gcc-compat -Wno-missing-prototypes -Wno-missing-declarations
 ccflags-y += -Wno-declaration-after-statement -Wno-unused-function -Wno-unused-variable
 
 # Keep a new line here!! Because someone may append config
