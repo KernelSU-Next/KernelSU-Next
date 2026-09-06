@@ -989,7 +989,7 @@ fun ModuleItem(
                             alpha = 0.18f
                         )
                     } else {
-                        val bannerData = remember(module.banner) {
+                        val bannerData = remember(module.id, module.banner) {
                             try {
                                 val file = SuFile("/data/adb/modules/${module.id}/${module.banner}")
                                 return@remember file.newInputStream().use { it.readBytes() }
