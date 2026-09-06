@@ -177,6 +177,7 @@
   <string name="log_saved">Журнали збережено</string>
   <string name="send_log">Поділитися журналами</string>
   <string name="settings_language">Мова</string>
+  <string name="select_language">Виберіть мову</string>
   <string name="system_default">Налаштування за замовчуванням</string>
   <string name="settings_banner">Увімкнути банери</string>
   <string name="settings_banner_summary">Показувати фонові банери для модулів.</string>

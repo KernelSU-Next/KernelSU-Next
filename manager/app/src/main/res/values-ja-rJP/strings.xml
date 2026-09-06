@@ -175,6 +175,7 @@
   <string name="log_saved">ログを保存しました</string>
   <string name="send_log">ログを共有</string>
   <string name="settings_language">言語</string>
+  <string name="select_language">言語を選択</string>
   <string name="system_default">システムのデフォルト</string>
   <string name="settings_banner">バナーを有効化</string>
   <string name="settings_banner_summary">モジュールの背景バナーを表示します。</string>

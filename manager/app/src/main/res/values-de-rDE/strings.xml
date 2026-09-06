@@ -175,6 +175,7 @@
   <string name="log_saved">Logs saved</string>
   <string name="send_log">Share logs</string>
   <string name="settings_language">Language</string>
+  <string name="select_language">Sprache auswählen</string>
   <string name="system_default">System default</string>
   <string name="settings_banner">Enable banners</string>
   <string name="settings_banner_summary">Show background banners for modules.</string>

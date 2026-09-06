@@ -176,6 +176,7 @@
   <string name="log_saved">로그가 저장되었습니다</string>
   <string name="send_log">로그 공유</string>
   <string name="settings_language">언어</string>
+  <string name="select_language">언어 선택</string>
   <string name="system_default">시스템 기본값</string>
   <string name="settings_banner">배너 활성화</string>
   <string name="settings_banner_summary">모듈 백그라운드 배너 보이기</string>

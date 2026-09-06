@@ -175,6 +175,7 @@
   <string name="log_saved">Đã lưu nhật ký</string>
   <string name="send_log">Chia sẻ nhật ký</string>
   <string name="settings_language">Ngôn ngữ</string>
+  <string name="select_language">Chọn ngôn ngữ</string>
   <string name="system_default">Mặc định hệ thống</string>
   <string name="settings_banner">Bật biểu ngữ</string>
   <string name="settings_banner_summary">Hiện biểu ngữ nền cho các mô-đun.</string>

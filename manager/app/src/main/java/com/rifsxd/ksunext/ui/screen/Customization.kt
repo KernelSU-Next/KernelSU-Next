@@ -4,7 +4,11 @@ import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -17,6 +21,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.rifsxd.ksunext.ui.LocalScrollState
 import com.rifsxd.ksunext.ui.rememberScrollConnection
 import androidx.compose.ui.res.stringResource
@@ -28,20 +35,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.rifsxd.ksunext.ui.MainActivity
-import com.maxkeppeker.sheets.core.models.base.Header
-import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
-import com.maxkeppeler.sheets.list.ListDialog
-import com.maxkeppeler.sheets.list.models.ListOption
-import com.maxkeppeler.sheets.list.models.ListSelection
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.R
-import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.ui.component.SwitchItem
-import com.rifsxd.ksunext.ui.component.rememberCustomDialog
 import com.rifsxd.ksunext.ui.util.refreshActivity
 import com.rifsxd.ksunext.ui.util.LocalSnackbarHost
 import com.rifsxd.ksunext.ui.util.LocaleHelper
@@ -74,6 +74,27 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
     val isNavBarHidden = scrollState?.isScrollingDown?.value ?: false
     val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + if (isNavBarHidden) 0.dp else 112.dp
 
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    var currentAppLocale by remember {
+        mutableStateOf(LocaleHelper.getCurrentAppLocale(context))
+    }
+    var showLanguageSheet by remember { mutableStateOf(false) }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        currentAppLocale = LocaleHelper.getCurrentAppLocale(context)
+    }
+
+    val languageOptions = remember(context) {
+        listOf(
+            LocaleHelper.SYSTEM_LANGUAGE_TAG to context.getString(R.string.system_default)
+        ) + LocaleHelper.getSupportedLocales(context)
+            .map { it.toLanguageTag() to it.getDisplayName(it) }
+            .sortedBy { (_, displayName) -> displayName }
+    }
+    val currentLanguageTag = currentAppLocale?.toLanguageTag()
+        ?: LocaleHelper.SYSTEM_LANGUAGE_TAG
+
     Scaffold(
         topBar = {
             TopBar(
@@ -102,66 +123,6 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
                 .verticalScroll(rememberScrollState())
         ) {
 
-            val context = LocalContext.current
-            val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-            var currentAppLocale by remember {
-                mutableStateOf(LocaleHelper.getCurrentAppLocale(context))
-            }
-
-            LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
-                currentAppLocale = LocaleHelper.getCurrentAppLocale(context)
-            }
-
-            val languageDialog = rememberCustomDialog { dismiss ->
-                val allOptions = remember {
-                    listOf(
-                        LocaleHelper.SYSTEM_LANGUAGE_TAG to context.getString(R.string.system_default)
-                    ) + LocaleHelper.getSupportedLocales(context)
-                        .map { it.toLanguageTag() to it.getDisplayName(it) }
-                        .sortedBy { (_, displayName) -> displayName }
-                }
-                val currentLanguageTag = currentAppLocale?.toLanguageTag()
-                    ?: LocaleHelper.SYSTEM_LANGUAGE_TAG
-                val options = allOptions.map { (tag, displayName) ->
-                    ListOption(
-                        titleText = displayName,
-                        selected = currentLanguageTag == tag
-                    )
-                }
-                var selectedIndex by remember(currentLanguageTag) {
-                    mutableIntStateOf(
-                        allOptions.indexOfFirst { (tag, _) -> currentLanguageTag == tag }
-                    )
-                }
-
-                ListDialog(
-                    state = rememberUseCaseState(
-                        visible = true,
-                        onFinishedRequest = {
-                            val languageTag = allOptions.getOrNull(selectedIndex)?.first
-                            dismiss()
-                            if (languageTag != null && languageTag != currentLanguageTag) {
-                                LocaleHelper.setAppLocale(context, languageTag)
-                                currentAppLocale = LocaleHelper.getCurrentAppLocale(context)
-                                if (!LocaleHelper.usesFrameworkLocaleManager) {
-                                    refreshActivity(context)
-                                }
-                            }
-                        },
-                        onCloseRequest = { dismiss() }
-                    ),
-                    header = Header.Default(
-                        title = stringResource(R.string.settings_language),
-                    ),
-                    selection = ListSelection.Single(
-                        showRadioButtons = true,
-                        options = options
-                    ) { index, _ ->
-                        selectedIndex = index
-                    }
-                )
-            }
-
             val language = stringResource(id = R.string.settings_language)
             val currentLanguageDisplay = currentAppLocale?.let { it.getDisplayName(it) }
                 ?: stringResource(R.string.system_default)
@@ -175,7 +136,7 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
                 ) },
                 supportingContent = { Text(currentLanguageDisplay) },
                 modifier = Modifier.clickable {
-                    languageDialog.show()
+                    showLanguageSheet = true
                 }
             )
 
@@ -212,6 +173,78 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
                     activity?.setAmoledMode(checked)
                     enableAmoled = checked
                 }
+            }
+        }
+    }
+
+    if (showLanguageSheet) {
+        LanguageBottomSheet(
+            options = languageOptions,
+            selectedLanguageTag = currentLanguageTag,
+            onDismiss = { showLanguageSheet = false },
+            onLanguageSelected = { languageTag ->
+                showLanguageSheet = false
+                if (languageTag != currentLanguageTag) {
+                    LocaleHelper.setAppLocale(context, languageTag)
+                    currentAppLocale = LocaleHelper.getCurrentAppLocale(context)
+                    if (!LocaleHelper.usesFrameworkLocaleManager) {
+                        refreshActivity(context)
+                    }
+                }
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LanguageBottomSheet(
+    options: List<Pair<String, String>>,
+    selectedLanguageTag: String,
+    onDismiss: () -> Unit,
+    onLanguageSelected: (String) -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.background
+    ) {
+        Text(
+            text = stringResource(R.string.select_language),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Black,
+            modifier = Modifier
+                .padding(horizontal = 24.dp, vertical = 8.dp)
+                .semantics { heading() }
+        )
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f, fill = false)
+                .selectableGroup(),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
+            items(options, key = { (tag, _) -> tag }) { (tag, displayName) ->
+                val selected = tag == selectedLanguageTag
+                ListItem(
+                    headlineContent = { Text(displayName) },
+                    trailingContent = {
+                        RadioButton(selected = selected, onClick = null)
+                    },
+                    colors = ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.background
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = selected,
+                            role = Role.RadioButton,
+                            onClick = { onLanguageSelected(tag) }
+                        )
+                )
             }
         }
     }

@@ -175,6 +175,7 @@
   <string name="log_saved">Günlükler kaydedildi</string>
   <string name="send_log">Günlükleri paylaş</string>
   <string name="settings_language">Dil</string>
+  <string name="select_language">Dil seçin</string>
   <string name="system_default">Sistem varsayılanı</string>
   <string name="settings_banner">Afişleri etkinleştirin</string>
   <string name="settings_banner_summary">Modüller için arka plan afişlerini gösterin.</string>

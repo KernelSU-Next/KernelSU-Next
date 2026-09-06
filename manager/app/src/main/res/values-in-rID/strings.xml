@@ -175,6 +175,7 @@
   <string name="log_saved">Log disimpan</string>
   <string name="send_log">Bagikan log</string>
   <string name="settings_language">Bahasa</string>
+  <string name="select_language">Pilih bahasa</string>
   <string name="system_default">Bawaan sistem</string>
   <string name="settings_banner">Aktifkan banner</string>
   <string name="settings_banner_summary">Tampilkan banner latar belakang pada modul.</string>

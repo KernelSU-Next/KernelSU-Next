@@ -175,6 +175,7 @@
   <string name="log_saved">Logs guardados</string>
   <string name="send_log">Enviar logs</string>
   <string name="settings_language">Idioma</string>
+  <string name="select_language">Seleccionar idioma</string>
   <string name="system_default">Predeterminado del sistema</string>
   <string name="settings_banner">Activar banners</string>
   <string name="settings_banner_summary">Mostrar banners de fondo para los módulos.</string>

@@ -208,6 +208,7 @@
     <string name="settings_enable_su">SU compatibility</string>
     <string name="settings_enable_su_summary">Allow the ability of any app to gain root privileges via the ⁠su command (existing root processes won\'t be affected).</string>
     <string name="settings_language">Language</string>
+    <string name="select_language">Select Language</string>
     <string name="system_default">System default</string>
     <string name="settings_banner">Enable banners</string>
     <string name="settings_banner_summary">Show background banners for modules.</string>
