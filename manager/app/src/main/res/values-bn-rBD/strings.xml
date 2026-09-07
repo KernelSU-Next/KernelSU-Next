@@ -236,7 +236,6 @@
   <string name="settings_enable_avc_spoof_summary">Fix selinux context leak caused by avc denial in audit log.</string>
   <string name="manage_repositories">Manage Repositories</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
   <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
   <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
   <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
@@ -288,8 +287,6 @@
   <string name="sulog_entry_description_ioctl_grant_root">Granted root access via KernelSU ioctl</string>
   <string name="sulog_entry_title_daemon_restarted">Daemon restarted</string>
   <string name="sulog_entry_title_dropped_events">Dropped events</string>
-  <string name="uapi_mismatch">Manager uapi version (%1$d) and KernelSU driver uapi version (%2$d) mismatch.</string>
-  <string name="require_manager_version">The current KernelSU manager version %1$d is too low for KernelSU to work properly. Please upgrade manager to version %2$d or higher!</string>
   <string name="profile_flags">Flags</string>
   <string name="profile_flags_desc_no_new_privs">Prevent further privilege escalation via KernelSU from within the context of this root profile.</string>
   <string name="settings_sulog">SU Log</string>
@@ -307,4 +304,9 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">Success</string>
   <string name="sulog_status_exit">Exit %1$d</string>
+  <string name="home_lkm_update_available">একটি নতুন বিল্ট-ইন LKM উপলভ্য। আপডেট করতে চাপুন।</string>
+  <string name="home_lkm_custom">কাস্টম</string>
+  <string name="require_manager_version">The current KernelSU-Next manager version %1$d is too low for KernelSU-Next to work properly. Please upgrade manager to version %2$d or higher!</string>
+  <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
+  <string name="require_kernel_version_gki">কার্নেল আপডেট করা প্রয়োজন।</string>
 </resources>

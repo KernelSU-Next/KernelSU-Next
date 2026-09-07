@@ -125,9 +125,6 @@
     <string name="profile_selinux_context">SELinux context</string>
     <string name="profile_umount_modules">Umount modules</string>
     <string name="failed_to_update_app_profile">Failed to update App Profile for %s</string>
-    <string name="uapi_mismatch">Manager uapi version (%1$d) and KernelSU driver uapi version (%2$d) mismatch.</string>
-    <string name="require_manager_version">The current KernelSU manager version %1$d is too low for KernelSU to work properly. Please upgrade manager to version %2$d or higher!</string>
-    <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
     <string name="settings_umount_modules_default">Umount modules</string>
     <string name="settings_umount_modules_default_summary">The global default value for \"Umount modules\" in App Profile. If enabled, it will remove all module modifications to the system for apps that don\'t have a profile set.</string>
     <string name="profile_umount_modules_summary">Enabling this option will allow KernelSU-Next to restore any modified files by the modules for this app.</string>
@@ -307,4 +304,9 @@
     <string name="sulog_uid">UID %1$s</string>
     <string name="sulog_status_success">Success</string>
     <string name="sulog_status_exit">Exit %1$d</string>
+    <string name="home_lkm_update_available">A newer bundled LKM is available. Tap to update.</string>
+    <string name="home_lkm_custom">Custom</string>
+    <string name="require_manager_version">The current KernelSU-Next manager version %1$d is too low for KernelSU-Next to work properly. Please upgrade manager to version %2$d or higher!</string>
+    <string name="require_kernel_version">The current KernelSU-Next version %1$d is too low for the manager to work properly. Please upgrade to version %2$d or higher!</string>
+    <string name="require_kernel_version_gki">Kernel update required</string>
 </resources>

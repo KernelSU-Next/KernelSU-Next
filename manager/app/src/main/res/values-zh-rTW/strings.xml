@@ -236,7 +236,6 @@
   <string name="settings_enable_avc_spoof_summary">修復日誌中 avc denial 導致的 Selinux 上下文洩漏。</string>
   <string name="manage_repositories">管理儲存庫</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">目前 KernelSU-Next 版本 %1$d 過低，管理員無法正常工作，請升級內核 KernelSU-Next 版本至 %2$d 或以上！</string>
   <string name="profile_umount_modules_summary">啟用選項後，KernelSU 會將應用程式內遭模組修改的檔案恢復原狀。</string>
   <string name="settings_uninstall_temporary_message">暫時移除 KernelSU Next， 設備下次重新啓動後還原至原始狀態。</string>
   <string name="settings_uninstall_permanent_message">徹底永久移除 KernelSU Next，將失去 Root 權限及所有已安裝的模組。</string>
@@ -288,8 +287,6 @@
   <string name="sulog_entry_description_ioctl_grant_root">已透過 KernelSU ioctl 授予 Root 權限</string>
   <string name="sulog_entry_title_daemon_restarted">Daemon 已重新啟動</string>
   <string name="sulog_entry_title_dropped_events">已捨棄事件</string>
-  <string name="uapi_mismatch">管理器的 uapi 版本 (%1$d) 與目前 KernelSU 驅動的 uapi 版本 (%2$d) 不相符。</string>
-  <string name="require_manager_version">當前 KernelSU 管理器版本 %1$d 過低，KernelSU 無法正常工作。請將 KernelSU 管理器版本升級至 %2$d 或以上！</string>
   <string name="profile_flags">標誌</string>
   <string name="profile_flags_desc_no_new_privs">禁止從此 Root Profile 的上下文中通過 KernelSU 進一步提升權限。</string>
   <string name="settings_sulog">SU 日誌</string>
@@ -307,4 +304,9 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">成功</string>
   <string name="sulog_status_exit">退出碼 %1$d</string>
+  <string name="home_lkm_update_available">有可用的內建 LKM 更新，點選更新</string>
+  <string name="home_lkm_custom">自訂</string>
+  <string name="require_manager_version">當前 KernelSU-Next 管理器版本 %1$d 過低，KernelSU-Next 無法正常工作。請將 KernelSU-Next 管理器版本升級至 %2$d 或以上！</string>
+  <string name="require_kernel_version">目前 KernelSU-Next 版本 %1$d 過低，管理員無法正常工作，請升級內核 KernelSU-Next 版本至 %2$d 或以上！</string>
+  <string name="require_kernel_version_gki">需要更新核心</string>
 </resources>

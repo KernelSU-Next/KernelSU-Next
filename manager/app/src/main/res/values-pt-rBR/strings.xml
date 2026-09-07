@@ -236,7 +236,6 @@
   <string name="settings_enable_avc_spoof_summary">Corrigir vazamento de contexto do Selinux causado por negação de Avc no log de auditoria.</string>
   <string name="manage_repositories">Gerenciar Repositórios</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">A versão atual do KernelSU-Next, %1$d, é muito antiga para o gerenciador funcionar corretamente. Atualize para a versão %2$d ou superior!</string>
   <string name="profile_umount_modules_summary">Habilitar esta opção permitirá que o KernelSU-Next restaure quaisquer arquivos modificados pelos módulos deste aplicativo.</string>
   <string name="settings_uninstall_temporary_message">Desinstale temporariamente o KernelSU-Next e restaure o estado original após a próxima reinicialização.</string>
   <string name="settings_uninstall_permanent_message">Desinstalar o KernelSU-Next (root e todos os módulos) completa e permanentemente.</string>
@@ -288,8 +287,6 @@
   <string name="sulog_entry_description_ioctl_grant_root">Acesso root concedido via ioctl do KernelSU</string>
   <string name="sulog_entry_title_daemon_restarted">O daemon foi reiniciado</string>
   <string name="sulog_entry_title_dropped_events">Eventos cancelados</string>
-  <string name="uapi_mismatch">Incompatibilidade entre a versão da uapi do gerenciador (%1$d) e a versão da uapi do driver KernelSU (%2$d).</string>
-  <string name="require_manager_version">A versão atual do gerenciador KernelSU, %1$d, é muito antiga para o funcionamento correto do KernelSU. Atualize o gerenciador para a versão %2$d ou superior!</string>
   <string name="profile_flags">Flags</string>
   <string name="profile_flags_desc_no_new_privs">Impeça a escalada de privilégios adicional via KernelSU a partir do contexto deste perfil de root.</string>
   <string name="settings_sulog">Log do SU</string>
@@ -307,4 +304,9 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">Sucesso</string>
   <string name="sulog_status_exit">Saída %1$d</string>
+  <string name="home_lkm_update_available">Uma versão mais recente do LKM integrado está disponível. Toque para atualizar.</string>
+  <string name="home_lkm_custom">Personalizado</string>
+  <string name="require_manager_version">A versão atual do gerenciador KernelSU-Next, %1$d, é muito antiga para o funcionamento correto do KernelSU-Next. Atualize o gerenciador para a versão %2$d ou superior!</string>
+  <string name="require_kernel_version">A versão atual do KernelSU-Next, %1$d, é muito antiga para o gerenciador funcionar corretamente. Atualize para a versão %2$d ou superior!</string>
+  <string name="require_kernel_version_gki">É necessário atualizar o kernel.</string>
 </resources>

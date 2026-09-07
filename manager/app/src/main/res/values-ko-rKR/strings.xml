@@ -237,7 +237,6 @@
   <string name="settings_enable_avc_spoof_summary">감사 로그에서 avc 거부로 인해 발생한 selinux 컨텍스트 누수를 수정하세요.</string>
   <string name="manage_repositories">저장소 관리</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">KernelSU Next 버전 %1$d이 너무 낮아서 Manager가 작동하지 않습니다. %2$d 이상의 버전을 사용하세요!</string>
   <string name="profile_umount_modules_summary">이 옵션이 활성화되면, KernelSU는 이 앱에 대한 모듈의 모든 수정사항을 복구합니다.</string>
   <string name="settings_uninstall_temporary_message">임시로 KernelSU를 삭제하고, 다음 재부팅에 원래대로 복구합니다.</string>
   <string name="settings_uninstall_permanent_message">완전히, 그리고 영구히 KernelSU (루트 및 모든 모듈)를 삭제합니다.</string>
@@ -289,8 +288,6 @@
   <string name="sulog_entry_description_ioctl_grant_root">KernelSU ioctl를 통해 루트 권한을 부여했습니다</string>
   <string name="sulog_entry_title_daemon_restarted">데몬 다시 시작됨</string>
   <string name="sulog_entry_title_dropped_events">발생한 이벤트</string>
-  <string name="uapi_mismatch">Manager uapi 버전(%1$d)과 KernelSU 드라이버 uapi 버전(%2$d)이 일치하지 않습니다.</string>
-  <string name="require_manager_version">KernelSU Manager 버전 %1$d이 너무 낮아서 KernelSU가 작동하지 않습니다. Manager를 %2$d 이상의 버전을 사용하세요!</string>
   <string name="profile_flags">플래그</string>
   <string name="profile_flags_desc_no_new_privs">이 루트 프로필 내에서 KernelSU를 통해 권한이 추가로 상승하는 것을 방지합니다.</string>
   <string name="settings_sulog">SU 로그</string>
@@ -308,4 +305,9 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">성공</string>
   <string name="sulog_status_exit">Exit %1$d</string>
+  <string name="home_lkm_update_available">A newer bundled LKM is available. Tap to update.</string>
+  <string name="home_lkm_custom">Custom</string>
+  <string name="require_manager_version">KernelSU-Next Manager 버전 %1$d이 너무 낮아서 KernelSU-Next가 작동하지 않습니다. Manager를 %2$d 이상의 버전을 사용하세요!</string>
+  <string name="require_kernel_version">KernelSU-Next 버전 %1$d이 너무 낮아서 Manager가 작동하지 않습니다. %2$d 이상의 버전을 사용하세요!</string>
+  <string name="require_kernel_version_gki">Kernel update required</string>
 </resources>

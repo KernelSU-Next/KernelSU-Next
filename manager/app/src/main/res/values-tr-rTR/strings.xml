@@ -236,7 +236,6 @@
   <string name="settings_enable_avc_spoof_summary">Denetim günlüğünde avc reddi nedeniyle oluşan selinux bağlam sızıntısını düzeltin.</string>
   <string name="manage_repositories">Depoları Yönet</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">Geçerli KernelSU Next sürümü %1$d, yöneticinin düzgün çalışması için çok düşük. Lütfen %2$d veya daha yüksek bir sürüme yükseltin!</string>
   <string name="profile_umount_modules_summary">Bu seçeneğin etkinleştirilmesi, KernelSU Next\'in bu uygulama için modüller tarafından değiştirilen tüm dosyaları geri yüklemesine izin verecektir.</string>
   <string name="settings_uninstall_temporary_message">KernelSU\'yu geçici olarak kaldırın, bir sonraki yeniden başlatmadan sonra orijinal duruma geri dönün.</string>
   <string name="settings_uninstall_permanent_message">KernelSU-Next\'i (kök ve tüm modüller) tamamen ve kalıcı olarak kaldırın.</string>
@@ -288,8 +287,6 @@
   <string name="sulog_entry_description_ioctl_grant_root">KernelSU ioctl aracılığıyla kök erişimi verildi</string>
   <string name="sulog_entry_title_daemon_restarted">Daemon yeniden başlatıldı</string>
   <string name="sulog_entry_title_dropped_events">İptal edilen etkinlikler</string>
-  <string name="uapi_mismatch">Manager uapi version (%1$d) and KernelSU driver uapi version (%2$d) mismatch.</string>
-  <string name="require_manager_version">The current KernelSU manager version %1$d is too low for KernelSU to work properly. Please upgrade manager to version %2$d or higher!</string>
   <string name="profile_flags">Flags</string>
   <string name="profile_flags_desc_no_new_privs">Prevent further privilege escalation via KernelSU from within the context of this root profile.</string>
   <string name="settings_sulog">SU Log</string>
@@ -307,4 +304,9 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">Success</string>
   <string name="sulog_status_exit">Exit %1$d</string>
+  <string name="home_lkm_update_available">A newer bundled LKM is available. Tap to update.</string>
+  <string name="home_lkm_custom">Custom</string>
+  <string name="require_manager_version">The current KernelSU-Next manager version %1$d is too low for KernelSU-Next to work properly. Please upgrade manager to version %2$d or higher!</string>
+  <string name="require_kernel_version">Geçerli KernelSU-Next sürümü %1$d, yöneticinin düzgün çalışması için çok düşük. Lütfen %2$d veya daha yüksek bir sürüme yükseltin!</string>
+  <string name="require_kernel_version_gki">Kernel update required</string>
 </resources>

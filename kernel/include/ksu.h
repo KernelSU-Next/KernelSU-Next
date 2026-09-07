@@ -11,6 +11,9 @@
 extern struct cred *ksu_cred;
 extern bool ksu_late_loaded;
 extern bool allow_shell;
+#ifdef MODULE
+extern bool ksu_bundled;
+#endif
 extern struct selinux_policy *backup_sepolicy;
 extern bool ksu_no_custom_rc;
 

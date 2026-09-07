@@ -236,7 +236,6 @@
   <string name="settings_enable_avc_spoof_summary">Correggi la perdita di contesto di selinux causata dal rifiuto di avc nel registro di controllo.</string>
   <string name="manage_repositories">Gestisci Repository</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">La versione attualmente installata di KernelSU-Next %1$d è troppo vecchia ed il manager non può funzionare correttamente. Si prega di aggiornare alla versione %2$d o successiva!</string>
   <string name="profile_umount_modules_summary">Abilitando questa opzione, KernelSU-Next potrà ripristinare tutti i file modificati dai moduli per questa app.</string>
   <string name="settings_uninstall_temporary_message">Disinstalla temporaneamente KernelSU-Next e recupera il suo stato originale dopo il prossimo riavvio.</string>
   <string name="settings_uninstall_permanent_message">Disinstallazione completa e permanente di KernelSU-Next (root e tutti i moduli).</string>
@@ -288,8 +287,6 @@
   <string name="sulog_entry_description_ioctl_grant_root">Accesso root consentito tramite KernelSU ioctl</string>
   <string name="sulog_entry_title_daemon_restarted">Demone riavviato</string>
   <string name="sulog_entry_title_dropped_events">Eventi scartati</string>
-  <string name="uapi_mismatch">Mancata corrispondenza tra la versione uapi del manager (%1$d) e la versione uapi del driver KernelSU (%2$d).</string>
-  <string name="require_manager_version">La versione attualmente installata del manager KernelSU %1$d è troppo vecchia e KernelSU non può funzionare correttamente. Si prega di aggiornare alla versione %2$d o successiva!</string>
   <string name="profile_flags">Segnalazioni</string>
   <string name="profile_flags_desc_no_new_privs">Evitare un\'ulteriore escalation dei privilegi tramite KernelSU nel contesto di questo profilo di root.</string>
   <string name="settings_sulog">Log SU</string>
@@ -307,4 +304,9 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">Successo</string>
   <string name="sulog_status_exit">Esci %1$d</string>
+  <string name="home_lkm_update_available">A newer bundled LKM is available. Tap to update.</string>
+  <string name="home_lkm_custom">Custom</string>
+  <string name="require_manager_version">La versione attualmente installata del manager KernelSU-Next %1$d è troppo vecchia e KernelSU-Next non può funzionare correttamente. Si prega di aggiornare alla versione %2$d o successiva!</string>
+  <string name="require_kernel_version">La versione attualmente installata di KernelSU-Next %1$d è troppo vecchia ed il manager non può funzionare correttamente. Si prega di aggiornare alla versione %2$d o successiva!</string>
+  <string name="require_kernel_version_gki">Kernel update required</string>
 </resources>

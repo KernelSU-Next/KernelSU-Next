@@ -236,7 +236,6 @@
   <string name="settings_enable_avc_spoof_summary">رفع نشت Context مربوط به Selinux که بر اثر Avc denial در گزارش Audit ایجاد میشود.</string>
   <string name="manage_repositories">مدیریت مخازن</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">نسخه فعلی KernelSU-Next %1$d برای عملکرد صحیح مدیریت، بسیار ضعیف است. لطفاً به نسخه %2$d یا بالاتر ارتقا دهید!</string>
   <string name="profile_umount_modules_summary">فعال کردن این گزینه به KernelSU-Next اجازه می‌دهد تا هرگونه فایل تغییر یافته توسط ماژول‌های این برنامه را بازیابی کند.</string>
   <string name="settings_uninstall_temporary_message">KernelSU-Next را موقتاً حذف نصب کنید، سپس پس از راه‌اندازی مجدد بعدی، سیستم را به حالت اولیه بازگردانید.</string>
   <string name="settings_uninstall_permanent_message">حذف کامل و دائمی KernelSU-Next (روت و تمام ماژول‌ها).</string>
@@ -288,8 +287,6 @@
   <string name="sulog_entry_description_ioctl_grant_root">اعطای دسترسی روت با KernelSU ioctl</string>
   <string name="sulog_entry_title_daemon_restarted">Daemon مجددا راه‌اندازی شد</string>
   <string name="sulog_entry_title_dropped_events">رویداد‌های از دست رفته</string>
-  <string name="uapi_mismatch">نسخه uapi منیجر (%1$d) و نسخه uapi KernelSU درایور (%2$d) با هم تداخل دارند.</string>
-  <string name="require_manager_version">نسخه فعلی KernelSU منیجر %1$d برای عملکرد صحیح مدیریت، بسیار ضعیف است. لطفاً به نسخه %2$d یا بالاتر ارتقا دهید!</string>
   <string name="profile_flags">علامت‌ها</string>
   <string name="profile_flags_desc_no_new_privs">از ارتقای بیشتر سطح دسترسی از طریق KernelSU در این نمایه روت جلوگیری می‌کند.</string>
   <string name="settings_sulog">گزارش SU</string>
@@ -307,4 +304,9 @@
   <string name="sulog_uid">شناسه کاربر%1$s</string>
   <string name="sulog_status_success">موفقیت آمیز بود</string>
   <string name="sulog_status_exit">خروج %1$d</string>
+  <string name="home_lkm_update_available">A newer bundled LKM is available. Tap to update.</string>
+  <string name="home_lkm_custom">Custom</string>
+  <string name="require_manager_version">نسخه فعلی KernelSU-Next منیجر %1$d برای عملکرد صحیح مدیریت، بسیار ضعیف است. لطفاً به نسخه %2$d یا بالاتر ارتقا دهید!</string>
+  <string name="require_kernel_version">نسخه فعلی KernelSU-Next %1$d برای عملکرد صحیح مدیریت، بسیار ضعیف است. لطفاً به نسخه %2$d یا بالاتر ارتقا دهید!</string>
+  <string name="require_kernel_version_gki">Kernel update required</string>
 </resources>

@@ -236,7 +236,6 @@
   <string name="settings_enable_avc_spoof_summary">監査ログでのAVC拒否によって発生するSELinuxコンテキストリークを修正します。</string>
   <string name="manage_repositories">リポジトリの管理</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">このKernelSU Nextマネージャーのバージョンは%1$dと低く適切に動作しません。バージョン%2$d以上に更新して下さい！</string>
   <string name="profile_umount_modules_summary">このオプションを有効にすると、モジュールがこのアプリ対して行った全てのファイルの変更をKernelSU Nextが復元できるようになります。</string>
   <string name="settings_uninstall_temporary_message">KernelSU Nextを一時的にアンインストールして、次回の再起動後に元の状態に戻します。</string>
   <string name="settings_uninstall_permanent_message">KernelSU Next (Root およびすべてのモジュール) を完全に永続的にアンインストールします。</string>
@@ -288,8 +287,6 @@
   <string name="sulog_entry_description_ioctl_grant_root">KernelSUのioctl経由によるroot権限付与</string>
   <string name="sulog_entry_title_daemon_restarted">デーモン再起動</string>
   <string name="sulog_entry_title_dropped_events">欠落したイベント</string>
-  <string name="uapi_mismatch">マネージャーのuapiのバージョン(%1$d)とKernelSUドライバーのuapiのバージョン(%2$d)が異なります。</string>
-  <string name="require_manager_version">このKernelSUマネージャーのバージョンは%1$dと低く適切に動作しません。バージョン%2$d以上に更新して下さい！</string>
   <string name="profile_flags">フラグ</string>
   <string name="profile_flags_desc_no_new_privs">このルートプロファイルのコンテキスト内からKernelSUを介したさらなる権限昇格を防止します。</string>
   <string name="settings_sulog">SUログ</string>
@@ -307,4 +304,9 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">成功</string>
   <string name="sulog_status_exit">終了 %1$d</string>
+  <string name="home_lkm_update_available">A newer bundled LKM is available. Tap to update.</string>
+  <string name="home_lkm_custom">Custom</string>
+  <string name="require_manager_version">このKernelSU-Nextマネージャーのバージョンは%1$dと低く適切に動作しません。バージョン%2$d以上に更新して下さい！</string>
+  <string name="require_kernel_version">このKernelSU-Nextマネージャーのバージョンは%1$dと低く適切に動作しません。バージョン%2$d以上に更新して下さい！</string>
+  <string name="require_kernel_version_gki">Kernel update required</string>
 </resources>

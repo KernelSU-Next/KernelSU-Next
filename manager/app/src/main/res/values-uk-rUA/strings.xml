@@ -238,7 +238,6 @@
   <string name="settings_enable_avc_spoof_summary">Виправити витік контексту selinux викликаний відхиленням avc в журналі аудиту.</string>
   <string name="manage_repositories">Керування репозиторіями</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">Поточна версія KernelSU Next %1$d надто низька для коректної роботи менеджера. Будь ласка, оновіться до версії %2$d або вище!</string>
   <string name="profile_umount_modules_summary">Увімкнення цієї опції дозволить KernelSU-Next відновлювати для цього додатка будь-які файли, змінені модулями.</string>
   <string name="settings_uninstall_temporary_message">Тимчасово видалити KernelSU-Next, відновити початковий стан після наступного перезавантаження.</string>
   <string name="settings_uninstall_permanent_message">Повне та остаточне видалення KernelSU Next (Root та всіх модулів).</string>
@@ -290,8 +289,6 @@
   <string name="sulog_entry_description_ioctl_grant_root">Дозволений root доступ через KernelSU ioctl</string>
   <string name="sulog_entry_title_daemon_restarted">Службу перезавантажено</string>
   <string name="sulog_entry_title_dropped_events">Втрачені події</string>
-  <string name="uapi_mismatch">Версія uapi менеджера (%1$d) та версія uapi драйвера KernelSU (%2$d) не збігаються.</string>
-  <string name="require_manager_version">Поточна версія менеджера KernelSU %1$d є занадто низькою для коректної роботи KernelSU. Будь ласка, оновіть менеджер до версії %2$d або вище!</string>
   <string name="profile_flags">Прапорці</string>
   <string name="profile_flags_desc_no_new_privs">Запобігти подальшому підвищенню привілеїв через KernelSU в контексті цього root-профілю.</string>
   <string name="settings_sulog">Журнал SU</string>
@@ -309,4 +306,9 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">Успішно</string>
   <string name="sulog_status_exit">Вийти з %1$d</string>
+  <string name="home_lkm_update_available">A newer bundled LKM is available. Tap to update.</string>
+  <string name="home_lkm_custom">Custom</string>
+  <string name="require_manager_version">Поточна версія менеджера KernelSU-Next %1$d є занадто низькою для коректної роботи KernelSU-Next. Будь ласка, оновіть менеджер до версії %2$d або вище!</string>
+  <string name="require_kernel_version">Поточна версія KernelSU-Next %1$d надто низька для коректної роботи менеджера. Будь ласка, оновіться до версії %2$d або вище!</string>
+  <string name="require_kernel_version_gki">Kernel update required</string>
 </resources>

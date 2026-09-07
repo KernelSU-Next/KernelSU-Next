@@ -236,7 +236,6 @@
   <string name="settings_enable_avc_spoof_summary">Khắc phục lỗi rò rỉ ngữ cảnh selinux do từ chối avc gây ra trong nhật ký kiểm tra.</string>
   <string name="manage_repositories">Quản lý Kho</string>
   <string name="app_name">KernelSU-Next</string>
-  <string name="require_kernel_version">Phiên bản KernelSU-Next hiện tại %1$d quá thấp để trình quản lý có thể hoạt động bình thường. Vui lòng nâng cấp lên phiên bản %2$d hoặc cao hơn!</string>
   <string name="profile_umount_modules_summary">Bật tùy chọn này sẽ cho phép KernelSU-Next khôi phục bất kỳ tệp nào đã được sửa đổi bởi các mô-đun cho ứng dụng này.</string>
   <string name="settings_uninstall_temporary_message">Tạm thời gỡ cài đặt KernelSU-Next, khôi phục về trạng thái ban đầu sau lần khởi động lại tiếp theo.</string>
   <string name="settings_uninstall_permanent_message">Gỡ cài đặt KernelSU-Next (root và tất cả các mô-đun) hoàn toàn và vĩnh viễn.</string>
@@ -288,8 +287,6 @@
   <string name="sulog_entry_description_ioctl_grant_root">Đã cấp quyền thông qua KernelSU iotcl</string>
   <string name="sulog_entry_title_daemon_restarted">Đã khởi động lại Daemon</string>
   <string name="sulog_entry_title_dropped_events">Sự kiện bị hủy</string>
-  <string name="uapi_mismatch">Phiên bản uapi của trình quản lý (%1$d) và phiên bản uapi của trình điều khiển KernelSU (%2$d) không khớp.</string>
-  <string name="require_manager_version">Phiên bản trình quản lý KernelSU hiện tại %1$d quá thấp để KernelSU hoạt động đúng cách. Vui lòng nâng cấp trình quản lý lên phiên bản %2$d hoặc cao hơn!</string>
   <string name="profile_flags">Cờ</string>
   <string name="profile_flags_desc_no_new_privs">Ngăn chặn việc leo thang đặc quyền hơn nữa thông qua KernelSU từ bên trong phạm vi cấu hình root này.</string>
   <string name="settings_sulog">Nhật ký SU</string>
@@ -307,4 +304,9 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">Thành công</string>
   <string name="sulog_status_exit">Thoát %1$d</string>
+  <string name="home_lkm_update_available">A newer bundled LKM is available. Tap to update.</string>
+  <string name="home_lkm_custom">Custom</string>
+  <string name="require_manager_version">Phiên bản trình quản lý KernelSU-Next hiện tại %1$d quá thấp để KernelSU-Next hoạt động đúng cách. Vui lòng nâng cấp trình quản lý lên phiên bản %2$d hoặc cao hơn!</string>
+  <string name="require_kernel_version">Phiên bản KernelSU-Next hiện tại %1$d quá thấp để trình quản lý có thể hoạt động bình thường. Vui lòng nâng cấp lên phiên bản %2$d hoặc cao hơn!</string>
+  <string name="require_kernel_version_gki">Kernel update required</string>
 </resources>

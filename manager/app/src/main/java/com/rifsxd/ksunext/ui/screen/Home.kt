@@ -33,6 +33,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -98,7 +99,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
     val isManager = Natives.isManager
-    val fullFeatured = isManager && !Natives.requireNewKernel() && rootAvailable()
+    val fullFeatured = Natives.isFullFeatured()
     val ksuVersion = if (isManager) Natives.version else null
     val ksuVersionTag = if (isManager) Natives.getVersionTag() else null
     val kernelUAPIVersion = if (isManager) Natives.kernelUAPIVersion else null
@@ -211,35 +212,37 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                 }
             }
 
-            if (isManager && Natives.requireNewKernel()) {
-                if (Natives.checkUAPIMismatch()) {
-                    WarningCard(
-                        stringResource(
-                            id = R.string.uapi_mismatch,
-                            managerUAPIVersion,
-                            kernelUAPIVersion ?: 0,
-                        )
-                    )
-                }
+            val currentVersionCode = getManagerVersion(context).second
+            val requiresNewKernel = isManager && kernelUAPIVersion != null && managerUAPIVersion > kernelUAPIVersion
+            val requiresNewManager = isManager && kernelUAPIVersion != null && managerUAPIVersion < kernelUAPIVersion
 
-                val currentVersionCode = getManagerVersion(context).second
-                if (ksuVersion != null && currentVersionCode < ksuVersion.toLong()) {
-                    WarningCard(
-                        stringResource(
-                            id = R.string.require_manager_version,
-                            currentVersionCode,
-                            ksuVersion
-                        )
+            if (requiresNewKernel) {
+                WarningCard(
+                    stringResource(
+                        id = if (lkmMode == true) R.string.require_kernel_version else R.string.require_kernel_version_gki
+                    ),
+                    onClick = if (lkmMode == true) {
+                        { navigator.navigate(InstallScreenDestination) }
+                    } else null
+                )
+            }
+
+            if (requiresNewManager) {
+                WarningCard(
+                    stringResource(
+                        id = R.string.require_manager_version
                     )
-                } else if (ksuVersion != null && ksuVersion < Natives.MINIMAL_SUPPORTED_KERNEL) {
-                    WarningCard(
-                        stringResource(
-                            id = R.string.require_kernel_version,
-                            ksuVersion,
-                            Natives.MINIMAL_SUPPORTED_KERNEL
-                        )
-                    )
-                }
+                )
+            }
+
+            val showLkmUpdate = isManager && lkmMode == true && Natives.isLkmBundled && ksuVersion?.toLong() != currentVersionCode && !requiresNewKernel && !requiresNewManager
+
+            if (showLkmUpdate) {
+                WarningCard(
+                    message = stringResource(R.string.home_lkm_update_available),
+                    color = MaterialTheme.colorScheme.tertiary,
+                    onClick = { navigator.navigate(InstallScreenDestination) }
+                )
             }
 
             if (ksuVersion != null && !rootAvailable()) {
@@ -884,10 +887,26 @@ private fun StatusCard(
                             tag,
                             "$ksuVer-$uapiVer"
                         )
-                        Text(
-                            text = versionText,
-                            style = MaterialTheme.typography.bodySmall
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = versionText,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            if (lkmModeParam == true && !Natives.isLkmBundled) {
+                                Spacer(Modifier.width(8.dp))
+                                Surface(
+                                    color = MaterialTheme.colorScheme.tertiaryContainer,
+                                    shape = RoundedCornerShape(4.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.home_lkm_custom),
+                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 
