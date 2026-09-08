@@ -81,7 +81,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
 
     val scrollState = LocalScrollState.current
     val isNavBarHidden = scrollState?.isScrollingDown?.value ?: false
-    val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + if (isNavBarHidden) 0.dp else 112.dp
+    val navBarPadding =
+        WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + if (isNavBarHidden) 0.dp else 112.dp
 
     val bottomBarScrollState = LocalScrollState.current
     val bottomBarScrollConnection = if (bottomBarScrollState != null) {
@@ -352,14 +353,19 @@ private fun KernelFeaturesCard(
                         0 -> {}
                         -OsConstants.EAGAIN -> {
                             withContext(Dispatchers.Main) {
-                                Toast.makeText(context, R.string.settings_selinux_hide_reboot_required,
-                                    Toast.LENGTH_LONG).show()
+                                Toast.makeText(
+                                    context, R.string.settings_selinux_hide_reboot_required,
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
                         }
+
                         else -> {
                             withContext(Dispatchers.Main) {
-                                Toast.makeText(context, context.getString(R.string.settings_selinux_hide_failed, status),
-                                    Toast.LENGTH_LONG).show()
+                                Toast.makeText(
+                                    context, context.getString(R.string.settings_selinux_hide_failed, status),
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
                         }
                     }
@@ -531,12 +537,18 @@ private fun AppSettingsCard(
             )
 
             var showBottomsheet by remember { mutableStateOf(false) }
+            var isUnrooted by remember { mutableStateOf(false) }
 
             ListItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
-                    .clickable { showBottomsheet = true },
+                    .clickable {
+                        val noDriver = Natives.checkKsuDriver() is Natives.KsuDriverStatus.NoDriver
+
+                        isUnrooted = noDriver
+                        showBottomsheet = true
+                    },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 leadingContent = { Icon(Icons.Filled.BugReport, null) },
                 headlineContent = {
@@ -561,7 +573,11 @@ private fun AppSettingsCard(
                         scope.launch {
                             val bugreport = loadingDialog.withLoading {
                                 withContext(Dispatchers.IO) {
-                                    getBugreportFile(context)
+                                    if (isUnrooted) {
+                                        getBugreportFileUnrooted(context)
+                                    } else {
+                                        getBugreportFile(context)
+                                    }
                                 }
                             }
                             val uri: Uri = FileProvider.getUriForFile(
@@ -693,9 +709,11 @@ fun UninstallItem(
                         UninstallType.PERMANENT -> navigator.navigate(
                             FlashScreenDestination(FlashIt.FlashUninstall)
                         )
+
                         UninstallType.RESTORE_STOCK_IMAGE -> navigator.navigate(
                             FlashScreenDestination(FlashIt.FlashRestore)
                         )
+
                         UninstallType.NONE -> Unit
                     }
                 }
