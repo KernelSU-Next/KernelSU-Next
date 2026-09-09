@@ -307,4 +307,7 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">成功</string>
   <string name="sulog_status_exit">退出碼 %1$d</string>
+  <string name="home_lkm_update_available">有較新版本的隨附 LKM 可用。點擊以更新。</string>
+  <string name="home_lkm_custom">自訂</string>
+  <string name="require_kernel_version_gki">核心需要更新</string>
 </resources>
