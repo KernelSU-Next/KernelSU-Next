@@ -7,6 +7,10 @@
 #include "ksu.h"
 #include "infra/symbol_resolver.h"
 
+#ifdef CONFIG_ANDROID
+#define ksu_security_secid_to_secctx security_secid_to_secctx
+#define ksu_security_release_secctx security_release_secctx
+#else
 int ksu_security_secctx_to_secid(const char *secdata, u32 seclen, u32 *secid)
 {
     static int (*real_func)(const char *, u32, u32 *) = NULL;
@@ -70,6 +74,7 @@ static void ksu_security_release_secctx(char *secdata, u32 seclen)
         real_func(secdata, seclen);
     }
 }
+#endif
 #endif
 
 /*
