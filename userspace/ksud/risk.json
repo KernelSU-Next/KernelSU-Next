@@ -36,7 +36,8 @@
 		"reason": "[MEDIUM RISK] AI-generated code - Possible bootloop - Break other modules",
 		"patterns": [
 			"resusfs",
-			"ahmed-alnassif"
+			"ahmed-alnassif",
+			"zeromount"
 		]
 	},
 	{
