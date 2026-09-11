@@ -28,6 +28,8 @@
 #include "feature/sulog.h"
 #include "infra/symbol_resolver.h"
 #include "preinit/preinit.h"
+#include "compat/samsung_defex.h"
+#include "ksu_samsung_kdp.h"
 
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
 #include <asm/cpufeature.h>
@@ -99,6 +101,9 @@ int __init kernelsu_init(void)
 #else
 	pr_info("welcome to KernelSU version " __stringify(KERNEL_SU_VERSION) "\n");
 #endif
+
+	int ret;
+
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
     // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set
     if (!boot_cpu_has(X86_FEATURE_INDIRECT_SAFE)) {
@@ -134,13 +139,24 @@ int __init kernelsu_init(void)
 		pr_alert("shell is allowed at init!");
 	}
 
+	ksu_init_symbol_resolver();
+	ret = ksu_samsung_kdp_init();
+	if (ret)
+		return ret;
+
 	ksu_cred = prepare_creds();
 	if (!ksu_cred) {
 		pr_err("prepare cred failed!\n");
+		ksu_samsung_kdp_exit();
 		return -ENOSYS;
 	}
 
-	ksu_init_symbol_resolver();
+	ret = ksu_samsung_defex_init();
+	if (ret) {
+		ksu_put_cred(ksu_cred);
+		ksu_samsung_kdp_exit();
+		return ret;
+	}
 	ksu_syscall_hook_init();
 
 	// Block modules early, before vendor modules are loaded in second stage.
@@ -239,7 +255,9 @@ void __exit kernelsu_exit(void)
 	ksu_feature_exit();
 	ksu_module_blacklist_exit();
 
-	put_cred(ksu_cred);
+	ksu_samsung_defex_exit();
+	ksu_put_cred(ksu_cred);
+	ksu_samsung_kdp_exit();
 }
 
 #if NEED_OWN_STACKPROTECTOR
