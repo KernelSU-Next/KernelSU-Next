@@ -49,13 +49,15 @@ static int patch_syscall_table(int nr, syscall_fn_t fn)
 
 // Direct syscall table patching: overwrite syscall_table[nr] with fn,
 // save original to *old, and record for restoration at module exit.
-void ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
+int ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
 {
+	int ret;
+
     if (ksu_syscall_table == NULL)
-        return;
+        return -ENOENT;
     if (nr < 0 || nr >= __NR_syscalls) {
         pr_info("invalid nr: %d\n", nr);
-        return;
+        return -EINVAL;
     }
 
     mutex_lock(&hooked_entries_lock);
@@ -73,21 +75,27 @@ void ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old)
             break;
         }
     }
+    if (!found && hooked_count >= ARRAY_SIZE(hooked_entries)) {
+        pr_warn("hooked_entries full, cannot track syscall %d for restoration\n",
+                nr);
+        mutex_unlock(&hooked_entries_lock);
+        return -ENOSPC;
+    }
+
+    ret = patch_syscall_table(nr, fn);
+    if (ret) {
+        mutex_unlock(&hooked_entries_lock);
+        return ret;
+    }
+
     if (!found) {
-        if (hooked_count < ARRAY_SIZE(hooked_entries)) {
             hooked_entries[hooked_count].nr = nr;
             hooked_entries[hooked_count].orig = orig;
             hooked_count++;
-        } else {
-            pr_warn(
-                "hooked_entries full, cannot track syscall %d for restoration\n",
-                nr);
-        }
     }
 
-    patch_syscall_table(nr, fn);
-
     mutex_unlock(&hooked_entries_lock);
+    return 0;
 }
 
 // Restore syscall_table[nr] to its original value and remove from tracking list.
@@ -218,9 +226,12 @@ void __init ksu_syscall_hook_init(void)
         return;
     }
 
+    if (ksu_syscall_table_hook(ni_slot, (syscall_fn_t)ksu_syscall_dispatcher,
+                               NULL)) {
+        pr_warn("dispatcher slot is protected; using architecture fallback hooks\n");
+        return;
+    }
     ksu_dispatcher_nr = ni_slot;
-    ksu_syscall_table_hook(ksu_dispatcher_nr,
-                           (syscall_fn_t)ksu_syscall_dispatcher, NULL);
     pr_info("dispatcher installed at slot %d\n", ksu_dispatcher_nr);
 }
 
