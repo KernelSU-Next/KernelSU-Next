@@ -175,6 +175,11 @@ static int ksu_patch_text_cb(void *arg)
 
 int ksu_patch_text(void *dst, void *src, size_t len, int flags)
 {
+#ifdef CONFIG_KSU_SAMSUNG_NO_PATCH_TEXT
+    pr_warn("live patching disabled on Samsung EL2: dst=0x%lx len=%zu flags=0x%x\n",
+            (unsigned long)dst, len, flags);
+    return -EOPNOTSUPP;
+#else
     int ret;
     struct patch_text_info info = {
         .dst = dst,
@@ -188,6 +193,7 @@ int ksu_patch_text(void *dst, void *src, size_t len, int flags)
     if (ret)
         pr_err("failed to patch kernel address 0x%lx: %d\n", (unsigned long)dst, ret);
     return ret;
+#endif
 }
 
 /*
