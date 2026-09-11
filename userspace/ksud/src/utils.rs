@@ -230,13 +230,38 @@ fn link_ksud_to_bin() -> Result<()> {
     Ok(())
 }
 
-pub fn install(libadbroot: Option<PathBuf>) -> Result<()> {
+pub fn stage_daemon() -> Result<()> {
     ensure_dir_exists(defs::ADB_DIR)?;
-    let _ = std::fs::remove_file(defs::DAEMON_PATH);
-    std::fs::copy(
-        std::env::current_exe().with_context(|| "Failed to get self exe path")?,
-        defs::DAEMON_PATH,
-    )?;
+    let current_exe = std::env::current_exe().context("Failed to get self exe path")?;
+    let daemon = PathBuf::from(defs::DAEMON_PATH);
+    if current_exe == daemon {
+        return Ok(());
+    }
+
+    let staged = PathBuf::from(format!("{}.stage", defs::DAEMON_PATH));
+    let _ = std::fs::remove_file(&staged);
+    std::fs::copy(&current_exe, &staged).with_context(|| {
+        format!(
+            "Failed to stage {} as {}",
+            current_exe.display(),
+            staged.display()
+        )
+    })?;
+    #[cfg(unix)]
+    set_permissions(&staged, Permissions::from_mode(0o755))?;
+    let _ = std::fs::remove_file(&daemon);
+    std::fs::rename(&staged, &daemon).with_context(|| {
+        format!(
+            "Failed to install staged daemon {} as {}",
+            staged.display(),
+            daemon.display()
+        )
+    })?;
+
+    Ok(())
+}
+
+pub fn finish_install(libadbroot: Option<PathBuf>) -> Result<()> {
     restorecon::lsetfilecon(defs::DAEMON_PATH, restorecon::KSU_CON)?;
     // install binary assets
     assets::ensure_binaries(false).with_context(|| "Failed to extract assets")?;
@@ -250,6 +275,11 @@ pub fn install(libadbroot: Option<PathBuf>) -> Result<()> {
     }
 
     Ok(())
+}
+
+pub fn install(libadbroot: Option<PathBuf>) -> Result<()> {
+    stage_daemon()?;
+    finish_install(libadbroot)
 }
 
 pub fn uninstall(package_name: &str) -> Result<()> {

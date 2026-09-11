@@ -43,4 +43,36 @@ config KSU_X86_PATCH_SYSCALL_DISPATCHER
 	  Dynamically patch x64's hardened syscall dispatcher to support syscall hooks. This is a
 	  replacement for a kernel source code patch, and is useful for x86_64 LKM mode.
 
+config KSU_SAMSUNG_KDP
+	bool "Samsung KDP credential compatibility"
+	depends on KSU && ARM64
+	default n
+	help
+	  Install and release credentials through Samsung KDP helpers.
+	  Enable only on Samsung kernels that use KDP-protected credentials.
+
+config KSU_SAMSUNG_RKP
+	bool "Samsung RKP hook compatibility"
+	depends on KSU && ARM64 && KPROBES && KRETPROBES
+	default n
+	help
+	  Use kprobe-based syscall fallbacks when Samsung RKP prevents live
+	  writes to the syscall table.
+
+config KSU_SAMSUNG_DEFEX
+	bool "Samsung DEFEX credential compatibility"
+	depends on KSU && ARM64 && KPROBES
+	default n
+	help
+	  Synchronize Samsung DEFEX task credentials after a KernelSU UID
+	  transition and bypass duplicate enforcement for KernelSU tasks.
+
+config KSU_SAMSUNG_NO_PATCH_TEXT
+	bool "Disable live kernel text/data patching on Samsung EL2"
+	depends on KSU && ARM64
+	default n
+	help
+	  Return -EOPNOTSUPP from KernelSU's live patch helper. Enable on
+	  Samsung kernels whose EL2 protection rejects fixmap writes.
+
 endmenu

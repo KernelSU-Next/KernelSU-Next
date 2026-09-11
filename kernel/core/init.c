@@ -25,6 +25,8 @@
 #include "feature/selinux_hide.h"
 #include "feature/sulog.h"
 #include "infra/symbol_resolver.h"
+#include "compat/samsung_defex.h"
+#include "ksu_samsung_kdp.h"
 
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
 #include <asm/cpufeature.h>
@@ -91,6 +93,8 @@ module_param_named(bundled, ksu_bundled, bool, 0);
 
 int __init kernelsu_init(void)
 {
+	int ret;
+
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
     // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set
     if (!boot_cpu_has(X86_FEATURE_INDIRECT_SAFE)) {
@@ -126,13 +130,24 @@ int __init kernelsu_init(void)
 		pr_alert("shell is allowed at init!");
 	}
 
+	ksu_init_symbol_resolver();
+	ret = ksu_samsung_kdp_init();
+	if (ret)
+		return ret;
+
 	ksu_cred = prepare_creds();
 	if (!ksu_cred) {
 		pr_err("prepare cred failed!\n");
+		ksu_samsung_kdp_exit();
 		return -ENOSYS;
 	}
 
-	ksu_init_symbol_resolver();
+	ret = ksu_samsung_defex_init();
+	if (ret) {
+		ksu_put_cred(ksu_cred);
+		ksu_samsung_kdp_exit();
+		return ret;
+	}
 	ksu_syscall_hook_init();
 
 	ksu_feature_init();
@@ -223,7 +238,9 @@ void __exit kernelsu_exit(void)
 
 	ksu_feature_exit();
 
-	put_cred(ksu_cred);
+	ksu_samsung_defex_exit();
+	ksu_put_cred(ksu_cred);
+	ksu_samsung_kdp_exit();
 }
 
 #if NEED_OWN_STACKPROTECTOR

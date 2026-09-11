@@ -192,7 +192,12 @@ static int ksu_patch_text_cb(void *arg)
 
 int ksu_patch_text(void *dst, void *src, size_t len, int flags)
 {
-    struct patch_text_info info = {
+#ifdef CONFIG_KSU_SAMSUNG_NO_PATCH_TEXT
+	pr_warn("live patching disabled on Samsung EL2: dst=0x%lx len=%zu flags=0x%x\n",
+		(unsigned long)dst, len, flags);
+	return -EOPNOTSUPP;
+#else
+	struct patch_text_info info = {
         .dst = dst,
         .src = src,
         .len = len,
@@ -200,7 +205,8 @@ int ksu_patch_text(void *dst, void *src, size_t len, int flags)
         .flags = flags,
     };
 
-    return stop_machine(ksu_patch_text_cb, &info, cpu_online_mask);
+	return stop_machine(ksu_patch_text_cb, &info, cpu_online_mask);
+#endif
 }
 
 /*

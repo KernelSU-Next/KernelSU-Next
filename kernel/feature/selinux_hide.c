@@ -14,6 +14,11 @@
 #include <net/genetlink.h>
 #include <linux/moduleparam.h>
 #include <linux/mutex.h>
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(__aarch64__)
+#include <linux/hashtable.h>
+#include <linux/kprobes.h>
+#include <linux/spinlock.h>
+#endif
 // security/selinux/include/security.h
 #include <security.h>
 #include <ss/context.h>
@@ -318,6 +323,122 @@ static int my_sel_open_handle_status(struct inode *inode, struct file *filp)
     return ret;
 }
 
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(__aarch64__)
+/*
+ * Samsung RKP makes the SELinux operation tables read-only even to the
+ * kernel. Keep upstream's replacements, but reach them through function
+ * entry kprobes instead of modifying the protected table entries.
+ */
+#define KSU_SELINUX_BYPASS_BITS 4
+
+struct samsung_selinux_bypass {
+    struct hlist_node node;
+    struct task_struct *task;
+};
+
+static DEFINE_HASHTABLE(samsung_selinux_bypass_tasks, KSU_SELINUX_BYPASS_BITS);
+static DEFINE_SPINLOCK(samsung_selinux_bypass_lock);
+static bool samsung_context_registered;
+static bool samsung_access_registered;
+static bool samsung_status_registered;
+static bool samsung_setprocattr_registered;
+
+static bool samsung_selinux_is_bypassed(void)
+{
+    struct samsung_selinux_bypass *entry;
+    unsigned long flags;
+    bool found = false;
+
+    spin_lock_irqsave(&samsung_selinux_bypass_lock, flags);
+    hash_for_each_possible(samsung_selinux_bypass_tasks, entry, node, (unsigned long)current) {
+        if (entry->task == current) {
+            found = true;
+            break;
+        }
+    }
+    spin_unlock_irqrestore(&samsung_selinux_bypass_lock, flags);
+    return found;
+}
+
+static int samsung_setprocattr(const char *name, void *value, size_t size)
+{
+    struct samsung_selinux_bypass bypass = { .task = current };
+    unsigned long flags;
+    int ret;
+
+    spin_lock_irqsave(&samsung_selinux_bypass_lock, flags);
+    hash_add(samsung_selinux_bypass_tasks, &bypass.node, (unsigned long)current);
+    spin_unlock_irqrestore(&samsung_selinux_bypass_lock, flags);
+
+    ret = my_setprocattr(name, value, size);
+
+    spin_lock_irqsave(&samsung_selinux_bypass_lock, flags);
+    hash_del(&bypass.node);
+    spin_unlock_irqrestore(&samsung_selinux_bypass_lock, flags);
+    return ret;
+}
+
+static int samsung_context_pre(struct kprobe *probe, struct pt_regs *regs)
+{
+    (void)probe;
+    if (current_uid().val < 10000)
+        return 0;
+    instruction_pointer_set(regs, (unsigned long)my_write_context);
+    return 1;
+}
+
+static int samsung_access_pre(struct kprobe *probe, struct pt_regs *regs)
+{
+    (void)probe;
+    if (current_uid().val < 10000)
+        return 0;
+    instruction_pointer_set(regs, (unsigned long)my_write_access);
+    return 1;
+}
+
+static int samsung_status_pre(struct kprobe *probe, struct pt_regs *regs)
+{
+    (void)probe;
+    if (current_uid().val < 10000 || !READ_ONCE(ksu_selinux_hide_enabled) || !READ_ONCE(fake_status))
+        return 0;
+    instruction_pointer_set(regs, (unsigned long)my_sel_open_handle_status);
+    return 1;
+}
+
+static int samsung_setprocattr_pre(struct kprobe *probe, struct pt_regs *regs)
+{
+    (void)probe;
+    if (current_uid().val < 10000 || samsung_selinux_is_bypassed())
+        return 0;
+    instruction_pointer_set(regs, (unsigned long)samsung_setprocattr);
+    return 1;
+}
+
+static struct kprobe samsung_context_kprobe = { .pre_handler = samsung_context_pre };
+static struct kprobe samsung_access_kprobe = { .pre_handler = samsung_access_pre };
+static struct kprobe samsung_status_kprobe = { .pre_handler = samsung_status_pre };
+static struct kprobe samsung_setprocattr_kprobe = { .pre_handler = samsung_setprocattr_pre };
+
+static int samsung_register_kprobe(struct kprobe *probe, void *target, bool *registered)
+{
+    int ret;
+
+    probe->addr = (kprobe_opcode_t *)target;
+    ret = register_kprobe(probe);
+    if (!ret)
+        *registered = true;
+    return ret;
+}
+
+static void samsung_unregister_kprobe(struct kprobe *probe, bool *registered)
+{
+    if (!*registered)
+        return;
+    unregister_kprobe(probe);
+    *registered = false;
+}
+#endif
+
 static void hook_selinux_status_open();
 static void ksu_selinux_hide_unhook();
 static int ksu_selinux_hide_enable()
@@ -351,25 +472,43 @@ static int ksu_selinux_hide_enable()
 
     context_write = &selinux_write_op[SEL_CONTEXT];
     pr_info("selinux_hide: context_write: 0x%lx [%pSb]\n", (unsigned long)*context_write, *context_write);
-    write_op_fn my = my_write_context;
     orig_context_write = *context_write;
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(__aarch64__)
+    ret = samsung_register_kprobe(&samsung_context_kprobe, orig_context_write, &samsung_context_registered);
+#else
+    write_op_fn my = my_write_context;
     ret = ksu_patch_text(context_write, &my, sizeof(my), KSU_PATCH_TEXT_FLUSH_DCACHE);
+#endif
     if (ret) {
-        pr_err("selinux_hide: init: patch_text context_write err: %d\n", ret);
+        pr_err("selinux_hide: init: hook context_write err: %d\n", ret);
         goto unhook;
     }
 
     access_write = &selinux_write_op[SEL_ACCESS];
     pr_info("selinux_hide: access_write: 0x%lx [%pSb]\n", (unsigned long)*access_write, *access_write);
-    my = my_write_access;
     orig_access_write = *access_write;
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(__aarch64__)
+    ret = samsung_register_kprobe(&samsung_access_kprobe, orig_access_write, &samsung_access_registered);
+#else
+    my = my_write_access;
     ret = ksu_patch_text(access_write, &my, sizeof(my), KSU_PATCH_TEXT_FLUSH_DCACHE);
+#endif
     if (ret) {
-        pr_err("selinux_hide: init: patch_text access_write err: %d\n", ret);
+        pr_err("selinux_hide: init: hook access_write err: %d\n", ret);
         goto unhook;
     }
 
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(__aarch64__)
+    selinux_setprocattr_hook.original = find_kernel_symbol_exact("selinux_setprocattr");
+    if (!selinux_setprocattr_hook.original) {
+        ret = -ENOENT;
+    } else {
+        ret = samsung_register_kprobe(&samsung_setprocattr_kprobe, selinux_setprocattr_hook.original,
+                                      &samsung_setprocattr_registered);
+    }
+#else
     ret = ksu_lsm_hook(&selinux_setprocattr_hook);
+#endif
     if (ret) {
         pr_err("selinux_hide: init: selinux_setprocattr_hook err: %d\n", ret);
         goto unhook;
@@ -384,6 +523,16 @@ unhook:
 
 static void ksu_selinux_hide_unhook()
 {
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(__aarch64__)
+    samsung_unregister_kprobe(&samsung_setprocattr_kprobe, &samsung_setprocattr_registered);
+    samsung_unregister_kprobe(&samsung_access_kprobe, &samsung_access_registered);
+    samsung_unregister_kprobe(&samsung_context_kprobe, &samsung_context_registered);
+    samsung_unregister_kprobe(&samsung_status_kprobe, &samsung_status_registered);
+    selinux_setprocattr_hook.original = NULL;
+    orig_access_write = NULL;
+    orig_context_write = NULL;
+    orig_sel_open_handle_status = NULL;
+#else
     int ret;
     if (orig_context_write) {
         ret =
@@ -409,6 +558,7 @@ static void ksu_selinux_hide_unhook()
         }
     }
     ksu_lsm_unhook(&selinux_setprocattr_hook);
+#endif
 }
 
 static void ksu_selinux_hide_disable()
@@ -485,11 +635,15 @@ static void hook_selinux_status_open()
         }
         sel_open_handle_status_slot = &ops->open;
     }
-    sel_open_handle_status_fn new_fn = my_sel_open_handle_status;
     orig_sel_open_handle_status = *sel_open_handle_status_slot;
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(__aarch64__)
+    int ret = samsung_register_kprobe(&samsung_status_kprobe, orig_sel_open_handle_status, &samsung_status_registered);
+#else
+    sel_open_handle_status_fn new_fn = my_sel_open_handle_status;
     int ret = ksu_patch_text(sel_open_handle_status_slot, &new_fn, sizeof(new_fn), KSU_PATCH_TEXT_FLUSH_DCACHE);
+#endif
     if (ret) {
-        pr_err("selinux_hide: init: patch_text sel_open_handle_status err: %d\n", ret);
+        pr_err("selinux_hide: init: hook sel_open_handle_status err: %d\n", ret);
         sel_open_handle_status_slot = NULL;
         orig_sel_open_handle_status = NULL;
     }

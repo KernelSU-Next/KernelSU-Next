@@ -36,6 +36,10 @@ fn dump_process_info(label: &str) {
 }
 
 pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Result<()> {
+    // Stage the daemon while the loader still has its original credentials
+    // and SELinux context. A late-loaded module can change both before the
+    // normal install path gets a chance to copy the executable.
+    utils::stage_daemon().context("Failed to stage ksud before late load")?;
     utils::daemonize(false)?;
     info!("late-load command triggered!");
     dump_process_info("late-load start");
@@ -50,7 +54,6 @@ pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Res
             Ok,
         )?;
         info!("Detected KMI: {kmi}");
-
 
         // 3. Get kernelsu.ko from embedded assets
         let ko_name = format!("{kmi}_kernelsu.ko");
@@ -80,7 +83,7 @@ pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Res
         warn!("clear temp configs failed: {e}");
     }
 
-    utils::install(None).context("Failed to install ksud")?;
+    utils::finish_install(None).context("Failed to finish ksud installation")?;
 
     // 5. Handle module updates
     if let Err(e) = handle_updated_modules() {
@@ -133,7 +136,9 @@ pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Res
 
     // 14. Restart Manager so it gets a fresh ksu fd from the newly loaded kernel module
     info!("Restarting KernelSU Next Manager {package_name}...");
-    let _ = Command::new("am").args(["force-stop", package_name]).status();
+    let _ = Command::new("am")
+        .args(["force-stop", package_name])
+        .status();
     let _ = Command::new("am")
         .args([
             "start",
