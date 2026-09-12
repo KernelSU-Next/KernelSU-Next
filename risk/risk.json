@@ -1,5 +1,5 @@
 {
-	"hash": "fae683333dbc11a864d3320dee62e188c163a0158483f2473ea4c06680476dbf",
+	"hash": "a48d1e15824d045633c627e0c378f9b1726547adcf50c8777841698f9ffec2f2",
 	"rules": [
 		{
 			"reason": "Possible bootloop | Break other modules | Signs of ai-generated code",
@@ -18,8 +18,8 @@
 			]
 		},
 		{
-			"reason": "Possible bootloop | Break other modules | Signs of ai-generated code",
-			"severity": "medium",
+			"reason": "Possible bootloop | Signs of ai-generated code",
+			"severity": "low",
 			"patterns": [
 				"resusfs"
 			]
@@ -38,6 +38,14 @@
 			"patterns": [
 				"fakelook1337",
 				"superpupermodule"
+			]
+		},
+				{
+			"reason": "Possible unexpected behaviour on VFS mode | Possible bootloop | Signs of ai-generated code",
+			"severity": "low",
+			"patterns": [
+				"zeromount",
+				"meta-zeromount"
 			]
 		}
 	]
