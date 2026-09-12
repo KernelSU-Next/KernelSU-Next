@@ -9,6 +9,13 @@
 			]
 		},
 		{
+			"reason": "Obfuscated root payload | Legacy loader script",
+			"severity": "medium",
+			"patterns": [
+				"anoroto"
+			]
+		},
+		{
 			"reason": "Possible spyware | Closed-source binaries",
 			"severity": "high",
 			"patterns": [
