@@ -310,4 +310,5 @@
   <string name="home_lkm_update_available">有較新版本的隨附 LKM 可用。點擊以更新。</string>
   <string name="home_lkm_custom">自訂</string>
   <string name="require_kernel_version_gki">核心需要更新</string>
+  <string name="select_language">選擇語言</string>
 </resources>
