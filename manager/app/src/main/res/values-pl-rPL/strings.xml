@@ -310,4 +310,5 @@
   <string name="home_lkm_update_available">Nowszy LKM jest dostępny. Dotknij, aby zaktualizować.</string>
   <string name="home_lkm_custom">Niestandardowy</string>
   <string name="require_kernel_version_gki">Wymagany update kernela</string>
+  <string name="select_language">Wybierz język</string>
 </resources>
