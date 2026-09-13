@@ -552,11 +552,19 @@ private fun AppSettingsCard(
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 leadingContent = { Icon(Icons.Filled.BugReport, null) },
                 headlineContent = {
-                    Text(
-                        text = stringResource(R.string.export_log),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    if (isUnrooted) {
+                        Text(
+                            text = stringResource(R.string.export_log),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    } else {
+                        Text(
+                            text = stringResource(R.string.export_log_unrooted),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             )
 
