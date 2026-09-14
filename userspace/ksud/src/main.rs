@@ -39,6 +39,8 @@ mod module_config;
 #[cfg(target_os = "android")]
 mod profile;
 #[cfg(target_os = "android")]
+mod risk;
+#[cfg(target_os = "android")]
 mod resetprop;
 #[cfg(target_os = "android")]
 mod restorecon;

@@ -1,0 +1,52 @@
+{
+	"hash": "a48d1e15824d045633c627e0c378f9b1726547adcf50c8777841698f9ffec2f2",
+	"rules": [
+		{
+			"reason": "Possible bootloop | Break other modules | Signs of ai-generated code",
+			"severity": "medium",
+			"patterns": [
+				"integrity box"
+			]
+		},
+		{
+			"reason": "Possible spyware | Closed-source binaries",
+			"severity": "high",
+			"patterns": [
+				"root phantom fateh",
+				"fateh7",
+				"professorroot_dz"
+			]
+		},
+		{
+			"reason": "Possible bootloop | Signs of ai-generated code",
+			"severity": "low",
+			"patterns": [
+				"resusfs"
+			]
+		},
+		{
+			"reason": "Root-level backdoor | Spyware | SMS OTP grabber | Bank data hijacking",
+			"severity": "extreme",
+			"patterns": [
+				"zygisk floating overlay menu",
+				"zygisk_floating_menu"
+			]
+		},
+		{
+			"reason": "Brick-level commands | Destroys system partitions",
+			"severity": "extreme",
+			"patterns": [
+				"fakelook1337",
+				"superpupermodule"
+			]
+		},
+				{
+			"reason": "Possible unexpected behaviour on VFS mode | Possible bootloop | Signs of ai-generated code",
+			"severity": "low",
+			"patterns": [
+				"zeromount",
+				"meta-zeromount"
+			]
+		}
+	]
+}

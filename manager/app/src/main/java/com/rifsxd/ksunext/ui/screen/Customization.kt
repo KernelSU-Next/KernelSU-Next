@@ -1,11 +1,14 @@
 package com.rifsxd.ksunext.ui.screen
 
 import android.content.Context
-import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -18,6 +21,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import com.rifsxd.ksunext.ui.LocalScrollState
 import com.rifsxd.ksunext.ui.rememberScrollConnection
 import androidx.compose.ui.res.stringResource
@@ -25,22 +31,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.edit
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.rifsxd.ksunext.ui.MainActivity
-import com.maxkeppeker.sheets.core.models.base.Header
-import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
-import com.maxkeppeler.sheets.list.ListDialog
-import com.maxkeppeler.sheets.list.models.ListOption
-import com.maxkeppeler.sheets.list.models.ListSelection
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
 import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.R
-import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.ui.component.SwitchItem
-import com.rifsxd.ksunext.ui.component.rememberCustomDialog
 import com.rifsxd.ksunext.ui.util.refreshActivity
 import com.rifsxd.ksunext.ui.util.LocalSnackbarHost
 import com.rifsxd.ksunext.ui.util.LocaleHelper
@@ -73,6 +74,27 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
     val isNavBarHidden = scrollState?.isScrollingDown?.value ?: false
     val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + if (isNavBarHidden) 0.dp else 112.dp
 
+    val context = LocalContext.current
+    val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
+    var currentAppLocale by remember {
+        mutableStateOf(LocaleHelper.getCurrentAppLocale(context))
+    }
+    var showLanguageSheet by remember { mutableStateOf(false) }
+
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        currentAppLocale = LocaleHelper.getCurrentAppLocale(context)
+    }
+
+    val languageOptions = remember(context) {
+        listOf(
+            LocaleHelper.SYSTEM_LANGUAGE_TAG to context.getString(R.string.system_default)
+        ) + LocaleHelper.getSupportedLocales(context)
+            .map { it.toLanguageTag() to it.getDisplayName(it) }
+            .sortedBy { (_, displayName) -> displayName }
+    }
+    val currentLanguageTag = currentAppLocale?.toLanguageTag()
+        ?: LocaleHelper.SYSTEM_LANGUAGE_TAG
+
     Scaffold(
         topBar = {
             TopBar(
@@ -101,158 +123,10 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
                 .verticalScroll(rememberScrollState())
         ) {
 
-            val context = LocalContext.current
-            val scope = rememberCoroutineScope()
-
-            val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-
-            // Track language state with current app locale
-            var currentAppLocale by remember { mutableStateOf(LocaleHelper.getCurrentAppLocale(context)) }
-            
-            // Listen for preference changes
-            LaunchedEffect(Unit) {
-                currentAppLocale = LocaleHelper.getCurrentAppLocale(context)
-            }
-
-            // Language setting with selection dialog
-            val languageDialog = rememberCustomDialog { dismiss ->
-                // Check if should use system language settings
-                if (LocaleHelper.useSystemLanguageSettings) {
-                    // Android 13+ - Jump to system settings
-                    LocaleHelper.launchSystemLanguageSettings(context)
-                    dismiss()
-                } else {
-                    // Android < 13 - Show app language selector
-                    // Dynamically detect supported locales from resources
-                    val supportedLocales = remember {
-                        val locales = mutableListOf<java.util.Locale>()
-                        
-                        // Add system default first
-                        locales.add(java.util.Locale.ROOT) // This will represent "System Default"
-                        
-                        // Dynamically detect available locales by checking resource directories
-                        val resourceDirs = listOf(
-                            "ar", "bg", "de", "fa", "fr", "hu", "in", "it", 
-                            "ja", "ko", "pl", "pt-rBR", "ru", "th", "tr", 
-                            "uk", "vi", "zh-rCN", "zh-rTW"
-                        )
-                        
-                        resourceDirs.forEach { dir ->
-                            try {
-                                val locale = when {
-                                    dir.contains("-r") -> {
-                                        val parts = dir.split("-r")
-                                        java.util.Locale.Builder()
-                                            .setLanguage(parts[0])
-                                            .setRegion(parts[1])
-                                            .build()
-                                    }
-                                    else -> java.util.Locale.Builder()
-                                        .setLanguage(dir)
-                                        .build()
-                                }
-                                
-                                // Test if this locale has translated resources
-                                val config = android.content.res.Configuration()
-                                config.setLocale(locale)
-                                val localizedContext = context.createConfigurationContext(config)
-                                
-                                // Try to get a translated string to verify the locale is supported
-                                val testString = localizedContext.getString(R.string.settings_language)
-                                val defaultString = context.getString(R.string.settings_language)
-                                
-                                // If the string is different or it's English, it's supported
-                                if (testString != defaultString || locale.language == "en") {
-                                    locales.add(locale)
-                                }
-                            } catch (_: Exception) {
-                                // Skip unsupported locales
-                            }
-                        }
-                        
-                        // Sort by display name
-                        val sortedLocales = locales.drop(1).sortedBy { it.getDisplayName(it) }
-                        mutableListOf<java.util.Locale>().apply {
-                            add(locales.first()) // System default first
-                            addAll(sortedLocales)
-                        }
-                    }
-                    
-                    val allOptions = supportedLocales.map { locale ->
-                        val tag = if (locale == java.util.Locale.ROOT) {
-                            "system"
-                        } else if (locale.country.isEmpty()) {
-                            locale.language
-                        } else {
-                            "${locale.language}_${locale.country}"
-                        }
-                        
-                        val displayName = if (locale == java.util.Locale.ROOT) {
-                            context.getString(R.string.system_default)
-                        } else {
-                            locale.getDisplayName(locale)
-                        }
-                        
-                        tag to displayName
-                    }
-                    
-                    val currentLocale = prefs.getString("app_locale", "system") ?: "system"
-                    val options = allOptions.map { (tag, displayName) ->
-                        ListOption(
-                            titleText = displayName,
-                            selected = currentLocale == tag
-                        )
-                    }
-                    
-                    var selectedIndex by remember { 
-                        mutableIntStateOf(allOptions.indexOfFirst { (tag, _) -> currentLocale == tag })
-                    }
-                    
-                    ListDialog(
-                        state = rememberUseCaseState(
-                            visible = true,
-                            onFinishedRequest = {
-                                if (selectedIndex >= 0 && selectedIndex < allOptions.size) {
-                                    val newLocale = allOptions[selectedIndex].first
-                                    prefs.edit { putString("app_locale", newLocale) }
-                                    
-                                    // Update local state immediately
-                                    currentAppLocale = LocaleHelper.getCurrentAppLocale(context)
-                                    
-                                    // Apply locale change immediately for Android < 13
-                                    refreshActivity(context)
-                                }
-                                dismiss()
-                            },
-                            onCloseRequest = {
-                                dismiss()
-                            }
-                        ),
-                        header = Header.Default(
-                            title = stringResource(R.string.settings_language),
-                        ),
-                        selection = ListSelection.Single(
-                            showRadioButtons = true,
-                            options = options
-                        ) { index, _ ->
-                            selectedIndex = index
-                        }
-                    )
-                }
-            }
-
             val language = stringResource(id = R.string.settings_language)
-            
-            // Compute display name based on current app locale (similar to the reference implementation)
-            val currentLanguageDisplay = remember(currentAppLocale) {
-                val locale = currentAppLocale
-                if (locale != null) {
-                    locale.getDisplayName(locale)
-                } else {
-                    context.getString(R.string.system_default)
-                }
-            }
-            
+            val currentLanguageDisplay = currentAppLocale?.let { it.getDisplayName(it) }
+                ?: stringResource(R.string.system_default)
+
             ListItem(
                 leadingContent = { Icon(Icons.Filled.Translate, language) },
                 headlineContent = { Text(
@@ -262,7 +136,7 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
                 ) },
                 supportingContent = { Text(currentLanguageDisplay) },
                 modifier = Modifier.clickable {
-                    languageDialog.show()
+                    showLanguageSheet = true
                 }
             )
 
@@ -299,6 +173,78 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
                     activity?.setAmoledMode(checked)
                     enableAmoled = checked
                 }
+            }
+        }
+    }
+
+    if (showLanguageSheet) {
+        LanguageBottomSheet(
+            options = languageOptions,
+            selectedLanguageTag = currentLanguageTag,
+            onDismiss = { showLanguageSheet = false },
+            onLanguageSelected = { languageTag ->
+                showLanguageSheet = false
+                if (languageTag != currentLanguageTag) {
+                    LocaleHelper.setAppLocale(context, languageTag)
+                    currentAppLocale = LocaleHelper.getCurrentAppLocale(context)
+                    if (!LocaleHelper.usesFrameworkLocaleManager) {
+                        refreshActivity(context)
+                    }
+                }
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LanguageBottomSheet(
+    options: List<Pair<String, String>>,
+    selectedLanguageTag: String,
+    onDismiss: () -> Unit,
+    onLanguageSelected: (String) -> Unit
+) {
+    val sheetState = rememberModalBottomSheetState()
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.background
+    ) {
+        Text(
+            text = stringResource(R.string.select_language),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Black,
+            modifier = Modifier
+                .padding(horizontal = 24.dp, vertical = 8.dp)
+                .semantics { heading() }
+        )
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f, fill = false)
+                .selectableGroup(),
+            contentPadding = PaddingValues(bottom = 24.dp)
+        ) {
+            items(options, key = { (tag, _) -> tag }) { (tag, displayName) ->
+                val selected = tag == selectedLanguageTag
+                ListItem(
+                    headlineContent = { Text(displayName) },
+                    trailingContent = {
+                        RadioButton(selected = selected, onClick = null)
+                    },
+                    colors = ListItemDefaults.colors(
+                        containerColor = MaterialTheme.colorScheme.background
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = selected,
+                            role = Role.RadioButton,
+                            onClick = { onLanguageSelected(tag) }
+                        )
+                )
             }
         }
     }

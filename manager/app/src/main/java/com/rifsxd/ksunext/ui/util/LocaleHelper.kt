@@ -1,141 +1,132 @@
 package com.rifsxd.ksunext.ui.util
 
-import android.annotation.TargetApi
-import android.app.Activity
+import android.app.LocaleManager
 import android.content.Context
-import android.content.Intent
 import android.content.res.Configuration
-import android.net.Uri
 import android.os.Build
-import android.provider.Settings
-import java.util.*
+import android.os.LocaleList
+import androidx.annotation.ChecksSdkIntAtLeast
+import androidx.annotation.RequiresApi
+import androidx.core.content.edit
+import com.rifsxd.ksunext.R
+import org.xmlpull.v1.XmlPullParser
+import java.util.Locale
 
 object LocaleHelper {
-    
-    /**
-     * Check if should use system language settings (Android 13+)
-     */
-    val useSystemLanguageSettings: Boolean
+
+    const val SYSTEM_LANGUAGE_TAG = ""
+
+    private const val PREFS_NAME = "settings"
+    private const val PREF_LANGUAGE = "app_locale"
+    private const val LEGACY_SYSTEM_LANGUAGE = "system"
+    private const val ANDROID_NAMESPACE = "http://schemas.android.com/apk/res/android"
+
+    @get:ChecksSdkIntAtLeast(api = Build.VERSION_CODES.TIRAMISU)
+    val usesFrameworkLocaleManager: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-    
-    /**
-     * Launch system app locale settings (Android 13+)
-     */
-    fun launchSystemLanguageSettings(context: Context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            try {
-                val intent = Intent(Settings.ACTION_APP_LOCALE_SETTINGS).apply {
-                    data = Uri.fromParts("package", context.packageName, null)
-                }
-                context.startActivity(intent)
-            } catch (_: Exception) {
-                // Fallback to app language settings if system settings not available
-            }
-        }
-    }
-    
-    /**
-     * Apply saved language setting to context (for Android < 13)
-     */
-    fun applyLanguage(context: Context): Context {
-        // On Android 13+, language is handled by system
-        if (useSystemLanguageSettings) {
-            return context
-        }
-        
-        val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-        val localeTag = prefs.getString("app_locale", "system") ?: "system"
-        
-        return if (localeTag == "system") {
-            context
-        } else {
-            val locale = parseLocaleTag(localeTag)
-            setLocale(context, locale)
-        }
-    }
-    
-    /**
-     * Set locale for context (Android < 13)
-     */
-    private fun setLocale(context: Context, locale: Locale): Context {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            updateResources(context, locale)
-        } else {
-            updateResourcesLegacy(context, locale)
-        }
-    }
-    
-    @TargetApi(Build.VERSION_CODES.N)
-    private fun updateResources(context: Context, locale: Locale): Context {
-        val configuration = Configuration()
-        configuration.setLocale(locale)
-        configuration.setLayoutDirection(locale)
-        return context.createConfigurationContext(configuration)
-    }
-    
-    @Suppress("DEPRECATION")
-    @SuppressWarnings("deprecation")
-    private fun updateResourcesLegacy(context: Context, locale: Locale): Context {
-        Locale.setDefault(locale)
-        val resources = context.resources
-        val configuration = resources.configuration
-        configuration.locale = locale
-        configuration.setLayoutDirection(locale)
-        resources.updateConfiguration(configuration, resources.displayMetrics)
-        return context
-    }
-    
-    /**
-     * Parse locale tag to Locale object
-     */
-    private fun parseLocaleTag(tag: String): Locale {
+
+    fun getSupportedLocales(context: Context): List<Locale> {
+        val parser = context.resources.getXml(R.xml.locales_config)
         return try {
-            if (tag.contains("_")) {
-                val parts = tag.split("_")
-                Locale.Builder()
-                    .setLanguage(parts[0])
-                    .setRegion(parts.getOrNull(1) ?: "")
-                    .build()
-            } else {
-                Locale.Builder()
-                    .setLanguage(tag)
-                    .build()
-            }
-        } catch (_: Exception) {
-            Locale.getDefault()
+            buildList {
+                while (parser.eventType != XmlPullParser.END_DOCUMENT) {
+                    if (parser.eventType == XmlPullParser.START_TAG && parser.name == "locale") {
+                        val tag = parser.getAttributeValue(ANDROID_NAMESPACE, "name")
+                        val locale = tag?.let(Locale::forLanguageTag)
+                        if (locale != null && locale.language.isNotEmpty()) {
+                            add(locale)
+                        }
+                    }
+                    parser.next()
+                }
+            }.distinctBy(Locale::toLanguageTag)
+        } finally {
+            parser.close()
         }
     }
-    
-    /**
-     * Get current app locale
-     */
-    fun getCurrentAppLocale(context: Context): Locale? {
-        return if (useSystemLanguageSettings) {
-            // Android 13+ - get from system app locale settings
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                try {
-                    val localeManager = context.getSystemService(Context.LOCALE_SERVICE) as? android.app.LocaleManager
-                    val locales = localeManager?.applicationLocales
-                    if (locales != null && !locales.isEmpty) {
-                        locales.get(0)
-                    } else {
-                        null // System default
-                    }
-                } catch (_: Exception) {
-                    null // System default
-                }
-            } else {
-                null // System default
-            }
+
+    fun setAppLocale(context: Context, languageTag: String) {
+        if (usesFrameworkLocaleManager) {
+            setFrameworkLocales(context, LocaleList.forLanguageTags(languageTag))
         } else {
-            // Android < 13 - get from SharedPreferences
-            val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-            val localeTag = prefs.getString("app_locale", "system") ?: "system"
-            if (localeTag == "system") {
-                null // System default
-            } else {
-                parseLocaleTag(localeTag)
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
+                putString(PREF_LANGUAGE, languageTag.ifEmpty { LEGACY_SYSTEM_LANGUAGE })
             }
         }
+    }
+
+    fun applyLanguage(context: Context): Context {
+        if (usesFrameworkLocaleManager) return context
+
+        val selected = getStoredLocale(context)?.let { resolveSupportedLocale(context, it) }
+            ?: return context
+        val locales = buildList {
+            add(selected)
+            val systemLocales = context.resources.configuration.locales
+            for (index in 0 until systemLocales.size()) {
+                val locale = systemLocales[index]
+                if (none { it.toLanguageTag() == locale.toLanguageTag() }) {
+                    add(locale)
+                }
+            }
+        }
+        val override = Configuration().apply {
+            setLocales(LocaleList(*locales.toTypedArray()))
+        }
+        return context.createConfigurationContext(override)
+    }
+
+    fun getCurrentAppLocale(context: Context): Locale? {
+        if (usesFrameworkLocaleManager) {
+            val locales = getFrameworkLocales(context)
+            val locale = if (locales.isEmpty) null else locales[0]
+            return locale?.let { resolveSupportedLocale(context, it) ?: it }
+        }
+
+        return getStoredLocale(context)?.let { resolveSupportedLocale(context, it) }
+    }
+
+    fun migrateLegacyLocale(context: Context) {
+        if (!usesFrameworkLocaleManager) return
+
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (!prefs.contains(PREF_LANGUAGE)) return
+
+        val locale = getStoredLocale(context)?.let { resolveSupportedLocale(context, it) }
+        if (getFrameworkLocales(context).isEmpty && locale != null) {
+            setFrameworkLocales(context, LocaleList.forLanguageTags(locale.toLanguageTag()))
+        }
+        prefs.edit { remove(PREF_LANGUAGE) }
+    }
+
+    private fun getStoredLocale(context: Context): Locale? {
+        val stored = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getString(PREF_LANGUAGE, LEGACY_SYSTEM_LANGUAGE)
+            .orEmpty()
+        if (stored.isEmpty() || stored == LEGACY_SYSTEM_LANGUAGE) {
+            return null
+        }
+
+        val locale = Locale.forLanguageTag(stored.replace('_', '-'))
+        return locale.takeIf { it.language.isNotEmpty() }
+    }
+
+    private fun resolveSupportedLocale(context: Context, locale: Locale): Locale? {
+        val supported = getSupportedLocales(context)
+        return supported.firstOrNull {
+            it.toLanguageTag().equals(locale.toLanguageTag(), ignoreCase = true)
+        } ?: supported.firstOrNull {
+            locale.country.isEmpty() && locale.script.isEmpty() && it.language == locale.language
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun getFrameworkLocales(context: Context): LocaleList {
+        return context.getSystemService(LocaleManager::class.java).applicationLocales
+    }
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun setFrameworkLocales(context: Context, locales: LocaleList) {
+        context.getSystemService(LocaleManager::class.java).applicationLocales = locales
     }
 }

@@ -52,6 +52,12 @@ void apply_kernelsu_rules()
     }
 
     mutex_lock(&selinux_state.policy_mutex);
+    if (!old_pol) {
+        pr_warn("SELinux policy is NULL. Skipping SELinux rules application.\n");
+        mutex_unlock(&selinux_state.policy_mutex);
+        return;
+    }
+
     backup_sepolicy =
         ksu_dup_sepolicy(rcu_dereference_protected(old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
     if (IS_ERR(backup_sepolicy)) {
@@ -472,6 +478,12 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
     mutex_lock(&selinux_state.policy_mutex);
 
     old_pol = selinux_state.policy;
+    if (!old_pol) {
+        pr_warn("SELinux policy is NULL. Skipping ksu_handle_sepolicy.\n");
+        ret = -EINVAL;
+        goto out_unlock;
+    }
+
     pol = ksu_dup_sepolicy(rcu_dereference_protected(
         old_pol, lockdep_is_held(&selinux_state.policy_mutex)));
     if (IS_ERR(pol)) {

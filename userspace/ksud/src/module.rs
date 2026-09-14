@@ -3,6 +3,7 @@ use crate::utils::*;
 use crate::{
     assets, defs, ksucalls, metamodule,
     restorecon::{restore_syscon, setsyscon},
+    risk::{contains_risk, print_risk_block, print_risk_pause_prompt, print_risk_timeout_block, RiskSeverity},
     sepolicy,
 };
 
@@ -535,6 +536,35 @@ fn install_module_to_system(zip: &str) -> Result<()> {
     let zip_path = PathBuf::from_str(zip)?;
     let zip_path = zip_path.canonicalize()?;
     zip_extract_file_to_memory(&zip_path, &entry_path, &mut buffer)?;
+
+    let module_prop_text = String::from_utf8_lossy(&buffer);
+    if let Some(risk_match) = contains_risk(&module_prop_text) {
+        match risk_match.severity {
+            RiskSeverity::Low | RiskSeverity::Medium => {
+                print_risk_pause_prompt(risk_match.severity, &risk_match.reason);
+
+                let volume_down = Command::new(assets::BUSYBOX_PATH)
+                    .args([
+                        "ash",
+                        "-c",
+                        "timeout 5 /system/bin/getevent -ql 2>/dev/null | grep -q 'KEY_VOLUMEDOWN'",
+                    ])
+                    .status()
+                    .with_context(|| "Failed to wait for volume-down key")?;
+
+                if !volume_down.success() {
+                    print_risk_timeout_block();
+                    bail!("Module installation stopped");
+                }
+
+                println!("✅ Installation allowed after user confirmation.\n");
+            }
+            RiskSeverity::High | RiskSeverity::Extreme => {
+                print_risk_block(risk_match.severity, &risk_match.reason);
+                bail!("Module installation blocked");
+            }
+        }
+    }
 
     let mut module_prop = HashMap::new();
     PropertiesIter::new_with_encoding(Cursor::new(buffer), encoding_rs::UTF_8).read_into(

@@ -27,15 +27,27 @@ MSG_TEMPLATE = """
 
 
 def get_caption():
-    msg = MSG_TEMPLATE.format(
+    template_without_msg = MSG_TEMPLATE.format(
         title=TITLE,
         version=VERSION,
-        commit_message=COMMIT_MESSAGE,
+        commit_message="",
         commit_url=COMMIT_URL,
         run_url=RUN_URL,
     )
-    if len(msg) > 1024:
-        return COMMIT_URL
+
+    available_space = 1024 - len(template_without_msg)
+
+    msg_text = COMMIT_MESSAGE
+    if len(msg_text) > available_space:
+        msg_text = msg_text[:max(0, available_space - 3)] + "..."
+
+    msg = MSG_TEMPLATE.format(
+        title=TITLE,
+        version=VERSION,
+        commit_message=msg_text,
+        commit_url=COMMIT_URL,
+        run_url=RUN_URL,
+    )
     return msg
 
 
@@ -104,3 +116,4 @@ if __name__ == "__main__":
         asyncio.run(main())
     except Exception as e:
         print(f"[-] An error occurred: {e}")
+        sys.exit(1)
