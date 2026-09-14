@@ -1,5 +1,5 @@
 #![allow(clippy::unreadable_literal)]
-use anyhow::{Result, bail};
+use anyhow::{Context, Result, bail};
 
 use crate::ksu_uapi;
 use std::cell::Cell;
@@ -135,19 +135,27 @@ fn init_driver_fd() -> Option<RawFd> {
 
 // ioctl wrapper using libc
 fn ksuctl<T>(request: u32, arg: *mut T) -> Result<i32> {
+    ksuctl_raw(request, arg).map_err(|e| anyhow::anyhow!("ksuctl failed: {e}"))
+}
+
+/// The same call, with the error left as the kernel reported it.
+///
+/// Some commands answer with an errno that is an answer rather than a failure: a profile that
+/// has never been set comes back as ENOENT, and a command the running kernel gates on the
+/// manager comes back as EPERM. A caller that has something to say about those needs to tell
+/// them apart from a driver that is not there at all.
+fn ksuctl_raw<T>(request: u32, arg: *mut T) -> std::io::Result<i32> {
     use std::io;
 
     let fd = *DRIVER_FD.get_or_init(|| init_driver_fd().unwrap_or(-1));
     if fd < 0 {
-        bail!("could not retrieve kernelsu driver fd")
+        return Err(io::Error::other("could not retrieve kernelsu driver fd"));
     }
-    unsafe {
-        let ret = libc::ioctl(fd as libc::c_int, request as i32, arg);
-        if ret < 0 {
-            bail!("ksuctl failed: {}", io::Error::last_os_error())
-        }
-        Ok(ret)
+    let ret = unsafe { libc::ioctl(fd as libc::c_int, request as i32, arg) };
+    if ret < 0 {
+        return Err(io::Error::last_os_error());
     }
+    Ok(ret)
 }
 
 // API implementations
@@ -380,4 +388,79 @@ pub fn set_ksu_no_new_privs() -> anyhow::Result<()> {
         bail!("unexpected result: {result}");
     }
     Ok(())
+}
+
+fn describe_profile_error(e: &std::io::Error) -> anyhow::Error {
+    match e.raw_os_error() {
+        Some(libc::EPERM) => anyhow::anyhow!(
+            "the kernel refused the app profile command; it is gated on the manager and this \
+             kernel does not accept it from root"
+        ),
+        Some(libc::EOPNOTSUPP) => {
+            anyhow::anyhow!("this kernel was built without app profile support")
+        }
+        _ => anyhow::anyhow!("app profile call failed: {e}"),
+    }
+}
+
+/// The profile stored for `uid`, or `None` when the kernel has none and its defaults apply.
+///
+/// The kernel looks the profile up by uid alone; the key travels with it for its own bookkeeping.
+pub fn get_app_profile(key: &str, uid: i32) -> Result<Option<ksu_uapi::app_profile>> {
+    let mut cmd = ksu_uapi::ksu_get_app_profile_cmd {
+        profile: new_profile(key, uid)?,
+    };
+    let found = (match ksuctl_raw(ksu_uapi::KSU_IOCTL_GET_APP_PROFILE, &raw mut cmd) {
+        Ok(_) => Ok(true),
+        Err(e) if e.raw_os_error() == Some(libc::ENOENT) => Ok(false),
+        Err(e) => Err(e),
+    })
+    .map_err(|e| describe_profile_error(&e))?;
+    Ok(found.then_some(cmd.profile))
+}
+
+pub fn set_app_profile(profile: &ksu_uapi::app_profile) -> Result<()> {
+    let mut cmd = ksu_uapi::ksu_set_app_profile_cmd { profile: *profile };
+    ksuctl_raw(ksu_uapi::KSU_IOCTL_SET_APP_PROFILE, &raw mut cmd)
+        .map_err(|e| describe_profile_error(&e))?;
+    Ok(())
+}
+
+/// An empty profile addressed to one app, which is what both commands take as input.
+pub fn new_profile(key: &str, uid: i32) -> Result<ksu_uapi::app_profile> {
+    let mut profile: ksu_uapi::app_profile = unsafe { std::mem::zeroed() };
+    profile.version = ksu_uapi::KSU_APP_PROFILE_VER;
+    profile.curr_uid = uid;
+    write_c_str(&mut profile.key, key).context("package name")?;
+    Ok(profile)
+}
+
+/// Copy a string into a fixed C array, refusing rather than truncating.
+pub fn write_c_str(dst: &mut [std::os::raw::c_char], src: &str) -> Result<()> {
+    // One byte is owed to the terminator, which the zeroed array already carries.
+    if src.len() >= dst.len() {
+        bail!(
+            "\"{src}\" is longer than the {} bytes the kernel keeps",
+            dst.len() - 1
+        );
+    }
+    if src.contains('\0') {
+        bail!("\"{src}\" contains a null byte");
+    }
+    for (slot, byte) in dst.iter_mut().zip(src.bytes()) {
+        *slot = byte as std::os::raw::c_char;
+    }
+    Ok(())
+}
+
+/// Read a string back out of a fixed C array.
+pub fn read_c_str(src: &[std::os::raw::c_char]) -> String {
+    // c_char is unsigned on arm and signed on x86, and ksud is built for both.
+    #[allow(clippy::unnecessary_cast)]
+    let bytes: Vec<u8> = src
+        .iter()
+        .take_while(|c| **c != 0)
+        .map(|c| *c as u8)
+        .collect();
+    String::from_utf8_lossy(&bytes).into_owned()
 }

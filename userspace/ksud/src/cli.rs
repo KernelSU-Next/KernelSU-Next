@@ -8,7 +8,10 @@ use log::{LevelFilter, info};
 use crate::boot_patch::{BootPatchArgs, BootRestoreArgs};
 use crate::lkm_image::BootPatchV2Args;
 use crate::module::regenerate_preinit_rc;
-use crate::{apk_sign, assets, debug, defs, ksu_uapi, init_event, ksucalls, module, module_config, sulog, susfsd, utils};
+use crate::{
+    apk_sign, assets, debug, defs, init_event, ksu_uapi, ksucalls, module, module_config, sulog,
+    susfsd, utils,
+};
 
 /// KernelSU Next userspace cli
 #[derive(Parser, Debug)]
@@ -368,6 +371,21 @@ enum ModuleConfigCmd {
 
 #[derive(clap::Subcommand, Debug)]
 enum Profile {
+    /// print the app profile of <package-name> as JSON
+    Get {
+        /// package name, or "$" for the default non-root profile
+        package: String,
+        /// address this uid instead of the one the package currently has
+        #[arg(long)]
+        uid: Option<i32>,
+    },
+
+    /// set an app profile from the JSON that `get` prints
+    Set {
+        /// file to read, or "-" for stdin
+        file: Option<String>,
+    },
+
     /// get root profile's selinux policy of <package-name>
     GetSepolicy {
         /// package name
@@ -636,7 +654,11 @@ pub fn run() -> Result<()> {
             Sepolicy::Apply { file } => crate::sepolicy::apply_file(file),
             Sepolicy::Check { sepolicy } => crate::sepolicy::check_rule(&sepolicy),
         },
-        Commands::LateLoad { package_name, kmi, allow_shell } => crate::late_load::run(&package_name, kmi, allow_shell),
+        Commands::LateLoad {
+            package_name,
+            kmi,
+            allow_shell,
+        } => crate::late_load::run(&package_name, kmi, allow_shell),
         Commands::Services => {
             if ksucalls::get_version() <= 0 {
                 info!("KernelSU Next not available, exiting services");
@@ -647,6 +669,8 @@ pub fn run() -> Result<()> {
         }
         Commands::Sulogd => sulog::run_sulogd(),
         Commands::Profile { command } => match command {
+            Profile::Get { package, uid } => crate::profile::get_profile(&package, uid),
+            Profile::Set { file } => crate::profile::set_profile(file.as_deref()),
             Profile::GetSepolicy { package } => crate::profile::get_sepolicy(package),
             Profile::SetSepolicy { package, policy } => {
                 crate::profile::set_sepolicy(package, policy)
