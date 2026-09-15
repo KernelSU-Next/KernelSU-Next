@@ -99,6 +99,12 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     }
     val loadingDialog = rememberLoadingDialog()
 
+    var isUnrooted by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        isUnrooted =  Natives.checkKsuDriver() is Natives.KsuDriverStatus.NoDriver
+    }
+
     val exportBugreportLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/gzip")
     ) { uri: Uri? ->
@@ -106,7 +112,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         scope.launch(Dispatchers.IO) {
             loadingDialog.show()
             context.contentResolver.openOutputStream(uri)?.use { output ->
-                getBugreportFile(context).inputStream().use {
+                val bugReport = if (isUnrooted) getBugreportFileUnrooted(context) else getBugreportFile(context)
+                    bugReport.inputStream().use {
                     it.copyTo(output)
                 }
             }
@@ -184,7 +191,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                 exportBugreportLauncher = exportBugreportLauncher,
                 loadingDialog = loadingDialog,
                 scope = scope,
-                context = context
+                context = context,
+                isUnrooted = isUnrooted
             )
 
             Spacer(Modifier)
@@ -497,7 +505,8 @@ private fun AppSettingsCard(
     exportBugreportLauncher: androidx.activity.result.ActivityResultLauncher<String>,
     loadingDialog: LoadingDialogHandle,
     scope: kotlinx.coroutines.CoroutineScope,
-    context: android.content.Context
+    context: android.content.Context,
+    isUnrooted: Boolean
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
@@ -537,11 +546,6 @@ private fun AppSettingsCard(
             )
 
             var showBottomsheet by remember { mutableStateOf(false) }
-            var isUnrooted by remember { mutableStateOf(false) }
-
-            LaunchedEffect(Unit) {
-                isUnrooted =  Natives.checkKsuDriver() is Natives.KsuDriverStatus.NoDriver
-            }
 
             ListItem(
                 modifier = Modifier
