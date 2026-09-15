@@ -94,6 +94,7 @@
     <string name="show_system_apps">Show system apps</string>
     <string name="hide_system_apps">Hide system apps</string>
     <string name="export_log">Export logs</string>
+    <string name="export_log_unrooted">Export logs (non-root)</string>
     <string name="safe_mode">Safe mode</string>
     <string name="jailbreak_mode">Jailbreak mode</string>
     <string name="reboot_to_apply">Reboot to take effect</string>

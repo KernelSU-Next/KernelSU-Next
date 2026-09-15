@@ -43,7 +43,8 @@ fun getBugreportFile(context: Context): File {
     val shell = createRootShell(true)
 
     // busybox ps has very few features for embed devices
-    shell.newJob().add("toybox ps -T -A -w -o PID,TID,UID,COMM,CMDLINE,CMD,LABEL,STAT,WCHAN > ${processFile.absolutePath}").exec()
+    shell.newJob()
+        .add("toybox ps -T -A -w -o PID,TID,UID,COMM,CMDLINE,CMD,LABEL,STAT,WCHAN > ${processFile.absolutePath}").exec()
     shell.newJob().add("dmesg -r > ${dmesgFile.absolutePath}").exec()
     shell.newJob().add("logcat -b all -v uid -d > ${logcatFile.absolutePath}").exec()
     shell.newJob().add("tar -czf ${tombstonesFile.absolutePath} -C /data/tombstones .").exec()
@@ -114,3 +115,87 @@ fun getBugreportFile(context: Context): File {
     return targetFile
 }
 
+fun getBugreportFileUnrooted(context: Context): File {
+    val bugreportDir = File(context.cacheDir, "bugreport")
+    bugreportDir.mkdirs()
+
+    val processFile = File(bugreportDir, "process.txt")
+    val logcatFile = File(bugreportDir, "logcat.txt")
+    val fileSystemsFile = File(bugreportDir, "filesystems.txt")
+    val propFile = File(bugreportDir, "props.txt")
+    val driverStatus = File(bugreportDir, "kernel_status.txt")
+    
+    val status = Natives.checkKsuDriver()
+    val currentManagerAppId = Natives.getManagerAppid()
+
+    nonRootShell("toybox ps -T -A -w -o PID,TID,UID,COMM,CMDLINE,CMD,LABEL,STAT,WCHAN > ${processFile.absolutePath}")
+    nonRootShell("logcat -b all -v uid -d > ${logcatFile.absolutePath}")
+    nonRootShell("cat /proc/filesystems > ${fileSystemsFile.absolutePath}")
+    nonRootShell("getprop > ${propFile.absolutePath}")
+
+    val buildInfo = File(bugreportDir, "basic.txt")
+    PrintWriter(FileWriter(buildInfo)).use { pw ->
+        pw.println("Kernel: ${System.getProperty("os.version")}")
+        pw.println("BRAND: " + Build.BRAND)
+        pw.println("MODEL: " + Build.MODEL)
+        pw.println("PRODUCT: " + Build.PRODUCT)
+        pw.println("MANUFACTURER: " + Build.MANUFACTURER)
+        pw.println("ANDROID: " + Build.VERSION.RELEASE)
+        pw.println("SDK: " + Build.VERSION.SDK_INT)
+        pw.println("PREVIEW_SDK: " + Build.VERSION.PREVIEW_SDK_INT)
+        pw.println("FINGERPRINT: " + Build.FINGERPRINT)
+        pw.println("DEVICE: " + Build.DEVICE)
+        pw.println("Manager: " + getManagerVersion(context))
+
+        val uname = Os.uname()
+        pw.println("KernelRelease: ${uname.release}")
+        pw.println("KernelVersion: ${uname.version}")
+        pw.println("Machine: ${uname.machine}")
+        pw.println("Nodename: ${uname.nodename}")
+        pw.println("Sysname: ${uname.sysname}")
+
+        val ksuKernel = Natives.version
+        pw.println("KernelSU: $ksuKernel")
+        val safeMode = Natives.isSafeMode
+        pw.println("SafeMode: $safeMode")
+        val lkmMode = Natives.isLkmMode
+        pw.println("LKM: $lkmMode")
+    }
+
+    val hasMagisk = nonRootShell("which magisk")
+    if (hasMagisk) File(bugreportDir, "hasMagisk").createNewFile()
+
+    driverStatus.writeText(buildString {
+        when (val s = status) {
+            Natives.KsuDriverStatus.NoDriver ->
+                appendLine("no_driver: kernel has no KernelSU-Next hook")
+
+            is Natives.KsuDriverStatus.Present -> {
+                appendLine("driver_present: version=${s.version} flags=${s.flags} isManager=${s.isManager}")
+                if (!s.isManager) {
+                    val managerAppId = Natives.getManagerAppid()
+                    appendLine("manager_appid: $managerAppId")
+                }
+            }
+        }
+    })
+
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
+    val current = LocalDateTime.now().format(formatter)
+
+    val targetFile = File(context.cacheDir, "KernelSU_Next_bugreport_${current}.tar.gz")
+
+    nonRootShell("tar czf ${targetFile.absolutePath} -C ${bugreportDir.absolutePath} .")
+    nonRootShell("rm -rf ${bugreportDir.absolutePath}")
+    nonRootShell("chmod 0644 ${targetFile.absolutePath}")
+
+    return targetFile
+}
+
+fun nonRootShell(command: String): Boolean {
+    val process = ProcessBuilder("sh", "-c", command)
+        .redirectErrorStream(true)
+        .start()
+    process.inputStream.bufferedReader().readText()
+    return process.waitFor() == 0
+}
