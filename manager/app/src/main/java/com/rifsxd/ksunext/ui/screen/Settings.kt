@@ -539,32 +539,25 @@ private fun AppSettingsCard(
             var showBottomsheet by remember { mutableStateOf(false) }
             var isUnrooted by remember { mutableStateOf(false) }
 
+            LaunchedEffect(Unit) {
+                isUnrooted =  Natives.checkKsuDriver() is Natives.KsuDriverStatus.NoDriver
+            }
+
             ListItem(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp))
-                    .clickable {
-                        val noDriver = Natives.checkKsuDriver() is Natives.KsuDriverStatus.NoDriver
-
-                        isUnrooted = noDriver
-                        showBottomsheet = true
-                    },
+                    .clickable { showBottomsheet = true },
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 leadingContent = { Icon(Icons.Filled.BugReport, null) },
                 headlineContent = {
-                    if (isUnrooted) {
                         Text(
-                            text = stringResource(R.string.export_log),
+                            text = stringResource(
+                                if (isUnrooted) R.string.export_log_unrooted else R.string.export_log
+                            ),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
-                    } else {
-                        Text(
-                            text = stringResource(R.string.export_log_unrooted),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
                 }
             )
 
