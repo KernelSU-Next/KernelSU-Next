@@ -258,7 +258,7 @@
   <string name="module_sort_stars_low_to_high">Sırala (Düşük → Yüksek)</string>
   <string name="module_sort_stars_high_to_low">Sırala (Yüksek → Düşük)</string>
   <string name="settings_adb_root">ADB Root</string>
-  <string name="settings_adb_root_summary">Run adbd daemon with root privileges</string>
+  <string name="settings_adb_root_summary">Adbd daemon\'ını root yetkileriyle çalıştırın</string>
   <string name="settings_selinux_hide">SELinux değişikliklerini gizle</string>
   <string name="settings_selinux_hide_summary">Uygulamaların SELinux değişikliklerini algılamasını engelle</string>
   <string name="settings_selinux_hide_reboot_required">Değişikliklerin yürürlüğe girmesi için yeniden başlatın</string>
@@ -289,7 +289,8 @@
   <string name="sulog_entry_title_daemon_restarted">Daemon yeniden başlatıldı</string>
   <string name="sulog_entry_title_dropped_events">İptal edilen etkinlikler</string>
   <string name="uapi_mismatch">Manager uapi version (%1$d) and KernelSU driver uapi version (%2$d) mismatch.</string>
-  <string name="require_manager_version">The current KernelSU-Next manager version %1$d is too low for KernelSU-Next to work properly. Please upgrade manager to version %2$d or higher!</string>
+  <string name="require_manager_version">Mevcut KernelSU-Next yöneticisi sürümü 
+%1$d, KernelSU-Next\'in düzgün çalışması için çok eski. Lütfen yöneticiyi %2$d veya daha yeni bir sürüme yükseltin!</string>
   <string name="profile_flags">Flags</string>
   <string name="profile_flags_desc_no_new_privs">Prevent further privilege escalation via KernelSU from within the context of this root profile.</string>
   <string name="settings_sulog">SU Log</string>
