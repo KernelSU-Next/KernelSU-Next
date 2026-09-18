@@ -488,6 +488,7 @@ pub fn regenerate_preinit_rc() -> Result<()> {
 
 pub fn handle_updated_modules() -> Result<()> {
     let modules_root = Path::new(MODULE_DIR);
+    ensure_dir_exists(modules_root)?;
     foreach_module(ModuleType::Updated, |updated_module| {
         if !updated_module.is_dir() {
             return Ok(());
