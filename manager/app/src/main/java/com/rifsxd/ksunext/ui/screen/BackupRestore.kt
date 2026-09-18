@@ -122,7 +122,7 @@ private suspend fun restoreModulesFromUri(uri: Uri): Boolean = withContext(Dispa
         return@withContext false
     }
 
-    val extractCmd = "$BUSYBOX tar -xpf '$tmpPath' -C /data/adb/modules_update"
+    val extractCmd = "mkdir -p '/data/adb/modules_update' && $BUSYBOX tar -xpf '$tmpPath' -C /data/adb/modules_update"
     val result = ShellUtils.fastCmdResult(extractCmd)
 
     SuFile(tmpPath).delete()
