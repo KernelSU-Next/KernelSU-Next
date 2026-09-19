@@ -45,7 +45,7 @@ zip-extensions = { version = "0.13", features = [
     "lzma",
     "xz",
 ], default-features = false }
-java-properties = { git = "https://github.com/Kernel-SU/java-properties.git", branch = "master", default-features = false }
+java-properties = { git = "https://github.com/KernelSU2/java-properties.git", branch = "master", default-features = false }
 encoding_rs = "0.8"
 humansize = "2"
 libc = "0.2"
@@ -56,7 +56,7 @@ nom = "8"
 derive-new = "0.7"
 getopts = "0.2"
 ksuinit = { path = "../ksuinit" }
-prop-rs-android = { git = "https://github.com/Kernel-SU/ksu_props", rev = "ddb6ee7294467f7f25bad2118e9e24eee104144b" }
+prop-rs-android = { git = "https://github.com/KernelSU2/ksu_props", rev = "ddb6ee7294467f7f25bad2118e9e24eee104144b" }
 
 [profile.release]
 strip = true

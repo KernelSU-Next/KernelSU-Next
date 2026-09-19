@@ -44,17 +44,11 @@ Hiện tại kernelSU Next chỉ hỗ trợ những cpu có `arm64-v8a`, `armeab
 
 ## Quyên góp/Hỗ trợ
 
-- 0x12b5224b7aca0121c2f003240a901e1d064371c1 [ USDT BEP20 ]
+- 0x0b269716dc00692676e4217e23c7f67abd5f0f3e [ USDT BEP20, USDT ERC20 ]
 
-- TYUVMWGTcnR5svnDoX85DWHyqUAeyQcdjh [ USDT TRC20 ]
+- TXu6VX8dvJLQPx4WBobjbYT5tefHTDikWo [ USDT TRC20 ]
 
-- 0x12b5224b7aca0121c2f003240a901e1d064371c1 [ USDT ERC20 ]
-
-- 0x12b5224b7aca0121c2f003240a901e1d064371c1 [ ETH ERC20 ]
-
-- Ld238uYBuRQdZB5YwdbkuU6ektBAAUByoL [ LTC ]
-
-- 19QgifcjMjSr1wB2DJcea5cxitvWVcXMT6 [ BTC ]
+- LMYRqRXPKAFpYncBhNS44W1iwFit14LH1u [ LTC ]
 
 ## Lời cảm ơn tới...
 

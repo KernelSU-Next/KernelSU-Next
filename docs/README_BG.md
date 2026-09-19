@@ -37,7 +37,7 @@
 
 ## ✅ Съвместимост
 
-KernelSU Next официално поддържа повечето Android ядра от версия **4.4 до 6.6**.
+KernelSU Next официално поддържа повечето Android ядра от версия **4.4 до 6.12**.
 
 | Версия на ядрото     | Бележки относно поддръжката                                                                  |
 |----------------------|----------------------------------------------------------------------------------------------|
@@ -72,12 +72,9 @@ KernelSU Next официално поддържа повечето Android яд�
 
 Ако искате да подкрепите проекта:
 
-- **USDT (BEP20, ERC20)**: `0x12b5224b7aca0121c2f003240a901e1d064371c1`
-- **USDT (TRC20)**: `TYUVMWGTcnR5svnDoX85DWHyqUAeyQcdjh`
-- **USDT (SOL)**: `A4wqBXYd6Ey4nK4SJ2bmjeMgGyaLKT9TwDLh8BEo8Zu6`
-- **ETH (ERC20)**: `0x12b5224b7aca0121c2f003240a901e1d064371c1`
-- **LTC**: `Ld238uYBuRQdZB5YwdbkuU6ektBAAUByoL`
-- **BTC**: `19QgifcjMjSr1wB2DJcea5cxitvWVcXMT6`
+- **USDT (BEP20, ERC20)**: `0x0b269716dc00692676e4217e23c7f67abd5f0f3e`
+- **USDT (TRC20)**: `TXu6VX8dvJLQPx4WBobjbYT5tefHTDikWo`
+- **LTC**: `LMYRqRXPKAFpYncBhNS44W1iwFit14LH1u`
 
 ---
 
