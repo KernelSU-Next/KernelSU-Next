@@ -125,7 +125,6 @@ fun getBugreportFileUnrooted(context: Context): File {
     val propFile = File(bugreportDir, "props.txt")
     val driverStatus = File(bugreportDir, "kernel_status.txt")
     
-    val status = Natives.checkKsuDriver()
     val currentManagerAppId = Natives.getManagerAppid()
 
     nonRootShell("toybox ps -T -A -w -o PID,TID,UID,COMM,CMDLINE,CMD,LABEL,STAT,WCHAN > ${processFile.absolutePath}")
@@ -166,18 +165,8 @@ fun getBugreportFileUnrooted(context: Context): File {
     if (hasMagisk) File(bugreportDir, "hasMagisk").createNewFile()
 
     driverStatus.writeText(buildString {
-        when (val s = status) {
-            Natives.KsuDriverStatus.NoDriver ->
-                appendLine("no_driver: kernel has no KernelSU-Next hook")
-
-            is Natives.KsuDriverStatus.Present -> {
-                appendLine("driver_present: version=${s.version} flags=${s.flags} isManager=${s.isManager}")
-                if (!s.isManager) {
-                    val managerAppId = Natives.getManagerAppid()
-                    appendLine("manager_appid: $managerAppId")
-                }
-            }
-        }
+        appendLine("no_driver: kernel has no KernelSU-Next hook")
+        appendLine("manager_appid: $currentManagerAppId")
     })
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
