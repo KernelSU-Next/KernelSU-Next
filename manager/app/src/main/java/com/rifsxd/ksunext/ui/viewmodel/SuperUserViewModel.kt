@@ -27,6 +27,7 @@ import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import java.text.Collator
@@ -36,12 +37,14 @@ import kotlin.coroutines.suspendCoroutine
 
 class SuperUserViewModel : ViewModel() {
 
+    private var ksuConnection: ServiceConnection? = null
+
     companion object {
         private const val TAG = "SuperUserViewModel"
         const val WEBVIEW_ZYGOTE_UID = 1053
         const val WEBVIEW_ZYGOTE_PROFILE_KEY = "webview_zygote"
 
-         var apps by mutableStateOf<List<AppInfo>>(emptyList())
+        var apps by mutableStateOf<List<AppInfo>>(emptyList())
 
         @JvmStatic
         fun getAppIconDrawable(context: Context, packageName: String): Drawable? {
@@ -108,8 +111,9 @@ class SuperUserViewModel : ViewModel() {
             when {
                 it.profile != null && it.profile.allowSu -> 0
                 it.profile != null && (
-                    if (it.profile.allowSu) !it.profile.rootUseDefault else !it.profile.nonRootUseDefault
-                ) -> 1
+                        if (it.profile.allowSu) !it.profile.rootUseDefault else !it.profile.nonRootUseDefault
+                        ) -> 1
+
                 else -> 2
             }
         }.then(compareBy(Collator.getInstance(Locale.getDefault()), AppInfo::label))
@@ -142,16 +146,20 @@ class SuperUserViewModel : ViewModel() {
 
     private suspend inline fun connectKsuService(
         crossinline onDisconnect: () -> Unit = {}
-    ): Pair<IBinder, ServiceConnection> = suspendCoroutine {
+    ): Pair<IBinder, ServiceConnection> = suspendCancellableCoroutine { cont ->
         val connection = object : ServiceConnection {
             override fun onServiceDisconnected(name: ComponentName?) {
                 onDisconnect()
             }
 
             override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
-                it.resume(binder as IBinder to this)
+                if (cont.isActive) {
+                    cont.resume(binder as IBinder to this)
+                }
             }
         }
+
+        ksuConnection = connection
 
         val intent = Intent(ksuApp, KsuService::class.java)
 
@@ -165,60 +173,71 @@ class SuperUserViewModel : ViewModel() {
 
     private fun stopKsuService() {
         val intent = Intent(ksuApp, KsuService::class.java)
+        ksuConnection?.let { RootService.unbind(it) }
+        ksuConnection = null
         RootService.stop(intent)
     }
 
+    val fetchMutex = Mutex()
     suspend fun fetchAppList() {
-        Mutex().withLock {
+        fetchMutex.withLock {
 
             isRefreshing = true
 
-            val result = connectKsuService {
-                Log.w(TAG, "KsuService disconnected")
-            }
-
-            withContext(Dispatchers.IO) {
-                val pm = ksuApp.packageManager
+            try {
                 val start = SystemClock.elapsedRealtime()
 
-                val binder = result.first
-                val allPackages = IKsuInterface.Stub.asInterface(binder).getPackages(0)
-
-                withContext(Dispatchers.Main) {
-                    stopKsuService()
+                val (binder, _) = connectKsuService {
+                    Log.w(TAG, "KsuService disconnected")
                 }
 
-                val packages = allPackages.list
+                withContext(Dispatchers.IO) {
+                    val pm = ksuApp.packageManager
+                    val allPackages = IKsuInterface.Stub.asInterface(binder).getPackages(0)
 
-                apps = packages.filter {
-                    val ai = it.applicationInfo ?: return@filter false
-                    ai.uid != WEBVIEW_ZYGOTE_UID
-                }.map {
-                    val appInfo = it.applicationInfo!!
-                    val uid = appInfo.uid
-                    val profile = Natives.getAppProfile(it.packageName, uid)
-                    AppInfo(
-                        label = appInfo.loadLabel(pm).toString(),
-                        packageInfo = it,
-                        profile = profile,
-                    )
-                }.toMutableList().apply {
-                    val systemInfo = ApplicationInfo(pm.getApplicationInfo("android", 0)).apply {
-                        uid = WEBVIEW_ZYGOTE_UID
+
+                    val packages = allPackages.list
+
+                    apps = packages.filter {
+                        val ai = it.applicationInfo ?: return@filter false
+                        ai.uid != WEBVIEW_ZYGOTE_UID
+                    }.map {
+                        val appInfo = it.applicationInfo!!
+                        val uid = appInfo.uid
+                        val profile = Natives.getAppProfile(it.packageName, uid)
+                        AppInfo(
+                            label = appInfo.loadLabel(pm).toString(),
+                            packageInfo = it,
+                            profile = profile,
+                        )
+                    }.toMutableList().apply {
+                        val systemInfo = ApplicationInfo(pm.getApplicationInfo("android", 0)).apply {
+                            uid = WEBVIEW_ZYGOTE_UID
+                        }
+                        val placeholder = PackageInfo().apply {
+                            packageName = ""
+                            applicationInfo = systemInfo
+                        }
+                        add(
+                            AppInfo(
+                                label = "WebView Zygote",
+                                packageInfo = placeholder,
+                                profile = Natives.getAppProfile(
+                                    WEBVIEW_ZYGOTE_PROFILE_KEY,
+                                    WEBVIEW_ZYGOTE_UID
+                                ),
+                                profileKey = WEBVIEW_ZYGOTE_PROFILE_KEY,
+                                special = true,
+                            )
+                        )
                     }
-                    val placeholder = PackageInfo().apply {
-                        packageName = ""
-                        applicationInfo = systemInfo
-                    }
-                    add(AppInfo(
-                        label = "WebView Zygote",
-                        packageInfo = placeholder,
-                        profile = Natives.getAppProfile(WEBVIEW_ZYGOTE_PROFILE_KEY, WEBVIEW_ZYGOTE_UID),
-                        profileKey = WEBVIEW_ZYGOTE_PROFILE_KEY,
-                        special = true,
-                    ))
                 }
                 Log.i(TAG, "load cost: ${SystemClock.elapsedRealtime() - start}")
+            } catch (e: Exception) {
+                Log.e(TAG, "fetchAppList failed", e)
+                isRefreshing = false
+            } finally {
+                withContext(Dispatchers.Main) { stopKsuService() }
             }
         }
     }
