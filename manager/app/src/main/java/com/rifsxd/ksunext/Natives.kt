@@ -91,11 +91,6 @@ object Natives {
      */
     external fun getAppProfile(key: String?, uid: Int): Profile
     external fun setAppProfile(profile: Profile?): Boolean
-
-    /*
-     *  prctl check for unrooted
-     */
-     external fun getLegacyInfo(): Long
      
     /**
      * `su` compat mode can be disabled temporarily.
@@ -138,13 +133,7 @@ object Natives {
      */
     external fun getUserName(uid: Int): String?
 
-        
-    sealed class KsuDriverStatus {
-        object NoDriver: KsuDriverStatus()
-        data class Present(val version: Int, val flags: Int): KsuDriverStatus() {
-            val isManager: Boolean get() = (flags and KSU_GET_INFO_FLAG_MANAGER) != 0
-        }
-    }
+
     /**
      * Avc spoof can be enabled/disabled.
      *  0: disabled
@@ -175,14 +164,6 @@ object Natives {
         getAppProfile(NON_ROOT_DEFAULT_PROFILE_KEY, NOBODY_UID).let {
             return it.umountModules
         }
-    }
-
-    fun checkKsuDriver(): KsuDriverStatus {
-        val packed = Natives.getLegacyInfo()
-        if (packed == -1L) return KsuDriverStatus.NoDriver
-        val version = (packed shr 32).toInt()
-        val flags = (packed and 0xFFFFFFFFL).toInt()
-        return KsuDriverStatus.Present(version, flags)
     }
     
     val kernelUAPIVersion: Int

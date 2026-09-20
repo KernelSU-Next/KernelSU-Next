@@ -14,7 +14,6 @@ add_library(kernelsu
         SHARED
         jni.cc
         ksu.cc
-        ksuCheck.cc
         )
 
 target_include_directories(kernelsu PRIVATE .)
