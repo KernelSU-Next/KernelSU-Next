@@ -102,7 +102,7 @@ dependencies = [
 [[package]]
 name = "rustix"
 version = "0.38.34"
-source = "git+https://github.com/Kernel-SU/rustix.git?rev=4a53fbc#4a53fbc7cb7a07cabe87125cc21dbc27db316259"
+source = "git+https://github.com/KernelSU2/rustix.git?rev=4a53fbc#4a53fbc7cb7a07cabe87125cc21dbc27db316259"
 dependencies = [
  "bitflags",
  "errno",
