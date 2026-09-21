@@ -311,4 +311,5 @@
   <string name="home_lkm_custom">Personalizzato</string>
   <string name="require_kernel_version_gki">Aggiornamento kernel richiesto</string>
   <string name="select_language">Seleziona la lingua</string>
+  <string name="export_log_unrooted">Export logs (non-root)</string>
 </resources>
