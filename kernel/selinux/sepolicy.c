@@ -93,8 +93,7 @@ static bool add_typeattribute(struct policydb *db, const char *type,
 #define symtab_insert(s, name, datum) hashtab_insert((s)->table, name, datum)
 #endif
 
-#define avtab_for_each(avtab, cur)                                             \
-    ksu_hash_for_each(avtab.htable, avtab.nslot, cur);
+#define avtab_for_each(avtab, cur) ksu_hash_for_each(avtab.htable, avtab.nslot, cur)
 
 static struct avtab_node *get_avtab_node(struct policydb *db,
                                          struct avtab_key *key,
