@@ -4,10 +4,16 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.system.OsConstants
+import androidx.compose.material.icons.filled.RadioButtonChecked
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -528,6 +534,89 @@ private fun AppSettingsCard(
                 prefs.edit { putBoolean("check_update", it) }
                 checkUpdate = it
             }
+
+            var requireBiometric by rememberSaveable {
+                mutableStateOf(prefs.getBoolean("enable_biometric_lock", false))
+            }
+            var appLockTimeout by rememberSaveable {
+                mutableStateOf(prefs.getLong("app_lock_timeout", 60000L))
+            }
+            var showTimeoutMenu by remember { mutableStateOf(false) }
+
+            val timeoutOptions = remember {
+                listOf(
+                    0L to R.string.settings_app_lock_timeout_immediate,
+                    60000L to R.string.settings_app_lock_timeout_1m,
+                    300000L to R.string.settings_app_lock_timeout_5m
+                )
+            }
+
+            val timeoutLabelRes = timeoutOptions.find { it.first == appLockTimeout }?.second
+                ?: R.string.settings_app_lock_timeout_1m
+            val timeoutLabel = stringResource(timeoutLabelRes)
+
+            ListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .toggleable(
+                        value = requireBiometric,
+                        role = Role.Switch,
+                        onValueChange = { newValue ->
+                            requireBiometric = newValue
+                            prefs.edit { putBoolean("enable_biometric_lock", newValue) }
+                        }
+                    ),
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    leadingContent = { Icon(Icons.Filled.Lock, null) },
+                    headlineContent = { Text(stringResource(R.string.settings_app_lock)) },
+                    supportingContent = {
+                        Column(modifier = Modifier.animateContentSize()) {
+                            Text(stringResource(R.string.settings_app_lock_summary))
+                            if (requireBiometric) {
+                                Box {
+                                    Text(
+                                        text = "${stringResource(R.string.settings_app_lock_timeout)}: $timeoutLabel",
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier
+                                            .padding(top = 4.dp)
+                                            .clickable { showTimeoutMenu = true }
+                                            .padding(vertical = 4.dp)
+                                    )
+                                    DropdownMenu(
+                                        expanded = showTimeoutMenu,
+                                        onDismissRequest = { showTimeoutMenu = false }
+                                    ) {
+                                        timeoutOptions.forEach { (time, stringRes) ->
+                                            DropdownMenuItem(
+                                                text = { Text(stringResource(stringRes)) },
+                                                trailingIcon = {
+                                                    Icon(
+                                                        imageVector = if (appLockTimeout == time) Icons.Filled.RadioButtonChecked else Icons.Filled.RadioButtonUnchecked,
+                                                        contentDescription = null,
+                                                        tint = if (appLockTimeout == time) androidx.compose.material3.MaterialTheme.colorScheme.primary else androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                                                    )
+                                                },
+                                                onClick = {
+                                                    appLockTimeout = time
+                                                    prefs.edit { putLong("app_lock_timeout", time) }
+                                                    showTimeoutMenu = false
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    trailingContent = {
+                        Switch(
+                            checked = requireBiometric,
+                            onCheckedChange = null // Handled by toggleable
+                        )
+                    }
+                )
+
 
             ListItem(
                 modifier = Modifier

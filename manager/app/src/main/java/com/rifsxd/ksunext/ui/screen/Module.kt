@@ -490,10 +490,12 @@ fun ModuleScreen(navigator: DestinationsNavigator) {
                     onClickModule = { id, name, hasWebUi ->
                         if (hasWebUi) {
                             webUILauncher.launch(
-                                Intent(context, WebUIActivity::class.java)
-                                    .setData("kernelsu://webui/$id".toUri())
-                                    .putExtra("id", id)
-                                    .putExtra("name", name)
+                                Intent(context, WebUIActivity::class.java).apply {
+                                    putExtra("is_internal_transition", true)
+                                    setData("kernelsu://webui/$id".toUri())
+                                    putExtra("id", id)
+                                    putExtra("name", name)
+                                }
                             )
                         }
                     },
