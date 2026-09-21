@@ -30,6 +30,18 @@ jobs:
                  done
               fi
           done
+
+      - name: Rename LKM artifacts
+        run: |
+          for f in ./*android*-lkm/*_kernelsu.ko; do
+            [ -f "$f" ] || continue
+            dir="${f%/*}"
+            base="${f##*/}"
+            arch="${dir#./}"
+            arch="${arch%%-*}"
+            mv "$f" "${dir}/${arch}_${base}"
+          done
+
       - name: Zip AnyKernel3
         run: |
           for dir in AnyKernel3-*; do
