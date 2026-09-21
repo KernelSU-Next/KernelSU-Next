@@ -78,7 +78,8 @@ import com.rifsxd.ksunext.ui.viewmodel.SuperUserViewModel
 data class ScrollState(
     val isScrollingDown: MutableState<Boolean>,
     val scrollOffset: MutableState<Float>,
-    val previousScrollOffset: MutableState<Float>
+    val previousScrollOffset: MutableState<Float>,
+    val isNavBarEnabled: State<Boolean>
 )
 
 val LocalScrollState = compositionLocalOf<ScrollState?> { null }
@@ -204,6 +205,7 @@ class MainActivity : FragmentActivity() {
     var navigateLoc by mutableStateOf<NavigateLocation?>(null)
     var moduleActionId by mutableStateOf<String?>(null)
     var amoledModeState = mutableStateOf(false)
+    var navBarEnabled = mutableStateOf(true)
     private val handler = Handler(Looper.getMainLooper())
 
     val moduleViewModel: ModuleViewModel by viewModels()
@@ -234,6 +236,7 @@ class MainActivity : FragmentActivity() {
         try {
             val prefsInit = getSharedPreferences("settings", MODE_PRIVATE)
             amoledModeState.value = prefsInit.getBoolean("enable_amoled", false)
+            navBarEnabled.value = prefsInit.getBoolean("enable_navbar", true)
         } catch (_: Exception) {}
 
         val isManager = Natives.isManager
@@ -402,7 +405,7 @@ class MainActivity : FragmentActivity() {
                         val showBottomBar = when (currentDestination?.route) {
                             FlashScreenDestination.route -> false // Hide for FlashScreenDestination
                             ExecuteModuleActionScreenDestination.route -> false // Hide for ExecuteModuleActionScreen
-                            else -> !isScrollingDown.value
+                            else -> !isScrollingDown.value && navBarEnabled.value
                         }
 
                         Scaffold(
@@ -414,7 +417,8 @@ class MainActivity : FragmentActivity() {
                                     LocalScrollState provides ScrollState(
                                         isScrollingDown = isScrollingDown,
                                         scrollOffset = scrollOffset,
-                                        previousScrollOffset = previousScrollOffset
+                                        previousScrollOffset = previousScrollOffset,
+                                        isNavBarEnabled = navBarEnabled
                                     )
                                 ) {
                                     val visibleDestinations = remember(fullFeatured) {
@@ -618,6 +622,14 @@ class MainActivity : FragmentActivity() {
             prefs.edit().putBoolean("enable_amoled", enabled).apply()
         } catch (_: Exception) {}
         amoledModeState.value = enabled
+    }
+
+    fun setNavBarEnabled(enabled: Boolean) {
+        try {
+            val prefs = getSharedPreferences("settings", MODE_PRIVATE)
+            prefs.edit().putBoolean("enable_navbar", enabled).apply()
+        } catch (_: Exception) {}
+        navBarEnabled.value = enabled
     }
 
     override fun onStart() {

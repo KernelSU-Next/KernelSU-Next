@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.ViewCarousel
+import androidx.compose.material.icons.filled.Dock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -71,7 +72,7 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
     val ksuVersion = if (isManager) Natives.version else null
 
     val scrollState = LocalScrollState.current
-    val isNavBarHidden = scrollState?.isScrollingDown?.value ?: false
+    val isNavBarHidden = (scrollState?.isScrollingDown?.value ?: false) || (scrollState?.isNavBarEnabled?.value == false)
     val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + if (isNavBarHidden) 0.dp else 112.dp
 
     val context = LocalContext.current
@@ -173,6 +174,22 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
                     activity?.setAmoledMode(checked)
                     enableAmoled = checked
                 }
+            }
+
+            var enableNavBar by rememberSaveable {
+                mutableStateOf(
+                    prefs.getBoolean("enable_navbar", true)
+                )
+            }
+            val activity = LocalContext.current as? MainActivity
+            SwitchItem(
+                icon = Icons.Filled.Dock,
+                title = stringResource(id = R.string.settings_navbar),
+                summary = stringResource(id = R.string.settings_navbar_summary),
+                checked = enableNavBar
+            ) { checked ->
+                activity?.setNavBarEnabled(checked)
+                enableNavBar = checked
             }
         }
     }

@@ -113,7 +113,7 @@ fun HomeScreen(navigator: DestinationsNavigator) {
     val bottomBarScrollState = LocalScrollState.current
 
     val scrollState = LocalScrollState.current
-    val isNavBarHidden = scrollState?.isScrollingDown?.value ?: false
+    val isNavBarHidden = (scrollState?.isScrollingDown?.value ?: false) || (scrollState?.isNavBarEnabled?.value == false)
     val navBarPadding = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding() + if (isNavBarHidden) 0.dp else 112.dp
     
     // Create scroll connection for bottom bar
@@ -134,6 +134,16 @@ fun HomeScreen(navigator: DestinationsNavigator) {
                 onInstallClick = {
                     navigator.navigate(InstallScreenDestination)
                 },
+                onSettingsClick = {
+                    navigator.navigate(SettingScreenDestination) {
+                        popUpTo(NavGraphs.root.startRoute) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                },
+                navBarEnabled = bottomBarScrollState?.isNavBarEnabled?.value ?: true,
                 scrollBehavior = scrollBehavior
             )
         },
@@ -645,6 +655,8 @@ private fun TopBar(
     kernelVersion: KernelVersion,
     ksuVersion: Int?,
     onInstallClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    navBarEnabled: Boolean,
     scrollBehavior: TopAppBarScrollBehavior? = null
 ) {
     var isSpinning by remember { mutableStateOf(false) }
@@ -698,6 +710,15 @@ private fun TopBar(
             }
         },
         actions = {
+            if (!navBarEnabled) {
+                IconButton(onClick = onSettingsClick) {
+                    Icon(
+                        imageVector = Icons.Filled.Settings,
+                        contentDescription = stringResource(id = R.string.settings)
+                    )
+                }
+            }
+
             if (ksuVersion != null) {
                 IconButton(onClick = onInstallClick) {
                     Icon(
