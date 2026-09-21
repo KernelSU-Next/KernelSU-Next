@@ -311,4 +311,5 @@
   <string name="home_lkm_custom">Custom</string>
   <string name="require_kernel_version_gki">Kernel update required</string>
   <string name="select_language">Избор на език</string>
+  <string name="export_log_unrooted">Export logs (non-root)</string>
 </resources>
