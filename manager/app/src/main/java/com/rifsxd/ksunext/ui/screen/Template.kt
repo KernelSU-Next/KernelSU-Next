@@ -86,6 +86,9 @@ fun AppProfileTemplateScreen(
 
     val listState = rememberLazyListState()
 
+    val scrollStateOuter = LocalScrollState.current
+    val hapticOuter = androidx.compose.ui.platform.LocalHapticFeedback.current
+
     Scaffold(
         topBar = {
             val clipboard = LocalClipboard.current
@@ -147,6 +150,9 @@ fun AppProfileTemplateScreen(
             modifier = Modifier.padding(innerPadding),
             isRefreshing = viewModel.isRefreshing,
             onRefresh = {
+                if (scrollStateOuter?.isHapticsEnabled?.value == true) {
+                    hapticOuter.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                }
                 scope.launch { viewModel.fetchTemplates(true) }
             }
         ) {

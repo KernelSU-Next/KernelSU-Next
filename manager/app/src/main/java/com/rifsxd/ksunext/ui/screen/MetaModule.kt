@@ -100,6 +100,8 @@ fun MetaModuleScreen(navigator: DestinationsNavigator) {
     val snackBarHost = LocalSnackbarHost.current
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val scrollStateOuter = LocalScrollState.current
+    val hapticOuter = androidx.compose.ui.platform.LocalHapticFeedback.current
 
     val isManager = Natives.isManager
     val ksuVersion = if (isManager) Natives.version else null
@@ -251,6 +253,9 @@ fun MetaModuleScreen(navigator: DestinationsNavigator) {
                         .padding(paddingValues),
                     isRefreshing = isRefreshing,
                     onRefresh = {
+                        if (scrollStateOuter?.isHapticsEnabled?.value == true) {
+                            hapticOuter.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                        }
                         scope.launch {
                             moduleState = MetaModuleState.Loading
                             loadModules()

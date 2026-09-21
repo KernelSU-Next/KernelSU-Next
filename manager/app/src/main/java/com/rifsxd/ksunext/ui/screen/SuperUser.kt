@@ -137,9 +137,15 @@ fun SuperUserScreen(navigator: DestinationsNavigator) {
         },
         contentWindowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
     ) { innerPadding ->
+        val scrollStateOuter = LocalScrollState.current
+        val hapticOuter = androidx.compose.ui.platform.LocalHapticFeedback.current
+
         PullToRefreshBox(
             modifier = Modifier.padding(innerPadding),
             onRefresh = {
+                if (scrollStateOuter?.isHapticsEnabled?.value == true) {
+                    hapticOuter.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                }
                 scope.launch { viewModel.fetchAppList() }
             },
             isRefreshing = viewModel.isRefreshing

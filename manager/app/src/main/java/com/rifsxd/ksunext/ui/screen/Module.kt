@@ -679,10 +679,15 @@ private fun ModuleList(
             failedRestore.format(module.name)
         }
     }
+    val scrollStateOuter = LocalScrollState.current
+    val hapticOuter = androidx.compose.ui.platform.LocalHapticFeedback.current
     PullToRefreshBox(
         modifier = boxModifier,
         isRefreshing = viewModel.isRefreshing,
         onRefresh = {
+            if (scrollStateOuter?.isHapticsEnabled?.value == true) {
+                hapticOuter.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+            }
             viewModel.fetchModuleList()
         }
     ) {
