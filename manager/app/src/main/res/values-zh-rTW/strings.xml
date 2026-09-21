@@ -311,4 +311,5 @@
   <string name="home_lkm_custom">自訂</string>
   <string name="require_kernel_version_gki">核心需要更新</string>
   <string name="select_language">選擇語言</string>
+  <string name="export_log_unrooted">Export logs (non-root)</string>
 </resources>
