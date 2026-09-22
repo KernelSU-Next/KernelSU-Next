@@ -310,5 +310,5 @@
   <string name="home_lkm_custom">Modifikasi</string>
   <string name="require_kernel_version_gki">Pembaruan kernel diperlukan</string>
   <string name="select_language">Pilih bahasa</string>
-  <string name="export_log_unrooted">Export logs (non-root)</string>
+  <string name="export_log_unrooted">Ekspor log (bukan root)</string>
 </resources>
