@@ -793,7 +793,7 @@ pub fn run() -> Result<()> {
             full_args.extend(args);
             crate::resetprop::resetprop_main(&full_args)
         }
-        Commands::SoftReboot => init_event::soft_reboot(),
+        Commands::SoftReboot => crate::soft_reboot::soft_reboot(),
 
         Commands::Insmod { module, params } => debug::insmod(&module, &params),
 
