@@ -35,7 +35,8 @@ static long is_exec_adbd(const char __user *filename_user)
         return ret;
     }
 
-    if (ret < kAdbdLen || memcmp(buf + ret - kAdbdLen, kAdbd, kAdbdLen + 1) != 0) {
+    // strncpy_from_user may copy `sizeof(buf)` bytes
+    if (ret < kAdbdLen || ret >= sizeof(buf) || memcmp(buf + ret - kAdbdLen, kAdbd, kAdbdLen + 1) != 0) {
         return 0;
     }
 
@@ -54,6 +55,7 @@ static long is_libadbroot_ok()
         } else {
             pr_err("access libadbroot.so failed: %ld, skip adb root\n", ret);
         }
+        return ret;
     } else {
         ret = 1;
     }

@@ -15,57 +15,109 @@
 #include "uapi/supercall.h"
 #include "supercall/internal.h"
 #include "arch.h"
+#include "util.h"
 #include "klog.h" // IWYU pragma: keep
 #include "manager/manager_identity.h"
+#include "compat/kernel_compat.h"
 
 #include "sulog/event.h"
 
 uint32_t ksuver_override = 0;
 
+#define KSU_DRIVER_PERMISSION_SU_SESSION (1UL << 0)
+
+struct ksu_driver_context {
+    unsigned long permissions;
+};
+
+struct ksu_install_fd_tw {
+    struct callback_head cb;
+    int __user *outp;
+};
+
 static int anon_ksu_release(struct inode *inode, struct file *filp)
 {
-	pr_info("ksu fd released\n");
-	return 0;
+    kfree(filp->private_data);
+    pr_info("ksu fd released\n");
+    return 0;
 }
 
 static long anon_ksu_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
-    return ksu_supercall_handle_ioctl(cmd, (void __user *)arg);
+    return ksu_supercall_handle_ioctl(filp, cmd, (void __user *)arg);
 }
 
 static const struct file_operations anon_ksu_fops = {
-	.owner = THIS_MODULE,
-	.unlocked_ioctl = anon_ksu_ioctl,
-	.compat_ioctl = anon_ksu_ioctl,
-	.release = anon_ksu_release,
+    .owner = THIS_MODULE,
+    .unlocked_ioctl = anon_ksu_ioctl,
+    .compat_ioctl = anon_ksu_ioctl,
+    .release = anon_ksu_release,
 };
+
+static int ksu_install_fd_with_permissions(unsigned int fd_flags, unsigned long permissions)
+{
+    struct ksu_driver_context *context;
+    struct file *filp;
+    const char *name;
+    int fd;
+
+    context = kzalloc(sizeof(*context), GFP_KERNEL);
+    if (!context)
+        return -ENOMEM;
+
+    context->permissions = permissions;
+    name = permissions & KSU_DRIVER_PERMISSION_SU_SESSION ? "[ksu_driver_su]" : "[ksu_driver]";
+
+    fd = get_unused_fd_flags(fd_flags);
+    if (fd < 0) {
+        pr_err("ksu_install_fd: failed to get unused fd\n");
+        kfree(context);
+        return fd;
+    }
+
+    filp = anon_inode_getfile(name, &anon_ksu_fops, context, O_RDWR);
+    if (IS_ERR(filp)) {
+        pr_err("ksu_install_fd: failed to create anon inode file\n");
+        put_unused_fd(fd);
+        kfree(context);
+        return PTR_ERR(filp);
+    }
+
+    fd_install(fd, filp);
+    pr_info("ksu fd installed: %d for pid %d\n", fd, current->pid);
+    return fd;
+}
 
 int ksu_install_fd(void)
 {
-	struct file *filp;
-	int fd;
+    return ksu_install_fd_with_permissions(O_CLOEXEC, 0);
+}
 
-	// Get unused fd
-	fd = get_unused_fd_flags(O_CLOEXEC);
-	if (fd < 0) {
-		pr_err("ksu_install_fd: failed to get unused fd\n");
-		return fd;
-	}
+int ksu_install_su_fd(void)
+{
+    // This descriptor must be installed after the exec into ksud.
+    return ksu_install_fd_with_permissions(O_CLOEXEC, KSU_DRIVER_PERMISSION_SU_SESSION);
+}
 
-	// Create anonymous inode file
-	filp = anon_inode_getfile("[ksu_driver]", &anon_ksu_fops, NULL, O_RDWR | O_CLOEXEC);
-	if (IS_ERR(filp)) {
-		pr_err("ksu_install_fd: failed to create anon inode file\n");
-		put_unused_fd(fd);
-		return PTR_ERR(filp);
-	}
+bool ksu_is_su_session_fd(const struct file *filp)
+{
+    const struct ksu_driver_context *context = filp->private_data;
 
-	// Install fd
-	fd_install(fd, filp);
+    return context && (context->permissions & KSU_DRIVER_PERMISSION_SU_SESSION);
+}
 
-	pr_info("ksu fd installed: %d for pid %d\n", fd, current->pid);
+static void ksu_install_fd_tw_func(struct callback_head *cb)
+{
+    struct ksu_install_fd_tw *tw = container_of(cb, struct ksu_install_fd_tw, cb);
+    int fd = ksu_install_fd();
 
-	return fd;
+    pr_info("[%d] install ksu fd: %d\n", current->pid, fd);
+    if (copy_to_user(tw->outp, &fd, sizeof(fd))) {
+        pr_err("install ksu fd reply err\n");
+        ksu_close_fd(fd);
+    }
+
+    kfree(tw);
 }
 
 int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
@@ -81,15 +133,18 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 
 	// Check if this is a request to install KSU fd
 	if (magic2 == KSU_INSTALL_MAGIC2) {
-		int fd = ksu_install_fd();
-		// downstream: dereference all arg usage!
-		if (copy_to_user((void __user *)*arg, &fd, sizeof(fd))) {
-			pr_err("install ksu fd reply err\n");
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
-		close_fd(fd);
-#else
-		__close_fd(current->files, fd);
-#endif
+		struct ksu_install_fd_tw *tw;
+
+		tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
+		if (!tw)
+			return 0;
+
+		tw->outp = (int __user *)*arg;
+		tw->cb.func = ksu_install_fd_tw_func;
+
+		if (task_work_add(current, &tw->cb, TWA_RESUME)) {
+			kfree(tw);
+			pr_warn("install fd add task_work failed\n");
 		}
 		return 0;
 	}

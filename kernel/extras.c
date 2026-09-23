@@ -5,6 +5,7 @@
 #include "policy/feature.h"
 #include "uapi/feature.h"
 #include "klog.h"
+#include "ksu.h"
 #include "runtime/ksud.h"
 #include "infra/seccomp_cache.h"
 
@@ -65,14 +66,14 @@ static const struct ksu_feature_handler avc_spoof_handler = {
 static int get_sid()
 {
 	// dont load at all if we cant get sids
-	int err = security_secctx_to_secid("u:r:su:s0", strlen("u:r:su:s0"), &su_sid);
+	int err = ksu_security_secctx_to_secid("u:r:su:s0", strlen("u:r:su:s0"), &su_sid);
 	if (err) {
 		pr_info("avc_spoof/get_sid: su_sid not found!\n");
 		return -1;
 	}
 	pr_info("avc_spoof/get_sid: su_sid: %u\n", su_sid);
 
-	err = security_secctx_to_secid("u:r:priv_app:s0:c512,c768", strlen("u:r:priv_app:s0:c512,c768"), &priv_app_sid);
+	err = ksu_security_secctx_to_secid("u:r:priv_app:s0:c512,c768", strlen("u:r:priv_app:s0:c512,c768"), &priv_app_sid);
 	if (err) {
 		pr_info("avc_spoof/get_sid: priv_app_sid not found!\n");
 		return -1;
@@ -100,10 +101,10 @@ int ksu_handle_slow_avc_audit(u32 *tsid)
 #include <linux/kprobes.h>
 #include <linux/slab.h>
 #include "arch.h"
-struct kprobe *slow_avc_audit_kp;
+static struct kprobe *slow_avc_audit_kp;
 //	.symbol_name = "slow_avc_audit",
 //	.pre_handler = slow_avc_audit_pre_handler,
-int slow_avc_audit_pre_handler(struct kprobe *p, struct pt_regs *regs)
+static int slow_avc_audit_pre_handler(struct kprobe *p, struct pt_regs *regs)
 {
 	if (atomic_read(&disable_spoof))
 		return 0;
@@ -130,7 +131,7 @@ int slow_avc_audit_pre_handler(struct kprobe *p, struct pt_regs *regs)
 }
 
 // copied from upstream
-struct kprobe *init_kprobe(const char *name,
+static struct kprobe *init_kprobe(const char *name,
 				  kprobe_pre_handler_t handler)
 {
 	struct kprobe *kp = kzalloc(sizeof(struct kprobe), GFP_KERNEL);
@@ -148,7 +149,7 @@ struct kprobe *init_kprobe(const char *name,
 
 	return kp;
 }
-void destroy_kprobe(struct kprobe **kp_ptr)
+static void destroy_kprobe(struct kprobe **kp_ptr)
 {
 	struct kprobe *kp = *kp_ptr;
 	if (!kp)

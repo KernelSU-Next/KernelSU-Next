@@ -133,6 +133,13 @@ struct lsm_context {
     u32 len;
 };
 
+#ifndef CONFIG_ANDROID
+int ksu_security_secctx_to_secid(const char *secdata, u32 seclen, u32 *secid)
+{
+	return security_secctx_to_secid(secdata, seclen, secid);
+}
+#endif
+
 static int __security_secid_to_secctx(u32 secid, struct lsm_context *cp)
 {
     return security_secid_to_secctx(secid, &cp->context, &cp->len);

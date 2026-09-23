@@ -1,3 +1,4 @@
+#include "util.h"
 #include <linux/err.h>
 #include <linux/fs.h>
 #include <linux/gfp.h>
@@ -18,9 +19,8 @@
 #include <linux/hex.h>
 #endif
 
-#include "apk_sign.h"
-#include "policy/app_profile.h"
-#include "compat/kernel_compat.h"
+#include "manager/apk_sign.h"
+#include "uapi/app_profile.h"
 #include "klog.h" // IWYU pragma: keep
 
 struct sdesc {
@@ -80,7 +80,7 @@ static bool read_exact(struct file *fp, void *buffer, size_t size, loff_t *pos, 
 	if (*pos < 0 || *pos > end || size > (size_t)(end - *pos))
 		return false;
 
-	return ksu_kernel_read_compat(fp, buffer, size, pos) == (ssize_t)size;
+	return kernel_read(fp, buffer, size, pos) == (ssize_t)size;
 }
 
 static bool read_length_prefixed_end(struct file *fp, loff_t *pos, loff_t container_end, loff_t *value_end)
@@ -157,17 +157,12 @@ static __always_inline bool check_v2_signature(char *path,
 
 	bool v2_signing_valid = false;
 	int v2_signing_blocks = 0;
-	bool v3_signing_exist = false;
-	bool v3_1_signing_exist = false;
 
-	struct file *fp = ksu_filp_open_compat(path, O_RDONLY, 0);
+	struct file *fp = ksu_filp_open_nonotify(path, O_RDONLY | O_NOATIME);
 	if (IS_ERR(fp)) {
 		pr_err("open %s error.\n", path);
 		return false;
 	}
-
-	// disable inotify for this file
-	fp->f_mode |= FMODE_NONOTIFY;
 
 	file_size = generic_file_llseek(fp, 0, SEEK_END);
 	if (file_size < 0)
@@ -195,7 +190,7 @@ static __always_inline bool check_v2_signature(char *path,
 		}
 
 		pos = file_size - search_size;
-		ksu_kernel_read_compat(fp, eocd_buffer, search_size, &pos);
+		kernel_read(fp, eocd_buffer, search_size, &pos);
 
 		if (search_size >= eocd_min_size) {
 			long j;
@@ -287,16 +282,12 @@ static __always_inline bool check_v2_signature(char *path,
 		if (id == 0x7109871au) {
 			v2_signing_blocks++;
 			v2_signing_valid = check_block(fp, &pos, pair_end, expected_size, expected_sha256);
-		} else if (id == 0xf05368c0u) {
-			// http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#73
-			v3_signing_exist = true;
-		} else if (id == 0x1b93ad61u) {
-			// http://aospxref.com/android-14.0.0_r2/xref/frameworks/base/core/java/android/util/apk/ApkSignatureSchemeV3Verifier.java#74
-			v3_1_signing_exist = true;
-		} else {
+		} else if (id != 0x42726577u) { // APK verity padding
+			// https://cs.android.com/android/platform/superproject/+/android-latest-release:tools/apksig/src/main/java/com/android/apksig/internal/apk/ApkSigningBlockUtils.java;l=102;drc=ebe4dfd4fd6550c949a6c7c2427484bf5e96500b
 #ifdef CONFIG_KSU_DEBUG
-			pr_info("Unknown id: 0x%08x\n", id);
+			pr_info("Unexpected signature block id: 0x%08x\n", id);
 #endif
+			goto invalid;
 		}
 		pos = pair_end;
 	}
@@ -314,11 +305,6 @@ invalid:
 	v2_signing_valid = false;
 clean:
 	filp_close(fp, 0);
-
-	if (v2_signing_valid && (v3_signing_exist || v3_1_signing_exist)) {
-		pr_err("Unexpected v3 signature scheme found!\n");
-		return false;
-	}
 
 	return v2_signing_valid;
 }

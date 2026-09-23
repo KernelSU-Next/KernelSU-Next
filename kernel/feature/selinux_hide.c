@@ -280,6 +280,25 @@ static void unhook_selinux_transaction_write(void)
 	pr_info("ksu_selinux_hide: unhooked context ops->write\n");
 }
 
+void ksu_selinux_hide_drop_backup_if_unused(void)
+{
+	/* legacy build keeps no backup sepolicy; nothing to drop */
+}
+
+void ksu_selinux_hide_handle_second_stage(void)
+{
+	initialize_fake_status();
+	if (READ_ONCE(fake_status))
+		hook_selinux_status_open();
+}
+
+void ksu_selinux_hide_handle_post_fs_data(void)
+{
+	initialize_fake_status();
+	if (READ_ONCE(fake_status))
+		hook_selinux_status_open();
+}
+
 static int selinux_hide_status_feature_get(u64 *value)
 {
 	*value = ksu_selinux_hide_is_enabled ? 1 : 0;
@@ -300,8 +319,8 @@ static int selinux_hide_status_feature_set(u64 value)
 }
 
 static const struct ksu_feature_handler selinux_hide_status_handler = {
-	.feature_id = KSU_FEATURE_SELINUX_HIDE_STATUS,
-	.name = "selinux_hide_status",
+	.feature_id = KSU_FEATURE_SELINUX_HIDE,
+	.name = "selinux_hide",
 	.get_handler = selinux_hide_status_feature_get,
 	.set_handler = selinux_hide_status_feature_set,
 };
@@ -347,7 +366,7 @@ void __init ksu_selinux_hide_init(void)
 
 void __exit ksu_selinux_hide_exit(void)
 {
-	ksu_unregister_feature_handler(KSU_FEATURE_SELINUX_HIDE_STATUS);
+	ksu_unregister_feature_handler(KSU_FEATURE_SELINUX_HIDE);
 	unhook_selinux_status_open();
 	unhook_selinux_transaction_write();
 	mutex_lock(&fake_status_init_mutex);
