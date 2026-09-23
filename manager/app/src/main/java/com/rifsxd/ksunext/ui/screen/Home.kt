@@ -219,7 +219,9 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             if (requiresNewKernel) {
                 WarningCard(
                     stringResource(
-                        id = if (lkmMode == true) R.string.require_kernel_version else R.string.require_kernel_version_gki
+                        id = if (lkmMode == true) R.string.require_kernel_version else R.string.require_kernel_version_gki,
+                        kernelUAPIVersion!!,
+                        managerUAPIVersion
                     ),
                     onClick = if (lkmMode == true) {
                         { navigator.navigate(InstallScreenDestination) }
@@ -230,7 +232,9 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             if (requiresNewManager) {
                 WarningCard(
                     stringResource(
-                        id = R.string.require_manager_version
+                        id = R.string.require_manager_version,
+                        managerUAPIVersion,
+                        kernelUAPIVersion!!
                     )
                 )
             }
