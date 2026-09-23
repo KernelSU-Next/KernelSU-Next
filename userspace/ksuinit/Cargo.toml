@@ -17,6 +17,7 @@ rustix = { git = "https://github.com/KernelSU2/rustix.git", rev = "4a53fbc", fea
 syscalls = { version = "0.7", default-features = false, features = [
     "aarch64",
     "x86_64",
+    "riscv64",
 ] }
 
 # for kmsg logging
@@ -28,3 +29,6 @@ strip = true
 lto = true
 opt-level = "z"
 panic = "abort"
+
+[patch.crates-io]
+libc = { git = "https://github.com/rust-lang/libc", rev = "1a661633f11a261ff9c00b40875ef72f1cbec818" }

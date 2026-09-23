@@ -77,4 +77,11 @@ pre-build = ["apt-get update && apt-get install -y libclang-dev"]
 passthrough = [
     "BINDGEN_EXTRA_CLANG_ARGS_aarch64_linux_android",
     "BINDGEN_EXTRA_CLANG_ARGS_x86_64_linux_android",
+    "BINDGEN_EXTRA_CLANG_ARGS_riscv64_linux_android",
 ]
+
+[patch.crates-io]
+libc = { git = "https://github.com/rust-lang/libc", rev = "1a661633f11a261ff9c00b40875ef72f1cbec818" }
+
+[package.metadata.cross.target.riscv64-linux-android]
+pre-build = ["apt-get update && apt-get install -y libclang-dev"]

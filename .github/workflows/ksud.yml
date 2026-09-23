@@ -43,6 +43,7 @@ jobs:
       run: |
         mv ksuinit-aarch64/ksuinit ./userspace/ksud/bin/aarch64/
         mv ksuinit-x86_64/ksuinit ./userspace/ksud/bin/x86_64/
+        mv ksuinit-riscv64/ksuinit ./userspace/ksud/bin/riscv64/
         
     - name: Setup rustup
       run: |
@@ -50,6 +51,9 @@ jobs:
         rustup target add x86_64-apple-darwin
         rustup target add aarch64-apple-darwin
         rustup target add aarch64-linux-android
+        if [ "${{ inputs.target }}" = "riscv64-linux-android" ]; then
+          rustup toolchain install nightly-2026-09-23 --profile minimal --component rust-src
+        fi
     - uses: Swatinem/rust-cache@v2
       with:
         workspaces: userspace/ksud
@@ -72,7 +76,12 @@ jobs:
           --sysroot=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/sysroot
           -I$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/aarch64-linux-android
           -I$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include
-      run: CROSS_NO_WARNINGS=0 cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
+      run: |
+        if [ "${{ inputs.target }}" = "riscv64-linux-android" ]; then
+          CROSS_NO_WARNINGS=0 cross +nightly-2026-09-23 build --config .github/riscv64-cargo.toml -Z build-std=std,panic_abort --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
+        else
+          CROSS_NO_WARNINGS=0 cross build --target ${{ inputs.target }} --release --manifest-path ./userspace/ksud/Cargo.toml
+        fi
 
     - name: Upload ksud artifact
       uses: actions/upload-artifact@v7
