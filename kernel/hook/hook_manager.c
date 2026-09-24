@@ -10,6 +10,7 @@
 #include <trace/events/syscalls.h>
 
 #include "policy/allowlist.h"
+#include "policy/app_profile.h"
 #include "arch.h"
 #include "klog.h" // IWYU pragma: keep
 #include "hook_manager.h"
