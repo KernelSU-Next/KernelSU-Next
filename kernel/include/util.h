@@ -66,6 +66,10 @@ static_assert(1 == 0, "Unsupported architecture!");
     ({                                                                                                                 \
         ksyscall(setns, fd, flags);                                                                                    \
     })
+#define ksu_sys_unshare(flags)                                                                                         \
+    ({                                                                                                                 \
+        ksyscall(unshare, flags);                                                                                      \
+    })
 
 #else // LINUX_VERSION_CODE < 4.17, native syscall ABI
 
