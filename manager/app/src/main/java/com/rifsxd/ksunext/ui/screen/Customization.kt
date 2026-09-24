@@ -194,6 +194,36 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
                 activity?.setNavBarEnabled(checked)
                 enableNavBar = checked
             }
+
+            var enableHaptics by rememberSaveable {
+                mutableStateOf(
+                    prefs.getBoolean("enable_haptics", false)
+                )
+            }
+            SwitchItem(
+                icon = Icons.Filled.Vibration,
+                title = stringResource(id = R.string.settings_haptics),
+                summary = stringResource(id = R.string.settings_haptics_summary),
+                checked = enableHaptics
+            ) { checked ->
+                activity?.setHapticsEnabled(checked)
+                enableHaptics = checked
+            }
+            
+            val enableSpinning by rememberSaveable {
+                mutableStateOf(
+                    prefs.getBoolean("enable_spinning", true)
+                )
+            }
+            SwitchItem(
+                icon = Icon.filled.Circle,
+                title = stringResource(id = R.string.settings_spinner),
+                summary = stringResource(id = R.string.settings_spinner_summary),
+                checked = enableSpinning
+            ) { checked ->
+                activity?.setSpinningEnabled(checked)
+                enableSpinning = checked
+            }
         }
     }
 
