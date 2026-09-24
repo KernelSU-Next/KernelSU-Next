@@ -87,7 +87,7 @@ endif
 
 # Calculate version if git version is available
 ifdef KSU_GIT_VERSION_VALID
-$(eval KSU_VERSION=$(shell expr 30000 + $(KSU_GIT_VERSION) + 200))
+$(eval KSU_VERSION=$(shell expr 30000 + $(KSU_GIT_VERSION)))
 $(info -- KernelSU-Next version: $(KSU_VERSION))
 else
 # If there is no .git directory, use default version
