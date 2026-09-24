@@ -36,16 +36,16 @@
 #error "syscall table hook requires kernel >= 4.17 (pt_regs syscall ABI)"
 #endif
 
-typedef long (*syscall_fn_t)(const struct pt_regs *regs);
+typedef long (*ksu_syscall_fn_t)(const struct pt_regs *regs);
 
-static syscall_fn_t *ksu_sth_syscall_table = NULL;
+static ksu_syscall_fn_t *ksu_sth_syscall_table = NULL;
 
 #define KSU_STH_MAX_HOOKS 16
 
 struct ksu_sth_entry {
 	int nr;
-	syscall_fn_t orig;
-	syscall_fn_t wrapper;
+	ksu_syscall_fn_t orig;
+	ksu_syscall_fn_t wrapper;
 };
 
 static DEFINE_MUTEX(ksu_sth_lock);
@@ -57,7 +57,7 @@ static int ksu_sth_count = 0;
 #define untagged_addr(addr) (addr)
 #endif
 
-static syscall_fn_t ksu_sth_get_orig(int nr)
+static ksu_syscall_fn_t ksu_sth_get_orig(int nr)
 {
 	int i;
 	for (i = 0; i < ksu_sth_count; i++) {
@@ -69,13 +69,13 @@ static syscall_fn_t ksu_sth_get_orig(int nr)
 
 static inline long ksu_sth_call_orig(int nr, const struct pt_regs *regs)
 {
-	syscall_fn_t orig = ksu_sth_get_orig(nr);
+	ksu_syscall_fn_t orig = ksu_sth_get_orig(nr);
 	if (unlikely(!orig))
 		return -ENOSYS;
 	return orig(regs);
 }
 
-static int ksu_sth_patch(int nr, syscall_fn_t fn)
+static int ksu_sth_patch(int nr, ksu_syscall_fn_t fn)
 {
 	if (!ksu_sth_syscall_table)
 		return -ENOENT;
@@ -92,7 +92,7 @@ static int ksu_sth_patch(int nr, syscall_fn_t fn)
 	return 0;
 }
 
-static void ksu_sth_record(int nr, syscall_fn_t orig)
+static void ksu_sth_record(int nr, ksu_syscall_fn_t orig)
 {
 	int i;
 	for (i = 0; i < ksu_sth_count; i++) {
@@ -217,7 +217,7 @@ void __init ksu_syscall_table_hook_init(void)
 {
 	struct {
 		int nr;
-		syscall_fn_t wrapper;
+		ksu_syscall_fn_t wrapper;
 	} hooks[] = {
 #ifdef __NR_execve
 		{ __NR_execve, ksu_sth_execve },
@@ -237,7 +237,7 @@ void __init ksu_syscall_table_hook_init(void)
 	ksu_init_symbol_resolver();
 
 	ksu_sth_syscall_table =
-		(syscall_fn_t *)ksu_resolve_symbol_for_functable_hook(
+		(ksu_syscall_fn_t *)ksu_resolve_symbol_for_functable_hook(
 			"sys_call_table");
 	pr_info("sth: sys_call_table=0x%lx\n",
 		(unsigned long)ksu_sth_syscall_table);
@@ -250,7 +250,7 @@ void __init ksu_syscall_table_hook_init(void)
 	mutex_lock(&ksu_sth_lock);
 
 	for (i = 0; i < ARRAY_SIZE(hooks); i++) {
-		syscall_fn_t orig =
+		ksu_syscall_fn_t orig =
 			READ_ONCE(ksu_sth_syscall_table[hooks[i].nr]);
 		if (!orig) {
 			pr_warn("sth: syscall %d has no original, skip\n",
@@ -279,7 +279,7 @@ void __exit ksu_syscall_table_hook_exit(void)
 
 	for (i = 0; i < ksu_sth_count; i++) {
 		int nr = ksu_sth_entries[i].nr;
-		syscall_fn_t orig = ksu_sth_entries[i].orig;
+		ksu_syscall_fn_t orig = ksu_sth_entries[i].orig;
 
 		pr_info("sth: restore syscall %d to 0x%lx\n", nr,
 			(unsigned long)orig);
