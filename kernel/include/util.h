@@ -67,13 +67,6 @@ static_assert(1 == 0, "Unsupported architecture!");
         ksyscall(setns, fd, flags);                                                                                    \
     })
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
-static __always_inline long ksu_sys_umount(char __user *name, int flags)
-{ 
-	return ksyscall(umount, name, flags);
-}
-#endif // LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0)
-
 #else // LINUX_VERSION_CODE < 4.17, native syscall ABI
 
 #define ksu_close_fd(fd)                                                                                               \
