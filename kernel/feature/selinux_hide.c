@@ -232,12 +232,32 @@ static __nocfi ssize_t my_selinux_transaction_write(struct file *file, const cha
 	if (current_uid().val < 10000)
 		goto pass_through;
 
-	/* Bare minimum gate: block app-uid writes outright. If you later
-	 * want selective matching (only reject contexts naming ksu/priv_app),
-	 * copy_from_user into a small stack buffer here and strstr against
-	 * ksu_sid/priv_app_sid-derived strings before deciding. */
-	pr_info("ksu_selinux_hide: blocked transaction_write from uid=%d\n", current_uid().val);
-	return -EINVAL;
+	/*
+	 * security_check_context() (libselinux) writes the target context
+	 * into /sys/fs/selinux/context on EVERY app start, before setcon().
+	 * Blocking app-uid writes outright broke every app process with
+	 * EINVAL (system_server, uid 1000, survived). Only reject explicit
+	 * root contexts (su/ksu) so root-detection gets an "invalid context"
+	 * answer while real app-context validation passes through.
+	 */
+	if (size != 0 && size <= 128) {
+		char scon[128];
+		if (copy_from_user(scon, buf, size)) {
+			scon[0] = '\0';
+			size = 0;
+		} else {
+			while (size && (scon[size - 1] == '\n' || scon[size - 1] == '\0'))
+				scon[--size] = '\0';
+		}
+
+		if (size && (!strncmp(scon, "u:r:su:", 7) ||
+			     !strncmp(scon, "u:r:su_system:", 14) ||
+			     !strncmp(scon, "u:r:ksu:", 8))) {
+			pr_info("ksu_selinux_hide: blocked root context check %s from uid=%d\n",
+				scon, current_uid().val);
+			return -EINVAL;
+		}
+	}
 
 pass_through:
 	return orig_selinux_transaction_write(file, buf, size, pos);
