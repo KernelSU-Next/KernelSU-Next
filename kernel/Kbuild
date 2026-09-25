@@ -87,7 +87,7 @@ endif
 
 # Calculate version if git version is available
 ifdef KSU_GIT_VERSION_VALID
-$(eval KSU_VERSION=$(shell expr 30000 + $(KSU_GIT_VERSION)))
+$(eval KSU_VERSION=$(shell expr 30000 + $(KSU_GIT_VERSION) + 294))
 $(info -- KernelSU-Next version: $(KSU_VERSION))
 else
 # If there is no .git directory, use default version
@@ -99,6 +99,9 @@ endif
 
 # Allow integrators to pin the reported version (e.g. when backporting
 # onto release branches where the commit count does not match releases)
+# legacy: keep version derived from commit count, with a +294 offset so
+# the reported ksuver stays in line with the manager versionCode
+# (maintainer preference, #1549)
 ifdef KSU_VERSION_OVERRIDE
 KSU_VERSION := $(KSU_VERSION_OVERRIDE)
 $(info -- KernelSU-Next version override: $(KSU_VERSION))
