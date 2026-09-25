@@ -311,4 +311,14 @@
   <string name="require_kernel_version_gki">Wymagany update kernela</string>
   <string name="select_language">Wybierz język</string>
   <string name="export_log_unrooted">Eksportuj logi (non-root)</string>
+  <string name="settings_navbar">Pasek nawigacji</string>
+  <string name="settings_navbar_summary">Włącza dolny pasek nawigacji.</string>
+  <string name="settings_app_lock">Blokada aplikacji</string>
+  <string name="settings_app_lock_summary">Wymagaj autoryzacji przed otwarciem aplikacji.</string>
+  <string name="settings_app_lock_timeout">Zablokuj po</string>
+  <string name="settings_app_lock_timeout_immediate">Natychmiast</string>
+  <string name="settings_app_lock_timeout_1m">1 minuta</string>
+  <string name="settings_app_lock_timeout_5m">5 minut</string>
+  <string name="biometric_prompt_subtitle">Odblokuj Manager</string>
+  <string name="biometric_prompt_subtitle_module">Odblokuj %1$s</string>
 </resources>
