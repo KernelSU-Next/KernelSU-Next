@@ -13,6 +13,7 @@
 #include <linux/uidgid.h>
 
 #include "policy/allowlist.h"
+#include "policy/app_profile.h"
 #include "hook/setuid_hook.h"
 #include "klog.h" // IWYU pragma: keep
 #include "manager/manager_identity.h"
