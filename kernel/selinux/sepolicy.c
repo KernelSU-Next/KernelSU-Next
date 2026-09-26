@@ -527,6 +527,8 @@ static bool add_type_rule(struct policydb *db, const char *s, const char *t,
     key.specified = effect;
 
     struct avtab_node *node = get_avtab_node(db, &key, NULL);
+    if (!node)
+        return false;
     node->datum.u.data = def->value;
 
     return true;

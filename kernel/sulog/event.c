@@ -22,25 +22,33 @@
 #include "feature/sulog.h"
 #include "infra/event_queue.h"
 #include "klog.h" // IWYU pragma: keep
+#include "runtime/ksud.h" // struct user_arg_ptr
 #include "sulog/event.h"
 
 #define KSU_SULOG_MAX_QUEUED 256U
 #define KSU_SULOG_MAX_PAYLOAD_LEN 2048U
 #define KSU_SULOG_MAX_ARG_STRINGS 0x7FFFFFFF
 #define KSU_SULOG_MAX_ARG_CHUNK 256U
-#define KSU_SULOG_MAX_FILENAME_LEN 256U
 
-struct user_arg_ptr {
-#ifdef CONFIG_COMPAT
-    bool is_compat;
+/*
+ * Boottime helper. ktime_get_boottime_ts64() only exists from 4.19 and takes
+ * a struct timespec64; older kernels only provide get_monotonic_boottime()
+ * which takes a struct timespec. The two are layout-identical on 64-bit but
+ * NOT on 32-bit (__kernel_old_time_t is 4 bytes there), so hand each API the
+ * type it actually expects instead of casting one struct into the other.
+ */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 19, 0)
+static inline void ksu_sulog_boottime(struct timespec64 *ts)
+{
+	ktime_get_boottime_ts64(ts);
+}
+#else
+static inline void ksu_sulog_boottime(struct timespec *ts)
+{
+	get_monotonic_boottime(ts);
+}
 #endif
-    union {
-        const char __user *const __user *native;
-#ifdef CONFIG_COMPAT
-        const compat_uptr_t __user *compat;
-#endif
-    } ptr;
-};
+#define KSU_SULOG_MAX_FILENAME_LEN 256U
 
 static struct ksu_event_queue sulog_queue;
 
@@ -59,13 +67,13 @@ void ksu_compat_sulog(uint8_t sym)
 {
     struct compat_sulog_entry entry = {0};
     unsigned int uid = current_uid().val;
-    struct timespec64 ts;
-
 #if KERNEL_VERSION(4, 19, 0) <= LINUX_VERSION_CODE
-	ktime_get_boottime_ts64(&ts);
+    struct timespec64 ts;
 #else
-	get_monotonic_boottime(&ts);
+    struct timespec ts;
 #endif
+
+    ksu_sulog_boottime(&ts);
     entry.s_time = (uint32_t)ts.tv_sec;
     entry.data = (uint32_t)uid;
     memcpy((void *)&entry.data + 3, &sym, 1);
@@ -87,7 +95,11 @@ int ksu_sulog_handle_compat_dump(void __user *uptr)
     struct sulog_entry_rcv_ptr sbuf = {0};
     uint32_t uptime;
     uint8_t local_idx;
+#if KERNEL_VERSION(4, 19, 0) <= LINUX_VERSION_CODE
     struct timespec64 ts;
+#else
+    struct timespec ts;
+#endif
     struct compat_sulog_entry *local_buf;
 
     if (copy_from_user(&sbuf, uptr, sizeof(sbuf)))
@@ -96,11 +108,7 @@ int ksu_sulog_handle_compat_dump(void __user *uptr)
     if (!sbuf.index_ptr || !sbuf.buf_ptr || !sbuf.uptime_ptr)
         return 1;
 
-#if KERNEL_VERSION(4, 19, 0) <= LINUX_VERSION_CODE
-	ktime_get_boottime_ts64(&ts);
-#else
-	get_monotonic_boottime(&ts);
-#endif
+    ksu_sulog_boottime(&ts);
     uptime = (uint32_t)ts.tv_sec;
     if (copy_to_user((void __user *)(uintptr_t)sbuf.uptime_ptr, &uptime, sizeof(uptime)))
         return 1;

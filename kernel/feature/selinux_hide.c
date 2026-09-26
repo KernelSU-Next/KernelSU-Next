@@ -211,7 +211,7 @@ static void unhook_selinux_status_open(void)
 		return;
 }
 
-	patch_fops_slot(&ops->open, my_sel_open_handle_status);
+	patch_fops_slot(&ops->open, orig_sel_open_handle_status);
 	orig_sel_open_handle_status = NULL;
 	pr_info("ksu_selinux_hide: unhooked sel_handle_status_ops->open\n");
 }
@@ -241,7 +241,8 @@ static __nocfi ssize_t my_selinux_transaction_write(struct file *file, const cha
 	 * answer while real app-context validation passes through.
 	 */
 	if (size != 0 && size <= 128) {
-		char scon[128];
+		char scon[129];
+
 		if (copy_from_user(scon, buf, size)) {
 			scon[0] = '\0';
 			size = 0;
@@ -249,6 +250,12 @@ static __nocfi ssize_t my_selinux_transaction_write(struct file *file, const cha
 			while (size && (scon[size - 1] == '\n' || scon[size - 1] == '\0'))
 				scon[--size] = '\0';
 		}
+		/*
+		 * size == 128 fills scon[0..127] with no terminator left, so the
+		 * pr_info("%s") below would walk past the end of the array and
+		 * log adjacent stack memory. Terminate unconditionally.
+		 */
+		scon[128] = '\0';
 
 		if (size && (!strncmp(scon, "u:r:su:", 7) ||
 			     !strncmp(scon, "u:r:su_system:", 14) ||
