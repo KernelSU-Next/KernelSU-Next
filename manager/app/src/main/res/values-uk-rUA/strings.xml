@@ -313,4 +313,14 @@
   <string name="require_kernel_version_gki">Kernel update required</string>
   <string name="select_language">Виберіть мову</string>
   <string name="export_log_unrooted">Export logs (non-root)</string>
+  <string name="settings_navbar">Navigation bar</string>
+  <string name="settings_navbar_summary">Enable the bottom navigation bar.</string>
+  <string name="settings_app_lock">App lock</string>
+  <string name="settings_app_lock_summary">Require authentication when opening the app.</string>
+  <string name="settings_app_lock_timeout">Grace period</string>
+  <string name="settings_app_lock_timeout_immediate">Immediate</string>
+  <string name="settings_app_lock_timeout_1m">1 minute</string>
+  <string name="settings_app_lock_timeout_5m">5 minutes</string>
+  <string name="biometric_prompt_subtitle">Unlock Manager</string>
+  <string name="biometric_prompt_subtitle_module">Unlock %1$s</string>
 </resources>
