@@ -135,6 +135,16 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 	if (magic2 == KSU_INSTALL_MAGIC2) {
 		struct ksu_install_fd_tw *tw;
 
+		/*
+		 * Every other command below guards on privilege; the fd install
+		 * did not, so any unprivileged app could hand itself a working
+		 * anon_ksu descriptor (and fingerprint the exact build through
+		 * the always_allow GET_INFO / CHECK_SAFEMODE ioctls).
+		 * Only the root-side helpers (ksud, ksuinit) request it.
+		 */
+		if (current_uid().val != 0)
+			return 0;
+
 		tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
 		if (!tw)
 			return 0;

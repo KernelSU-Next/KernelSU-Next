@@ -26,12 +26,20 @@
 extern void __init ksu_lsm_hook_init(void);
 extern int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 					void *argv, void *envp, int *flags);
-extern int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
-				    void *argv, void *envp, int *flags);
+
+/*
+ * The manual call site in fs/exec.c (__do_execve_file) already hands us
+ * struct user_arg_ptr values, so pass them straight through with their real
+ * type. Declaring the parameter as void* here while ksud_integration.c
+ * defines it as struct user_arg_ptr* is a conflicting declaration of the
+ * same symbol.
+ */
 int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
 			void *envp, int *flags)
 {
-	ksu_handle_execveat_ksud(fd, filename_ptr, argv, envp, flags);
+	ksu_handle_execveat_ksud(fd, filename_ptr,
+				 (struct user_arg_ptr *)argv,
+				 (struct user_arg_ptr *)envp, flags);
 	return ksu_handle_execveat_sucompat(fd, filename_ptr, argv, envp,
 					    flags);
 }
