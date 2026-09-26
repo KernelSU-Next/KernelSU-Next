@@ -207,7 +207,6 @@ int escape_with_root_profile(void)
     // on older kernels, per-UID process accounting lives in user_struct.
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 14, 0)
     if (set_cred_ucounts(cred)) {
-        ret = -EINVAL;
         goto out_abort_creds;
     }
 #endif

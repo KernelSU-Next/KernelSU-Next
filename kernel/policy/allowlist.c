@@ -429,7 +429,7 @@ static void allowlist_discard_partial_file(const char *path_str)
 	 */
 	if (!d_is_dir(path.dentry) && !IS_ROOT(path.dentry) &&
 	    d_inode(path.dentry) && d_inode(path.dentry->d_parent))
-		ksu_vfs_unlink(d_inode(path.dentry->d_parent), path.dentry);
+		vfs_unlink(d_inode(path.dentry->d_parent), path.dentry, NULL);
 
 	path_put(&path);
 }
