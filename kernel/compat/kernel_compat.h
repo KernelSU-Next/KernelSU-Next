@@ -1,6 +1,7 @@
 #ifndef __KSU_H_KERNEL_COMPAT
 #define __KSU_H_KERNEL_COMPAT
 
+#include <linux/cred.h>
 #include <linux/fs.h>
 #include <linux/version.h>
 #include <linux/task_work.h>
@@ -110,6 +111,21 @@ static inline ssize_t __strscpy_pad(char *dest, const char *src, size_t count)
 #define ksu_access_ok(addr, size) access_ok(addr, size)
 #else
 #define ksu_access_ok(addr, size) access_ok(VERIFY_READ, addr, size)
+#endif
+
+// vfs_unlink() grew a mount-namespace argument in 5.12:
+//   < 5.12  vfs_unlink(struct inode *dir, struct dentry *dentry, struct inode **delegated)
+//   >= 5.12 vfs_unlink(struct user_namespace *, struct inode *, struct dentry *, struct inode **)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
+static inline int ksu_vfs_unlink(struct inode *dir, struct dentry *dentry)
+{
+	return vfs_unlink(current_user_ns(), dir, dentry, NULL);
+}
+#else
+static inline int ksu_vfs_unlink(struct inode *dir, struct dentry *dentry)
+{
+	return vfs_unlink(dir, dentry, NULL);
+}
 #endif
 
 #ifndef KSU_OPTIONAL_STRNCPY
