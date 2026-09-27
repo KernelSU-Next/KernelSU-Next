@@ -627,9 +627,18 @@ void ksu_handle_sys_read(unsigned int fd)
      * The manual hook in fs/read_write.c calls us for every read(2) for the
      * lifetime of the boot; stop_init_rc_hook() flips this flag so the
      * proxy can be torn down again.
+     *
+     * ksu_init_rc_hook only exists when KSU_KPROBES_HOOK is off, because
+     * kprobes mode tears the hook down through stop_init_rc_hook_work
+     * instead of the flag. This function is still compiled in kprobes
+     * builds - it is just never called there - so the guard has to cover
+     * the reference too. ksu_handle_vfs_read() below is already inside
+     * the #else of the KSU_KPROBES_HOOK block opened further up.
      */
+#ifndef KSU_KPROBES_HOOK
     if (likely(!ksu_init_rc_hook))
         return;
+#endif
 
     file = fget(fd);
     if (!file) return;
