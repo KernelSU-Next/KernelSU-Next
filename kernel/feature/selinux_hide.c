@@ -119,7 +119,7 @@ static int __nocfi my_sel_open_handle_status(struct inode *inode, struct file *f
 		   ksu_selinux_hide_is_enabled)) {
 		struct page *data = READ_ONCE(fake_status);
 		if (data) {
-			filp->private_data = page_address(data);
+			filp->private_data = data;
 			return 0;
 		}
 	}
