@@ -198,25 +198,26 @@ pub fn set_risk_detection_enabled(enabled: bool) -> Result<()> {
     crate::module_config::set_config_value(
         RISK_CONFIG_MODULE_ID,
         RISK_CONFIG_KEY,
-        if enabled { "true" } else { "false" },
+        &enabled.to_string(),
         crate::module_config::ConfigType::Persist,
     )?;
-    println!(
-        "Risk detection {}",
-        if enabled { "enabled" } else { "disabled" }
-    );
+
+    if enabled {
+        println!("Enabled");
+    } else {
+        println!("Disabled");
+    }
+
     Ok(())
 }
 
 pub fn risk_detection_status() -> Result<()> {
-    println!(
-        "{}",
-        if is_risk_detection_enabled() {
-            "enabled"
-        } else {
-            "disabled"
-        }
-    );
+    if is_risk_detection_enabled() {
+        println!("Enabled");
+    } else {
+        println!("Disabled");
+    }
+
     Ok(())
 }
 
