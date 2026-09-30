@@ -565,6 +565,10 @@ private fun AppSettingsCard(
                         value = requireBiometric,
                         role = Role.Switch,
                         onValueChange = { newValue ->
+                            if (newValue && !(context.getSystemService(Context.KEYGUARD_SERVICE) as android.app.KeyguardManager).isDeviceSecure) {
+                                Toast.makeText(context, context.getString(R.string.settings_app_lock_no_credential), Toast.LENGTH_SHORT).show()
+                                return@toggleable
+                            }
                             requireBiometric = newValue
                             prefs.edit { putBoolean("enable_biometric_lock", newValue) }
                         }

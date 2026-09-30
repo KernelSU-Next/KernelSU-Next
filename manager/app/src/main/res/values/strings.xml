@@ -319,6 +319,7 @@
     <string name="settings_app_lock_timeout_immediate">Immediate</string>
     <string name="settings_app_lock_timeout_1m">1 minute</string>
     <string name="settings_app_lock_timeout_5m">5 minutes</string>
+    <string name="settings_app_lock_no_credential">Secure screen lock required.</string>
     <string name="biometric_prompt_subtitle">Unlock Manager</string>
     <string name="biometric_prompt_subtitle_module">Unlock %1$s</string>
 </resources>
