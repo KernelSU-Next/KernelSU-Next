@@ -310,5 +310,15 @@
   <string name="home_lkm_custom">自訂</string>
   <string name="require_kernel_version_gki">核心需要更新</string>
   <string name="select_language">選擇語言</string>
-  <string name="export_log_unrooted">Export logs (non-root)</string>
+  <string name="export_log_unrooted">匯出日誌（非root）</string>
+  <string name="settings_navbar">導覽列</string>
+  <string name="settings_navbar_summary">啟用底部導覽列。</string>
+  <string name="settings_app_lock">應用程式鎖</string>
+  <string name="settings_app_lock_summary">當打開應用程式時需要驗證。</string>
+  <string name="settings_app_lock_timeout">寬限期</string>
+  <string name="settings_app_lock_timeout_immediate">立即</string>
+  <string name="settings_app_lock_timeout_1m">1 分鐘</string>
+  <string name="settings_app_lock_timeout_5m">5 分鐘</string>
+  <string name="biometric_prompt_subtitle">解鎖管理器</string>
+  <string name="biometric_prompt_subtitle_module">解鎖 %1$s</string>
 </resources>
