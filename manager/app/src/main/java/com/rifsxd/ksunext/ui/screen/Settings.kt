@@ -33,9 +33,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import com.rifsxd.ksunext.ui.LocalNavBarEnabled
-import com.rifsxd.ksunext.ui.LocalScrollState
-import com.rifsxd.ksunext.ui.rememberScrollConnection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
@@ -46,6 +43,9 @@ import androidx.core.content.FileProvider
 import androidx.core.content.edit
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.ListItemDefaults
+import android.content.pm.PackageManager
+import android.hardware.fingerprint.FingerprintManager
+import android.provider.Settings
 import com.maxkeppeker.sheets.core.models.base.Header
 import com.maxkeppeker.sheets.core.models.base.IconSource
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
@@ -57,6 +57,9 @@ import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.generated.destinations.*
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
+import com.rifsxd.ksunext.ui.LocalNavBarEnabled
+import com.rifsxd.ksunext.ui.LocalScrollState
+import com.rifsxd.ksunext.ui.rememberScrollConnection
 import com.rifsxd.ksunext.BuildConfig
 import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.R
@@ -121,7 +124,7 @@ fun SettingScreen(navigator: DestinationsNavigator) {
             loadingDialog.show()
             context.contentResolver.openOutputStream(uri)?.use { output ->
                 val bugReport = if (isUnrooted) getBugreportFileUnrooted(context) else getBugreportFile(context)
-                    bugReport.inputStream().use {
+                bugReport.inputStream().use {
                     it.copyTo(output)
                 }
             }
@@ -565,59 +568,64 @@ private fun AppSettingsCard(
                         value = requireBiometric,
                         role = Role.Switch,
                         onValueChange = { newValue ->
+                            if (newValue && !hasFingerprintEnrolled(context)) {
+                                Toast.makeText(context, "enroll a fingerprint first", Toast.LENGTH_LONG).show()
+                                context.startActivity(Intent(Settings.ACTION_SECURITY_SETTINGS))
+                                return@toggleable
+                            }
                             requireBiometric = newValue
                             prefs.edit { putBoolean("enable_biometric_lock", newValue) }
                         }
                     ),
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                    leadingContent = { Icon(Icons.Filled.Lock, null) },
-                    headlineContent = { Text(stringResource(R.string.settings_app_lock)) },
-                    supportingContent = {
-                        Column(modifier = Modifier.animateContentSize()) {
-                            Text(stringResource(R.string.settings_app_lock_summary))
-                            if (requireBiometric) {
-                                Box {
-                                    Text(
-                                        text = "${stringResource(R.string.settings_app_lock_timeout)}: $timeoutLabel",
-                                        color = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier
-                                            .padding(top = 4.dp)
-                                            .clickable { showTimeoutMenu = true }
-                                            .padding(vertical = 4.dp)
-                                    )
-                                    DropdownMenu(
-                                        expanded = showTimeoutMenu,
-                                        onDismissRequest = { showTimeoutMenu = false }
-                                    ) {
-                                        timeoutOptions.forEach { (time, stringRes) ->
-                                            DropdownMenuItem(
-                                                text = { Text(stringResource(stringRes)) },
-                                                trailingIcon = {
-                                                    Icon(
-                                                        imageVector = if (appLockTimeout == time) Icons.Filled.RadioButtonChecked else Icons.Filled.RadioButtonUnchecked,
-                                                        contentDescription = null,
-                                                        tint = if (appLockTimeout == time) androidx.compose.material3.MaterialTheme.colorScheme.primary else androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
-                                                    )
-                                                },
-                                                onClick = {
-                                                    appLockTimeout = time
-                                                    prefs.edit { putLong("app_lock_timeout", time) }
-                                                    showTimeoutMenu = false
-                                                }
-                                            )
-                                        }
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                leadingContent = { Icon(Icons.Filled.Lock, null) },
+                headlineContent = { Text(stringResource(R.string.settings_app_lock)) },
+                supportingContent = {
+                    Column(modifier = Modifier.animateContentSize()) {
+                        Text(stringResource(R.string.settings_app_lock_summary))
+                        if (requireBiometric) {
+                            Box {
+                                Text(
+                                    text = "${stringResource(R.string.settings_app_lock_timeout)}: $timeoutLabel",
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier
+                                        .padding(top = 4.dp)
+                                        .clickable { showTimeoutMenu = true }
+                                        .padding(vertical = 4.dp)
+                                )
+                                DropdownMenu(
+                                    expanded = showTimeoutMenu,
+                                    onDismissRequest = { showTimeoutMenu = false }
+                                ) {
+                                    timeoutOptions.forEach { (time, stringRes) ->
+                                        DropdownMenuItem(
+                                            text = { Text(stringResource(stringRes)) },
+                                            trailingIcon = {
+                                                Icon(
+                                                    imageVector = if (appLockTimeout == time) Icons.Filled.RadioButtonChecked else Icons.Filled.RadioButtonUnchecked,
+                                                    contentDescription = null,
+                                                    tint = if (appLockTimeout == time) androidx.compose.material3.MaterialTheme.colorScheme.primary else androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
+                                                )
+                                            },
+                                            onClick = {
+                                                appLockTimeout = time
+                                                prefs.edit { putLong("app_lock_timeout", time) }
+                                                showTimeoutMenu = false
+                                            }
+                                        )
                                     }
                                 }
                             }
                         }
-                    },
-                    trailingContent = {
-                        Switch(
-                            checked = requireBiometric,
-                            onCheckedChange = null // Handled by toggleable
-                        )
                     }
-                )
+                },
+                trailingContent = {
+                    Switch(
+                        checked = requireBiometric,
+                        onCheckedChange = null // Handled by toggleable
+                    )
+                }
+            )
 
 
             ListItem(
@@ -646,13 +654,13 @@ private fun AppSettingsCard(
                 colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                 leadingContent = { Icon(Icons.Filled.BugReport, null) },
                 headlineContent = {
-                        Text(
-                            text = stringResource(
-                                if (isUnrooted) R.string.export_log_unrooted else R.string.export_log
-                            ),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                    Text(
+                        text = stringResource(
+                            if (isUnrooted) R.string.export_log_unrooted else R.string.export_log
+                        ),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             )
 
@@ -903,6 +911,13 @@ private fun TopBar(
         windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
         scrollBehavior = scrollBehavior
     )
+}
+
+@Suppress("DEPRECATION")
+fun hasFingerprintEnrolled(context: Context): Boolean {
+    if (!context.packageManager.hasSystemFeature(PackageManager.FEATURE_FINGERPRINT)) return false
+    val fm = context.getSystemService(FingerprintManager::class.java) ?: return false
+    return fm.isHardwareDetected && fm.hasFingerprintEnrolled()
 }
 
 @Preview
