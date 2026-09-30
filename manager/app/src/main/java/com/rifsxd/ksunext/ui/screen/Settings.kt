@@ -917,7 +917,7 @@ private fun TopBar(
 fun hasFingerprintEnrolled(context: Context): Boolean {
     if (!context.packageManager.hasSystemFeature(PackageManager.FEATURE_FINGERPRINT)) return false
     val fm = context.getSystemService(FingerprintManager::class.java) ?: return false
-    return fm.isHardwareDetected && fm.hasFingerprintEnrolled()
+    return fm.isHardwareDetected && fm.hasEnrolledFingerprints()
 }
 
 @Preview
