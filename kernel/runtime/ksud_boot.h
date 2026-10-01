@@ -13,5 +13,7 @@ int nuke_ext4_sysfs(const char* mnt);
 
 extern bool ksu_module_mounted;
 extern bool ksu_boot_completed;
+/* Whether /data/adb/ksud existed at post-fs-data. */
+extern bool ksu_ksud_present;
 
 #endif // __KSU_H_KSUD_BOOT

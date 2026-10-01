@@ -14,6 +14,7 @@
 
 bool ksu_module_mounted __read_mostly = false;
 bool ksu_boot_completed __read_mostly = false;
+bool ksu_ksud_present __read_mostly = false;
 
 extern void ksu_avc_spoof_late_init();
 
@@ -26,6 +27,15 @@ void on_post_fs_data(void)
 	}
 	done = true;
 	pr_info("on_post_fs_data!\n");
+
+	{
+		struct path ksud;
+
+		ksu_ksud_present = !kern_path(KSUD_PATH, 0, &ksud);
+		if (ksu_ksud_present)
+			path_put(&ksud);
+		pr_info("ksud %s\n", ksu_ksud_present ? "present" : "not installed");
+	}
 
 	ksu_load_allow_list();
 	ksu_observer_init();

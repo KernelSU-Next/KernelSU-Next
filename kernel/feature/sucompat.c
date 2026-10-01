@@ -29,6 +29,7 @@
 #include "policy/feature.h"
 #include "klog.h" // IWYU pragma: keep
 #include "runtime/ksud.h"
+#include "runtime/ksud_boot.h"
 #include "compat/kernel_compat.h"
 #include "sucompat.h"
 #include "policy/app_profile.h"
@@ -199,7 +200,12 @@ static long ksu_handle_execve_sucompat_common(const char __user **filename_user,
 		goto do_orig_execve;
 	}
 	if (preempt_count() > 0) {
-		*filename_user = ksud_user_path();
+		/*
+		 * Can't open files here (kprobe context). Before the manager has
+		 * installed /data/adb/ksud, redirecting to it makes su fail with
+		 * ENOENT and the manager never gets a root shell to install it.
+		 */
+		*filename_user = ksu_ksud_present ? ksud_user_path() : sh_user_path();
 	} else {
 		struct file *f = ksu_filp_open_compat(KSUD_PATH, O_RDONLY, 0);
 		if (IS_ERR(f)) {
