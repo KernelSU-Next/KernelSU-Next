@@ -204,8 +204,15 @@ static long ksu_handle_execve_sucompat_common(const char __user **filename_user,
 		 * Can't open files here (kprobe context). Before the manager has
 		 * installed /data/adb/ksud, redirecting to it makes su fail with
 		 * ENOENT and the manager never gets a root shell to install it.
+		 * Use sh until then, and re-check in process context so su
+		 * switches to ksud as soon as the manager has installed it.
 		 */
-		*filename_user = ksu_ksud_present ? ksud_user_path() : sh_user_path();
+		if (READ_ONCE(ksu_ksud_present)) {
+			*filename_user = ksud_user_path();
+		} else {
+			*filename_user = sh_user_path();
+			ksu_recheck_ksud();
+		}
 	} else {
 		struct file *f = ksu_filp_open_compat(KSUD_PATH, O_RDONLY, 0);
 		if (IS_ERR(f)) {

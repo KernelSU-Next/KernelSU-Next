@@ -8,8 +8,10 @@
 #include <linux/version.h>
 #include "klog.h" // IWYU pragma: keep
 #include "throne_tracker.h"
+#include "runtime/ksud_boot.h"
 
 #define MASK_SYSTEM (FS_CREATE | FS_MOVE | FS_EVENT_ON_CHILD)
+#define MASK_ADB (FS_CLOSE_WRITE | FS_MOVE | FS_DELETE | FS_EVENT_ON_CHILD)
 
 struct watch_dir {
 	const char *path;
@@ -32,6 +34,14 @@ static KSU_DECL_FSNOTIFY_OPS(ksu_handle_inode_event)
 	    !memcmp(ksu_fname_arg(file_name), "packages.list", 13)) {
 		pr_info("packages.list detected: %d\n", mask);
 		track_throne(false);
+	}
+	/* Only /data/adb has a "ksud"; keep sucompat's view of it current. */
+	if (ksu_fname_len(file_name) == 4 &&
+	    !memcmp(ksu_fname_arg(file_name), "ksud", 4)) {
+		if (mask & (FS_CLOSE_WRITE | FS_MOVED_TO))
+			ksu_set_ksud_present(true);
+		else if (mask & (FS_DELETE | FS_MOVED_FROM))
+			ksu_set_ksud_present(false);
 	}
 	return 0;
 }
@@ -124,6 +134,8 @@ static void unwatch_one_dir(struct watch_dir *wd)
 
 static struct watch_dir g_watch = { .path = "/data/system",
 				    .mask = MASK_SYSTEM };
+static struct watch_dir g_adb_watch = { .path = "/data/adb",
+					.mask = MASK_ADB };
 
 int ksu_observer_init(void)
 {
@@ -138,12 +150,14 @@ int ksu_observer_init(void)
 		return PTR_ERR(g);
 
 	ret = watch_one_dir(&g_watch);
+	watch_one_dir(&g_adb_watch);
 	pr_info("observer init done\n");
 	return 0;
 }
 
 void __exit ksu_observer_exit(void)
 {
+	unwatch_one_dir(&g_adb_watch);
 	unwatch_one_dir(&g_watch);
 	fsnotify_put_group(g);
 	pr_info("observer exit done\n");

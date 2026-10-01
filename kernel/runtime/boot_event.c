@@ -2,6 +2,7 @@
 #include <linux/fs.h>
 #include <linux/namei.h>
 #include <linux/printk.h>
+#include <linux/workqueue.h>
 
 #include "feature/selinux_hide.h"
 
@@ -16,6 +17,41 @@ bool ksu_module_mounted __read_mostly = false;
 bool ksu_boot_completed __read_mostly = false;
 bool ksu_ksud_present __read_mostly = false;
 
+void ksu_set_ksud_present(bool present)
+{
+	if (READ_ONCE(ksu_ksud_present) == present)
+		return;
+	WRITE_ONCE(ksu_ksud_present, present);
+	pr_info("ksud %s, su goes to %s\n", present ? "installed" : "removed",
+		present ? "ksud" : "sh");
+}
+
+static void ksu_check_ksud(void)
+{
+	struct path ksud;
+	bool present = !kern_path(KSUD_PATH, 0, &ksud);
+
+	if (present)
+		path_put(&ksud);
+	ksu_set_ksud_present(present);
+}
+
+static void ksu_check_ksud_work_fn(struct work_struct *work)
+{
+	ksu_check_ksud();
+}
+
+static DECLARE_WORK(ksu_check_ksud_work, ksu_check_ksud_work_fn);
+
+/*
+ * Safe from atomic context. The /data/adb observer normally keeps
+ * ksu_ksud_present current; this is the fallback if it couldn't be set up.
+ */
+void ksu_recheck_ksud(void)
+{
+	schedule_work(&ksu_check_ksud_work);
+}
+
 extern void ksu_avc_spoof_late_init();
 
 void on_post_fs_data(void)
@@ -28,17 +64,11 @@ void on_post_fs_data(void)
 	done = true;
 	pr_info("on_post_fs_data!\n");
 
-	{
-		struct path ksud;
-
-		ksu_ksud_present = !kern_path(KSUD_PATH, 0, &ksud);
-		if (ksu_ksud_present)
-			path_put(&ksud);
-		pr_info("ksud %s\n", ksu_ksud_present ? "present" : "not installed");
-	}
-
 	ksu_load_allow_list();
 	ksu_observer_init();
+	/* After the observer is up, so a ksud install can't slip in between. */
+	ksu_check_ksud();
+	pr_info("ksud %s\n", ksu_ksud_present ? "present" : "not installed");
 	// sanity check, this may influence the performance
 	ksu_stop_input_hook_runtime();
 	ksu_selinux_hide_handle_post_fs_data();
