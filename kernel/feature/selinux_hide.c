@@ -576,8 +576,13 @@ struct file_operations *ops = NULL;
 	pr_info("ksu_selinux_hide: unhooked sel_handle_status_ops->open\n");
 }
 
+/*
+ * The init thread's one hook attempt can run before selinuxfs is mounted
+ * (no wait in kprobes builds); retry here like the status hook does.
+ */
 void ksu_selinux_hide_handle_second_stage(void)
 {
+	hook_selinux_transaction_write();
 	initialize_fake_status();
 	if (READ_ONCE(fake_status))
 		hook_selinux_status_open();
@@ -585,6 +590,7 @@ void ksu_selinux_hide_handle_second_stage(void)
 
 void ksu_selinux_hide_handle_post_fs_data(void)
 {
+	hook_selinux_transaction_write();
 	initialize_fake_status();
 	if (READ_ONCE(fake_status))
 		hook_selinux_status_open();
