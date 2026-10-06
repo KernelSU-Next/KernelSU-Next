@@ -87,6 +87,8 @@ private const val KEY_NON_FREE_ENABLED = "non_free_enabled"
 private const val DEFAULT_JSON_URL = "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next-Modules-Repo/refs/heads/main/modules.json"
 private const val NON_FREE_JSON_URL = "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next-Modules-Repo/refs/heads/main/non_free_modules.json"
 private const val URL_SEPARATOR = "|||"
+private const val NET_CONNECT_TIMEOUT_MS = 15_000
+private const val NET_READ_TIMEOUT_MS = 15_000
 
 private fun getModuleRepoPrefs(context: Context): SharedPreferences {
     return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -176,6 +178,8 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
         return withContext(Dispatchers.IO) {
             try {
                 val conn = URL(jsonUrl).openConnection() as java.net.HttpURLConnection
+                conn.connectTimeout = NET_CONNECT_TIMEOUT_MS
+                conn.readTimeout = NET_READ_TIMEOUT_MS
                 conn.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
                 val text = BufferedReader(InputStreamReader(conn.inputStream)).use { it.readText() }
                 conn.disconnect()
@@ -948,6 +952,8 @@ private suspend fun fetchLatestReleaseInfo(repoUrl: String): ReleaseInfoModuleRe
         try {
             val stars = try {
                 val htmlConn = URL(repoUrl).openConnection() as java.net.HttpURLConnection
+                htmlConn.connectTimeout = NET_CONNECT_TIMEOUT_MS
+                htmlConn.readTimeout = NET_READ_TIMEOUT_MS
                 htmlConn.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
                 htmlConn.setRequestProperty("Accept", "text/html")
                 val html = BufferedReader(InputStreamReader(htmlConn.inputStream)).use { it.readText() }
@@ -962,6 +968,8 @@ private suspend fun fetchLatestReleaseInfo(repoUrl: String): ReleaseInfoModuleRe
 
             val latestUrl = "$repoUrl/releases/latest"
             val connection = URL(latestUrl).openConnection() as java.net.HttpURLConnection
+            connection.connectTimeout = NET_CONNECT_TIMEOUT_MS
+            connection.readTimeout = NET_READ_TIMEOUT_MS
             connection.instanceFollowRedirects = false
             connection.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
 
@@ -980,6 +988,8 @@ private suspend fun fetchLatestReleaseInfo(repoUrl: String): ReleaseInfoModuleRe
 
             val releasePageUrl = "$repoUrl/releases/expanded_assets/$tagMatch"
             val pageConnection = URL(releasePageUrl).openConnection()
+            pageConnection.connectTimeout = NET_CONNECT_TIMEOUT_MS
+            pageConnection.readTimeout = NET_READ_TIMEOUT_MS
             pageConnection.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
 
             val pageHtml = BufferedReader(InputStreamReader(pageConnection.getInputStream())).use {
