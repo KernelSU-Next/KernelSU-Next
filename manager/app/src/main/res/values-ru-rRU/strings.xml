@@ -119,6 +119,8 @@
   <string name="restart_app">Перезапустить</string>
   <string name="settings_amoled_mode">Режим AMOLED</string>
   <string name="settings_amoled_mode_summary">Включить полностью тёмную тему, оптимизированную для дисплеев AMOLED, чтобы снизить зрительную нагрузку и сэкономить заряд аккумулятора.</string>
+  <string name="settings_navbar">Панель навигации</string>
+  <string name="settings_navbar_summary">Включить нижнюю панель навигации.</string>
   <string name="restart_required">Требуется перезапуск</string>
   <string name="restart_app_message">Чтобы изменения вступили в силу, необходимо перезапустить приложение.</string>
   <string name="failed_to_update_sepolicy">Не удалось обновить правила SELinux для %s</string>
@@ -306,9 +308,20 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">Успешно</string>
   <string name="sulog_status_exit">Выход %1$d</string>
-  <string name="home_lkm_update_available">A newer bundled LKM is available. Tap to update.</string>
+  <string name="home_lkm_update_available">Доступна новая версия встроенного LKM. Нажмите, чтобы обновить.</string>
   <string name="home_lkm_custom">Custom</string>
-  <string name="require_kernel_version_gki">Kernel update required</string>
+  <string name="require_kernel_version_gki">Требуется обновление ядра</string>
+  <string name="settings_app_lock">Блокировка приложения</string>
+  <string name="settings_app_lock_summary">Запрашивать аутентификацию при открытии приложения.</string>
+  <string name="settings_app_lock_timeout">Период разблокировки</string>
+  <string name="settings_app_lock_timeout_immediate">Сразу</string>
+  <string name="settings_app_lock_timeout_1m">1 минута</string>
+  <string name="settings_app_lock_timeout_5m">5 минут</string>
+  <string name="settings_app_lock_no_credential">Требуется настроить безопасную блокировку экрана.</string>
+  <string name="biometric_prompt_subtitle">Разблокировать менеджер</string>
+  <string name="biometric_prompt_subtitle_module">Разблокировать %1$s</string>
+  <string name="enable_risk">Включить проверку рисков</string>
+  <string name="enable_risk_summary">Включить проверку рисков при установке модулей.</string>
   <string name="select_language">Русский</string>
-  <string name="export_log_unrooted">Export logs (non-root)</string>
+  <string name="export_log_unrooted">Экспортировать логи (без root)</string>
 </resources>
