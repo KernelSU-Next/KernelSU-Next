@@ -119,6 +119,8 @@
   <string name="restart_app">再起動</string>
   <string name="settings_amoled_mode">AMOLEDモード</string>
   <string name="settings_amoled_mode_summary">AMOLEDスクリーンに効果的なピュアブラックテーマを有効化することで、目の負担の軽減とバッテリーの節約に繋がります。</string>
+  <string name="settings_navbar">ナビゲーションバー</string>
+  <string name="settings_navbar_summary">ボトムナビゲーションバーを有効にします。</string>
   <string name="restart_required">再起動が必要です</string>
   <string name="restart_app_message">この変更を反映させるにはアプリを再起動する必要があります。</string>
   <string name="failed_to_update_sepolicy">右記のSELinuxルールの更新に失敗しました: %s</string>
@@ -306,9 +308,20 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">成功</string>
   <string name="sulog_status_exit">終了 %1$d</string>
-  <string name="home_lkm_update_available">A newer bundled LKM is available. Tap to update.</string>
+  <string name="home_lkm_update_available">同梱の LKM の新しいバージョンが利用可能です。タップして更新してください。</string>
   <string name="home_lkm_custom">Custom</string>
-  <string name="require_kernel_version_gki">Kernel update required</string>
+  <string name="require_kernel_version_gki">カーネルの更新が必要です</string>
+  <string name="settings_app_lock">アプリロック</string>
+  <string name="settings_app_lock_summary">アプリを開く際に認証を要求します。</string>
+  <string name="settings_app_lock_timeout">猶予期間</string>
+  <string name="settings_app_lock_timeout_immediate">即時</string>
+  <string name="settings_app_lock_timeout_1m">1分</string>
+  <string name="settings_app_lock_timeout_5m">5分</string>
+  <string name="settings_app_lock_no_credential">安全な画面ロックが設定されている必要があります。</string>
+  <string name="biometric_prompt_subtitle">マネージャーのロック解除</string>
+  <string name="biometric_prompt_subtitle_module">%1$s のロック解除</string>
+  <string name="enable_risk">リスク検出を有効化</string>
+  <string name="enable_risk_summary">モジュールのインストール時のリスク検出を有効にします。</string>
   <string name="select_language">言語を選択</string>
-  <string name="export_log_unrooted">Export logs (non-root)</string>
+  <string name="export_log_unrooted">ログをエクスポート（非 root）</string>
 </resources>
