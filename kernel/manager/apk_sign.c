@@ -330,5 +330,25 @@ int get_pkg_from_apk_dir_path(char *pkg, const char *path)
 
 bool is_manager_apk(char *path)
 {
-	return check_v2_signature(path, EXPECTED_MANAGER_SIZE, EXPECTED_MANAGER_HASH);
+	const char *p = KSU_NEXT_MANAGER_LIST;
+
+	while (*p) {
+		unsigned int size;
+		char hash[65] = {0};
+
+		if (sscanf(p, "%x:%64[^,]", &size, hash) == 2) {
+			if (check_v2_signature(path, size, hash)) {
+				pr_info("KernelSU: matched manager APK: %s (size=0x%x, hash=%s)\n",
+					path, size, hash);
+				return true;
+			}
+		}
+
+		p = strchr(p, ',');
+		if (!p)
+			break;
+		p++; // skip comma
+	}
+
+	return false;
 }
