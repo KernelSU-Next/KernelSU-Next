@@ -119,6 +119,8 @@
   <string name="restart_app">重新启动</string>
   <string name="settings_amoled_mode">AMOLED 模式</string>
   <string name="settings_amoled_mode_summary">启用纯黑主题，适用于 AMOLED 屏幕，可减轻眼睛疲劳并节省电量。</string>
+  <string name="settings_navbar">底部导航栏</string>
+  <string name="settings_navbar_summary">启用底部导航栏。</string>
   <string name="restart_required">需要重启</string>
   <string name="restart_app_message">该应用需要重启才能使更改生效。</string>
   <string name="failed_to_update_sepolicy">更新 %s 的 SELinux 规则失败</string>
@@ -306,9 +308,20 @@
   <string name="sulog_uid">UID %1$s</string>
   <string name="sulog_status_success">成功</string>
   <string name="sulog_status_exit">退出码 %1$d</string>
-  <string name="home_lkm_update_available">A newer bundled LKM is available. Tap to update.</string>
-  <string name="home_lkm_custom">Custom</string>
-  <string name="require_kernel_version_gki">Kernel update required</string>
+  <string name="home_lkm_update_available">内置 LKM 有新版本可用，点击更新。</string>
+  <string name="home_lkm_custom">自定义</string>
+  <string name="require_kernel_version_gki">需要更新内核</string>
+  <string name="settings_app_lock">应用锁</string>
+  <string name="settings_app_lock_summary">打开应用时需要验证身份。</string>
+  <string name="settings_app_lock_timeout">宽限期</string>
+  <string name="settings_app_lock_timeout_immediate">立即</string>
+  <string name="settings_app_lock_timeout_1m">1 分钟</string>
+  <string name="settings_app_lock_timeout_5m">5 分钟</string>
+  <string name="settings_app_lock_no_credential">需要先设置安全的屏幕锁定方式。</string>
+  <string name="biometric_prompt_subtitle">解锁管理器</string>
+  <string name="biometric_prompt_subtitle_module">解锁 %1$s</string>
+  <string name="enable_risk">启用风险检测</string>
+  <string name="enable_risk_summary">为模块启用安装时风险检测。</string>
   <string name="select_language">选择语言</string>
-  <string name="export_log_unrooted">Export logs (non-root)</string>
+  <string name="export_log_unrooted">导出日志（无需 Root）</string>
 </resources>
