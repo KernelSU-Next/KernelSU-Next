@@ -54,18 +54,27 @@ fn parse_risk_catalog(json: &[u8]) -> Result<RiskCatalog, serde_json::Error> {
 
 pub fn should_update_risk_cache(local_json: &[u8], remote_json: &[u8]) -> bool {
     let Ok(local) = parse_risk_catalog(local_json) else {
-        return true;
+        // Local cache is unreadable; only accept a *valid* remote catalog.
+        return parse_risk_catalog(remote_json).is_ok();
     };
     let Ok(remote) = parse_risk_catalog(remote_json) else {
-        return true;
+        // Remote is unreadable (e.g. a hijacked response or error page);
+        // never let it replace a valid local cache.
+        return false;
     };
 
     local.hash != remote.hash
 }
 
 fn fetch_remote_risk_json() -> Option<Vec<u8>> {
+    // Wrap wget with the timeout applet so a blackholed/hijacked network
+    // path cannot stall module installation indefinitely.
+    let script = format!(
+        "timeout 15 '{}' wget -q -O - -- '{}'",
+        assets::BUSYBOX_PATH, REMOTE_RISK_URL
+    );
     let output = Command::new(assets::BUSYBOX_PATH)
-        .args(["wget", "-q", "-O", "-", "--", REMOTE_RISK_URL])
+        .args(["ash", "-c", &script])
         .output()
         .ok()?;
 
@@ -84,7 +93,9 @@ fn load_risk_json() -> Vec<u8> {
     }
 
     let local_bytes = std::fs::read(cache_path).ok();
-    let remote_bytes = fetch_remote_risk_json();
+    // A hijacked/captive-portal response must never poison the on-disk
+    // cache, so only accept remote bytes that parse as a valid catalog.
+    let remote_bytes = fetch_remote_risk_json().filter(|bytes| parse_risk_catalog(bytes).is_ok());
 
     match (local_bytes, remote_bytes) {
         (Some(local), Some(remote)) => {
@@ -310,6 +321,25 @@ mod tests {
 
         assert!(!should_update_risk_cache(local, remote_same));
         assert!(should_update_risk_cache(local, remote_diff));
+    }
+
+    #[test]
+    fn garbage_remote_never_replaces_cache() {
+        let local = br#"{"hash":"abc","rules":[{"reason":"demo","severity":"low","patterns":["alpha"]}]}"#;
+        let garbage = b"<html>302 Found - redirect to carrier portal</html>";
+
+        // Hijacked/garbage remote responses must not win over a valid local cache.
+        assert!(!should_update_risk_cache(local, garbage));
+    }
+
+    #[test]
+    fn valid_remote_can_replace_corrupted_local() {
+        let garbage = b"not json at all";
+        let remote = br#"{"hash":"abc","rules":[]}"#;
+
+        assert!(should_update_risk_cache(garbage, remote));
+        // Both corrupted: keep what we have rather than swapping garbage.
+        assert!(!should_update_risk_cache(garbage, garbage));
     }
 
     #[test]
