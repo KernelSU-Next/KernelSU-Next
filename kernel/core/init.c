@@ -101,6 +101,11 @@ module_param_named(bundled, ksu_bundled, bool, 0);
 
 int __init kernelsu_init(void)
 {
+#ifdef KSU_MANAGER_PACKAGE
+	pr_info("welcome to KernelSU version " __stringify(KERNEL_SU_VERSION) ", package name " KSU_MANAGER_PACKAGE "\n");
+#else
+	pr_info("welcome to KernelSU version " __stringify(KERNEL_SU_VERSION) "\n");
+#endif
 #ifdef MODULE
 	ksu_late_loaded = (current->pid != 1);
 #else
