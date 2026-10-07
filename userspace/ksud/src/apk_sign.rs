@@ -113,3 +113,160 @@ fn calc_cert_sha256(
 
     Ok((cert_len, sha256::digest(&cert)))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Write;
+    use tempfile::NamedTempFile;
+
+    const EOCD_SIGNATURE: u32 = 0x0605_4b50;
+    const SIG_BLOCK_MAGIC: &[u8] = b"APK Sig Block 42";
+    const SCHEME_V2: u32 = 0x7109_871a;
+    const SCHEME_V3: u32 = 0xf053_68c0;
+    const SCHEME_V3_1: u32 = 0x1b93_ad61;
+
+    /// One APK Signing Block key-value pair: u64 pair-size, u32 id, value.
+    fn signing_pair(id: u32, value: &[u8]) -> Vec<u8> {
+        let mut pair = Vec::new();
+        pair.extend_from_slice(&(u64::try_from(value.len()).unwrap() + 4).to_le_bytes());
+        pair.extend_from_slice(&id.to_le_bytes());
+        pair.extend_from_slice(value);
+        pair
+    }
+
+    /// Minimal v2 pair value holding a single signer/certificate. Only the
+    /// offsets walked by `calc_cert_sha256` are meaningful; the surrounding
+    /// length fields are placeholders that the parser consumes but ignores.
+    fn v2_pair_value(certificate: &[u8], digest_len: u32) -> Vec<u8> {
+        let mut value = Vec::new();
+        value.extend_from_slice(&0u32.to_le_bytes()); // signer-sequence length
+        value.extend_from_slice(&0u32.to_le_bytes()); // first signer length
+        value.extend_from_slice(&0u32.to_le_bytes()); // signed-data length
+        value.extend_from_slice(&digest_len.to_le_bytes()); // digests-sequence length
+        value.extend(std::iter::repeat(0xDBu8).take(digest_len as usize)); // digests
+        value.extend_from_slice(&0u32.to_le_bytes()); // certificates-sequence length
+        value.extend_from_slice(&u32::try_from(certificate.len()).unwrap().to_le_bytes()); // first certificate length
+        value.extend_from_slice(certificate);
+        value
+    }
+
+    /// Assemble `[signing block][empty central directory][EOCD][comment]`.
+    fn build_apk(pairs: &[Vec<u8>], comment: &[u8]) -> Vec<u8> {
+        let pairs_len: usize = pairs.iter().map(Vec::len).sum();
+        // size_of_block excludes the leading size field and covers the
+        // trailing size field (8 bytes) plus the 16-byte magic.
+        let size_of_block = u64::try_from(pairs_len + 8 + 16).unwrap();
+
+        let mut block = Vec::new();
+        block.extend_from_slice(&size_of_block.to_le_bytes());
+        for pair in pairs {
+            block.extend_from_slice(pair);
+        }
+        block.extend_from_slice(&size_of_block.to_le_bytes());
+        block.extend_from_slice(SIG_BLOCK_MAGIC);
+
+        let mut eocd = Vec::new();
+        eocd.extend_from_slice(&EOCD_SIGNATURE.to_le_bytes());
+        eocd.extend_from_slice(&[0u8; 12]); // disk / cd-disk / entry counts / CD size
+        eocd.extend_from_slice(&u32::try_from(block.len()).unwrap().to_le_bytes()); // CD offset
+        eocd.extend_from_slice(&u16::try_from(comment.len()).unwrap().to_le_bytes()); // comment length
+
+        let mut apk = block;
+        apk.extend_from_slice(&eocd);
+        apk.extend_from_slice(comment);
+        apk
+    }
+
+    fn parse(apk: &[u8]) -> Result<(u32, String)> {
+        let mut file = NamedTempFile::new().unwrap();
+        file.write_all(apk).unwrap();
+        get_apk_signature(file.path().to_str().unwrap())
+    }
+
+    #[test]
+    fn extracts_v2_certificate_size_and_sha256() {
+        let certificate: Vec<u8> = (0..32u8).map(|byte| byte ^ 0xC0).collect();
+        let apk = build_apk(
+            &[signing_pair(SCHEME_V2, &v2_pair_value(&certificate, 8))],
+            &[],
+        );
+
+        let (size, hash) = parse(&apk).unwrap();
+        assert_eq!(size, u32::try_from(certificate.len()).unwrap());
+        assert_eq!(hash, sha256::digest(&certificate));
+    }
+
+    #[test]
+    fn locates_eocd_behind_a_zip_comment() {
+        let certificate = vec![0xA5u8; 24];
+        let apk = build_apk(
+            &[signing_pair(SCHEME_V2, &v2_pair_value(&certificate, 4))],
+            b"this is a trailing zip comment",
+        );
+
+        let (size, hash) = parse(&apk).unwrap();
+        assert_eq!(size, u32::try_from(certificate.len()).unwrap());
+        assert_eq!(hash, sha256::digest(&certificate));
+    }
+
+    #[test]
+    fn rejects_v3_signing_block() {
+        let apk = build_apk(&[signing_pair(SCHEME_V3, &[1, 2, 3, 4])], &[]);
+        let error = parse(&apk).unwrap_err().to_string();
+        assert!(error.contains("v3 signature"), "unexpected error: {error}");
+    }
+
+    #[test]
+    fn rejects_v3_1_signing_block() {
+        let apk = build_apk(&[signing_pair(SCHEME_V3_1, &[1, 2, 3, 4])], &[]);
+        let error = parse(&apk).unwrap_err().to_string();
+        assert!(error.contains("v3 signature"), "unexpected error: {error}");
+    }
+
+    #[test]
+    fn rejects_block_without_signature_pair() {
+        let error = parse(&build_apk(&[], &[])).unwrap_err().to_string();
+        assert!(error.contains("No signature"), "unexpected error: {error}");
+    }
+
+    #[test]
+    fn rejects_bad_sig_block_magic() {
+        let certificate = vec![0xA5u8; 16];
+        let mut apk = build_apk(
+            &[signing_pair(SCHEME_V2, &v2_pair_value(&certificate, 0))],
+            &[],
+        );
+        // The 16-byte magic sits directly in front of the 22-byte EOCD.
+        let magic_start = apk.len() - 22 - 16;
+        for byte in &mut apk[magic_start..magic_start + 16] {
+            *byte = 0;
+        }
+        let error = parse(&apk).unwrap_err().to_string();
+        assert!(
+            error.contains("Can not found sig block"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
+    fn rejects_mismatched_block_size() {
+        let certificate = vec![0xA5u8; 16];
+        let mut apk = build_apk(
+            &[signing_pair(SCHEME_V2, &v2_pair_value(&certificate, 0))],
+            &[],
+        );
+        apk[0..8].copy_from_slice(&0xDEAD_BEEFu64.to_le_bytes());
+        let error = parse(&apk).unwrap_err().to_string();
+        assert!(
+            error.contains("not a signed apk"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
+    fn rejects_truncated_non_zip_without_panicking() {
+        assert!(parse(b"not a zip").is_err());
+        assert!(parse(&[]).is_err());
+    }
+}
