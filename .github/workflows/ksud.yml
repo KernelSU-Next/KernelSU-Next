@@ -35,7 +35,7 @@ jobs:
         ndk-version: r29
 
     - name: Download artifacts
-      uses: actions/download-artifact@v7
+      uses: actions/download-artifact@v8
     
     - name: Prepare LKM fies
       if: ${{ inputs.pack_lkm }}
