@@ -37,6 +37,34 @@ struct retired_str {
 };
 
 static LIST_HEAD(retired_strs);
+/* Serialises publication and the retired list: two concurrent supercalls could otherwise
+ * both take the !spoof_active branch and record a FAKE pointer as orig_boot_config, leaving
+ * /proc/bootconfig spoofed after unload. */
+static DEFINE_MUTEX(spoof_lock);
+
+/* Free what nobody can still be reading.  Retiring without ever freeing leaked up to 8 KB
+ * per set() for the module's lifetime, unbounded over repeated supercalls and unreachable
+ * after unload. */
+static void spoof_drain_retired(void)
+{
+	struct retired_str *r, *tmp;
+	LIST_HEAD(doomed);
+
+	mutex_lock(&spoof_lock);
+	list_splice_init(&retired_strs, &doomed);
+	mutex_unlock(&spoof_lock);
+
+	if (list_empty(&doomed))
+		return;
+
+	susfs_wait_for_readers();
+
+	list_for_each_entry_safe(r, tmp, &doomed, list) {
+		list_del(&r->list);
+		kfree(r->s);
+		kfree(r);
+	}
+}
 
 static void spoof_retire(char *s)
 {
@@ -60,6 +88,7 @@ static int spoof_set(const char *fake)
 	if (!dup)
 		return -ENOMEM;
 
+	mutex_lock(&spoof_lock);
 	if (!spoof_active)
 		orig_boot_config = saved_boot_config;
 	else
@@ -68,6 +97,10 @@ static int spoof_set(const char *fake)
 	fake_boot_config = dup;
 	saved_boot_config = dup;
 	spoof_active = true;
+	mutex_unlock(&spoof_lock);
+
+	/* Outside the lock: the wait is unbounded and only the list needs serialising. */
+	spoof_drain_retired();
 	return 0;
 }
 
@@ -90,14 +123,24 @@ int susfs_spoof_cmdline_init(void)
 
 void susfs_spoof_cmdline_exit(void)
 {
-	/* Unpublish - and deliberately free nothing: a reader that already picked up the pointer can still be printing
-	 * it while this runs, and unload is no exception, so a kfree() here only buys a use-after-free. */
+	char *live = NULL;
+
+	mutex_lock(&spoof_lock);
 	if (spoof_active) {
 		saved_boot_config = orig_boot_config;
 		spoof_active = false;
 		orig_boot_config = NULL;
+		live = fake_boot_config;
 	}
 	fake_boot_config = NULL;
+	if (live)
+		spoof_retire(live);
+	mutex_unlock(&spoof_lock);
+
+	/* The pointer is unpublished now, so wait out whoever may still hold it and then free
+	 * everything this feature allocated - the live buffer included, which used to be
+	 * dropped on the floor at unload along with the whole retired list. */
+	spoof_drain_retired();
 }
 
 /* supercall: CMD_SUSFS_SET_CMDLINE_OR_BOOTCONFIG */

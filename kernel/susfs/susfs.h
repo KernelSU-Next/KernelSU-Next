@@ -39,6 +39,11 @@ int susfs_imports_guard(void);
  * pointers); the attribute belongs on the definition, so it is not repeated here. */
 int susfs_imports_crosscheck(void);
 
+/* Wait until no task can still be inside a window it entered before this call - a kprobe
+ * handler, or boot_config_proc_show()'s seq_puts().  synchronize_rcu() is NOT enough for
+ * either (neither runs in an RCU read-side section); see lsm_hook.c.  Sleeps. */
+void susfs_wait_for_readers(void);
+
 /* Add a path to sus_path's hidden set from kernel code (no supercall needed); returns 0 or negative errno. */
 int sus_path_add_hidden(const char *path);
 

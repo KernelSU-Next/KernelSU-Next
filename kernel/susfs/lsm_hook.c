@@ -1280,6 +1280,16 @@ static void ksu_lsm_hook_drain(void)
         msleep(50);
 }
 
+/* The same wait, for the other features that publish a pointer readers reach with no RCU
+ * read-side section of their own: spoof_cmdline's saved_boot_config (read by seq_puts() in
+ * boot_config_proc_show()) and open_redirect's rule slots (read by kprobe handlers).  It
+ * lives here because this file already resolves synchronize_rcu_tasks() and owns the __nocfi
+ * wrapper the indirect call needs.  Sleeps; process context only. */
+void susfs_wait_for_readers(void)
+{
+    ksu_lsm_hook_drain();
+}
+
 int ksu_register_lsm_hook(struct ksu_lsm_hook *hook)
 {
     return ksu_lsm_hook(hook);
