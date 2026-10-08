@@ -124,8 +124,22 @@ static void uname_unregister(void)
     mutex_unlock(&uname_ctl_lock);
 }
 
+/* The insmod/sysfs parameter path does not go through the supercall's strscpy_pad(): the
+ * kernel's own param_set_copystring() strcpy()s into the buffer and leaves the rest of it
+ * alone, so a value that arrived that way needs the same padding before it is handed out. */
+static void uname_pad(char *s, size_t size)
+{
+    size_t n = strnlen(s, size);
+
+    if (n < size)
+        memset(s + n, 0, size - n);
+}
+
 int susfs_uname_init(void)
 {
+    uname_pad(fake_release, sizeof(fake_release));
+    uname_pad(fake_version, sizeof(fake_version));
+
     if (uname_spoof_enabled && fake_release[0] && fake_version[0]) {
         int rc = uname_register();
 
@@ -165,14 +179,17 @@ void susfs_uname_supercall(void __user **arg)
     }
 
     /* "default" copies the device's CURRENT uname at runtime */
+    /* strscpy_pad(), not strscpy(): the kernel's own utsname fields are zero-padded to their
+     * full width, so an unpadded copy hands the caller the tail of whatever longer value was
+     * set before - residue no genuine uname(2) can produce. */
     if (!strcmp(info.release, "default"))
-        strscpy(fake_release, utsname()->release, sizeof(fake_release));
+        strscpy_pad(fake_release, utsname()->release, sizeof(fake_release));
     else
-        strscpy(fake_release, info.release, sizeof(fake_release));
+        strscpy_pad(fake_release, info.release, sizeof(fake_release));
     if (!strcmp(info.version, "default"))
-        strscpy(fake_version, utsname()->version, sizeof(fake_version));
+        strscpy_pad(fake_version, utsname()->version, sizeof(fake_version));
     else
-        strscpy(fake_version, info.version, sizeof(fake_version));
+        strscpy_pad(fake_version, info.version, sizeof(fake_version));
 
     uname_spoof_enabled = true;
     rc = uname_register();
