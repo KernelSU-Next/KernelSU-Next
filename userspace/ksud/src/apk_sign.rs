@@ -34,17 +34,29 @@ pub fn get_apk_signature(apk: &str) -> Result<(u32, String)> {
     }
 
     f.seek(SeekFrom::Current(12))?;
-    // offset
+    // Central-directory offset. The signing block footer (an 8-byte trailing
+    // size followed by the 16-byte magic, 24 bytes in total) ends right before
+    // it, so the footer must start at least 24 bytes before the CD.
     f.read_exact(&mut size4)?;
-    f.seek(SeekFrom::Start(u64::from(u32::from_le_bytes(size4)) - 0x18))?;
+    let cd_offset = u64::from(u32::from_le_bytes(size4));
+    let block_footer = cd_offset
+        .checked_sub(0x18)
+        .ok_or_else(|| anyhow::anyhow!("not a signed apk"))?;
+    f.seek(SeekFrom::Start(block_footer))?;
 
     f.read_exact(&mut size8)?;
     f.read_exact(&mut buffer)?;
 
     ensure!(&buffer == b"APK Sig Block 42", "Can not found sig block");
 
-    let pos = u64::from(u32::from_le_bytes(size4)) - (u64::from_le_bytes(size8) + 0x8);
-    f.seek(SeekFrom::Start(pos))?;
+    // The leading block-size field sits `trailing size + 8` bytes before the
+    // CD. Use checked arithmetic so a malformed (too large / wrapping) size
+    // returns an error instead of underflowing into a bogus seek offset.
+    let block_head = u64::from_le_bytes(size8)
+        .checked_add(0x8)
+        .and_then(|span| cd_offset.checked_sub(span))
+        .ok_or_else(|| anyhow::anyhow!("not a signed apk"))?;
+    f.seek(SeekFrom::Start(block_head))?;
     f.read_exact(&mut size_of_block)?;
 
     ensure!(size_of_block == size8, "not a signed apk");
@@ -144,7 +156,7 @@ mod tests {
         value.extend_from_slice(&0u32.to_le_bytes()); // first signer length
         value.extend_from_slice(&0u32.to_le_bytes()); // signed-data length
         value.extend_from_slice(&digest_len.to_le_bytes()); // digests-sequence length
-        value.extend(std::iter::repeat(0xDBu8).take(digest_len as usize)); // digests
+        value.extend(std::iter::repeat_n(0xDBu8, digest_len as usize)); // digests
         value.extend_from_slice(&0u32.to_le_bytes()); // certificates-sequence length
         value.extend_from_slice(&u32::try_from(certificate.len()).unwrap().to_le_bytes()); // first certificate length
         value.extend_from_slice(certificate);
@@ -268,5 +280,47 @@ mod tests {
     fn rejects_truncated_non_zip_without_panicking() {
         assert!(parse(b"not a zip").is_err());
         assert!(parse(&[]).is_err());
+    }
+
+    #[test]
+    fn rejects_cd_offset_smaller_than_block_footer() {
+        let certificate = vec![0xA5u8; 16];
+        let mut apk = build_apk(
+            &[signing_pair(SCHEME_V2, &v2_pair_value(&certificate, 0))],
+            &[],
+        );
+        // In a comment-less EOCD the central-directory offset (u32) sits six
+        // bytes before EOF (just ahead of the 2-byte comment length).
+        let cd_off_idx = apk.len() - 6;
+        // 10 < 24 (8-byte trailing block size + 16-byte magic): there is no
+        // room for an APK Signing Block footer before the central directory.
+        apk[cd_off_idx..cd_off_idx + 4].copy_from_slice(&10u32.to_le_bytes());
+        let error = parse(&apk).unwrap_err().to_string();
+        assert!(
+            error.contains("not a signed apk"),
+            "unexpected error: {error}"
+        );
+    }
+
+    #[test]
+    fn rejects_block_size_extending_past_cd_offset() {
+        let certificate = vec![0xA5u8; 16];
+        let mut apk = build_apk(
+            &[signing_pair(SCHEME_V2, &v2_pair_value(&certificate, 0))],
+            &[],
+        );
+        let cd_off_idx = apk.len() - 6;
+        let cd_offset = u32::from_le_bytes(apk[cd_off_idx..cd_off_idx + 4].try_into().unwrap());
+        // The trailing block-size (u64) starts 46 bytes before EOF in a
+        // comment-less APK (22-byte EOCD + 16-byte magic + 8-byte size).
+        let tail_idx = apk.len() - 46;
+        // Claim a block that would extend before the central directory offset.
+        let bogus = u64::from(cd_offset).saturating_add(0x100);
+        apk[tail_idx..tail_idx + 8].copy_from_slice(&bogus.to_le_bytes());
+        let error = parse(&apk).unwrap_err().to_string();
+        assert!(
+            error.contains("not a signed apk"),
+            "unexpected error: {error}"
+        );
     }
 }
