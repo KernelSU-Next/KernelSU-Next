@@ -633,7 +633,9 @@ static bool sus_mount_ident_match(struct mount *r)
         const struct sus_mount_ident *e = &mount_ident[i];
         unsigned long e_ino = smp_load_acquire(&e->root_ino);
 
-        if (e_ino && e_ino == ino && e->s_dev == r->mnt.mnt_sb->s_dev)
+        if (!e_ino)
+            continue;	/* free or invalidated slot: neither of its keys is valid */
+        if (e_ino == ino && e->s_dev == r->mnt.mnt_sb->s_dev)
             return true;
         if (e->devname_is_path && devname &&
             (e->devname_truncated
@@ -659,6 +661,11 @@ static void sus_mount_ident_drop_dev(dev_t s_dev)
     spin_lock_irqsave(&ident_lock, flags);
     for (i = 0; i < n_ident; i++) {
         if (smp_load_acquire(&mount_ident[i].root_ino) && mount_ident[i].s_dev == s_dev) {
+            /* The devname arm has to die first: it is tested independently of root_ino, so
+             * clearing only the inode number left the record hiding any mount that reused
+             * the source string - the stale-record bug this whole hook exists to prevent. */
+            mount_ident[i].devname_is_path = false;
+            mount_ident[i].devname[0] = '\0';
             smp_store_release(&mount_ident[i].root_ino, 0);
             atomic_inc(&n_ident_dropped_dev);
         }
