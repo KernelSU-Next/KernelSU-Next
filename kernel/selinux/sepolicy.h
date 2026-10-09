@@ -7,6 +7,8 @@
 
 struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol);
 
+int ksu_policydb_fixup_len(struct policydb *db, const char *tag);
+
 void ksu_destroy_sepolicy(struct selinux_policy *orig);
 
 // Operation on types

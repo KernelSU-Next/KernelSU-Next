@@ -8,4 +8,10 @@
 #define pr_fmt(fmt) "KernelSU: " fmt
 #endif
 
+#ifdef CONFIG_KSU_DEBUG
+#define ksu_dbg(fmt, ...) pr_info(fmt, ##__VA_ARGS__)
+#else
+#define ksu_dbg(fmt, ...) no_printk(KERN_INFO pr_fmt(fmt), ##__VA_ARGS__)
+#endif
+
 #endif
