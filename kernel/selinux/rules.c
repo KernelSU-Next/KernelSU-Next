@@ -276,6 +276,12 @@ do_stop_machine:
 	stop_machine(apply_kernelsu_rules_fn, (void *)db, NULL);
 
 out_flush:
+	// Return value ignored: the policy is published either way. Kept here
+	// rather than inside apply_kernelsu_rules_fn(), because that one runs
+	// as a stop_machine() callback with local IRQs disabled, and the
+	// measurement allocates.
+	ksu_policydb_fixup_len(db, "apply_kernelsu_rules");
+
 	smp_mb();
 	reset_avc_cache();
 #endif
@@ -795,6 +801,12 @@ do_stop_machine:
 	ret = stop_machine(handle_sepolicy_fn, (void *)&ctx, NULL);
 
 out_done:
+	// Return value ignored: the policy is published either way. Outside the
+	// stop_machine() callback for the same reason as in
+	// apply_kernelsu_rules(). get_policydb() is a plain accessor, so call
+	// it here rather than lifting a variable into this branch.
+	ksu_policydb_fixup_len(get_policydb(), "handle_sepolicy");
+
 	if (ret)
 		goto out_free;
 
