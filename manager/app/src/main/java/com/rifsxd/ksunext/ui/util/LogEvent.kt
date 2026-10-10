@@ -121,16 +121,13 @@ fun getBugreportFileUnrooted(context: Context): File {
 
     val processFile = File(bugreportDir, "process.txt")
     val logcatFile = File(bugreportDir, "logcat.txt")
-    val fileSystemsFile = File(bugreportDir, "filesystems.txt")
     val propFile = File(bugreportDir, "props.txt")
-    val driverStatus = File(bugreportDir, "kernel_status.txt")
-    
-    val currentManagerAppId = Natives.getManagerAppid()
+    val mountinfo = File(bugreportDir, "mountinfo.txt")
 
-    nonRootShell("toybox ps -T -A -w -o PID,TID,UID,COMM,CMDLINE,CMD,LABEL,STAT,WCHAN > ${processFile.absolutePath}")
-    nonRootShell("logcat -b all -v uid -d > ${logcatFile.absolutePath}")
-    nonRootShell("cat /proc/filesystems > ${fileSystemsFile.absolutePath}")
-    nonRootShell("getprop > ${propFile.absolutePath}")
+    sh("toybox ps -T -A -w -o PID,TID,UID,COMM,CMDLINE,CMD,LABEL,STAT,WCHAN > ${processFile.absolutePath}")
+    sh("logcat -b all -v uid -d > ${logcatFile.absolutePath}")
+    sh("getprop > ${propFile.absolutePath}")
+    sh("cat /proc/mountinfo > ${mountinfo.absolutePath}")
 
     val buildInfo = File(bugreportDir, "basic.txt")
     PrintWriter(FileWriter(buildInfo)).use { pw ->
@@ -152,36 +149,21 @@ fun getBugreportFileUnrooted(context: Context): File {
         pw.println("Machine: ${uname.machine}")
         pw.println("Nodename: ${uname.nodename}")
         pw.println("Sysname: ${uname.sysname}")
-
-        val ksuKernel = Natives.version
-        pw.println("KernelSU: $ksuKernel")
-        val safeMode = Natives.isSafeMode
-        pw.println("SafeMode: $safeMode")
-        val lkmMode = Natives.isLkmMode
-        pw.println("LKM: $lkmMode")
     }
-
-    val hasMagisk = nonRootShell("which magisk")
-    if (hasMagisk) File(bugreportDir, "hasMagisk").createNewFile()
-
-    driverStatus.writeText(buildString {
-        appendLine("no_driver: kernel has no KernelSU-Next hook")
-        appendLine("manager_appid: $currentManagerAppId")
-    })
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH_mm")
     val current = LocalDateTime.now().format(formatter)
 
     val targetFile = File(context.cacheDir, "KernelSU_Next_bugreport_${current}.tar.gz")
 
-    nonRootShell("tar czf ${targetFile.absolutePath} -C ${bugreportDir.absolutePath} .")
-    nonRootShell("rm -rf ${bugreportDir.absolutePath}")
-    nonRootShell("chmod 0644 ${targetFile.absolutePath}")
+    sh("tar czf ${targetFile.absolutePath} -C ${bugreportDir.absolutePath} .")
+    sh("rm -rf ${bugreportDir.absolutePath}")
+    sh("chmod 0644 ${targetFile.absolutePath}")
 
     return targetFile
 }
 
-fun nonRootShell(command: String): Boolean {
+fun sh(command: String): Boolean {
     val process = ProcessBuilder("sh", "-c", command)
         .redirectErrorStream(true)
         .start()
