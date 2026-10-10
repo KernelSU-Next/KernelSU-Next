@@ -1,5 +1,6 @@
 package com.rifsxd.ksunext.ui.webui
 
+import com.rifsxd.ksunext.R
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager

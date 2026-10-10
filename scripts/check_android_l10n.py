@@ -94,6 +94,22 @@ try:
     check(not (references - set(en)),
           f"Missing default string resources: {sorted(references-set(en))}")
 
+    # Kotlin sources in nested packages must import the generated app R class.
+    missing_r_import = []
+    for kotlin_file in SRC.rglob("*.kt"):
+        source_text = kotlin_file.read_text(encoding="utf-8")
+        has_app_resource = re.search(
+            r"(?<![\w.])R\.(?:string|array)\.", source_text
+        )
+        in_root_package = re.search(
+            r"^package com\.rifsxd\.ksunext\s*$", source_text, re.M
+        )
+        if (has_app_resource and not in_root_package
+                and "import com.rifsxd.ksunext.R" not in source_text
+                and "import com.rifsxd.ksunext.*" not in source_text):
+            missing_r_import.append(str(kotlin_file.relative_to(ROOT)))
+    check(not missing_r_import, f"Missing app R imports: {missing_r_import}")
+
     for array_name, enum_name in (
         ("group_descriptions", "Groups"),
         ("capability_descriptions", "Capabilities"),
