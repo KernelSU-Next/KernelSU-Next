@@ -323,9 +323,13 @@
     <string name="biometric_prompt_subtitle">Unlock Manager</string>
     <string name="biometric_prompt_subtitle_module">Unlock %1$s</string>
     <string name="unrooted_additional_bugreport_title">Additional Bugreport context</string>
-    <string name="unrooted_additional_bugreport_body">"if you have Shizuka you can try running the following:
-1. `ps -A -Z` and paste the output in a new file (process.txt)
-2.`logcat -b all >> logcat.txt` and paste the full file"</string>
+    <string name="unrooted_additional_bugreport_body">"if you have Shizuka you can try running the following
+from any shizuku-enabled terminal:
+1.`ps -A -Z` and paste the output in a new file (process.txt)
+2.`logcat -b all >> logcat.txt` (do not overwrite the current logcat)
+3.`pm list packages | grep -i -E 'magisk|ksu|kernelsu'`
+4.`cat /proc/modules`
+5.embed them in the bug report or send them along with the actual bugreport"</string>
     <string name="unrooted_additional_bugreport_got_it">Got it</string>
     <string name="enable_risk">Enable risk detection</string>
     <string name="enable_risk_summary">Enable install-time risk detection for modules.</string>
