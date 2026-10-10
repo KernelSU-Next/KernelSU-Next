@@ -851,7 +851,7 @@ private fun BottomBar(
                                     .fillMaxHeight()
                                     .padding(vertical = 8.dp)
                                     .offset {
-                                        IntOffset(x = indicatorOffset.toInt(), y = 0)
+                                        IntOffset(x = if (isRtl) -indicatorOffset.toInt() else indicatorOffset.toInt(), y = 0)
                                     }
                                     .width(itemSize)
                                     // Subtle scale-up when dragging, like iOS
