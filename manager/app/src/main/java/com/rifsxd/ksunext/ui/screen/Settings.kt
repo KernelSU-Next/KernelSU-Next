@@ -815,7 +815,7 @@ fun UninstallItem(
     val scope = rememberCoroutineScope()
     val uninstallConfirmDialog = rememberConfirmDialog()
     val showTodo = {
-        Toast.makeText(context, "TODO", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.getString(R.string.feature_not_implemented), Toast.LENGTH_SHORT).show()
     }
     val uninstallDialog = rememberUninstallDialog { uninstallType ->
         scope.launch {

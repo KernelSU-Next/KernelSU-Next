@@ -405,7 +405,7 @@ class WebUIActivity : FragmentActivity() {
         mimeTypeFromListener: String
     ) {
         val extracted = extractMimeTypeAndBase64Data(dataUrl) ?: run {
-            Toast.makeText(this, "Invalid data URL", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.webui_invalid_data_url), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -495,7 +495,7 @@ class WebUIActivity : FragmentActivity() {
                         },
                         onError = {
                             isPromptShowing = false
-                            Toast.makeText(this, "Auth failed: $it", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, getString(R.string.auth_failed, it), Toast.LENGTH_SHORT).show()
                             finish()
                         }
                     )

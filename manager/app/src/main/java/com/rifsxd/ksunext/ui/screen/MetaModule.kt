@@ -310,10 +310,10 @@ fun MetaModuleScreen(navigator: DestinationsNavigator) {
                                                 context,
                                                 selectedModule.downloadUrl,
                                                 fileName,
-                                                "Downloading ${selectedModule.name}"
+                                                context.getString(R.string.repo_download_progress, selectedModule.name)
                                             )
                                         } catch (e: Exception) {
-                                            snackBarHost.showSnackbar("Error downloading module: ${e.message}")
+                                            snackBarHost.showSnackbar(context.getString(R.string.repo_download_error, e.message.orEmpty()))
                                             downloadingModuleId = null
                                         }
                                     }
@@ -572,7 +572,7 @@ private fun MetaModuleCard(
                         } else {
                             Icon(
                                 imageVector = Icons.Default.CloudDownload,
-                                contentDescription = "Download",
+                                contentDescription = stringResource(R.string.repo_download),
                                 modifier = Modifier.size(20.dp)
                             )
                         }

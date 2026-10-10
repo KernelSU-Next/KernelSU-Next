@@ -325,4 +325,19 @@
     <string name="biometric_prompt_subtitle_module">Unlock %1$s</string>
     <string name="enable_risk">Enable risk detection</string>
     <string name="enable_risk_summary">Enable install-time risk detection for modules.</string>
+    <string name="repo_edit">Edit</string>
+    <string name="repo_remove">Remove</string>
+    <string name="repo_edit_title">Edit Repository</string>
+    <string name="repo_enter_json_url">Enter the module repository JSON URL:</string>
+    <string name="repo_apply">Apply</string>
+    <string name="repo_download">Download</string>
+    <string name="repo_download_error">Error downloading module: %1$s</string>
+    <string name="repo_download_progress">Downloading %1$s</string>
+    <string name="webui_invalid_data_url">Invalid data URL</string>
+    <string name="auth_failed">Authentication failed: %1$s</string>
+    <string name="module_invalid_donate_url">Invalid donation URL</string>
+    <string name="log_saved_to">Log saved to %1$s</string>
+    <string name="shortcut_icon_description">Shortcut icon</string>
+    <string name="feature_not_implemented">Not implemented yet</string>
+    <string name="flash_error_output">Error code: %1$d.\n %2$s Please save and check the log.\n</string>
 </resources>

@@ -124,8 +124,9 @@ fun rememberScrollConnection(
 fun Modifier.horizontalSwipeNavigator(
     currentRoute: String?,
     destinations: List<BottomBarDestination>,
+    isRtl: Boolean,
     onNavigate: (Int) -> Unit
-): Modifier = pointerInput(currentRoute) {
+): Modifier = pointerInput(currentRoute, isRtl) {
 
     var totalDrag = 0f
 
@@ -145,7 +146,7 @@ fun Modifier.horizontalSwipeNavigator(
 
                 if (currentIndex == -1) return@detectHorizontalDragGestures
 
-                if (totalDrag < 0) {
+                if (if (isRtl) totalDrag > 0 else totalDrag < 0) {
                     val next = (currentIndex + 1)
                         .coerceAtMost(destinations.lastIndex)
                     if (next != currentIndex) onNavigate(next)
@@ -446,6 +447,7 @@ class MainActivity : FragmentActivity() {
                                         .horizontalSwipeNavigator(
                                             currentRoute = currentRoute,
                                             destinations = visibleDestinations,
+                                            isRtl = androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl,
                                             onNavigate = {
                                                 haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.GestureEnd)
                                                 navigateToIndex(it)
@@ -604,7 +606,7 @@ class MainActivity : FragmentActivity() {
                                             },
                                             onError = {
                                                 isPromptShowing = false
-                                                Toast.makeText(this@MainActivity, "Auth failed: $it", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(this@MainActivity, getString(R.string.auth_failed, it), Toast.LENGTH_SHORT).show()
                                                 finish()
                                             }
                                         )
@@ -784,6 +786,7 @@ private fun BottomBar(
                         (containerPadding * 2)
 
                 val density = LocalDensity.current
+                val isRtl = androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl
                 val itemSizePx = with(density) { itemSize.toPx() }
                 val itemSpacingPx = with(density) { itemSpacing.toPx() }
                 val containerPaddingPx = with(density) { containerPadding.toPx() }
@@ -792,13 +795,14 @@ private fun BottomBar(
                     modifier = Modifier
                         .width(navBarWidth)
                         .height(72.dp)
-                        .pointerInput(visibleDestinations, effectiveSelectedIndex) {
+                        .pointerInput(visibleDestinations, effectiveSelectedIndex, isRtl) {
                             detectDragGestures(
                                 onDragStart = { offset ->
                                     val extraTouchArea = with(density) { 20.dp.toPx() }
 
+                                    val visualIndex = if (isRtl) visibleDestinations.lastIndex - effectiveSelectedIndex else effectiveSelectedIndex
                                     val pillLeft = containerPaddingPx +
-                                            effectiveSelectedIndex * (itemSizePx + itemSpacingPx) - extraTouchArea
+                                            visualIndex * (itemSizePx + itemSpacingPx) - extraTouchArea
 
                                     val pillRight = pillLeft + itemSizePx + (extraTouchArea * 2)
 
@@ -820,11 +824,11 @@ private fun BottomBar(
                                     if (isDraggingPill) {
                                         change.consume()
                                         // Map finger X to nearest icon index
-                                        val index = ((change.position.x - containerPaddingPx) /
+                                        val visualIndex = ((change.position.x - containerPaddingPx) /
                                                 (itemSizePx + itemSpacingPx))
                                             .toInt()
                                             .coerceIn(0, visibleDestinations.lastIndex)
-                                        dragTargetIndex = index
+                                        dragTargetIndex = if (isRtl) visibleDestinations.lastIndex - visualIndex else visualIndex
                                     }
                                 }
                             )

@@ -204,7 +204,7 @@ fun FlashScreen(
                 logContent.append(it).append("\n")
             }).apply {
                 if (code != 0) {
-                    text += "Error code: $code.\n $err Please save and check the log.\n"
+                    text += context.getString(R.string.flash_error_output, code, err)
                 }
                 if (showReboot) {
                     text += "\n\n\n"
@@ -231,7 +231,7 @@ fun FlashScreen(
                             "KernelSU_Next_install_log_${date}.log"
                         )
                         file.writeText(logContent.toString())
-                        snackBarHost.showSnackbar("Log saved to ${file.absolutePath}")
+                        snackBarHost.showSnackbar(context.getString(R.string.log_saved_to, androidx.core.text.BidiFormatter.getInstance().unicodeWrap(file.absolutePath)))
                     }
                 },
                 scrollBehavior = scrollBehavior
