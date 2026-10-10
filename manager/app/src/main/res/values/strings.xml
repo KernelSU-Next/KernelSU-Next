@@ -327,4 +327,6 @@
 1. `ps -A -Z` and paste the output in a new file (process.txt)
 2.`logcat -b all >> logcat.txt` and paste the full file"</string>
     <string name="unrooted_additional_bugreport_got_it">Got it</string>
+    <string name="enable_risk">Enable risk detection</string>
+    <string name="enable_risk_summary">Enable install-time risk detection for modules.</string>
 </resources>

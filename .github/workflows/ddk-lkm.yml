@@ -12,6 +12,21 @@ on:
         required: false
         default: '20260828'
         type: string
+      manager_package:
+        description: 'manager package name'
+        required: false
+        default: ''
+        type: string
+      expected_manager_size:
+        description: 'expected signature size'
+        required: false
+        default: ''
+        type: string
+      expected_manager_hash:
+        description: 'expected signature hash'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   build-kernelsu-ko:
@@ -26,6 +41,10 @@ jobs:
       uses: actions/checkout@v7
 
     - name: Build kernelsu.ko
+      env:
+        MANAGER_PACKAGE: ${{ inputs.manager_package }}
+        EXPECTED_MANAGER_SIZE: ${{ inputs.expected_manager_size }}
+        EXPECTED_MANAGER_HASH: ${{ inputs.expected_manager_hash }}
       run: |
         git config --global --add safe.directory /__w/KernelSU-Next/KernelSU-Next
 
@@ -33,7 +52,18 @@ jobs:
 
         echo "=== Building kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
 
-        CONFIG_KSU=m CC=clang make
+        EXTRA_ARGS=""
+        if [ -n "$MANAGER_PACKAGE" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS KSU_MANAGER_PACKAGE=$MANAGER_PACKAGE"
+        fi
+        if [ -n "$EXPECTED_MANAGER_SIZE" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS KSU_NEXT_MANAGER_SIZE=$EXPECTED_MANAGER_SIZE"
+        fi
+        if [ -n "$EXPECTED_MANAGER_HASH" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS KSU_NEXT_MANAGER_HASH=$EXPECTED_MANAGER_HASH"
+        fi
+
+        CONFIG_KSU=m CC=clang make $EXTRA_ARGS
         
         echo "=== Build completed ==="
 
@@ -59,8 +89,9 @@ jobs:
 
     - name: Build kernelsu.ko for x64
       env:
-        EXPECTED_SIZE2: ${{ inputs.expected_size2 }}
-        EXPECTED_HASH2: ${{ inputs.expected_hash2 }}
+        MANAGER_PACKAGE: ${{ inputs.manager_package }}
+        EXPECTED_MANAGER_SIZE: ${{ inputs.expected_manager_size }}
+        EXPECTED_MANAGER_HASH: ${{ inputs.expected_manager_hash }}
       run: |
         cd kernel
         make clean
@@ -97,16 +128,14 @@ jobs:
         echo "=== Building x64 kernelsu.ko for KMI: ${{ inputs.kmi }} ==="
 
         EXTRA_ARGS=""
-        if [ -n "$EXPECTED_SIZE2" ] && [ -z "$EXPECTED_HASH2" ]; then
-          echo "ERROR: expected_hash2 must be provided when expected_size2 is set."
-          exit 1
+        if [ -n "$MANAGER_PACKAGE" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS KSU_MANAGER_PACKAGE=$MANAGER_PACKAGE"
         fi
-        if [ -z "$EXPECTED_SIZE2" ] && [ -n "$EXPECTED_HASH2" ]; then
-          echo "ERROR: expected_size2 must be provided when expected_hash2 is set."
-          exit 1
+        if [ -n "$EXPECTED_MANAGER_SIZE" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS KSU_NEXT_MANAGER_SIZE=$EXPECTED_MANAGER_SIZE"
         fi
-        if [ -n "$EXPECTED_SIZE2" ]; then
-          EXTRA_ARGS="KSU_EXPECTED_SIZE2=$EXPECTED_SIZE2 KSU_EXPECTED_HASH2=$EXPECTED_HASH2"
+        if [ -n "$EXPECTED_MANAGER_HASH" ]; then
+          EXTRA_ARGS="$EXTRA_ARGS KSU_NEXT_MANAGER_HASH=$EXPECTED_MANAGER_HASH"
         fi
         
         MDIR=$(realpath .)

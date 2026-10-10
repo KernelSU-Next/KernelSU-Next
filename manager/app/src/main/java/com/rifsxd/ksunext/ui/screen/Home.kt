@@ -228,14 +228,17 @@ fun HomeScreen(navigator: DestinationsNavigator) {
             val requiresNewKernel = isManager && kernelUAPIVersion != null && managerUAPIVersion > kernelUAPIVersion
             val requiresNewManager = isManager && kernelUAPIVersion != null && managerUAPIVersion < kernelUAPIVersion
 
+            // Jailbreak mode runs on locked bootloaders, so flashing a boot image would brick the device.
+            val canInstallKernelUpdate = lkmMode == true && !Natives.isLateLoadMode
+
             if (requiresNewKernel) {
                 WarningCard(
                     stringResource(
-                        id = if (lkmMode == true) R.string.require_kernel_version else R.string.require_kernel_version_gki,
+                        id = if (canInstallKernelUpdate) R.string.require_kernel_version else R.string.require_kernel_version_gki,
                         kernelUAPIVersion!!,
                         managerUAPIVersion
                     ),
-                    onClick = if (lkmMode == true) {
+                    onClick = if (canInstallKernelUpdate) {
                         { navigator.navigate(InstallScreenDestination) }
                     } else null
                 )

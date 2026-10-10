@@ -16,7 +16,6 @@ use std::{
 use crate::{assets, boot_patch, defs, ksucalls, module, restorecon};
 #[allow(unused_imports)]
 use std::fs::{Permissions, set_permissions};
-#[cfg(unix)]
 use std::os::unix::prelude::PermissionsExt;
 
 use std::path::PathBuf;
@@ -110,7 +109,6 @@ pub fn ensure_binary<T: AsRef<Path>>(
     }
 
     write(&path, contents)?;
-    #[cfg(unix)]
     set_permissions(&path, Permissions::from_mode(0o755))?;
     Ok(())
 }

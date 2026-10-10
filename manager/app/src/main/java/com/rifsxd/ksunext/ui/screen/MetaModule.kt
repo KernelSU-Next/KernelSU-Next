@@ -58,6 +58,9 @@ import java.io.InputStreamReader
 import java.net.URL
 import android.content.Intent
 
+private const val NET_CONNECT_TIMEOUT_MS = 15_000
+private const val NET_READ_TIMEOUT_MS = 15_000
+
 data class MetaModule(
     val id: String,
     val name: String,
@@ -130,6 +133,8 @@ fun MetaModuleScreen(navigator: DestinationsNavigator) {
         return withContext(Dispatchers.IO) {
             try {
                 val conn = URL(jsonUrl).openConnection() as java.net.HttpURLConnection
+                conn.connectTimeout = NET_CONNECT_TIMEOUT_MS
+                conn.readTimeout = NET_READ_TIMEOUT_MS
                 conn.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
                 val text = BufferedReader(InputStreamReader(conn.inputStream)).use { it.readText() }
                 conn.disconnect()
@@ -614,6 +619,8 @@ private suspend fun fetchLatestReleaseInfo(repoUrl: String): ReleaseInfo? {
         try {
             val stars = try {
                 val htmlConn = URL(repoUrl).openConnection() as java.net.HttpURLConnection
+                htmlConn.connectTimeout = NET_CONNECT_TIMEOUT_MS
+                htmlConn.readTimeout = NET_READ_TIMEOUT_MS
                 htmlConn.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
                 htmlConn.setRequestProperty("Accept", "text/html")
                 val html = BufferedReader(InputStreamReader(htmlConn.inputStream)).use { it.readText() }
@@ -629,6 +636,8 @@ private suspend fun fetchLatestReleaseInfo(repoUrl: String): ReleaseInfo? {
             // ── Latest release ZIP ───────────────────────────────────────────
             val latestUrl = "$repoUrl/releases/latest"
             val connection = URL(latestUrl).openConnection() as java.net.HttpURLConnection
+            connection.connectTimeout = NET_CONNECT_TIMEOUT_MS
+            connection.readTimeout = NET_READ_TIMEOUT_MS
             connection.instanceFollowRedirects = false
             connection.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
 
@@ -647,6 +656,8 @@ private suspend fun fetchLatestReleaseInfo(repoUrl: String): ReleaseInfo? {
 
             val releasePageUrl = "$repoUrl/releases/expanded_assets/$tagMatch"
             val pageConnection = URL(releasePageUrl).openConnection()
+            pageConnection.connectTimeout = NET_CONNECT_TIMEOUT_MS
+            pageConnection.readTimeout = NET_READ_TIMEOUT_MS
             pageConnection.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
 
             val pageHtml = BufferedReader(InputStreamReader(pageConnection.getInputStream())).use {

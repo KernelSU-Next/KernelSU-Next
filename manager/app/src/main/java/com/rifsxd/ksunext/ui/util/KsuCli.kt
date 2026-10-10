@@ -667,3 +667,27 @@ fun restartApp(packageName: String) {
     forceStopApp(packageName)
     launchApp(packageName)
 }
+
+fun getRiskStatus(): Boolean? {
+    return runCatching {
+        val out = ShellUtils
+            .fastCmd("${getKsuDaemonPath()} module risk status")
+            .trim()
+
+        when {
+            out.equals("Enabled", ignoreCase = true) -> true
+            out.equals("Disabled", ignoreCase = true) -> false
+            else -> null
+        }
+    }.getOrNull()
+}
+
+fun setRisk(enabled: Boolean): Boolean {
+    return runCatching {
+        val command = if (enabled) "enable" else "disable"
+
+        ShellUtils.fastCmdResult(
+            "${getKsuDaemonPath()} module risk $command"
+        )
+    }.getOrDefault(false)
+}
