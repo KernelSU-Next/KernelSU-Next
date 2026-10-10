@@ -321,7 +321,7 @@
   <string name="settings_app_lock_timeout_5m">5 minut</string>
   <string name="biometric_prompt_subtitle">Odblokuj Manager</string>
   <string name="biometric_prompt_subtitle_module">Odblokuj %1$s</string>
-  <string name="settings_app_lock_no_credential">Secure screen lock required.</string>
-  <string name="enable_risk">Enable risk detection</string>
-  <string name="enable_risk_summary">Enable install-time risk detection for modules.</string>
+  <string name="settings_app_lock_no_credential">Wymagana bezpieczna metoda blokady.</string>
+  <string name="enable_risk">Włącz wykrywanie ryzyka</string>
+  <string name="enable_risk_summary">Włącz wykrywanie ryzyka dla modułów w trakcie ich instalacji.</string>
 </resources>
