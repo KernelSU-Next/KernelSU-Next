@@ -199,9 +199,9 @@
     <string name="settings_uninstall_temporary_message">Temporarily uninstall KernelSU-Next, restore to original state after next reboot.</string>
     <string name="settings_uninstall_permanent_message">Uninstalling KernelSU-Next (root and all modules) completely and permanently.</string>
     <string name="settings_restore_stock_image_message">Restore the stock factory image (if a backup exists), usually used before OTA; if you need to uninstall KernelSU-Next, please use \"Uninstall permanently\".</string>
-    <string name="flashing">Flashing</string>
-    <string name="flash_success">Flash success</string>
-    <string name="flash_failed">Flash failed</string>
+    <string name="flashing">Performing Task</string>
+    <string name="flash_success">Task Completed</string>
+    <string name="flash_failed">Task Failed</string>
     <string name="selected_lkm">Selected LKM: %s</string>
     <string name="save_log">Save logs</string>
     <string name="log_saved">Logs saved</string>
