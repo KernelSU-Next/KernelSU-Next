@@ -142,7 +142,11 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         suCompatStatus = getFeatureStatus("su_compat")
         kernelUmountStatus = getFeatureStatus("kernel_umount")
         sulogStatus = getFeatureStatus("sulog")
-        isSulogEnabled = getFeaturePersistValue("sulog") == 1L
+        isSulogEnabled = if (sulogStatus == "forced") {
+            getFeatureValue("sulog") == 1L
+        } else {
+            getFeaturePersistValue("sulog") == 1L
+        }
         adbRootStatus = getFeatureStatus("adb_root")
 
         selinuxHideStatus = getFeatureStatus("selinux_hide")
@@ -253,14 +257,16 @@ private fun KernelFeaturesCard(
             var isSuEnabled by rememberSaveable {
                 mutableStateOf(Natives.isSuEnabled())
             }
+            val suCompatSummary = when (suCompatStatus) {
+                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                "forced" -> stringResource(id = R.string.feature_status_forced_summary)
+                else -> stringResource(R.string.settings_enable_su_summary)
+            }
             SwitchItem(
                 icon = Icons.Filled.RemoveModerator,
                 title = stringResource(R.string.settings_enable_su),
-                summary = if (suCompatSupported) {
-                    stringResource(R.string.settings_enable_su_summary)
-                } else {
-                    stringResource(id = R.string.feature_status_unsupported_summary)
-                },
+                summary = suCompatSummary,
                 checked = isSuEnabled,
                 enabled = suCompatSupported,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
@@ -277,14 +283,16 @@ private fun KernelFeaturesCard(
             var isKernelUmountEnabled by rememberSaveable {
                 mutableStateOf(Natives.isKernelUmountEnabled())
             }
+            val kernelUmountSummary = when (kernelUmountStatus) {
+                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                "forced" -> stringResource(id = R.string.feature_status_forced_summary)
+                else -> stringResource(id = R.string.settings_enable_kernel_umount_summary)
+            }
             SwitchItem(
                 icon = Icons.Filled.RemoveCircle,
                 title = stringResource(id = R.string.settings_enable_kernel_umount),
-                summary = if (kernelUmountSupported) {
-                    stringResource(id = R.string.settings_enable_kernel_umount_summary)
-                } else {
-                    stringResource(id = R.string.feature_status_unsupported_summary)
-                },
+                summary = kernelUmountSummary,
                 checked = isKernelUmountEnabled,
                 enabled = kernelUmountSupported,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
@@ -301,6 +309,7 @@ private fun KernelFeaturesCard(
             val sulogSummary = when (sulogStatusParam) {
                 "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
                 "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                "forced" -> stringResource(id = R.string.feature_status_forced_summary)
                 else -> stringResource(id = R.string.settings_sulog_summary)
             }
             SwitchItem(
@@ -321,14 +330,16 @@ private fun KernelFeaturesCard(
             var isAdbRootEnabled by rememberSaveable {
                 mutableStateOf(Natives.isAdbRootEnabled())
             }
+            val adbRootSummary = when (adbRootStatus) {
+                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                "forced" -> stringResource(id = R.string.feature_status_forced_summary)
+                else -> stringResource(id = R.string.settings_adb_root_summary)
+            }
             SwitchItem(
                 icon = Icons.Filled.Usb,
                 title = stringResource(id = R.string.settings_adb_root),
-                summary = if (adbRootSupported) {
-                    stringResource(id = R.string.settings_adb_root_summary)
-                } else {
-                    stringResource(id = R.string.feature_status_unsupported_summary)
-                },
+                summary = adbRootSummary,
                 checked = isAdbRootEnabled,
                 enabled = adbRootSupported,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
@@ -346,14 +357,16 @@ private fun KernelFeaturesCard(
             var isSelinuxHideEnabled by rememberSaveable {
                 mutableStateOf(Natives.isSelinuxHideEnabled())
             }
+            val selinuxHideSummary = when (selinuxHideStatus) {
+                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                "forced" -> stringResource(id = R.string.feature_status_forced_summary)
+                else -> stringResource(id = R.string.settings_selinux_hide_summary)
+            }
             SwitchItem(
                 icon = Icons.Filled.Policy,
                 title = stringResource(id = R.string.settings_selinux_hide),
-                summary = if (selinuxHideSupported) {
-                    stringResource(id = R.string.settings_selinux_hide_summary)
-                } else {
-                    stringResource(id = R.string.feature_status_unsupported_summary)
-                },
+                summary = selinuxHideSummary,
                 checked = isSelinuxHideEnabled,
                 enabled = selinuxHideSupported,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
@@ -391,14 +404,16 @@ private fun KernelFeaturesCard(
             var isAvcSpoofEnabled by rememberSaveable {
                 mutableStateOf(Natives.isAvcSpoofEnabled())
             }
+            val avcSpoofSummary = when (avcSpoofStatus) {
+                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                "forced" -> stringResource(id = R.string.feature_status_forced_summary)
+                else -> stringResource(id = R.string.settings_enable_avc_spoof_summary)
+            }
             SwitchItem(
                 icon = Icons.Filled.Shield,
                 title = stringResource(id = R.string.settings_enable_avc_spoof),
-                summary = if (avcSpoofSupported) {
-                    stringResource(id = R.string.settings_enable_avc_spoof_summary)
-                } else {
-                    stringResource(id = R.string.feature_status_unsupported_summary)
-                },
+                summary = avcSpoofSummary,
                 checked = isAvcSpoofEnabled,
                 enabled = avcSpoofSupported,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),

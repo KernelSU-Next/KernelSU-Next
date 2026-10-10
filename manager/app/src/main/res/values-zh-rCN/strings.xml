@@ -271,6 +271,7 @@
   <string name="expand">展开</string>
   <string name="feature_status_unsupported_summary">内核不支持此特性</string>
   <string name="feature_status_managed_summary">此功能由模块管理</string>
+  <string name="feature_status_forced_summary">此功能已被启动配置强制指定</string>
   <string name="sulog_log_files">日志文件</string>
   <string name="sulog_failed_to_load">加载 sulog 失败</string>
   <string name="sulog_disabled_title">未启用 SU 日志</string>
