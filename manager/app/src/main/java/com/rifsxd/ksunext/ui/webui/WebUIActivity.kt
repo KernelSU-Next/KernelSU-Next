@@ -1,5 +1,6 @@
 package com.rifsxd.ksunext.ui.webui
 
+import com.rifsxd.ksunext.R
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
@@ -405,7 +406,7 @@ class WebUIActivity : FragmentActivity() {
         mimeTypeFromListener: String
     ) {
         val extracted = extractMimeTypeAndBase64Data(dataUrl) ?: run {
-            Toast.makeText(this, "Invalid data URL", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.webui_invalid_data_url), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -442,7 +443,7 @@ class WebUIActivity : FragmentActivity() {
         } catch (e: Exception) {
             Toast.makeText(
                 this,
-                "Error preparing file: ${e.message}",
+                getString(R.string.webui_file_prepare_failed, e.message.orEmpty()),
                 Toast.LENGTH_LONG
             ).show()
             pendingDownloadData = null
@@ -495,7 +496,7 @@ class WebUIActivity : FragmentActivity() {
                         },
                         onError = {
                             isPromptShowing = false
-                            Toast.makeText(this, "Auth failed: $it", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, getString(R.string.auth_failed, it), Toast.LENGTH_SHORT).show()
                             finish()
                         }
                     )

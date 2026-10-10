@@ -177,6 +177,7 @@ fun RootProfileConfig(
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>) -> Unit) {
+    val groupDescriptions = androidx.compose.ui.res.stringArrayResource(R.array.group_descriptions)
     val selectGroupsDialog = rememberCustomDialog { dismiss: () -> Unit ->
         val groups = Groups.entries.toTypedArray().sortedWith(
             compareBy<Groups> { if (selected.contains(it)) 0 else 1 }
@@ -194,7 +195,7 @@ fun GroupsPanel(selected: List<Groups>, closeSelection: (selection: Set<Groups>)
         val options = groups.map { value ->
             ListOption(
                 titleText = value.display,
-                subtitleText = value.desc,
+                subtitleText = groupDescriptions.getOrElse(value.ordinal) { value.desc },
                 selected = selected.contains(value),
             )
         }
@@ -258,6 +259,7 @@ fun CapsPanel(
     selected: Collection<Capabilities>,
     closeSelection: (selection: Set<Capabilities>) -> Unit
 ) {
+    val capabilityDescriptions = androidx.compose.ui.res.stringArrayResource(R.array.capability_descriptions)
     val selectCapabilitiesDialog = rememberCustomDialog { dismiss ->
         val caps = Capabilities.entries.toTypedArray().sortedWith(
             compareBy<Capabilities> { if (selected.contains(it)) 0 else 1 }
@@ -266,7 +268,7 @@ fun CapsPanel(
         val options = caps.map { value ->
             ListOption(
                 titleText = value.display,
-                subtitleText = value.desc,
+                subtitleText = capabilityDescriptions.getOrElse(value.ordinal) { value.desc },
                 selected = selected.contains(value),
             )
         }
@@ -442,6 +444,7 @@ private fun SELinuxPanel(
     profile: Natives.Profile,
     onSELinuxChange: (domain: String, rules: String) -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val editSELinuxDialog = rememberCustomDialog { dismiss ->
         var domain by remember { mutableStateOf(profile.context) }
         var rules by remember { mutableStateOf(profile.rules) }
@@ -465,7 +468,7 @@ private fun SELinuxPanel(
                     // value can be a-zA-Z0-9_
                     val regex = Regex("^[a-z_]+:[a-z0-9_]+:[a-z0-9_]+(:[a-z0-9_]+)?$")
                     if (value?.matches(regex) == true) ValidationResult.Valid
-                    else ValidationResult.Invalid("Domain must be in the format of \"user:role:type:level\"")
+                    else ValidationResult.Invalid(context.getString(R.string.profile_selinux_domain_invalid))
                 }
             ),
             InputTextField(
@@ -483,7 +486,7 @@ private fun SELinuxPanel(
                 },
                 validationListener = { value ->
                     if (isSepolicyValid(value)) ValidationResult.Valid
-                    else ValidationResult.Invalid("SELinux rules is invalid!")
+                    else ValidationResult.Invalid(context.getString(R.string.profile_selinux_rules_invalid))
                 }
             )
         )

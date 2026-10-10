@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="group_descriptions">
+        <item>traditional unix root user</item>
+        <item>Traditional unix daemon owner.</item>
+        <item>Traditional unix binaries owner.</item>
+        <item>A group with the same gid on Linux/macOS/Android.</item>
+        <item>system server</item>
+        <item>telephony subsystem, RIL</item>
+        <item>bluetooth subsystem</item>
+        <item>graphics devices</item>
+        <item>input devices</item>
+        <item>audio devices</item>
+        <item>camera devices</item>
+        <item>log devices</item>
+        <item>compass device</item>
+        <item>mountd socket</item>
+        <item>wifi subsystem</item>
+        <item>android debug bridge (adbd)</item>
+        <item>group for installing packages</item>
+        <item>mediaserver process</item>
+        <item>dhcp client</item>
+        <item>external storage write access</item>
+        <item>vpn system</item>
+        <item>keystore subsystem</item>
+        <item>USB devices</item>
+        <item>DRM server</item>
+        <item>MulticastDNSResponder (service discovery)</item>
+        <item>GPS daemon</item>
+        <item>deprecated, DO NOT USE</item>
+        <item>internal media storage write access</item>
+        <item>MTP USB driver access</item>
+        <item>deprecated, DO NOT USE</item>
+        <item>group for drm rpc</item>
+        <item>nfc subsystem</item>
+        <item>external storage read access</item>
+        <item>clat part of nat464</item>
+        <item>loop radio devices</item>
+        <item>MediaDrm plugins</item>
+        <item>access to installed package details</item>
+        <item>external storage photos access</item>
+        <item>external storage audio/video access</item>
+        <item>access all users external storage</item>
+        <item>log daemon</item>
+        <item>creator of shared GNU RELRO files</item>
+        <item>dbus-daemon IPC broker process</item>
+        <item>tlsdate unprivileged user</item>
+        <item>mediaextractor process</item>
+        <item>audioserver process</item>
+        <item>metrics_collector process</item>
+        <item>metricsd process</item>
+        <item>webservd process</item>
+        <item>debuggerd unprivileged user</item>
+        <item>media_codec process</item>
+        <item>cameraserver process</item>
+        <item>firewall process</item>
+        <item>trunksd process</item>
+        <item>nvram daemon</item>
+        <item>DNS resolution daemon (system: netd)</item>
+        <item>DNS resolution daemon (tether: dnsmasq)</item>
+        <item>WebView zygote process</item>
+        <item>Vehicle network service</item>
+        <item>GID for audio files on internal media storage</item>
+        <item>GID for video files on internal media storage</item>
+        <item>GID for image files on internal media storage</item>
+        <item>tombstoned user</item>
+        <item>GID for OBB files on internal media storage</item>
+        <item>embedded secure element (eSE) subsystem</item>
+        <item>resource tracking UID for OTA updates</item>
+        <item>Automotive rear and surround view system</item>
+        <item>LoWPAN subsystem</item>
+        <item>hardware security module subsystem</item>
+        <item>GID that has access to reserved disk space</item>
+        <item>statsd daemon</item>
+        <item>incidentd daemon</item>
+        <item>secure element subsystem</item>
+        <item>low memory killer daemon</item>
+        <item>live lock daemon</item>
+        <item>input/output readahead and pin daemon</item>
+        <item>GPU service daemon</item>
+        <item>network stack service</item>
+        <item>GSI service daemon</item>
+        <item>fs-verity key ownership in keystore</item>
+        <item>identity credential manager service</item>
+        <item>Full external storage access including USB OTG volumes</item>
+        <item>GID for app-private data directories on external storage</item>
+        <item>GID for OBB directories on external storage</item>
+        <item>GID for access to the Context Hub</item>
+        <item>VirtualizationService daemon</item>
+        <item>ART Service daemon</item>
+        <item>UWB subsystem</item>
+        <item>Thread Network subsystem</item>
+        <item>Android\'s DICE daemon</item>
+        <item>dmesg parsing daemon for kernel report collection</item>
+        <item>Javacard Weaver HAL - to manage omapi ARA rules</item>
+        <item>Javacard Strongbox HAL - to manage omapi ARA rules</item>
+        <item>Javacard Identity Cred HAL - to manage omapi ARA rules</item>
+        <item>SDK sandbox virtual UID</item>
+        <item>write to security log</item>
+        <item>PRNG seeder daemon</item>
+        <item>adb and debug shell user</item>
+        <item>cache access</item>
+        <item>access to diagnostic resources</item>
+        <item>bluetooth: create any socket</item>
+        <item>bluetooth: create sco, rfcomm or l2cap sockets</item>
+        <item>can create AF_INET and AF_INET6 sockets</item>
+        <item>can create raw INET sockets</item>
+        <item>can configure interfaces and routing tables.</item>
+        <item>read bandwidth statistics</item>
+        <item>change bandwidth statistics accounting</item>
+        <item>access to various bluetooth management functions</item>
+        <item>Allow /proc read access</item>
+        <item>Allow system wakelock read/write access</item>
+        <item>Allow read/write to /dev/uhid node</item>
+        <item>Allow tracefs read</item>
+        <item>Shared external storage read/write</item>
+        <item>Access to misc storage</item>
+        <item>Reserved</item>
+        <item>Access to app data</item>
+    </string-array>
+    <string-array name="capability_descriptions">
+        <item>Make arbitrary changes to file UIDs and GIDs (see chown(2))</item>
+        <item>Bypass file read, write, and execute permission checks</item>
+        <item>Bypass file read permission checks and directory read and execute permission checks</item>
+        <item>Bypass permission checks on operations that normally require the filesystem UID of the process to match the UID of the file (e.g., chmod(2), utime(2)), excluding those operations covered by CAP_DAC_OVERRIDE and CAP_DAC_READ_SEARCH</item>
+        <item>Don’t clear set-user-ID and set-group-ID permission bits when a file is modified; set the set-group-ID bit for a file whose GID does not match the filesystem or any of the supplementary GIDs of the calling process</item>
+        <item>Bypass permission checks for sending signals (see kill(2)).</item>
+        <item>Make arbitrary manipulations of process GIDs and supplementary GID list; allow setgid(2) manipulation of the caller’s effective and real group IDs</item>
+        <item>Make arbitrary manipulations of process UIDs (setuid(2), setreuid(2), setresuid(2), setfsuid(2)); allow changing the current process user IDs; allow changing of the current process group ID to any value in the system’s range of legal group IDs</item>
+        <item>If file capabilities are supported: grant or remove any capability in the caller’s permitted capability set to or from any other process. (This property supersedes the obsolete notion of giving a process all capabilities by granting all capabilities in its permitted set, and of removing all capabilities from a process by granting no capabilities in its permitted set. It does not permit any actions that were not permitted before.)</item>
+        <item>Set the FS_APPEND_FL and FS_IMMUTABLE_FL inode flags (see chattr(1)).</item>
+        <item>Bind a socket to Internet domain</item>
+        <item>Make socket broadcasts, and listen to multicasts</item>
+        <item>Perform various network-related operations: interface configuration, administration of IP firewall, masquerading, and accounting, modify routing tables, bind to any address for transparent proxying, set type-of-service (TOS), clear driver statistics, set promiscuous mode, enabling multicasting, use setsockopt(2) to set the following socket options: SO_DEBUG, SO_MARK, SO_PRIORITY (for a priority outside the range 0 to 6), SO_RCVBUFFORCE, and SO_SNDBUFFORCE</item>
+        <item>Use RAW and PACKET sockets</item>
+        <item>Lock memory (mlock(2), mlockall(2), mmap(2), shmctl(2))</item>
+        <item>Bypass permission checks for operations on System V IPC objects</item>
+        <item>Load and unload kernel modules (see init_module(2) and delete_module(2)); in kernels before 2.6.25, this also granted rights for various other operations related to kernel modules</item>
+        <item>Perform I/O port operations (iopl(2) and ioperm(2)); access /proc/kcore</item>
+        <item>Use chroot(2)</item>
+        <item>Trace arbitrary processes using ptrace(2)</item>
+        <item>Use acct(2)</item>
+        <item>Perform a range of system administration operations including: quotactl(2), mount(2), umount(2), swapon(2), swapoff(2), sethostname(2), and setdomainname(2); set and modify process resource limits (setrlimit(2)); perform various network-related operations (e.g., setting privileged socket options, enabling multicasting, interface configuration); perform various IPC operations (e.g., SysV semaphores, POSIX message queues, System V shared memory); allow reboot and kexec_load(2); override /proc/sys kernel tunables; perform ptrace(2) PTRACE_SECCOMP_GET_FILTER operation; perform some tracing and debugging operations (see ptrace(2)); administer the lifetime of kernel tracepoints (tracefs(5)); perform the KEYCTL_CHOWN and KEYCTL_SETPERM keyctl(2) operations; perform the following keyctl(2) operations: KEYCTL_CAPABILITIES, KEYCTL_CAPSQUASH, and KEYCTL_PKEY_ OPERATIONS; set state for the Extensible Authentication Protocol (EAP) kernel module; and override the RLIMIT_NPROC resource limit; allow ioperm/iopl access to I/O ports</item>
+        <item>Use reboot(2) and kexec_load(2), reboot and load a new kernel for later execution</item>
+        <item>Raise process nice value (nice(2), setpriority(2)) and change the nice value for arbitrary processes; set real-time scheduling policies for calling process, and set scheduling policies and priorities for arbitrary processes (sched_setscheduler(2), sched_setparam(2)</item>
+        <item>Override resource Limits. Set resource limits (setrlimit(2), prlimit(2)), override quota limits (quota(2), quotactl(2)), override reserved space on ext2 filesystem (ext2_ioctl(2)), override size restrictions on IPC message queues (msg(2)) and system V shared memory segments (shmget(2)), and override the /proc/sys/fs/pipe-size-max limit</item>
+        <item>Set system clock (settimeofday(2), stime(2), adjtimex(2)); set real-time (hardware) clock</item>
+        <item>Use vhangup(2); employ various privileged ioctl(2) operations on virtual terminals</item>
+        <item>Create special files using mknod(2)</item>
+        <item>Establish leases on arbitrary files (see fcntl(2))</item>
+        <item>Write records to kernel auditing log</item>
+        <item>Enable and disable kernel auditing; change auditing filter rules; retrieve auditing status and filtering rules</item>
+        <item>If file capabilities are supported: grant or remove any capability in any capability set to any file</item>
+        <item>Override Mandatory Access Control (MAC). Implemented for the Smack Linux Security Module (LSM)</item>
+        <item>Allow MAC configuration or state changes. Implemented for the Smack LSM</item>
+        <item>Perform privileged syslog(2) operations. See syslog(2) for information on which operations require privilege</item>
+        <item>Trigger something that will wake up the system</item>
+        <item>Employ features that can block system suspend</item>
+        <item>Allow reading the audit log via a multicast netlink socket</item>
+        <item>Allow performance monitoring via perf_event_open(2)</item>
+        <item>Allow BPF operations via bpf(2)</item>
+        <item>Allow processes to be checkpointed via checkpoint/restore in user namespace(2)</item>
+    </string-array>
+</resources>

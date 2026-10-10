@@ -1,0 +1,37 @@
+name: Arabic localization
+
+on:
+  push:
+    branches: [dev, feature/complete-arabic-localization]
+    paths:
+      - 'manager/app/src/main/res/**'
+      - 'manager/app/src/main/java/**'
+      - 'scripts/check_android_l10n.py'
+      - '.github/workflows/arabic-localization.yml'
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'manager/app/src/main/res/**'
+      - 'manager/app/src/main/java/**'
+      - 'scripts/check_android_l10n.py'
+      - '.github/workflows/arabic-localization.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Arabic resources
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Check locale coverage, formatting and Android RTL
+        run: python scripts/check_android_l10n.py

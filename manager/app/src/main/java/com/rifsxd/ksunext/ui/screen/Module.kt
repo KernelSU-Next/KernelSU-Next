@@ -1321,7 +1321,7 @@ fun ModuleItem(
                                             val intent = Intent(Intent.ACTION_VIEW, donateUrl.toUri())
                                             ctx.startActivity(intent)
                                         } catch (e: Exception) {
-                                            Toast.makeText(ctx, "Invalid donate url", Toast.LENGTH_SHORT).show()
+                                            Toast.makeText(ctx, ctx.getString(R.string.module_invalid_donate_url), Toast.LENGTH_SHORT).show()
                                         }
                                     },
                                     contentPadding = ButtonDefaults.TextButtonContentPadding

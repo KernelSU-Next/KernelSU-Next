@@ -109,7 +109,7 @@ fun ExecuteModuleActionScreen(navigator: DestinationsNavigator, moduleId: String
                                 "KernelSU_Next_module_action_log_${date}.log"
                             )
                             file.writeText(logContent.toString())
-                            snackBarHost.showSnackbar("Log saved to ${file.absolutePath}")
+                            snackBarHost.showSnackbar(context.getString(R.string.log_saved_to, androidx.core.text.BidiFormatter.getInstance().unicodeWrap(file.absolutePath)))
                         }
                     }
                 }

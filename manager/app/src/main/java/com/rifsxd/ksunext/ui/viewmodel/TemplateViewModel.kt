@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.rifsxd.ksunext.Natives
+import com.rifsxd.ksunext.R
 import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.profile.Capabilities
 import com.rifsxd.ksunext.profile.Groups
@@ -326,8 +327,8 @@ fun TemplateViewModel.TemplateInfo.toJSON(): JSONObject {
 fun generateTemplates() {
     val templateJson = JSONObject()
     templateJson.put("id", "com.example")
-    templateJson.put("name", "Example")
-    templateJson.put("description", "This is an example template")
+    templateJson.put("name", ksuApp.getString(R.string.template_example_title))
+    templateJson.put("description", ksuApp.getString(R.string.template_example_description))
     templateJson.put("local", true)
     templateJson.put("namespace", Natives.Profile.Namespace.INHERITED.name)
     templateJson.put("uid", 0)
