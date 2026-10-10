@@ -169,7 +169,7 @@ fun MetaModuleScreen(navigator: DestinationsNavigator) {
             val baseList = withContext(Dispatchers.IO) { fetchMetaModulesFromJson(modulesJsonUrl) }
 
             if (baseList == null) {
-                moduleState = MetaModuleState.Error("Failed to load module list")
+                moduleState = MetaModuleState.Error(context.getString(R.string.metamodule_load_failed))
                 return
             }
 
@@ -213,7 +213,7 @@ fun MetaModuleScreen(navigator: DestinationsNavigator) {
                 }
             }
         } catch (e: Exception) {
-            moduleState = MetaModuleState.Error(e.message ?: "Unknown error")
+            moduleState = MetaModuleState.Error(e.message ?: context.getString(R.string.unknown_error))
         }
     }
 

@@ -14,6 +14,7 @@ import android.system.Os
 import android.util.Log
 import com.rifsxd.ksunext.BuildConfig
 import com.rifsxd.ksunext.Natives
+import com.rifsxd.ksunext.R
 import com.rifsxd.ksunext.ksuApp
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.Shell
@@ -568,7 +569,7 @@ fun getAppProfileTemplate(id: String): String {
 }
 
 fun getFileName(context: Context, uri: Uri): String {
-    var name = "Unknown Module"
+    var name = context.getString(R.string.module_unknown)
     if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
         val cursor: Cursor? = context.contentResolver.query(uri, null, null, null, null)
         cursor?.use {
@@ -577,7 +578,7 @@ fun getFileName(context: Context, uri: Uri): String {
             }
         }
     } else if (uri.scheme == "file") {
-        name = uri.lastPathSegment ?: "Unknown Module"
+        name = uri.lastPathSegment ?: context.getString(R.string.module_unknown)
     }
     return name
 }

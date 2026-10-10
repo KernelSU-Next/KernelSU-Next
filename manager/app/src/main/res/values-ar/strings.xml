@@ -338,4 +338,20 @@
     <string name="shortcut_icon_description">أيقونة الاختصار</string>
     <string name="feature_not_implemented">الميزة غير متاحة بعد</string>
     <string name="flash_error_output">رمز الخطأ: %1$d.\n %2$s يُرجى حفظ السجل ومراجعته.\n</string>
+    <string name="home_show_less">إظهار أقل</string>
+    <string name="home_show_more">إظهار المزيد</string>
+    <string name="contributor_lead_developer">المطوّر الرئيسي</string>
+    <string name="contributor_kernel_author">مؤسس KernelSU</string>
+    <string name="contributor_frontend_maintainer">مشرف تطوير الواجهة</string>
+    <string name="contributor_backend_maintainer">مشرف تطوير الخلفية</string>
+    <string name="contributor_legacy_maintainer">مشرف دعم الإصدارات القديمة</string>
+    <string name="metamodule_load_failed">فشل تحميل قائمة الوحدات</string>
+    <string name="unknown_error">خطأ غير معروف</string>
+    <string name="repo_no_modules">لم يُعثر على وحدات في أي من المستودعات</string>
+    <string name="webui_file_prepare_failed">حدث خطأ أثناء تجهيز الملف: %1$s</string>
+    <string name="profile_selinux_domain_invalid">يجب أن يكون النطاق بالصيغة user:role:type:level</string>
+    <string name="profile_selinux_rules_invalid">قواعد SELinux غير صالحة!</string>
+    <string name="module_unknown">وحدة غير معروفة</string>
+    <string name="template_example_title">مثال</string>
+    <string name="template_example_description">هذا قالب توضيحي</string>
 </resources>

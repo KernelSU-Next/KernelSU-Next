@@ -59,3 +59,7 @@ Capture screenshots and test conditions. Device-only tests cannot be marked pass
 ## Maintenance and upstream sync
 
 For every upstream code update, run localization checks and translate any new source keys before release. Review any new raw Kotlin UI text; keep all externally visible manager-owned strings in Android resources. Only merge when checks, actual builds and manual UI/RTL verification are successful.
+
+## Android group and Linux capability descriptions
+
+The Security Profile screens display 116 Android group descriptions and 41 Linux capability descriptions. Localized descriptions are held in matching values/arrays.xml and values-ar/arrays.xml string arrays, indexed by enum ordinal. Leave technical group IDs, capability names and numeric values unchanged. The localization validator checks that both array lengths match the current enum entry counts; update the arrays together whenever upstream changes these enums.

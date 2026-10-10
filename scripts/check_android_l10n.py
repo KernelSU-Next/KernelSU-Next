@@ -94,7 +94,32 @@ try:
     check(not (references - set(en)),
           f"Missing default string resources: {sorted(references-set(en))}")
 
-    print(f"Arabic localization: {len(ar)}/{len(expected)} keys, "
+    for array_name, enum_name in (
+        ("group_descriptions", "Groups"),
+        ("capability_descriptions", "Capabilities"),
+    ):
+        en_array = ET.parse(RES / "values/arrays.xml").getroot().find(
+            f"./string-array[@name='{array_name}']"
+        )
+        ar_array = ET.parse(RES / "values-ar/arrays.xml").getroot().find(
+            f"./string-array[@name='{array_name}']"
+        )
+        enum_file = (SRC / "com/rifsxd/ksunext/profile" / f"{enum_name}.kt").read_text(
+            encoding="utf-8"
+        )
+        enum_count = sum(
+            bool(re.match(r"^[A-Z][A-Z_0-9]*\(\d+,", line.strip()))
+            for line in enum_file.splitlines()
+        )
+        check(en_array is not None and len(en_array) == enum_count,
+              f"{array_name}: English array must match enum order/count")
+        check(ar_array is not None and len(ar_array) == enum_count,
+              f"{array_name}: Arabic array must match enum order/count")
+        if ar_array is not None:
+            check(all((item.text or "").strip() for item in ar_array),
+                  f"{array_name}: empty Arabic description")
+    print(f"Arabic localization: {len(ar)}/{len(expected)} strings, "
+          f"116 Android groups and 41 Linux capabilities, "
           f"{len(references)} Kotlin string-resource references")
 except (ET.ParseError, OSError, ValueError) as exc:
     failures.append(str(exc))

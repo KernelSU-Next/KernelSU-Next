@@ -442,7 +442,7 @@ class WebUIActivity : FragmentActivity() {
         } catch (e: Exception) {
             Toast.makeText(
                 this,
-                "Error preparing file: ${e.message}",
+                getString(R.string.webui_file_prepare_failed, e.message.orEmpty()),
                 Toast.LENGTH_LONG
             ).show()
             pendingDownloadData = null

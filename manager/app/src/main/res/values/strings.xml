@@ -340,4 +340,20 @@
     <string name="shortcut_icon_description">Shortcut icon</string>
     <string name="feature_not_implemented">Not implemented yet</string>
     <string name="flash_error_output">Error code: %1$d.\n %2$s Please save and check the log.\n</string>
+    <string name="home_show_less">Show less</string>
+    <string name="home_show_more">Show more</string>
+    <string name="contributor_lead_developer">Lead Developer</string>
+    <string name="contributor_kernel_author">KernelSU Author</string>
+    <string name="contributor_frontend_maintainer">Frontend Maintainer</string>
+    <string name="contributor_backend_maintainer">Backend Maintainer</string>
+    <string name="contributor_legacy_maintainer">Legacy Maintainer</string>
+    <string name="metamodule_load_failed">Failed to load module list</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="repo_no_modules">No modules found across all repositories</string>
+    <string name="webui_file_prepare_failed">Error preparing file: %1$s</string>
+    <string name="profile_selinux_domain_invalid">Domain must be in the format of user:role:type:level</string>
+    <string name="profile_selinux_rules_invalid">SELinux rules are invalid!</string>
+    <string name="module_unknown">Unknown Module</string>
+    <string name="template_example_title">Example</string>
+    <string name="template_example_description">This is an example template</string>
 </resources>

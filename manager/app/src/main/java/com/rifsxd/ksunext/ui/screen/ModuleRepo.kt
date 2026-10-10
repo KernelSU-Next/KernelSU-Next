@@ -225,7 +225,7 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
                 .filter { module -> seen.add("${module.name}||${module.repoUrl}") }
 
             if (visibleModules.isEmpty()) {
-                moduleState = ModuleRepoState.Error("No modules found across all repositories")
+                moduleState = ModuleRepoState.Error(context.getString(R.string.repo_no_modules))
                 return
             }
 
@@ -265,7 +265,7 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
                 }
             }
         } catch (e: Exception) {
-            moduleState = ModuleRepoState.Error(e.message ?: "Unknown error")
+            moduleState = ModuleRepoState.Error(e.message ?: context.getString(R.string.unknown_error))
         }
     }
 
