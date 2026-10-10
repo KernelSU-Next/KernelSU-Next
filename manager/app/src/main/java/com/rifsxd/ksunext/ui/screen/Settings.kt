@@ -513,7 +513,7 @@ private fun AppSettingsCard(
     exportBugreportLauncher: androidx.activity.result.ActivityResultLauncher<String>,
     loadingDialog: LoadingDialogHandle,
     scope: kotlinx.coroutines.CoroutineScope,
-    context: android.content.Context,
+    context: Context,
     isUnrooted: Boolean
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -544,6 +544,7 @@ private fun AppSettingsCard(
                 mutableStateOf(prefs.getLong("app_lock_timeout", 60000L))
             }
             var showTimeoutMenu by remember { mutableStateOf(false) }
+            var showInfoDialog by remember { mutableStateOf(false) }
 
             val timeoutOptions = remember {
                 listOf(
@@ -668,6 +669,7 @@ private fun AppSettingsCard(
                         val current = LocalDateTime.now().format(formatter)
                         exportBugreportLauncher.launch("KernelSU_Next_bugreport_${current}.tar.gz")
                         showBottomsheet = false
+                        if (isUnrooted) showInfoDialog = true
                     },
                     onShare = {
                         scope.launch {
@@ -695,6 +697,24 @@ private fun AppSettingsCard(
                             )
                         }
                         showBottomsheet = false
+                        if (isUnrooted) showInfoDialog = true
+                    }
+                )
+            }
+
+            if (showInfoDialog) {
+                AlertDialog(
+                    onDismissRequest = { showInfoDialog = false },
+                    title = { Text(stringResource(R.string.unrooted_additional_bugreport_title)) },
+                    text = {
+                        Column(Modifier.verticalScroll(rememberScrollState())) {
+                            Text(stringResource(R.string.unrooted_additional_bugreport_body))
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(onClick = { showInfoDialog = false }) {
+                            Text(stringResource(R.string.unrooted_additional_bugreport_got_it))
+                        }
                     }
                 )
             }

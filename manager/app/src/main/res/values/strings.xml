@@ -322,4 +322,9 @@
     <string name="settings_app_lock_no_credential">Secure screen lock required.</string>
     <string name="biometric_prompt_subtitle">Unlock Manager</string>
     <string name="biometric_prompt_subtitle_module">Unlock %1$s</string>
+    <string name="unrooted_additional_bugreport_title">Additional Bugreport context</string>
+    <string name="unrooted_additional_bugreport_body">"if you have Shizuka you can try running the following:
+1. `ps -A -Z` and paste the output in a new file (process.txt)
+2.`logcat -b all >> logcat.txt` and paste the full file"</string>
+    <string name="unrooted_additional_bugreport_got_it">Got it</string>
 </resources>
