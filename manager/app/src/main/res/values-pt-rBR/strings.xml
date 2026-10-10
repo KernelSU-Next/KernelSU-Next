@@ -321,7 +321,7 @@
   <string name="settings_app_lock_timeout_5m">5 minutos</string>
   <string name="biometric_prompt_subtitle">Desbloquear gerenciador</string>
   <string name="biometric_prompt_subtitle_module">Desbloquear %1$s</string>
-  <string name="settings_app_lock_no_credential">Secure screen lock required.</string>
-  <string name="enable_risk">Enable risk detection</string>
-  <string name="enable_risk_summary">Enable install-time risk detection for modules.</string>
+  <string name="settings_app_lock_no_credential">Bloqueio de tela seguro necessário.</string>
+  <string name="enable_risk">Ativar detecção de riscos</string>
+  <string name="enable_risk_summary">Ativar a detecção de risco no momento da instalação para os módulos.</string>
 </resources>
