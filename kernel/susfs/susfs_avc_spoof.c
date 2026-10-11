@@ -51,25 +51,40 @@ static bool avc_registered;
 static atomic_t avc_hit_count = ATOMIC_INIT(0);
 static atomic_t avc_enter_count = ATOMIC_INIT(0);
 
-static int avc_audit_post_pre(struct kprobe *kp, struct pt_regs *regs)
-{
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
-	u32 tsid = (u32)regs->regs[1];
+#define AVC_SSID_REG	0
+#define AVC_TSID_REG	1
 #else
-	u32 tsid = (u32)regs->regs[2];
+#define AVC_SSID_REG	1
+#define AVC_TSID_REG	2
 #endif
 
+static int avc_audit_post_pre(struct kprobe *kp, struct pt_regs *regs)
+{
+	bool hit = false;
+
 	atomic_inc(&avc_enter_count);
-	/* avc_su_sid == 0 means security_secctx_to_secid() failed (see init); a failed resolution must not
-	 * turn "sid 0" into a match. */
-	if (!avc_su_sid || tsid != avc_su_sid)
+
+	/* Either sid unresolved means no spoofing at all: a 0 must not match (it is a real sid
+	 * value here), and writing 0 over a real one makes security_sid_to_context() fail, so
+	 * audit prints "scontext=???" - louder than the domain name being hidden. */
+	if (!avc_su_sid || !avc_priv_app_sid)
 		return 0;
-	atomic_inc(&avc_hit_count);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
-	regs->regs[1] = avc_priv_app_sid;
-#else
-	regs->regs[2] = avc_priv_app_sid;
-#endif
+
+	/* BOTH ends.  The records a root detector greps for are the ones the su domain CAUSES -
+	 * "avc: denied ... scontext=u:r:ksu:s0" - and there the su sid is the SOURCE; rewriting
+	 * tsid alone left every one of those lines intact. */
+	if ((u32)regs->regs[AVC_SSID_REG] == avc_su_sid) {
+		regs->regs[AVC_SSID_REG] = avc_priv_app_sid;
+		hit = true;
+	}
+	if ((u32)regs->regs[AVC_TSID_REG] == avc_su_sid) {
+		regs->regs[AVC_TSID_REG] = avc_priv_app_sid;
+		hit = true;
+	}
+
+	if (hit)
+		atomic_inc(&avc_hit_count);
 	return 0;
 }
 
@@ -106,6 +121,14 @@ static int avc_register(void)
 	if (avc_registered) {
 		mutex_unlock(&avc_ctl_lock);
 		return 0;
+	}
+	/* The handler would bail out on every call, so report it here instead of arming a probe
+	 * that can never spoof anything. */
+	if (!avc_su_sid || !avc_priv_app_sid) {
+		mutex_unlock(&avc_ctl_lock);
+		pr_warn("avc_spoof: su_sid=%u priv_app_sid=%u - both contexts must resolve against this device's policy (override with avc_su_ctx=/avc_priv_app_ctx=)\n",
+			avc_su_sid, avc_priv_app_sid);
+		return -EOPNOTSUPP;
 	}
 	rc = register_kprobe(&kp_avc);
 	if (rc) {
