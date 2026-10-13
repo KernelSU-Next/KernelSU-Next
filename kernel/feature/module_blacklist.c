@@ -46,6 +46,23 @@ static const struct kernel_param_ops block_modules_param_ops = {
 };
 module_param_cb(block_modules, &block_modules_param_ops, NULL, 0);
 
+void ksu_module_blacklist_add(const char *name)
+{
+    if (!name || !name[0])
+        return;
+
+    if (block_modules[0]) {
+        if (strstr(block_modules, name))
+            return;
+        size_t len = strlen(block_modules);
+        if (len + 1 + strlen(name) < sizeof(block_modules)) {
+            snprintf(block_modules + len, sizeof(block_modules) - len, ",%s", name);
+        }
+    } else {
+        strscpy(block_modules, name, sizeof(block_modules));
+    }
+}
+
 // Merge the configured names into the kernel's native module_blacklist.
 void __init ksu_module_blacklist_init(void)
 {

@@ -117,6 +117,7 @@ int __init kernelsu_init(void)
 
 #ifdef CONFIG_KSU_SUSFS
 	susfs_init();
+	ksu_module_blacklist_add("susfs_guard_lkm");
 #endif // #ifdef KSU_SUSFS
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
     // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set
