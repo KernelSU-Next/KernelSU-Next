@@ -135,6 +135,9 @@ void __init ksu_syscall_hook_manager_init(void)
     pr_info("hook_manager: ksu_hook_manager_init called\n");
 
     if (ksu_dispatcher_nr < 0) {
+#if defined(__aarch64__)
+        if (!ksu_syscall_hook_fallback_required)
+            return;
         ret = ksu_samsung_rkp_init();
         if (ret) {
             pr_err("hook_manager: Samsung RKP fallback unavailable: %d\n",
@@ -146,6 +149,9 @@ void __init ksu_syscall_hook_manager_init(void)
         ksu_sucompat_init();
         ksu_avc_spoof_init();
         return;
+#else
+        return;
+#endif
     }
 
     syscall_hook_manager_initialized = true;

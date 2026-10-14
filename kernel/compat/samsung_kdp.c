@@ -41,6 +41,7 @@ struct samsung_kdp_commit_work {
 static prepare_ro_creds_t prepare_ro_creds_fn;
 static kdp_assign_pgd_t kdp_assign_pgd_fn;
 static kdp_usecount_dec_and_test_t kdp_usecount_dec_and_test_fn;
+static bool samsung_kdp_enabled;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
 static inc_rlimit_ucounts_t inc_rlimit_ucounts_fn;
 static dec_rlimit_ucounts_t dec_rlimit_ucounts_fn;
@@ -113,7 +114,13 @@ void ksu_samsung_kdp_put_cred(const struct cred *cred)
 #ifdef CONFIG_KSU_SAMSUNG_KDP
 	struct cred *mutable_cred = (struct cred *)cred;
 
-	if (mutable_cred && kdp_usecount_dec_and_test_fn(mutable_cred))
+	if (!mutable_cred)
+		return;
+	if (!samsung_kdp_enabled) {
+		put_cred(cred);
+		return;
+	}
+	if (kdp_usecount_dec_and_test_fn(mutable_cred))
 		__put_cred(mutable_cred);
 #else
 	put_cred(cred);
@@ -134,8 +141,8 @@ int ksu_samsung_kdp_init(void)
 			"kdp_usecount_dec_and_test");
 	if (!prepare_ro_creds_fn || !kdp_assign_pgd_fn ||
 	    !kdp_usecount_dec_and_test_fn) {
-		pr_err("Samsung KDP credential functions unavailable\n");
-		return -ENOENT;
+		pr_info("Samsung KDP not detected; using standard credentials\n");
+		return 0;
 	}
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
 	inc_rlimit_ucounts_fn =
@@ -145,10 +152,12 @@ int ksu_samsung_kdp_init(void)
 		(dec_rlimit_ucounts_t)ksu_resolve_symbol_for_functable_hook(
 			"dec_rlimit_ucounts");
 	if (!inc_rlimit_ucounts_fn || !dec_rlimit_ucounts_fn) {
-		pr_err("Samsung KDP ucounts functions unavailable\n");
-		return -ENOENT;
+		pr_info("Samsung KDP ucounts helpers unavailable; "
+			"using standard credentials\n");
+		return 0;
 	}
 #endif
+	samsung_kdp_enabled = true;
 	pr_info("Samsung KDP credential compatibility enabled\n");
 #endif
 	return 0;
@@ -156,6 +165,9 @@ int ksu_samsung_kdp_init(void)
 
 void ksu_samsung_kdp_exit(void)
 {
+#ifdef CONFIG_KSU_SAMSUNG_KDP
+	samsung_kdp_enabled = false;
+#endif
 }
 
 int ksu_samsung_kdp_commit_creds(struct cred *cred)
@@ -166,6 +178,8 @@ int ksu_samsung_kdp_commit_creds(struct cred *cred)
 
 	if (!cred)
 		return -EINVAL;
+	if (!samsung_kdp_enabled)
+		return commit_creds(cred);
 	INIT_WORK(&commit_work.work, samsung_kdp_commit_worker);
 	init_completion(&commit_work.completion);
 	commit_work.target = current;
