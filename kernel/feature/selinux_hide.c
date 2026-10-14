@@ -21,7 +21,8 @@
 #include <linux/mutex.h>
 #include <linux/security.h>
 #include <linux/xattr.h>
-#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(__aarch64__)
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(CONFIG_KRETPROBES) && \
+    defined(__aarch64__)
 #include <linux/hashtable.h>
 #include <linux/kprobes.h>
 #include <linux/spinlock.h>
@@ -38,6 +39,10 @@
 #include "objsec.h"
 #include "hook/patch_memory.h"
 #include "ksu.h"
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(CONFIG_KRETPROBES) && \
+    defined(__aarch64__)
+#include "compat/samsung_rkp.h"
+#endif
 #include "policy/feature.h"
 #include "hook/lsm_hook.h"
 
@@ -516,7 +521,8 @@ static int my_sel_open_handle_status(struct inode *inode, struct file *filp)
     return ret;
 }
 
-#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(__aarch64__)
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(CONFIG_KRETPROBES) && \
+    defined(__aarch64__)
 /*
  * Samsung RKP makes the SELinux operation tables read-only even to the
  * kernel. Keep upstream's replacements, but reach them through function
@@ -668,12 +674,19 @@ static int ksu_selinux_hide_enable()
     orig_context_write = *context_write;
     // Keep backup once hooks may run, including failed enable attempts
     ksu_selinux_hide_keep_backup = true;
-#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(__aarch64__)
-    ret = samsung_register_kprobe(&samsung_context_kprobe, orig_context_write, &samsung_context_registered);
-#else
-    write_op_fn my = my_write_context;
-    ret = ksu_patch_text(context_write, &my, sizeof(my), KSU_PATCH_TEXT_FLUSH_DCACHE);
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(CONFIG_KRETPROBES) && \
+    defined(__aarch64__)
+    if (ksu_samsung_device_detected()) {
+        ret = samsung_register_kprobe(&samsung_context_kprobe,
+                         orig_context_write,
+                         &samsung_context_registered);
+    } else
 #endif
+    {
+        write_op_fn my = my_write_context;
+        ret = ksu_patch_text(context_write, &my, sizeof(my),
+                     KSU_PATCH_TEXT_FLUSH_DCACHE);
+    }
     if (ret) {
         pr_err("selinux_hide: init: hook context_write err: %d\n", ret);
         goto unhook;
@@ -682,24 +695,39 @@ static int ksu_selinux_hide_enable()
     access_write = &selinux_write_op[SEL_ACCESS];
     pr_info("selinux_hide: access_write: 0x%lx [%pSb]\n", (unsigned long)*access_write, *access_write);
     orig_access_write = *access_write;
-#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(__aarch64__)
-    ret = samsung_register_kprobe(&samsung_access_kprobe, orig_access_write, &samsung_access_registered);
-#else
-    my = my_write_access;
-    ret = ksu_patch_text(access_write, &my, sizeof(my), KSU_PATCH_TEXT_FLUSH_DCACHE);
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(CONFIG_KRETPROBES) && \
+    defined(__aarch64__)
+    if (ksu_samsung_device_detected()) {
+        ret = samsung_register_kprobe(&samsung_access_kprobe,
+                         orig_access_write,
+                         &samsung_access_registered);
+    } else
 #endif
+    {
+        write_op_fn my = my_write_access;
+        ret = ksu_patch_text(access_write, &my, sizeof(my),
+                     KSU_PATCH_TEXT_FLUSH_DCACHE);
+    }
     if (ret) {
         pr_err("selinux_hide: init: hook access_write err: %d\n", ret);
         goto unhook;
     }
 
-#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(__aarch64__)
-    selinux_setprocattr_hook.original = find_kernel_symbol_exact("selinux_setprocattr");
-    if (!selinux_setprocattr_hook.original) {
-        ret = -ENOENT;
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(CONFIG_KRETPROBES) && \
+    defined(__aarch64__)
+    if (ksu_samsung_device_detected()) {
+        selinux_setprocattr_hook.original =
+            find_kernel_symbol_exact("selinux_setprocattr");
+        if (!selinux_setprocattr_hook.original) {
+            ret = -ENOENT;
+        } else {
+            ret = samsung_register_kprobe(
+                &samsung_setprocattr_kprobe,
+                selinux_setprocattr_hook.original,
+                &samsung_setprocattr_registered);
+        }
     } else {
-        ret = samsung_register_kprobe(&samsung_setprocattr_kprobe, selinux_setprocattr_hook.original,
-                                      &samsung_setprocattr_registered);
+        ret = ksu_lsm_hook(&selinux_setprocattr_hook);
     }
 #else
     ret = ksu_lsm_hook(&selinux_setprocattr_hook);
@@ -724,16 +752,24 @@ unhook:
 
 static void ksu_selinux_hide_unhook()
 {
-#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(__aarch64__)
-    samsung_unregister_kprobe(&samsung_setprocattr_kprobe, &samsung_setprocattr_registered);
-    samsung_unregister_kprobe(&samsung_access_kprobe, &samsung_access_registered);
-    samsung_unregister_kprobe(&samsung_context_kprobe, &samsung_context_registered);
-    samsung_unregister_kprobe(&samsung_status_kprobe, &samsung_status_registered);
-    selinux_setprocattr_hook.original = NULL;
-    orig_access_write = NULL;
-    orig_context_write = NULL;
-    orig_sel_open_handle_status = NULL;
-#else
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(CONFIG_KRETPROBES) && \
+    defined(__aarch64__)
+    if (ksu_samsung_device_detected()) {
+        samsung_unregister_kprobe(&samsung_setprocattr_kprobe,
+                      &samsung_setprocattr_registered);
+        samsung_unregister_kprobe(&samsung_access_kprobe,
+                      &samsung_access_registered);
+        samsung_unregister_kprobe(&samsung_context_kprobe,
+                      &samsung_context_registered);
+        samsung_unregister_kprobe(&samsung_status_kprobe,
+                      &samsung_status_registered);
+        selinux_setprocattr_hook.original = NULL;
+        orig_access_write = NULL;
+        orig_context_write = NULL;
+        orig_sel_open_handle_status = NULL;
+        return;
+    }
+#endif
     int ret;
     ksu_lsm_unhook(&selinux_inode_setxattr_hook);
     if (orig_context_write) {
@@ -760,7 +796,6 @@ static void ksu_selinux_hide_unhook()
         }
     }
     ksu_lsm_unhook(&selinux_setprocattr_hook);
-#endif
 }
 
 static void ksu_selinux_hide_disable()
@@ -838,16 +873,32 @@ static void hook_selinux_status_open()
         sel_open_handle_status_slot = &ops->open;
     }
     orig_sel_open_handle_status = *sel_open_handle_status_slot;
-#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(__aarch64__)
-    int ret = samsung_register_kprobe(&samsung_status_kprobe, orig_sel_open_handle_status, &samsung_status_registered);
-#else
-    sel_open_handle_status_fn new_fn = my_sel_open_handle_status;
-    int ret = ksu_patch_text(sel_open_handle_status_slot, &new_fn, sizeof(new_fn), KSU_PATCH_TEXT_FLUSH_DCACHE);
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(CONFIG_KRETPROBES) && \
+    defined(__aarch64__)
+    if (ksu_samsung_device_detected()) {
+        int ret = samsung_register_kprobe(
+            &samsung_status_kprobe, orig_sel_open_handle_status,
+            &samsung_status_registered);
+        if (ret) {
+            pr_err("selinux_hide: init: hook sel_open_handle_status err: %d\n",
+                   ret);
+            sel_open_handle_status_slot = NULL;
+            orig_sel_open_handle_status = NULL;
+        }
+        return;
+    }
 #endif
-    if (ret) {
-        pr_err("selinux_hide: init: hook sel_open_handle_status err: %d\n", ret);
-        sel_open_handle_status_slot = NULL;
-        orig_sel_open_handle_status = NULL;
+    {
+        sel_open_handle_status_fn new_fn = my_sel_open_handle_status;
+        int ret = ksu_patch_text(sel_open_handle_status_slot, &new_fn,
+                     sizeof(new_fn),
+                     KSU_PATCH_TEXT_FLUSH_DCACHE);
+        if (ret) {
+            pr_err("selinux_hide: init: hook sel_open_handle_status err: %d\n",
+                   ret);
+            sel_open_handle_status_slot = NULL;
+            orig_sel_open_handle_status = NULL;
+        }
     }
 }
 

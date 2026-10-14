@@ -20,6 +20,7 @@ typedef int (*defex_set_task_creds_t)(struct task_struct *task,
 
 static defex_get_task_creds_t defex_get_task_creds;
 static defex_set_task_creds_t defex_set_task_creds;
+static bool defex_cred_helpers_available;
 static bool defex_enforce_hooked;
 
 static int ksu_samsung_defex_pre_handler(struct kprobe *probe,
@@ -52,14 +53,17 @@ int ksu_samsung_defex_init(void)
 		(defex_set_task_creds_t)ksu_resolve_symbol_for_functable_hook(
 			"set_task_creds");
 	if (!defex_get_task_creds || !defex_set_task_creds) {
-		pr_err("Samsung DEFEX credential functions unavailable\n");
-		return -ENOENT;
+		defex_get_task_creds = NULL;
+		defex_set_task_creds = NULL;
+		pr_info("Samsung DEFEX not detected; credential sync disabled\n");
+		return 0;
 	}
+	defex_cred_helpers_available = true;
 
 	ret = register_kprobe(&defex_enforce_kprobe);
 	if (ret) {
-		pr_err("Samsung DEFEX enforce hook unavailable: %d\n", ret);
-		return ret;
+		pr_warn("Samsung DEFEX enforce hook unavailable: %d\n", ret);
+		return 0;
 	}
 	defex_enforce_hooked = true;
 	pr_info("Samsung DEFEX compatibility enabled\n");
@@ -86,6 +90,9 @@ void ksu_samsung_defex_sync_current(void)
 	unsigned int stored_egid;
 	unsigned short cred_flags;
 	int ret;
+
+	if (!defex_cred_helpers_available)
+		return;
 
 	defex_get_task_creds(current, &stored_uid, &stored_fsuid, &stored_egid,
 			     &cred_flags);
