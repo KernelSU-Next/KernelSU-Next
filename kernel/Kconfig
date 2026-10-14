@@ -48,31 +48,34 @@ config KSU_SAMSUNG_KDP
 	depends on KSU && ARM64
 	default y
 	help
-	  Install and release credentials through Samsung KDP helpers.
-	  Enable only on Samsung kernels that use KDP-protected credentials.
+	  Use Samsung KDP helpers when they are present. Kernels without KDP
+	  helpers automatically use the standard credential APIs.
 
 config KSU_SAMSUNG_RKP
 	bool "Samsung RKP hook compatibility"
 	depends on KSU && ARM64 && KPROBES && KRETPROBES
 	default y
 	help
-	  Use kprobe-based syscall fallbacks when Samsung RKP prevents live
-	  writes to the syscall table.
+	  Use kprobe-based syscall fallbacks on Samsung devices when patching
+	  the syscall-table dispatcher is blocked. Samsung devices are detected
+	  from the root device-tree compatible property. The fallback is not
+	  used when the syscall table or an unused syscall slot cannot be found.
 
 config KSU_SAMSUNG_DEFEX
 	bool "Samsung DEFEX credential compatibility"
 	depends on KSU && ARM64 && KPROBES
 	default y
 	help
-	  Synchronize Samsung DEFEX task credentials after a KernelSU UID
-	  transition and bypass duplicate enforcement for KernelSU tasks.
+	  Synchronize task credentials and bypass duplicate enforcement when
+	  Samsung DEFEX helpers are present. Otherwise this option is a no-op.
 
 config KSU_SAMSUNG_NO_PATCH_TEXT
 	bool "Disable live kernel text/data patching on Samsung EL2"
 	depends on KSU && ARM64
-	default n
+	default y
 	help
-	  Return -EOPNOTSUPP from KernelSU's live patch helper. Enable on
-	  Samsung kernels whose EL2 protection rejects fixmap writes.
+	  Disable KernelSU's live patch helper on Samsung devices whose EL2
+	  protection rejects fixmap writes. Samsung devices are detected from
+	  the root device-tree compatible property; other devices are unaffected.
 
 endmenu
