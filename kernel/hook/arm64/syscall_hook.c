@@ -12,6 +12,7 @@
 
 syscall_fn_t *ksu_syscall_table = NULL;
 int ksu_dispatcher_nr = -1;
+bool ksu_syscall_hook_fallback_required;
 
 // Hook registration table — read with READ_ONCE from tracepoint/dispatcher
 // context, written with WRITE_ONCE from init/exit context.
@@ -212,6 +213,7 @@ void __init ksu_syscall_hook_init(void)
 {
     int ni_slot;
 
+    ksu_syscall_hook_fallback_required = false;
     memset(syscall_hooks, 0, sizeof(syscall_hooks));
 
     ksu_syscall_table = (syscall_fn_t *)ksu_resolve_symbol_for_functable_hook("sys_call_table");
@@ -229,6 +231,7 @@ void __init ksu_syscall_hook_init(void)
     if (ksu_syscall_table_hook(ni_slot, (syscall_fn_t)ksu_syscall_dispatcher,
                                NULL)) {
         pr_warn("dispatcher slot is protected; using architecture fallback hooks\n");
+        ksu_syscall_hook_fallback_required = true;
         return;
     }
     ksu_dispatcher_nr = ni_slot;
@@ -265,6 +268,7 @@ clear_state:
     // dispatches will occur.
     memset(syscall_hooks, 0, sizeof(syscall_hooks));
     ksu_dispatcher_nr = -1;
+    ksu_syscall_hook_fallback_required = false;
 
     pr_info("all syscall hooks restored\n");
 }
