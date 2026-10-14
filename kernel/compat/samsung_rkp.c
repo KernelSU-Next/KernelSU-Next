@@ -1,7 +1,9 @@
 #include <asm/syscall.h>
 #include <linux/kprobes.h>
+#include <linux/of.h>
 #include <linux/ptrace.h>
 #include <linux/slab.h>
+#include <linux/string.h>
 #include <linux/task_work.h>
 
 #include "arch.h"
@@ -12,6 +14,38 @@
 #include "hook/syscall_hook.h"
 #include "klog.h"
 #include "policy/allowlist.h"
+
+bool ksu_samsung_device_detected(void)
+{
+#ifdef CONFIG_OF
+	struct device_node *root;
+	const char *compatible;
+	int length;
+	bool samsung_device = false;
+
+	root = of_find_node_by_path("/");
+	if (!root)
+		return false;
+	compatible = of_get_property(root, "compatible", &length);
+	while (compatible && length > 0) {
+		size_t entry_length = strnlen(compatible, length);
+
+		if (entry_length >= sizeof("samsung,") - 1 &&
+		    !strncmp(compatible, "samsung,", sizeof("samsung,") - 1)) {
+			samsung_device = true;
+			break;
+		}
+		if (entry_length >= length)
+			break;
+		length -= entry_length + 1;
+		compatible += entry_length + 1;
+	}
+	of_node_put(root);
+	return samsung_device;
+#else
+	return false;
+#endif
+}
 
 #if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(CONFIG_KRETPROBES) &&           \
 	defined(__aarch64__)
@@ -197,6 +231,10 @@ int ksu_samsung_rkp_init(void)
 	defined(__aarch64__)
 	int ret;
 
+	if (!ksu_samsung_device_detected()) {
+		pr_info("Samsung RKP fallback skipped on non-Samsung device\n");
+		return -ENODEV;
+	}
 	if (!ksu_syscall_table)
 		return -ENOENT;
 	ret = register_syscall_kprobe(&execve_kprobe, __NR_execve);

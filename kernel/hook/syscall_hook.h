@@ -13,6 +13,10 @@ extern syscall_fn_t *ksu_syscall_table;
 // Dispatcher slot number in syscall table
 extern int ksu_dispatcher_nr;
 
+#if defined(__aarch64__)
+extern bool ksu_syscall_hook_fallback_required;
+#endif
+
 // Syscall hook handler type.
 // orig_nr: the original syscall number before redirection
 // regs: the original pt_regs from userspace
