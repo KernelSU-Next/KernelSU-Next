@@ -138,7 +138,12 @@ static const struct susfs_import susfs_imports[] = {
     IMP(__put_cred),
     IMP(strnlen_user),
     IMP(___ratelimit),
+    /* copy_to_user()'s check_object_size() is an empty inline without this option, so the
+     * out-of-line helper is neither referenced nor present, and listing it unconditionally
+     * makes this guard the unresolved symbol it exists to catch. */
+#ifdef CONFIG_HARDENED_USERCOPY
     IMP(__check_object_size),
+#endif
     IMP(queue_delayed_work_on),
     IMP(cancel_delayed_work_sync),
     IMP(delayed_work_timer_fn),
