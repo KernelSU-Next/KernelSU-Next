@@ -59,7 +59,9 @@
 #include <linux/seq_file.h>
 #include <linux/moduleparam.h>
 #include <asm/fixmap.h>
+#ifdef __aarch64__
 #include <asm/memory.h>
+#endif
 #include <trace/events/syscalls.h>
 #include "susfs.h"
 #include "susfs_log.h"
@@ -98,9 +100,17 @@ static const struct susfs_import susfs_imports[] = {
      * and therefore never appear here). */
     IMP(fput),
     IMP(task_work_add),
+#ifdef __aarch64__
+    /* arm64's set_fixmap macro bottoms out in the global __set_fixmap. */
     IMP(__set_fixmap),
     IMP_DATA(memstart_addr),
     IMP_DATA(arm64_use_ng_mappings),
+#else
+    /* x86_64: set_fixmap is a macro over a static inline __set_fixmap whose
+     * callee is the global native_set_fixmap, so that is the import.  The
+     * two arm64 data symbols above do not exist on x86_64. */
+    IMP(native_set_fixmap),
+#endif
     IMP(copy_to_kernel_nofault),
     IMP(security_secctx_to_secid),
     IMP(stop_machine),
@@ -148,6 +158,7 @@ static const struct susfs_import susfs_imports[] = {
 
 /* arm64 user and kernel space cannot overlap: every kernel text/data/vmalloc address on a
  * GKI build sits far above this, and a zero-filled or user-space value sits below it.
+ * x86_64 kernel and module addresses (0xffffffff80000000 and up) also sit above it.
  * How much of the table this really covers depends on the variant: the 43 function entries hold a
  * module-local stub address in the LLVM-CFI builds (always above the floor, so only the 10 data
  * entries are checked there), and the loader's address in the kCFI builds (all 53 are checked). */

@@ -3,7 +3,7 @@
  * susfs_hide_syms.c - hide ksu/susfs symbols from /proc/kallsyms (SUSFS HIDE_KSU_SUSFS_SYMBOLS feature), LKM port.
  * Upstream patches kernel/kallsyms.c s_show() to skip symbols whose name starts with ksu_/__ksu_/susfs_/ksud/...  s_show is
  * static but sits in the kallsyms_op.show seq_operations pointer, so LTO keeps an out-of-line copy and a kprobe can hang
- * on it.  A matching prefix returns early (regs->regs[0] = 0, regs->pc = x30), so the line is never printed - covering
+ * on it.  A matching prefix returns early (susfs_kp_skip_return(regs, 0)), so the line is never printed - covering
  * BOTH core-kernel and module symbols, since the whole body is skipped before it branches on module_name.  On by default
  * like upstream (a build-time CONFIG there, no runtime toggle).
  */
@@ -598,18 +598,17 @@ static int hide_syms_s_show_pre(struct kprobe *kp, struct pt_regs *regs)
 	 * module symbols carry their own spelling (e.g. __kstrtab_foo) with the module's name in module_name. */
 	if (name_should_hide(iter->name)) {
 		atomic_inc(&hide_hit_count);
-		regs->regs[0] = 0;              /* s_show returns 0 */
-		regs->pc = regs->regs[30];      /* skip the line */
+		susfs_kp_skip_return(regs, 0);  /* returns 0, line skipped */
 		return 1;
 	}
 	if (iter->module_name[0] && hide_module_name_match(iter->module_name)) {
 		atomic_inc(&n_kallsyms_mod_skipped);
-		regs->regs[0] = 0;
-		regs->pc = regs->regs[30];
+		susfs_kp_skip_return(regs, 0);
 		return 1;
 	}
 	return 0;
 }
+NOKPROBE_SYMBOL(hide_syms_s_show_pre);
 
 /* Three kernels in this tree have a function called `s_show` (kernel/kallsyms.c, kernel/trace/
  * trace.c, mm/vmalloc.c), so registering this probe BY NAME does not establish that it lands on
@@ -630,6 +629,7 @@ static int hide_syms_s_show_pre(struct kprobe *kp, struct pt_regs *regs)
  * changed at all; the m->op check is what removes it, and it is off precisely on this path. */
 static struct kprobe kp_s_show = {
 	.pre_handler = hide_syms_s_show_pre,
+	.post_handler = susfs_kp_noopt_post,
 };
 
 /* /proc/modules is 0444 - any app can read it - and nothing in a built-in SUSFS is listed there.  Our own line is printed
@@ -653,13 +653,14 @@ static int hide_syms_m_show_pre(struct kprobe *kp, struct pt_regs *regs)
 		return 0;
 
 	atomic_inc(&n_modlines_skipped);
-	regs_set_return_value(regs, 0);		/* no output for this entry */
-	regs->pc = regs->regs[30];
+		susfs_kp_skip_return(regs, 0);	/* no output for this entry */
 	return 1;
 }
+NOKPROBE_SYMBOL(hide_syms_m_show_pre);
 
 static struct kprobe kp_m_show = {
 	.pre_handler = hide_syms_m_show_pre,
+	.post_handler = susfs_kp_noopt_post,
 };
 
 static bool m_show_registered;
@@ -681,7 +682,12 @@ static bool m_show_registered;
  * Only when that fails is the value treated as an entry stub: skip an optional `bti c`, follow the
  * unconditional branch that must follow it (`b`; `bl` is a call and is deliberately not followed),
  * and validate the destination the same way.  Any other shape fails, and the caller falls back to
- * registering by name rather than arming an unvalidated address. */
+ * registering by name rather than arming an unvalidated address.
+ *
+ * x86_64 note: kCFI there has no jump tables, so the table value IS the
+ * function body and the stub-following path below never fires; if it ever
+ * did, it fails closed and the caller registers by name.  kprobes itself
+ * skips the endbr64 the body starts with. */
 static int __nocfi noinline hide_syms_resolve_show(struct kprobe *kp,
 		const char *table_name, const char *symbol_name,
 		const struct seq_operations **table_out)
