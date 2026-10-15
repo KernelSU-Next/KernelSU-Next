@@ -22,11 +22,16 @@ typedef struct cred *(*prepare_ro_creds_t)(struct cred *cred, int command,
 					   u64 task);
 typedef void (*kdp_assign_pgd_t)(struct task_struct *task);
 typedef unsigned int (*kdp_usecount_dec_and_test_t)(struct cred *cred);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
 typedef long (*inc_rlimit_ucounts_t)(struct ucounts *ucounts,
 				     enum rlimit_type type, long value);
 typedef bool (*dec_rlimit_ucounts_t)(struct ucounts *ucounts,
 				     enum rlimit_type type, long value);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 11, 0)
+typedef long (*inc_rlimit_ucounts_t)(struct ucounts *ucounts,
+				     enum ucount_type type, long value);
+typedef bool (*dec_rlimit_ucounts_t)(struct ucounts *ucounts,
+				     enum ucount_type type, long value);
 #endif
 
 struct samsung_kdp_commit_work {
