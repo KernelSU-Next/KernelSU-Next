@@ -330,6 +330,7 @@
   <string name="susfs_load_action">Load SUSFS LKM</string>
   <string name="susfs_load_button">Load</string>
   <string name="susfs_load_in_progress">Loading SUSFS LKM</string>
+  <string name="susfs_already_loaded">SUSFS already loaded</string>
   <string name="susfs_load_summary">Load the SUSFS guard kernel module.</string>
   <string name="susfs_load_summary_loading">Loading the SUSFS guard module.</string>
   <string name="susfs_auto_load">Enable auto load</string>
