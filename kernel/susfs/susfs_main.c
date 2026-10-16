@@ -12,6 +12,7 @@
 #include <linux/path.h>		/* path_put() */
 #include <linux/security.h>	/* security_secctx_to_secid(): the nodes' SELinux label */
 
+#include "susfs_kprobe.h"	/* susfs_kp_noopt_post lives here */
 #include "symbol_resolver.h"
 #include "ksu_allow_gate.h"	/* susfs_ksu_allow_kind: whether ksu_file applies at all */
 #include "patch_memory.h"	/* ksu_patch_memory_init(): the flush helper's name differs per kernel */
@@ -23,6 +24,14 @@
 #include "susfs.h"
 #include "susfs_opath.h"	/* SUSFS_OPATH_NODE + the layer's init/exit */
 #include "susfs_fp_hook.h"	/* susfs_fp_init: the sys_call_table cache every fp layer installs through */
+
+/* See susfs_kprobe.h.  Empty on purpose: it exists only so the kprobe
+ * optimizer refuses these probes, its presence is the whole point. */
+void susfs_kp_noopt_post(struct kprobe *kp, struct pt_regs *regs,
+			 unsigned long flags)
+{
+}
+NOKPROBE_SYMBOL(susfs_kp_noopt_post);
 
 /* The module's own name lives in susfs.h (SUSFS_LKM_MODULE_NAME / SUSFS_LKM_SYSFS_DIR):
  * /sys/module's directory and the rules that hide it (susfs_hide_syms.c) must agree, and the
