@@ -66,7 +66,16 @@ void susfs_fp_drain(void);
 /* Prints table[nr] next to the plain and the .cfi_jt symbol for one entry. */
 void susfs_fp_dump_entry(int nr, const char *sym);
 
-/* Prints the first instruction of a wrapper - 'bti c' or nothing. */
+/* The landing pad an indirect call into this module must land on: 'bti c'
+ * on arm64 (an unallocated HINT on cores without BTI, so checking for it is
+ * correct either way), endbr64 on x86_64 under IBT. */
+#ifdef __x86_64__
+#define SUSFS_LANDING_PAD	0xfa1e0ff3u
+#else
+#define SUSFS_LANDING_PAD	0xd503245fu
+#endif
+
+/* Prints the first instruction of a wrapper - the landing pad or nothing. */
 void susfs_fp_dump_wrapper(const char *name, const void *fn);
 
 #endif /* __SUSFS_FP_HOOK_H */
