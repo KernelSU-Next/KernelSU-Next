@@ -21,6 +21,7 @@ struct susfs_open_how {
 
 #include "susfs_log.h"
 #include "symbol_resolver.h"
+#include "susfs_kprobe.h"	/* susfs_sc_arg */
 #include "susfs_or_entry_data.h"
 #include "susfs_or_entry_phys.h"
 #include <linux/fcntl.h>	/* AT_FDCWD, O_CLOEXEC, __O_TMPFILE */
@@ -188,13 +189,13 @@ __nocfi noinline long susfs_or_entry_redirect(const struct pt_regs *regs, int ki
 	if (!susfs_open_redirect_active())
 		return SUSFS_OR_ENTRY_PASS;
 
-	/* arm64 keeps a syscall's arguments in regs[0..5] for native and compat alike, so the
-	 * argument number IS the register index (arch/arm64/include/asm/syscall_wrapper.h). */
+	/* The argument number is the register index on arm64; susfs_sc_arg maps it
+	 * to the right register per arch (susfs_kprobe.h). */
 	switch (kind) {
 	case SUSFS_OR_ENTRY_OPENAT:
 	case SUSFS_OR_ENTRY_COMPAT_OPENAT:
-		dfd = (int)regs->regs[0];
-		uname = (const char __user *)regs->regs[1];
+		dfd = (int)susfs_sc_arg(regs, 0);
+		uname = (const char __user *)susfs_sc_arg(regs, 1);
 		/* Truncated to what the kernel's own declaration is: these entries take an `int flags`
 		 * and the syscall wrapper casts the register to it (__SC_CAST), so the upper half of the
 		 * register is ignored by the kernel.  Keeping it here would make the unknown-bit test
@@ -202,20 +203,20 @@ __nocfi noinline long susfs_or_entry_redirect(const struct pt_regs *regs, int ki
 		 * plain open straight back to it - i.e. the redirect would be bypassable with
 		 * `flags | (1UL << 32)`.  openat2 is the exception and stays 64-bit, because the kernel
 		 * does not mask how.flags. */
-		flags = (unsigned int)regs->regs[2];
-		mode = regs->regs[3];
+		flags = (unsigned int)susfs_sc_arg(regs, 2);
+		mode = susfs_sc_arg(regs, 3);
 		break;
 	case SUSFS_OR_ENTRY_COMPAT_OPEN:
 		/* COMPAT_SYSCALL_DEFINE3: no dirfd, so the arguments shift down by one. */
-		uname = (const char __user *)regs->regs[0];
-		flags = (unsigned int)regs->regs[1];
-		mode = regs->regs[2];
+		uname = (const char __user *)susfs_sc_arg(regs, 0);
+		flags = (unsigned int)susfs_sc_arg(regs, 1);
+		mode = susfs_sc_arg(regs, 2);
 		break;
 	case SUSFS_OR_ENTRY_OPENAT2:
 	case SUSFS_OR_ENTRY_COMPAT_OPENAT2:
-		dfd = (int)regs->regs[0];
-		uname = (const char __user *)regs->regs[1];
-		usize = regs->regs[3];
+		dfd = (int)susfs_sc_arg(regs, 0);
+		uname = (const char __user *)susfs_sc_arg(regs, 1);
+		usize = susfs_sc_arg(regs, 3);
 		/* The kernel's own rules for this structure: a size below it is EINVAL, a size above it
 		 * is accepted as long as the bytes this kernel does not know are zero (that is what
 		 * copy_struct_from_user() checks, through check_zeroed_user()), and anything else is
@@ -225,11 +226,11 @@ __nocfi noinline long susfs_or_entry_redirect(const struct pt_regs *regs, int ki
 		 * it is not. */
 		if (usize < sizeof(how))
 			return SUSFS_OR_ENTRY_PASS;
-		if (copy_from_user(&how, (const void __user *)regs->regs[2], sizeof(how)))
+		if (copy_from_user(&how, (const void __user *)susfs_sc_arg(regs, 2), sizeof(how)))
 			return SUSFS_OR_ENTRY_PASS;
 		if (usize > sizeof(how) &&
 		    (!susfs_or_syms.check_zeroed_user ||
-		     susfs_or_check_zeroed_user((const void __user *)regs->regs[2] + sizeof(how),
+		     susfs_or_check_zeroed_user((const void __user *)susfs_sc_arg(regs, 2) + sizeof(how),
 					  usize - sizeof(how)) <= 0))
 			return SUSFS_OR_ENTRY_PASS;
 		/* ... and the two bits the kernel removes from these flags before it looks at any of them

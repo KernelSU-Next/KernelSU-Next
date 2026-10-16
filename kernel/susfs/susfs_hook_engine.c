@@ -19,7 +19,9 @@
 #include "susfs_hook_engine.h"
 #include "susfs_log.h"
 #include "symbol_resolver.h"
+#ifdef __aarch64__
 #include "hk.h"
+#endif
 
 #define SUSFS_HK_OVERRIDES 8
 
@@ -69,6 +71,7 @@ bool susfs_hook_engine_active(void)
 
 int susfs_hook_engine_init(void)
 {
+#ifdef __aarch64__
 	struct hk_cfg cfg = { .resolve = susfs_hk_resolve };
 	int rc;
 
@@ -81,14 +84,19 @@ int susfs_hook_engine_init(void)
 	}
 	susfs_hk_inited = true;
 	return 0;
+#else
+	return -EOPNOTSUPP;
+#endif
 }
 
 void susfs_hook_engine_exit(void)
 {
+#ifdef __aarch64__
 	if (!susfs_hk_inited)
 		return;
 	hk_exit();
 	susfs_hk_inited = false;
+#endif
 }
 
 bool susfs_hook_map_ready(void)

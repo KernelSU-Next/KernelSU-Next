@@ -34,8 +34,10 @@
 #include "susfs_log.h"
 #include "patch_memory.h"
 #include "lsm_hook.h"
+#ifdef __aarch64__
 #include "hk.h"
 #include "hk_inline.h"
+#endif
 
 #define CONSUMERS_MAX 8
 #define RAW_PROBES_MAX 64
@@ -56,7 +58,9 @@ struct hook_target {
 	bool installed;
 	struct susfs_hook *consumers[CONSUMERS_MAX];
 	unsigned int nconsumers;
+#ifdef __aarch64__
 	struct hk_inline inline_hook;
+#endif
 	struct kprobe kp;
 	struct susfs_hook *hook;		/* first consumer, for raw fallback */
 };
@@ -99,10 +103,14 @@ avc_wrapper(u32 ssid, u32 tsid, u16 tclass, u32 requested, u32 audited,
 static int __nocfi avc_kprobe_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct susfs_avc_ctx ctx = {
-		.ssid = (u32)regs->regs[0], .tsid = (u32)regs->regs[1],
-		.tclass = (u16)regs->regs[2], .requested = (u32)regs->regs[3],
-		.audited = (u32)regs->regs[4], .denied = (u32)regs->regs[5],
-		.result = (int)regs->regs[6], .a = (void *)regs->regs[7],
+		.ssid = (u32)regs_get_kernel_argument(regs, 0),
+		.tsid = (u32)regs_get_kernel_argument(regs, 1),
+		.tclass = (u16)regs_get_kernel_argument(regs, 2),
+		.requested = (u32)regs_get_kernel_argument(regs, 3),
+		.audited = (u32)regs_get_kernel_argument(regs, 4),
+		.denied = (u32)regs_get_kernel_argument(regs, 5),
+		.result = (int)regs_get_kernel_argument(regs, 6),
+		.a = (void *)regs_get_kernel_argument(regs, 7),
 	};
 	unsigned int i;
 
@@ -112,8 +120,8 @@ static int __nocfi avc_kprobe_pre(struct kprobe *p, struct pt_regs *regs)
 		if (c && c->pre && c->pre(&ctx))
 			return 1;
 	}
-	regs->regs[0] = ctx.ssid;
-	regs->regs[1] = ctx.tsid;
+	susfs_set_sc_arg(regs, 0, ctx.ssid);
+	susfs_set_sc_arg(regs, 1, ctx.tsid);
 	return 0;
 }
 #else
@@ -150,11 +158,15 @@ avc_wrapper(void *state, u32 ssid, u32 tsid, u16 tclass, u32 requested,
 static int __nocfi avc_kprobe_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct susfs_avc_ctx ctx = {
-		.state = (void *)regs->regs[0], .ssid = (u32)regs->regs[1],
-		.tsid = (u32)regs->regs[2], .tclass = (u16)regs->regs[3],
-		.requested = (u32)regs->regs[4], .audited = (u32)regs->regs[5],
-		.denied = (u32)regs->regs[6], .result = (int)regs->regs[7],
-		.a = (void *)regs->regs[8],
+		.state = (void *)regs_get_kernel_argument(regs, 0),
+		.ssid = (u32)regs_get_kernel_argument(regs, 1),
+		.tsid = (u32)regs_get_kernel_argument(regs, 2),
+		.tclass = (u16)regs_get_kernel_argument(regs, 3),
+		.requested = (u32)regs_get_kernel_argument(regs, 4),
+		.audited = (u32)regs_get_kernel_argument(regs, 5),
+		.denied = (u32)regs_get_kernel_argument(regs, 6),
+		.result = (int)regs_get_kernel_argument(regs, 7),
+		.a = (void *)regs_get_kernel_argument(regs, 8),
 	};
 	unsigned int i;
 
@@ -164,8 +176,8 @@ static int __nocfi avc_kprobe_pre(struct kprobe *p, struct pt_regs *regs)
 		if (c && c->pre && c->pre(&ctx))
 			return 1;
 	}
-	regs->regs[1] = ctx.ssid;
-	regs->regs[2] = ctx.tsid;
+	susfs_set_sc_arg(regs, 1, ctx.ssid);
+	susfs_set_sc_arg(regs, 2, ctx.tsid);
 	return 0;
 }
 #endif
@@ -392,13 +404,16 @@ static void remove_consumer(struct hook_target *t, struct susfs_hook *hook)
 	}
 }
 
+#ifdef __aarch64__
 /* __arm64_sys_newuname has a PAC prologue, so it uses the return-hook stub
  * (susfs_lookup_stub.S) instead of the C wrapper form. */
 extern void susfs_uname_stub(void);
 extern unsigned long susfs_uname_tramp;
+#endif
 
 static int install_inline(struct hook_target *t, struct susfs_hook *h)
 {
+#ifdef __aarch64__
 	int rc;
 
 	t->hook = h;
@@ -483,11 +498,14 @@ static int install_inline(struct hook_target *t, struct susfs_hook *h)
 	t->backend = BACKEND_INLINE;
 	t->installed = true;
 	return SUSFS_HOOK_OK;
+#else
+	return SUSFS_HOOK_INSTALL_FAILED;
+#endif
 }
 
 static int __nocfi vfs_open_kprobe_pre(struct kprobe *p, struct pt_regs *regs)
 {
-	struct path *path = (struct path *)regs->regs[0];
+	struct path *path = (struct path *)susfs_sc_arg(regs, 0);
 	struct susfs_inode_ctx ctx = {
 		.inode = (path && path->dentry) ? d_inode(path->dentry) : NULL,
 		.ret = 0,
@@ -504,10 +522,10 @@ static int __nocfi vfs_open_kprobe_pre(struct kprobe *p, struct pt_regs *regs)
 	if (!skip)
 		return 0;
 	/* Answer as vfs_open would have: return to the caller with ctx.ret. */
-	regs->pc = regs->regs[30];
-	regs->regs[0] = (unsigned long)ctx.ret;
+	susfs_kp_skip_return(regs, (unsigned long)ctx.ret);
 	return 1;
 }
+NOKPROBE_SYMBOL(vfs_open_kprobe_pre);
 
 static int raw_probes_install(struct susfs_hook *h);
 static void raw_probes_uninstall(struct susfs_hook *h);
@@ -546,6 +564,7 @@ static int install_kprobe(struct hook_target *t, struct susfs_hook *h)
 		return SUSFS_HOOK_OK;
 	}
 	t->kp.symbol_name = t->symbol;
+	t->kp.post_handler = susfs_kp_noopt_post;
 	if (t->slot == SUSFS_HOOK_SLOW_AVC_AUDIT)
 		t->kp.pre_handler = avc_kprobe_pre;
 	else if (t->slot == SUSFS_HOOK_VFS_OPEN)
@@ -554,8 +573,10 @@ static int install_kprobe(struct hook_target *t, struct susfs_hook *h)
 		t->kp.pre_handler = NULL;
 	if (!t->kp.pre_handler)
 		return SUSFS_HOOK_INSTALL_FAILED;
-	if (register_kprobe(&t->kp))
+	if (register_kprobe(&t->kp)) {
+		susfs_kp_forget_addr(&t->kp);
 		return SUSFS_HOOK_INSTALL_FAILED;
+	}
 	t->backend = BACKEND_KPROBE;
 	t->installed = true;
 	return SUSFS_HOOK_OK;
@@ -565,9 +586,12 @@ static void uninstall_target(struct hook_target *t)
 {
 	if (!t->installed)
 		return;
+#ifdef __aarch64__
 	if (t->backend == BACKEND_INLINE)
 		hk_inline_unhook(&t->inline_hook);
-	else if (t->backend == BACKEND_KPROBE) {
+	else
+#endif
+	if (t->backend == BACKEND_KPROBE) {
 		if (t->hook && t->hook->probes && t->hook->nprobes) {
 			raw_probes_uninstall(t->hook);
 		} else {
@@ -576,7 +600,7 @@ static void uninstall_target(struct hook_target *t)
 			 * it; a second register with .addr non-NULL and .symbol_name
 			 * set is -EINVAL, so an enable/disable/enable cycle failed
 			 * with -225.  Put the target back to its named state. */
-			t->kp.addr = NULL;
+			susfs_kp_forget_addr(&t->kp);
 			t->kp.symbol_name = t->symbol;
 		}
 	} else if (t->backend == BACKEND_TABLE) {
@@ -920,15 +944,15 @@ static const struct target_desc target_desc[SUSFS_HOOK_TARGET_COUNT] = {
 	[SUSFS_HOOK_TARGET_SHOW_VFSSTAT]		= { "show_vfsstat", 14, NULL },
 	[SUSFS_HOOK_TARGET_SHOW_MOUNTINFO]		= { "show_mountinfo", 15, NULL },
 	[SUSFS_HOOK_TARGET_SHOW_VFSMNT]			= { "show_vfsmnt", 16, NULL },
-	[SUSFS_HOOK_TARGET_ARM64_SYS_STATX]		= { "__arm64_sys_statx", 17, NULL },
+	[SUSFS_HOOK_TARGET_ARM64_SYS_STATX]		= { SUSFS_SC_WRAPPER_NAME(statx), 17, NULL },
 	[SUSFS_HOOK_TARGET_DO_STATX]			= { "do_statx", 18, NULL },
 	[SUSFS_HOOK_TARGET_GENERIC_SHUTDOWN_SUPER]	= { "generic_shutdown_super", 19, NULL },
 	[SUSFS_HOOK_TARGET_COPY_MNT_NS]			= { "copy_mnt_ns", 20, NULL },
 	[SUSFS_HOOK_TARGET_ATTACH_RECURSIVE_MNT]	= { "attach_recursive_mnt", 21, NULL },
-	[SUSFS_HOOK_TARGET_ARM64_SYS_NEWUNAME]		= { "__arm64_sys_newuname", 3, NULL },
+	[SUSFS_HOOK_TARGET_ARM64_SYS_NEWUNAME]		= { SUSFS_SC_WRAPPER_NAME(newuname), 3, NULL },
 	[SUSFS_HOOK_TARGET_VFS_OPEN]			= { "vfs_open", 0, NULL },
 	[SUSFS_HOOK_TARGET_PATH_OPENAT]			= { "path_openat", 1, NULL },
-	[SUSFS_HOOK_TARGET_ARM64_SYS_REBOOT]		= { "__arm64_sys_reboot", -1, NULL },
+	[SUSFS_HOOK_TARGET_ARM64_SYS_REBOOT]		= { SUSFS_SC_WRAPPER_NAME(reboot), -1, NULL },
 	[SUSFS_HOOK_TARGET_SEQ_SHOW]			= { "seq_show", -1, NULL },
 	[SUSFS_HOOK_TARGET_LSM]				= { NULL, -1, NULL },
 	[SUSFS_HOOK_TARGET_FP]				= { NULL, -1, NULL },

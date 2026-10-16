@@ -10,6 +10,7 @@
 #include <linux/fs.h>		/* d_inode() for the control-node labels */
 #include <linux/security.h>	/* security_secctx_to_secid(): the nodes' SELinux label */
 
+#include "susfs_kprobe.h"	/* susfs_kp_noopt_post lives here */
 #include "symbol_resolver.h"
 #include "ksu_allow_gate.h"	/* susfs_ksu_allow_kind: whether ksu_file applies at all */
 #include "patch_memory.h"	/* ksu_patch_memory_init(): the flush helper's name differs per kernel */
@@ -41,6 +42,14 @@
 #include "susfs_hook_engine.h"
 #include "susfs_hooks.h"
 #include "susfs_main_data.h"
+
+/* See susfs_kprobe.h.  Empty on purpose: it exists only so the kprobe
+ * optimizer refuses these probes, its presence is the whole point. */
+void susfs_kp_noopt_post(struct kprobe *kp, struct pt_regs *regs,
+			 unsigned long flags)
+{
+}
+NOKPROBE_SYMBOL(susfs_kp_noopt_post);
 
 /* The module's own name lives in susfs_core.h (SUSFS_LKM_MODULE_NAME / SUSFS_LKM_SYSFS_DIR):
  * /sys/module's directory and the rules that hide it (susfs_hide_syms.c) must agree, and the
@@ -360,7 +369,7 @@ static int __init susfs_init(void)
      * module is actually loaded; keep it unconditional (pr_warn, not SUSFS_LOGI) so it
      * survives enable_log=0, like the loaded line above. */
     if (susfs_supercall_kprobe_active())
-        pr_warn("supercall delivery fell back to the kprobe path: it leaves a breakpoint on __arm64_sys_reboot, visible through /sys/kernel/debug/kprobes/list and text/instruction inspection - treat this as a side channel.\n");
+        pr_warn("supercall delivery fell back to the kprobe path: it leaves a breakpoint on " SUSFS_SC_WRAPPER_NAME(reboot) ", visible through /sys/kernel/debug/kprobes/list and text/instruction inspection - treat this as a side channel.\n");
 
     return 0;
 }

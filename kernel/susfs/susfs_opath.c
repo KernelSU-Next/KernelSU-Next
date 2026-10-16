@@ -97,11 +97,9 @@
  * test is written out here so opath_dump can report it on the device for a wrapper that is not
  * installed at all - a dump whose answer only exists when the hook is already live would be
  * useless for the step it is meant for. */
-#define SUSFS_ARM64_BTI_C	0xd503245fu
-
 static inline bool opath_has_landing_pad(const void *fn)
 {
-	return fn && READ_ONCE(*(const u32 *)fn) == SUSFS_ARM64_BTI_C;
+	return fn && READ_ONCE(*(const u32 *)fn) == SUSFS_LANDING_PAD;
 }
 /* ---- /proc/susfs_opath ---- */
 static int opath_proc_show(struct seq_file *m, void *v);

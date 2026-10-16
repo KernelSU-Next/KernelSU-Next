@@ -5,6 +5,7 @@
 #include <linux/string.h>
 #include <asm/ptrace.h>
 #include "susfs_abi.h"
+#include "susfs_kprobe.h"
 #include "susfs_log.h"
 #include "susfs_hooks.h"
 #include "susfs_uname.h"
@@ -26,7 +27,7 @@ susfs_uname_wrap(const struct pt_regs *regs)
     if (ret)
         return ret;
     /* Inline receives the syscall wrapper's argument directly. */
-    name = (void __user *)regs->regs[0];
+    name = (void __user *)susfs_sc_arg(regs, 0);
     if (susfs_uname_snapshot(ret, !!name, &values))
         susfs_uname_write_user(name, &values, false);
     return ret;
@@ -46,7 +47,7 @@ long __nocfi susfs_uname_decide(unsigned long *saved)
 
     if (ret)
         return ret;
-    name = regs ? (void __user *)regs->regs[0] : NULL;
+    name = regs ? (void __user *)susfs_sc_arg(regs, 0) : NULL;
     if (susfs_uname_snapshot(ret, !!name, &values))
         susfs_uname_write_user(name, &values, false);
     return ret;

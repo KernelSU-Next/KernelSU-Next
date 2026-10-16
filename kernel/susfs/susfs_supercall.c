@@ -13,6 +13,7 @@
 #include <linux/cred.h>
 
 #include "susfs_abi.h"
+#include "susfs_kprobe.h"	/* susfs_sc_arg reads the real regs; the skip goes through susfs_kp_skip_return */
 #include "susfs_log.h"
 #include "susfs_fp_hook.h"
 #include "susfs_hooks.h"
@@ -92,6 +93,11 @@ int susfs_supercall_init(void)
 		susfs_sc_fp_armed = true;
 		SUSFS_LOGI("susfs supercall: armed via sys_call_table (reboot ABI, version " SUSFS_VERSION_STR ")\n");
 	} else {
+		rc = susfs_supercall_canary_arm();
+		if (rc) {
+			susfs_hook_unregister(&reboot_sc_hook);
+			return rc;
+		}
 		susfs_sc_kp_armed = true;
 		pr_warn("susfs supercall: sys_call_table reboot hook unavailable, using kprobe fallback\n");
 		SUSFS_LOGI("susfs supercall: armed via kprobe (reboot ABI, version " SUSFS_VERSION_STR ")\n");
@@ -106,6 +112,8 @@ bool susfs_supercall_kprobe_active(void)
 
 void susfs_supercall_exit(void)
 {
+	if (susfs_sc_kp_armed)
+		susfs_supercall_canary_disarm();
 	susfs_hook_unregister(&reboot_sc_hook);
 	if (susfs_sc_fp_armed) {
 		susfs_fp_drain();

@@ -39,13 +39,14 @@
 #include "susfs_dirent_policy.h"
 #include "susfs_log.h"
 #include "symbol_resolver.h"
+#include "susfs_kprobe.h"	/* susfs_sc_arg */
 
 __nocfi bool susfs_dirent_prefilter(const struct pt_regs *regs, long *out,
 				    bool compat)
 {
-	unsigned int fd = (unsigned int)regs->regs[0];
-	void __user *dirp = (void __user *)regs->regs[1];
-	unsigned int count = (unsigned int)regs->regs[2];
+	unsigned int fd = (unsigned int)susfs_sc_arg(regs, 0);
+	void __user *dirp = (void __user *)susfs_sc_arg(regs, 1);
+	unsigned int count = (unsigned int)susfs_sc_arg(regs, 2);
 	struct file *f;
 	long error;
 

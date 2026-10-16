@@ -88,15 +88,25 @@ static struct susfs_hook hide_s_reg = {
 	.owner = "hide_syms",
 	.name = "s_show",
 	.target = SUSFS_HOOK_TARGET_S_SHOW,
+#ifdef __aarch64__
 	.stub = susfs_hide_s_stub,
 	.tramp = &susfs_hide_s_tramp,
+#else
+	.probes = &susfs_hide_s_probe,
+	.nprobes = 1,
+#endif
 };
 static struct susfs_hook hide_m_reg = {
 	.owner = "hide_syms",
 	.name = "m_show",
 	.target = SUSFS_HOOK_TARGET_M_SHOW,
+#ifdef __aarch64__
 	.stub = susfs_hide_m_stub,
 	.tramp = &susfs_hide_m_tramp,
+#else
+	.probes = &susfs_hide_m_probe,
+	.nprobes = 1,
+#endif
 };
 int susfs_hide_syms_init(void)
 {

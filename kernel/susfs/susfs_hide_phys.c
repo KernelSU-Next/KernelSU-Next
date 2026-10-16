@@ -85,7 +85,9 @@ static bool hide_syms_iter_plausible(const struct kallsym_iter_local *it)
 	return strnlen(it->module_name, sizeof(it->module_name)) < sizeof(it->module_name);
 }
 
+#ifdef __aarch64__
 static unsigned long hide_s_addr, hide_m_addr;
+#endif
 static bool hide_registered, m_show_registered;
 static bool hide_s_should_hide(struct seq_file *m)
 {
@@ -149,10 +151,10 @@ static int hide_syms_s_show_pre(struct kprobe *kp, struct pt_regs *regs)
 
 	if (!susfs_hide_symbol_decide(iter->name, iter->module_name))
 		return 0;
-	regs->regs[0] = 0;
-	regs->pc = regs->regs[30];
+	susfs_kp_skip_return(regs, 0);
 	return 1;
 }
+NOKPROBE_SYMBOL(hide_syms_s_show_pre);
 
 static int hide_syms_m_show_pre(struct kprobe *kp, struct pt_regs *regs)
 {
@@ -171,13 +173,21 @@ static int hide_syms_m_show_pre(struct kprobe *kp, struct pt_regs *regs)
 	if (!susfs_hide_module_decide(mod->name))
 		return 0;
 
-	regs_set_return_value(regs, 0);		/* no output for this entry */
-	regs->pc = regs->regs[30];
+	susfs_kp_skip_return(regs, 0);		/* no output for this entry */
 	return 1;
 }
+NOKPROBE_SYMBOL(hide_syms_m_show_pre);
 
-static struct kprobe kp_s_show = { .pre_handler = hide_syms_s_show_pre };
-static struct kprobe kp_m_show = { .pre_handler = hide_syms_m_show_pre };
+static struct kprobe kp_s_show = {
+	.pre_handler = hide_syms_s_show_pre,
+	.post_handler = susfs_kp_noopt_post,
+};
+static struct kprobe kp_m_show = {
+	.pre_handler = hide_syms_m_show_pre,
+	.post_handler = susfs_kp_noopt_post,
+};
+const struct susfs_hook_probe susfs_hide_s_probe = { .kp = &kp_s_show };
+const struct susfs_hook_probe susfs_hide_m_probe = { .kp = &kp_m_show };
 
 static int __nocfi noinline hide_syms_resolve_show(struct kprobe *kp,
 		const char *table_name, const char *symbol_name,
@@ -185,8 +195,11 @@ static int __nocfi noinline hide_syms_resolve_show(struct kprobe *kp,
 {
 	const struct seq_operations *op;
 	unsigned long addr = find_kernel_symbol_exact(table_name);
-	unsigned long show, target, pc;
+	unsigned long show, target;
+#ifdef __aarch64__
+	unsigned long pc;
 	u32 insn;
+#endif
 
 	*table_out = NULL;
 	if (!addr)
@@ -194,6 +207,7 @@ static int __nocfi noinline hide_syms_resolve_show(struct kprobe *kp,
 	op = (const struct seq_operations *)addr;
 	if (copy_from_kernel_nofault(&show, &op->show, sizeof(show)))
 		return -EFAULT;
+#ifdef __aarch64__
 	if (!show || (show & 3))
 		return -EINVAL;
 
@@ -227,6 +241,11 @@ static int __nocfi noinline hide_syms_resolve_show(struct kprobe *kp,
 		SUSFS_LOGI("susfs_hide_syms: %s.show BTI landing pad kept, probing %px\n",
 				table_name, (void *)target);
 	}
+#else
+	if (!show || !ksu_symbol_is_start(show, symbol_name))
+		return -EINVAL;
+	target = show;
+#endif
 	kp->addr = (kprobe_opcode_t *)target;
 	*table_out = op;
 	SUSFS_LOGI("susfs_hide_syms: %s.show=%px, probe body=%px\n",
@@ -258,6 +277,7 @@ int susfs_hide_phys_init(struct susfs_hook *s_hook, struct susfs_hook *m_hook)
 		kp_s_show.symbol_name = "s_show";
 	}
 	{
+#ifdef __aarch64__
 		hide_s_addr = (unsigned long)kp_s_show.addr;
 		susfs_hook_override("s_show", hide_s_addr);
 		rc = susfs_hook_register_assign(s_hook,
@@ -270,6 +290,17 @@ int susfs_hide_phys_init(struct susfs_hook *s_hook, struct susfs_hook *m_hook)
 		SUSFS_LOGI("susfs_hide_syms: s_show inline at %px (%s)\n",
 				(void *)hide_s_addr,
 				kallsyms_op_target ? "by table identity" : "BY NAME");
+#else
+		rc = susfs_hook_register_assign(s_hook,
+						SUSFS_HOOK_BACKEND_KPROBE);
+		if (rc < 0) {
+			pr_warn("susfs_hide_syms: s_show kprobe failed %d\n", rc);
+			return rc;
+		}
+		hide_registered = true;
+		SUSFS_LOGI("susfs_hide_syms: s_show armed (%s)\n",
+				kallsyms_op_target ? "by table identity" : "BY NAME");
+#endif
 	}
 	/* Separate probe, separate failure: hiding symbol names and hiding module entries are independent. */
 	rc = hide_syms_resolve_show(&kp_m_show, "modules_op", "m_show",
@@ -282,6 +313,7 @@ int susfs_hide_phys_init(struct susfs_hook *s_hook, struct susfs_hook *m_hook)
 		SUSFS_LOGI("susfs_hide_syms: modules_op.show could not be validated (%d) - NOT arming m_show; /proc/modules keeps listing the hidden modules\n",
 				rc);
 	} else {
+#ifdef __aarch64__
 		hide_m_addr = (unsigned long)kp_m_show.addr;
 		susfs_hook_override("m_show", hide_m_addr);
 		rc = susfs_hook_register_assign(m_hook,
@@ -292,6 +324,16 @@ int susfs_hide_phys_init(struct susfs_hook *s_hook, struct susfs_hook *m_hook)
 			m_show_registered = true;
 			SUSFS_LOGI("susfs_hide_syms: m_show inline at %px\n", (void *)hide_m_addr);
 		}
+#else
+		rc = susfs_hook_register_assign(m_hook,
+						SUSFS_HOOK_BACKEND_KPROBE);
+		if (rc < 0) {
+			pr_warn("susfs_hide_syms: m_show kprobe failed %d\n", rc);
+		} else {
+			m_show_registered = true;
+			SUSFS_LOGI("susfs_hide_syms: m_show armed\n");
+		}
+#endif
 	}
 	return 0;
 }

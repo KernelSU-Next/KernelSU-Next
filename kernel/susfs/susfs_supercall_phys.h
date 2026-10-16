@@ -18,4 +18,7 @@ int susfs_supercall_defer(unsigned int cmd, void __user *payload);
 extern struct susfs_fp_hook susfs_supercall_reboot_fp;
 extern const struct susfs_hook_probe susfs_supercall_reboot_probe;
 
+int susfs_supercall_canary_arm(void);
+void susfs_supercall_canary_disarm(void);
+
 #endif /* __SUSFS_SUPERCALL_PHYS_H */
