@@ -5,9 +5,12 @@
  * ksu_susfs (and SukiSU ksud) call syscall(SYS_reboot, 0xDEADBEEF, 0xFAFAFAFA, cmd_id,
  * &payload) and the handler writes payload.err back.  Upstream SUSFS patches
  * kernel/reboot.c SYSCALL_DEFINE4 to branch into ksu_handle_sys_reboot(); an LKM cannot
- * patch that, so we kprobe __arm64_sys_reboot and match the magics ourselves.
- *  - arm64 syscall-wrapper quirk: the kprobe sees regs->regs[0] == struct pt_regs * (the
- *    wrapper's __regs argument); the real user args are in real_regs->regs[0..3] - SukiSU's
+ * patch that, so the dispatcher hooks the reboot entry itself.
+ *
+ * The delivery mechanism tries the sys_call_table first (required for BTI kernels) and falls
+ * back to the kprobe path when the table cannot be hooked (e.g. under pKVM).
+ *  - the kprobe path sees susfs_sc_arg(regs, 0) == struct pt_regs * (the wrapper's __regs
+ *    argument); the real user args are in real_regs->regs[0..3] (or x86_64 registers) - SukiSU's
  *    PT_REAL_REGS() / arch.h.
  *  - a pre_handler runs in interrupt context and must not copy_from_user, so the command is
  *    deferred to task_work (TWA_RESUME), i.e. process context - the same trick SukiSU uses.
@@ -17,6 +20,7 @@
 #include <linux/module.h>
 #include <linux/kprobes.h>
 #include <linux/task_work.h>
+#include <linux/workqueue.h>	/* the delayed canary recheck */
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/cred.h>
@@ -24,6 +28,7 @@
 #include <linux/string.h>
 #include <linux/bitmap.h>
 #include "susfs_abi.h"
+#include "susfs_kprobe.h"	/* susfs_sc_arg reads the real regs; the skip goes through susfs_kp_skip_return */
 #include "susfs_log.h"
 #include "susfs.h"
 #include "susfs_fp_hook.h"
@@ -279,10 +284,10 @@ static long __nocfi reboot_wrapper(const struct pt_regs *regs)
 	void __user *payload;
 	struct susfs_tw *tw;
 
-	magic1 = (int)regs->regs[0];
-	magic2 = (int)regs->regs[1];
-	cmd = (unsigned int)regs->regs[2];
-	payload = (void __user *)regs->regs[3];
+	magic1 = (int)susfs_sc_arg(regs, 0);
+	magic2 = (int)susfs_sc_arg(regs, 1);
+	cmd = (unsigned int)susfs_sc_arg(regs, 2);
+	payload = (void __user *)susfs_sc_arg(regs, 3);
 
 	if (magic1 != KSU_INSTALL_MAGIC1)
 		goto orig;
@@ -328,10 +333,13 @@ static struct susfs_fp_hook reboot_hook = {
 	.nr = __NR_reboot,
 	.nr_compat = 0,
 	.name = "supercall/reboot",
-	.sym = "__arm64_sys_reboot",
+	.sym = SUSFS_SC_WRAPPER_NAME(reboot),
 	.wrapper = reboot_wrapper,
 	.orig_slot = &reboot_orig,
 };
+
+/* Set by the skip mechanism canary below; reboot_pre reads it. */
+static bool sc_canary_ok;
 
 /* Fallback delivery for kernels whose sys_call_table cannot be hooked: on arm64 GKI under pKVM the
  * table page is EL2-protected and susfs_fp_install() above finds no landing pad (it logs "no valid
@@ -341,7 +349,13 @@ static struct susfs_fp_hook reboot_hook = {
  * them); a kernel that is both BTI and pKVM takes neither and the layer fails. */
 static int reboot_pre(struct kprobe *kp, struct pt_regs *regs)
 {
-	struct pt_regs *real_regs = (struct pt_regs *)regs->regs[0];
+	struct pt_regs *real_regs;
+
+	/* A failed delayed canary recheck disarms us here instead of letting
+	 * the supercall silently stop answering. */
+	if (!sc_canary_ok)
+		return 0;
+	real_regs = (struct pt_regs *)susfs_sc_arg(regs, 0);
 	int magic1, magic2;
 	unsigned int cmd;
 	void __user *payload;
@@ -352,10 +366,10 @@ static int reboot_pre(struct kprobe *kp, struct pt_regs *regs)
 	if (!real_regs)
 		return 0;
 
-	magic1 = (int)real_regs->regs[0];
-	magic2 = (int)real_regs->regs[1];
-	cmd = (unsigned int)real_regs->regs[2];
-	payload = (void __user *)real_regs->regs[3];
+	magic1 = (int)susfs_sc_arg(real_regs, 0);
+	magic2 = (int)susfs_sc_arg(real_regs, 1);
+	cmd = (unsigned int)susfs_sc_arg(real_regs, 2);
+	payload = (void __user *)susfs_sc_arg(real_regs, 3);
 
 	if (magic1 != KSU_INSTALL_MAGIC1)
 		return 0;
@@ -400,21 +414,80 @@ static int reboot_pre(struct kprobe *kp, struct pt_regs *regs)
 	 *     if (ret) goto orig_flow;
 	 *     return ret;
 	 * We cannot patch reboot.c, so mirror it from the kprobe: skip the rest of
-	 * __arm64_sys_reboot and return 0 - with these magic values reboot would otherwise
+	 * the reboot syscall wrapper and return 0 - with these magic values reboot would otherwise
 	 * return -EINVAL, and the prebuilt ksu_susfs tool checks the syscall result.  The
 	 * command itself still runs from task_work before we return to userspace. */
-	regs->pc = regs->regs[30];
-	regs->regs[0] = 0;
+	susfs_kp_skip_return(regs, 0);
 	return 1;
 }
+NOKPROBE_SYMBOL(reboot_pre);
 
 static struct kprobe reboot_kp = {
-	.symbol_name = "__arm64_sys_reboot",
+	.symbol_name = SUSFS_SC_WRAPPER_NAME(reboot),
 	.pre_handler = reboot_pre,
+	.post_handler = susfs_kp_noopt_post,
 };
 
 static bool sc_registered;	/* sys_call_table path armed */
 static bool sc_kp_registered;	/* kprobe fallback armed */
+
+/* ---- skip mechanism canary ----
+ * The supercall's contract with userspace rests on the pre_handler skip.
+ * Prove it before relying on it: probe one of our own functions, force its
+ * return through the same helper, and refuse the load if the mechanism does
+ * not answer.  Re-checked from delayed work because kprobe jump optimization
+ * arms asynchronously, about 5 jiffies after registration, and an optimized
+ * probe ignores the ip write.  The noopt post_handler vetoes optimization;
+ * the recheck is the proof the veto held. */
+#define SUSFS_SC_CANARY_NATURAL 0x13579BDF
+#define SUSFS_SC_CANARY_FORCED  0x2468ACE0
+
+/* The natural value must live in a volatile.  Returning the constant
+ * directly lets the compiler fold the canary call away entirely
+ * (measured on the emulator: the int3 sat armed at fn+4 while the
+ * "call" returned the constant without ever executing), and the check
+ * would then always see the natural value and refuse every load. */
+static volatile int susfs_sc_canary_natural = SUSFS_SC_CANARY_NATURAL;
+
+static noinline int susfs_sc_canary_fn(void)
+{
+	return susfs_sc_canary_natural;
+}
+
+static int susfs_sc_canary_pre(struct kprobe *kp, struct pt_regs *regs)
+{
+	susfs_kp_skip_return(regs, SUSFS_SC_CANARY_FORCED);
+	return 1;
+}
+NOKPROBE_SYMBOL(susfs_sc_canary_pre);
+
+static struct kprobe canary_kp = {
+	.pre_handler = susfs_sc_canary_pre,
+	.post_handler = susfs_kp_noopt_post,
+};
+
+static int susfs_sc_canary_run(const char *when)
+{
+	int got = susfs_sc_canary_fn();
+
+	if (got == SUSFS_SC_CANARY_FORCED)
+		return 0;
+	pr_err("susfs supercall: skip mechanism check FAILED at %s: canary returned 0x%x, expected 0x%x - the supercall would answer nothing, refusing this load\n",
+	       when, got, SUSFS_SC_CANARY_FORCED);
+	return -EINVAL;
+}
+
+static void susfs_sc_canary_recheck(struct work_struct *work)
+{
+	if (!sc_canary_ok)
+		return;
+	if (susfs_sc_canary_run("delayed recheck")) {
+		/* reboot_pre now passes through: the magics reach the real
+		 * reboot, which rejects them with -EINVAL and nothing else. */
+		sc_canary_ok = false;
+	}
+}
+static DECLARE_DELAYED_WORK(canary_dw, susfs_sc_canary_recheck);
 
 /* ---- ABI layout assertions ----
  * These sizes and `err` offsets ARE the userspace contract (ksu_susfs, ksud and
@@ -474,16 +547,35 @@ int susfs_supercall_init(void)
 		SUSFS_LOGI("susfs supercall: armed via sys_call_table (reboot ABI, version " SUSFS_VERSION_STR ")\n");
 		return 0;
 	}
-
 	/* The table could not be hooked (pKVM EL2-protected sys_call_table: no landing pad).  Fall
 	 * back to the kprobe, which does not touch the table.  See reboot_kp above. */
 	pr_warn("susfs supercall: sys_call_table reboot hook failed %d, trying kprobe fallback\n", rc);
+
+	/* The mechanism gate comes first: without a working skip there is no
+	 * supercall, and this layer is fatal by design. */
+	canary_kp.addr = (kprobe_opcode_t *)susfs_sc_canary_fn;
+	rc = register_kprobe(&canary_kp);
+	if (rc) {
+		pr_warn("susfs supercall: register_kprobe(canary) failed %d\n", rc);
+		return rc;
+	}
+	rc = susfs_sc_canary_run("init");
+	if (rc) {
+		unregister_kprobe(&canary_kp);
+		return rc;
+	}
+	sc_canary_ok = true;
+
+	/* One-shot: armed here and dropped in susfs_supercall_exit() only, so no retry can ever meet a
+	 * stale .addr.  This layer is fatal, so a failure refuses the load instead of leaving the probe
+	 * half-armed - which is why it is exempt from the reset rule in kernel/susfs_kprobe.h. */
 	rc = register_kprobe(&reboot_kp);
 	if (rc) {
 		pr_warn("susfs supercall: register_kprobe(reboot) failed %d\n", rc);
 		return rc;
 	}
 	sc_kp_registered = true;
+	schedule_delayed_work(&canary_dw, msecs_to_jiffies(1000));
 	SUSFS_LOGI("susfs supercall: armed via kprobe (reboot ABI, version " SUSFS_VERSION_STR ")\n");
 	return 0;
 }
@@ -501,7 +593,12 @@ void susfs_supercall_exit(void)
 		sc_registered = false;
 	}
 	if (sc_kp_registered) {
+		cancel_delayed_work_sync(&canary_dw);
 		unregister_kprobe(&reboot_kp);
 		sc_kp_registered = false;
+	}
+	if (canary_kp.addr) {
+		unregister_kprobe(&canary_kp);
+		susfs_kp_forget_addr(&canary_kp);
 	}
 }
