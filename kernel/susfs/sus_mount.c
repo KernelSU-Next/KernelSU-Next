@@ -672,7 +672,7 @@ static void sus_mount_ident_drop_dev(dev_t s_dev)
  * survive into the window where a new filesystem holds the same s_dev. */
 static int sus_mount_sb_down_pre(struct kprobe *kp, struct pt_regs *regs)
 {
-    struct super_block *sb = (struct super_block *)regs->regs[0];
+    struct super_block *sb = (struct super_block *)susfs_sc_arg(regs, 0);
 
     atomic_inc(&n_sb_down);
     if (!sb)
@@ -967,7 +967,7 @@ static int sus_mount_clone_entry(struct kretprobe_instance *ri, struct pt_regs *
 {
     struct sus_mount_clone_state *st = (struct sus_mount_clone_state *)ri->data;
 
-    st->flags = regs->regs[0];
+    st->flags = susfs_sc_arg(regs, 0);
     return 0;
 }
 
@@ -1028,7 +1028,7 @@ static int sus_mount_newmnt_entry(struct kretprobe_instance *ri, struct pt_regs 
 {
     struct sus_mount_newmnt_state *st = (struct sus_mount_newmnt_state *)ri->data;
 
-    st->m = (struct mount *)regs->regs[0];	/* source_mnt */
+    st->m = (struct mount *)susfs_sc_arg(regs, 0);	/* source_mnt */
     return 0;
 }
 
@@ -1117,7 +1117,7 @@ static bool kr_newmnt_ok;
 struct sus_mount_kretprobe_state {
     struct seq_file *m;		/* fdinfo: the seq_file being filled */
     unsigned long ubuf;		/* statx: the caller's struct statx __user * */
-    char where;			/* statx: 's' = __arm64_sys_statx, 'd' = do_statx */
+    char where;			/* statx: 's' = the statx syscall wrapper, 'd' = do_statx */
 };
 
 static atomic_t n_fdinfo_entry = ATOMIC_INIT(0);
@@ -1131,8 +1131,8 @@ static int sus_mount_fdinfo_entry(struct kretprobe_instance *ri, struct pt_regs 
     /* Not dereferenced here - the return handler checks it - but an implausible
      * value means this kretprobe sits on a function that does not take a seq_file,
      * and the rewrite below would then read an unrelated object. */
-    st->m = susfs_ptr_plausible((void *)regs->regs[0])
-               ? (struct seq_file *)regs->regs[0] : NULL;
+    st->m = susfs_ptr_plausible((void *)susfs_sc_arg(regs, 0))
+               ? (struct seq_file *)susfs_sc_arg(regs, 0) : NULL;
     return 0;
 }
 
@@ -1303,7 +1303,7 @@ static void sus_mount_fdinfo_disarm(void)
  * They do NOT read the same register: __arm64_sys_statx is `asmlinkage long
  * __arm64_sys_statx(const struct pt_regs *)`
  * (arch/arm64/include/asm/syscall_wrapper.h), so its buffer is
- * ((struct pt_regs *)regs->regs[0])->regs[4] - reading regs->regs[4] directly works only
+ * ((struct pt_regs *)susfs_sc_arg(regs, 0))->regs[4] - reading susfs_sc_arg(regs, 4) directly works only
  * because the dispatcher leaves x1..x7 untouched, the reason the reboot handler in
  * susfs_supercall.c goes through PT_REAL_REGS.  do_statx(int dfd, const char __user
  * *filename, unsigned flags, unsigned int mask, struct statx __user *buffer) is an ordinary
@@ -1318,11 +1318,11 @@ static atomic_t n_statx_nomap = ATOMIC_INIT(0);
 static int sus_mount_statx_entry_sys(struct kretprobe_instance *ri, struct pt_regs *regs)
 {
     struct sus_mount_kretprobe_state *st = (struct sus_mount_kretprobe_state *)ri->data;
-    const struct pt_regs *uregs = (const struct pt_regs *)regs->regs[0];
+    const struct pt_regs *uregs = (const struct pt_regs *)susfs_sc_arg(regs, 0);
 
     atomic_inc(&n_statx_entry);
     st->where = 's';
-    st->ubuf = uregs ? (unsigned long)uregs->regs[4] : 0;
+    st->ubuf = uregs ? (unsigned long)susfs_sc_arg(uregs, 4) : 0;
     return 0;
 }
 
@@ -1332,7 +1332,7 @@ static int sus_mount_statx_entry_do(struct kretprobe_instance *ri, struct pt_reg
 
     atomic_inc(&n_statx_entry);
     st->where = 'd';
-    st->ubuf = regs->regs[4];
+    st->ubuf = susfs_sc_arg(regs, 4);
     return 0;
 }
 
@@ -1381,7 +1381,7 @@ static int sus_mount_statx_ret(struct kretprobe_instance *ri, struct pt_regs *re
 }
 
 static struct kretprobe kr_statx = {
-    .kp.symbol_name = "__arm64_sys_statx",
+    .kp.symbol_name = SUSFS_SC_WRAPPER_NAME(statx),
     .entry_handler = sus_mount_statx_entry_sys,
     .handler = sus_mount_statx_ret,
     .data_size = sizeof(struct sus_mount_kretprobe_state),
@@ -1481,7 +1481,7 @@ module_param_cb(mount_stat, &sus_mount_stat_ops, NULL, 0400);
 
 static int sus_mount_show_pre(struct kprobe *kp, struct pt_regs *regs)
 {
-    struct vfsmount *mnt = (struct vfsmount *)regs->regs[1];
+    struct vfsmount *mnt = (struct vfsmount *)susfs_sc_arg(regs, 1);
     struct mount *r;
 
     if (!susfs_ptr_plausible(mnt))
@@ -1508,23 +1508,25 @@ static int sus_mount_show_pre(struct kprobe *kp, struct pt_regs *regs)
         return 0;
     sus_mount_note_id(r);
     atomic_inc(&n_ident_hits);
-    regs->pc = regs->regs[30];   /* skip this mount line */
-    /* These show_* callbacks return int and x0 still holds seq_file*.
-     * seq_read() treats a negative return as a hard error, so a stray high
-     * bit here would break the whole read; upstream's equivalent site
-     * explicitly returns 0. */
-    regs->regs[0] = 0;
+    /* These show_* callbacks return int and the first argument register
+     * still holds seq_file*.  seq_read() treats a negative return as a hard
+     * error, so a stray high bit here would break the whole read; upstream's
+     * equivalent site explicitly returns 0. */
+    susfs_kp_skip_return(regs, 0);   /* skip this mount line */
     return 1;
 }
+NOKPROBE_SYMBOL(sus_mount_show_pre);
 
 static struct kprobe kp_vfsstat = {
     .symbol_name = "show_vfsstat",
     .pre_handler = sus_mount_show_pre,
+	.post_handler = susfs_kp_noopt_post,
 };
 
 static struct kprobe kp_mountinfo = {
     .symbol_name = "show_mountinfo",
     .pre_handler = sus_mount_show_pre,
+	.post_handler = susfs_kp_noopt_post,
 };
 
 /* /proc/mounts and /proc/<pid>/mounts go through show_vfsmnt - a DIFFERENT
@@ -1535,6 +1537,7 @@ static struct kprobe kp_mountinfo = {
 static struct kprobe kp_vfsmnt = {
     .symbol_name = "show_vfsmnt",
     .pre_handler = sus_mount_show_pre,
+	.post_handler = susfs_kp_noopt_post,
 };
 
 /* The three of them as one list, plus what is armed.  Registration and teardown both
@@ -2627,7 +2630,7 @@ static int sus_mount_register(void)
     rc = register_kretprobe(&kr_statx);
     if (rc) {
         susfs_krp_forget_addr(&kr_statx);
-        pr_warn("sus_mount: register_kretprobe(__arm64_sys_statx) failed %d - statx keeps returning the real stx_mnt_id\n", rc);
+        pr_warn("sus_mount: register_kretprobe(statx) failed %d - statx keeps returning the real stx_mnt_id\n", rc);
     } else {
         kr_statx_ok = true;
     }

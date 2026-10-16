@@ -34,11 +34,11 @@ static bool avc_spoof_enabled;
 static bool avc_registered;
 
 /* slow_avc_audit(ssid, tsid, tclass, requested, audited, denied, result, a) - tsid is arg #2
- * (regs->regs[1]), a u32 in the low bits.
+ * (susfs_sc_arg(regs, 1)), a u32 in the low bits.
  *
  * UP TO v6.3 the prototype had a leading `struct selinux_state *state`, so tsid sat in arg #3
- * (regs->regs[2]).  v6.4 dropped that argument and everything shifted down by one: reading
- * regs->regs[2] on 6.4+ would read **tclass** (a small 1..~100 class number) instead of the
+ * (susfs_sc_arg(regs, 2)).  v6.4 dropped that argument and everything shifted down by one: reading
+ * susfs_sc_arg(regs, 2) on 6.4+ would read **tclass** (a small 1..~100 class number) instead of the
  * target sid, so no audit ever matched and the spoof silently did nothing - and in the one
  * case where a tclass could equal the su sid, the write-back below would clobber the tclass
  * argument instead, which audit then indexes secclass_map[] with.  Gate on the version, and
@@ -53,9 +53,9 @@ static atomic_t avc_enter_count = ATOMIC_INIT(0);
 static int avc_audit_post_pre(struct kprobe *kp, struct pt_regs *regs)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
-	u32 tsid = (u32)regs->regs[1];
+	u32 tsid = (u32)susfs_sc_arg(regs, 1);
 #else
-	u32 tsid = (u32)regs->regs[2];
+	u32 tsid = (u32)susfs_sc_arg(regs, 2);
 #endif
 
 	atomic_inc(&avc_enter_count);
@@ -65,9 +65,9 @@ static int avc_audit_post_pre(struct kprobe *kp, struct pt_regs *regs)
 		return 0;
 	atomic_inc(&avc_hit_count);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
-	regs->regs[1] = avc_priv_app_sid;
+	susfs_set_sc_arg(regs, 1, avc_priv_app_sid);
 #else
-	regs->regs[2] = avc_priv_app_sid;
+	susfs_set_sc_arg(regs, 2, avc_priv_app_sid);
 #endif
 	return 0;
 }

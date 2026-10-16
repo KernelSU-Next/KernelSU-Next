@@ -1564,8 +1564,8 @@ static DEFINE_MUTEX(sus_path_arm_lock);
  * it: the chain is built inside the filesystem, entry by entry, with no per-entry callback a
  * module can reach.  That leaves the syscall itself, and the hook is the table entry for that
  * number, which the stat family's layer already carries (susfs_kstat.c): the chain is complete
- * once the original returns, and the arguments are the wrapper's own - regs->regs[1] is the
- * buffer, read before the original ran because a syscall's return value lands in regs->regs[0].
+ * once the original returns, and the arguments are the wrapper's own - susfs_sc_arg(regs, 1) is the
+ * buffer, read before the original ran because a syscall's return value lands in susfs_sc_arg(regs, 0).
  * For a 32-bit caller that register holds the zero-extended user pointer, which is the address to
  * use as is.
  *

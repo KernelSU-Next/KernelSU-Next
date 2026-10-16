@@ -43,6 +43,7 @@
 #include "susfs.h"
 #include "susfs_log.h"
 #include "symbol_resolver.h"
+#include "susfs_kprobe.h"	/* susfs_sc_arg */
 
 /* 6.1 turned filldir_t's "keep going" from 0 into true. */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
@@ -198,8 +199,8 @@ static SD_RET sd_filldir(struct dir_context *ctx, const char *name, int namlen,
 __nocfi bool susfs_dirent_prefilter(const struct pt_regs *regs, long *out,
 					bool compat)
 {
-	unsigned int fd = (unsigned int)regs->regs[0];
-	unsigned int count = (unsigned int)regs->regs[2];
+	unsigned int fd = (unsigned int)susfs_sc_arg(regs, 0);
+	unsigned int count = (unsigned int)susfs_sc_arg(regs, 2);
 	struct sd_buf buf = {};
 	bool pos_locked = false;
 	struct file *f;
@@ -211,7 +212,7 @@ __nocfi bool susfs_dirent_prefilter(const struct pt_regs *regs, long *out,
 	atomic_inc(&n_sd_calls);
 	buf.ctx.actor = sd_filldir;
 	buf.ctx.pos = 0;
-	buf.current_dir = (void __user *)regs->regs[1];
+	buf.current_dir = (void __user *)susfs_sc_arg(regs, 1);
 	buf.count = (int)count;
 	buf.compat = compat;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 16, 0)
