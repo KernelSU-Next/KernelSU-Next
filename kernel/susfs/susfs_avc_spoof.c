@@ -35,11 +35,11 @@ static bool avc_spoof_enabled;
 static bool avc_registered;
 
 /* slow_avc_audit(ssid, tsid, tclass, requested, audited, denied, result, a) - tsid is arg #2
- * (regs->regs[1]), a u32 in the low bits.
+ * (susfs_sc_arg(regs, 1)), a u32 in the low bits.
  *
  * UP TO v6.3 the prototype had a leading `struct selinux_state *state`, so tsid sat in arg #3
- * (regs->regs[2]).  v6.4 dropped that argument and everything shifted down by one: reading
- * regs->regs[2] on 6.4+ would read **tclass** (a small 1..~100 class number) instead of the
+ * (susfs_sc_arg(regs, 2)).  v6.4 dropped that argument and everything shifted down by one: reading
+ * susfs_sc_arg(regs, 2) on 6.4+ would read **tclass** (a small 1..~100 class number) instead of the
  * target sid, so no audit ever matched and the spoof silently did nothing - and in the one
  * case where a tclass could equal the su sid, the write-back below would clobber the tclass
  * argument instead, which audit then indexes secclass_map[] with.  Gate on the version, and
@@ -52,11 +52,11 @@ static atomic_t avc_hit_count = ATOMIC_INIT(0);
 static atomic_t avc_enter_count = ATOMIC_INIT(0);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
-#define AVC_SSID_REG	0
-#define AVC_TSID_REG	1
+#define AVC_SSID_ARG	0
+#define AVC_TSID_ARG	1
 #else
-#define AVC_SSID_REG	1
-#define AVC_TSID_REG	2
+#define AVC_SSID_ARG	1
+#define AVC_TSID_ARG	2
 #endif
 
 static int avc_audit_post_pre(struct kprobe *kp, struct pt_regs *regs)
@@ -70,16 +70,15 @@ static int avc_audit_post_pre(struct kprobe *kp, struct pt_regs *regs)
 	 * audit prints "scontext=???" - louder than the domain name being hidden. */
 	if (!avc_su_sid || !avc_priv_app_sid)
 		return 0;
-
 	/* BOTH ends.  The records a root detector greps for are the ones the su domain CAUSES -
 	 * "avc: denied ... scontext=u:r:ksu:s0" - and there the su sid is the SOURCE; rewriting
 	 * tsid alone left every one of those lines intact. */
-	if ((u32)regs->regs[AVC_SSID_REG] == avc_su_sid) {
-		regs->regs[AVC_SSID_REG] = avc_priv_app_sid;
+	if ((u32)susfs_sc_arg(regs, AVC_SSID_ARG) == avc_su_sid) {
+		susfs_set_sc_arg(regs, AVC_SSID_ARG, avc_priv_app_sid);
 		hit = true;
 	}
-	if ((u32)regs->regs[AVC_TSID_REG] == avc_su_sid) {
-		regs->regs[AVC_TSID_REG] = avc_priv_app_sid;
+	if ((u32)susfs_sc_arg(regs, AVC_TSID_ARG) == avc_su_sid) {
+		susfs_set_sc_arg(regs, AVC_TSID_ARG, avc_priv_app_sid);
 		hit = true;
 	}
 
