@@ -78,8 +78,8 @@ pub fn set_autoload(enabled: bool, kmi: Option<&str>) -> Result<()> {
     }
 
     anyhow::ensure!(
-        cfg!(target_arch = "aarch64"),
-        "SUSFS guard LKM is only available for arm64"
+        cfg!(any(target_arch = "aarch64", target_arch = "x86_64")),
+        "SUSFS guard LKM is only available for arm64 and x86_64"
     );
 
     let kmi = match kmi {
@@ -143,8 +143,8 @@ pub fn load_if_autoload_enabled() -> Result<()> {
     if !config.enabled {
         return Ok(());
     }
-    if !cfg!(target_arch = "aarch64") {
-        warn!("SUSFS auto-load is enabled, but the SUSFS LKM is only available for arm64");
+    if !cfg!(any(target_arch = "aarch64", target_arch = "x86_64")) {
+        warn!("SUSFS auto-load is enabled, but the SUSFS LKM is only available for arm64 and x86_64");
         return Ok(());
     }
     if let Some(version) = detected_susfs_version() {
@@ -168,8 +168,8 @@ pub fn load_if_autoload_enabled() -> Result<()> {
 
 pub fn load(kmi: Option<&str>) -> Result<()> {
     anyhow::ensure!(
-        cfg!(target_arch = "aarch64"),
-        "SUSFS guard LKM is only available for arm64"
+        cfg!(any(target_arch = "aarch64", target_arch = "x86_64")),
+        "SUSFS guard LKM is only available for arm64 and x86_64"
     );
 
     if let Some(version) = detected_susfs_version() {
