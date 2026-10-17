@@ -398,7 +398,7 @@ struct or_dpath_args {
 
 static int or_dpath_entry(struct kretprobe_instance *ri, struct pt_regs *regs)
 {
-	const struct path *path = (const struct path *)regs->regs[0];
+	const struct path *path = (const struct path *)susfs_sc_arg(regs, 0);
 	struct or_dpath_args *a = (struct or_dpath_args *)ri->data;
 	struct inode *inode;
 	struct sus_or_entry *e;
@@ -424,8 +424,8 @@ static int or_dpath_entry(struct kretprobe_instance *ri, struct pt_regs *regs)
 	if (!hit)
 		return 0;
 
-	a->buf = (char *)regs->regs[1];
-	a->buflen = (int)regs->regs[2];
+	a->buf = (char *)susfs_sc_arg(regs, 1);
+	a->buflen = (int)susfs_sc_arg(regs, 2);
 	atomic_inc(&or_rev_dpath_hits);
 	return 0;
 }
@@ -437,7 +437,7 @@ static int or_dpath_ret(struct kretprobe_instance *ri, struct pt_regs *regs)
 
 	if (!a->target[0] || !a->buf || a->buflen <= 0)
 		return 0;
-	ret = (char *)regs->regs[0];
+	ret = (char *)susfs_kp_get_ret(regs);
 	if (IS_ERR(ret))
 		return 0;		/* d_path failed: keep the error the caller expects */
 	/* Checked before writing: strscpy() truncates by filling the whole buffer and NUL-terminating
@@ -448,7 +448,7 @@ static int or_dpath_ret(struct kretprobe_instance *ri, struct pt_regs *regs)
 	strscpy(a->buf, a->target, (size_t)a->buflen);
 	/* d_path() may return a pointer into the middle of the buffer (it trims a leading " (deleted)"); the rewritten name
 	 * starts at buf, so the return value has to move with it or the caller reads from the wrong offset. */
-	regs->regs[0] = (unsigned long)a->buf;
+	susfs_kp_set_ret(regs, (unsigned long)a->buf);
 	return 0;
 }
 
@@ -465,7 +465,7 @@ struct or_statfs_args {
 
 static int or_statfs_entry(struct kretprobe_instance *ri, struct pt_regs *regs)
 {
-	const struct path *path = (const struct path *)regs->regs[0];
+	const struct path *path = (const struct path *)susfs_sc_arg(regs, 0);
 	struct or_statfs_args *a = (struct or_statfs_args *)ri->data;
 	struct inode *inode;
 	struct sus_or_entry *e;
@@ -492,7 +492,7 @@ static int or_statfs_entry(struct kretprobe_instance *ri, struct pt_regs *regs)
 	/* Second argument of vfs_statfs().  Read HERE, not in the return probe: a return probe only has the return value,
 	 * the argument registers belong to whatever the callee last did with them (measured on 5.15 - the rewrite went to
 	 * a stale x1 and userspace kept seeing the redirected file's own numbers). */
-	a->buf = (struct kstatfs *)regs->regs[1];
+	a->buf = (struct kstatfs *)susfs_sc_arg(regs, 1);
 	if (!susfs_ptr_plausible(a->buf)) {
 		rcu_read_unlock();
 		return 0;
@@ -511,7 +511,7 @@ static int or_statfs_ret(struct kretprobe_instance *ri, struct pt_regs *regs)
 {
 	const struct or_statfs_args *a = (const struct or_statfs_args *)ri->data;
 
-	if (!a->hit || !a->buf || (long)regs->regs[0] != 0)
+	if (!a->hit || !a->buf || (long)susfs_kp_get_ret(regs) != 0)
 		return 0;		/* the kernel refused the statfs: its answer stands */
 	*a->buf = a->kstatfs;
 	return 0;
@@ -556,8 +556,8 @@ static int or_maps_entry(struct kretprobe_instance *ri, struct pt_regs *regs)
 {
 	struct or_maps_args *a = (struct or_maps_args *)ri->data;
 
-	a->m = (struct seq_file *)regs->regs[0];
-	a->vma = (struct vm_area_struct *)regs->regs[1];
+	a->m = (struct seq_file *)susfs_sc_arg(regs, 0);
+	a->vma = (struct vm_area_struct *)susfs_sc_arg(regs, 1);
 	return 0;
 }
 
@@ -675,7 +675,7 @@ static int or_fdinfo_entry(struct kretprobe_instance *ri, struct pt_regs *regs)
 {
 	struct seq_file **slot = (struct seq_file **)ri->data;
 
-	*slot = (struct seq_file *)regs->regs[0];
+	*slot = (struct seq_file *)susfs_sc_arg(regs, 0);
 	return 0;
 }
 

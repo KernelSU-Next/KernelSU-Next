@@ -139,10 +139,20 @@ static void kstat_snapshot(const struct sus_kstat_entry *e,
 	s->flags = e->flags;
 }
 
-/* arm64 asm-generic struct stat offsets (native 64-bit) */
+/* struct stat offsets (native 64-bit).  arm64 uses the asm-generic layout,
+ * x86_64 its own: the two agree on every member this layer touches except
+ * st_nlink, which asm-generic packs as u32 after st_mode (20) and x86_64
+ * widens to unsigned long before it (16).  The width goes with it, so the
+ * nlink write below copies ST_NLINK_WIDTH bytes, not sizeof(v32). */
 #define ST_DEV_OFF          0
 #define ST_INO_OFF          8
+#ifdef __x86_64__
+#define ST_NLINK_OFF        16
+#define ST_NLINK_WIDTH      8
+#else
 #define ST_NLINK_OFF        20
+#define ST_NLINK_WIDTH      4
+#endif
 #define ST_SIZE_OFF         48
 #define ST_BLKSIZE_OFF      56
 #define ST_BLOCKS_OFF       64
@@ -159,6 +169,7 @@ static void kstat_snapshot(const struct sus_kstat_entry *e,
 static_assert(offsetof(struct stat, st_dev) == ST_DEV_OFF, "stat.st_dev");
 static_assert(offsetof(struct stat, st_ino) == ST_INO_OFF, "stat.st_ino");
 static_assert(offsetof(struct stat, st_nlink) == ST_NLINK_OFF, "stat.st_nlink");
+static_assert(sizeof(((struct stat *)0)->st_nlink) == ST_NLINK_WIDTH, "stat.st_nlink width");
 static_assert(offsetof(struct stat, st_size) == ST_SIZE_OFF, "stat.st_size");
 static_assert(offsetof(struct stat, st_blksize) == ST_BLKSIZE_OFF, "stat.st_blksize");
 static_assert(offsetof(struct stat, st_blocks) == ST_BLOCKS_OFF, "stat.st_blocks");
@@ -354,8 +365,8 @@ static int kstat_map_vma_entry(struct kretprobe_instance *ri, struct pt_regs *re
 {
 	struct kstat_map_args *a = (struct kstat_map_args *)ri->data;
 
-	a->m = (struct seq_file *)regs->regs[0];
-	a->vma = (struct vm_area_struct *)regs->regs[1];
+	a->m = (struct seq_file *)susfs_sc_arg(regs, 0);
+	a->vma = (struct vm_area_struct *)susfs_sc_arg(regs, 1);
 	return 0;
 }
 
@@ -636,8 +647,8 @@ static bool susfs_kstat_spoof_statbuf(struct kstat_call_state *st, unsigned long
 		rewrote = true;
 	}
 	if (e->flags & KSTAT_SPOOF_NLINK) {
-		v32 = e->spoofed_nlink;
-		if (copy_to_user((void __user *)(statbuf + ST_NLINK_OFF), &v32, sizeof(v32))) {
+		v64 = e->spoofed_nlink;
+		if (copy_to_user((void __user *)(statbuf + ST_NLINK_OFF), &v64, ST_NLINK_WIDTH)) {
 			atomic_inc(&st->cnt->uaccess);
 			return false;
 		}
@@ -1389,7 +1400,7 @@ static bool susfs_kstat_spoof_statx(struct kstat_call_state *st, unsigned long s
  * kstat_hooks[], and both the "which ABI" and the "which syscall" questions are answered by which
  * table entry was called rather than by a test that every syscall has to pay for.  Nothing is lost:
  * the arguments arrive from the wrapper, which copies them out of regs BEFORE calling the original
- * (a syscall's return value lands in regs->regs[0], so reading them afterwards would hand the
+ * (a syscall's return value lands in susfs_sc_arg(regs, 0), so reading them afterwards would hand the
  * spoofers the return value in place of the first argument).
  *
  * The old KNOWN BOUNDARY (ptrace) went away with the tracepoint: arch/arm64/kernel/syscall.c
@@ -1603,7 +1614,7 @@ static __nocfi void susfs_kstat_post(long nr, bool compat, const unsigned long *
  * Now only these thirteen numbers pay anything, and both classifiers went away with the tracepoint.
  *
  * Arguments are copied out of regs BEFORE the original runs: a syscall's return value is written
- * into regs->regs[0] (arch/arm64/kernel/syscall.c, and the compat entry point does the same), so
+ * into susfs_sc_arg(regs, 0) (arch/arm64/kernel/syscall.c, and the compat entry point does the same), so
  * reading them afterwards would hand the spoofers the return value in place of the first argument.
  *
  * __nocfi is mandatory on the wrapper, for the reason susfs_opath.c states at length: it is reached
@@ -1622,6 +1633,7 @@ static susfs_syscall_fn_t kstat_orig_nfstatat;
 static susfs_syscall_fn_t kstat_orig_fstat;
 static susfs_syscall_fn_t kstat_orig_statx;
 static susfs_syscall_fn_t kstat_orig_getdents64;
+#ifdef __aarch64__
 static susfs_syscall_fn_t kstat_orig_compat_stat64;
 static susfs_syscall_fn_t kstat_orig_compat_lstat64;
 static susfs_syscall_fn_t kstat_orig_compat_fstat64;
@@ -1632,6 +1644,7 @@ static susfs_syscall_fn_t kstat_orig_compat_fstat;
 static susfs_syscall_fn_t kstat_orig_compat_statx;
 static susfs_syscall_fn_t kstat_orig_compat_getdents64;
 static susfs_syscall_fn_t kstat_orig_compat_getdents;
+#endif
 
 #define SUSFS_KSTAT_WRAPPER(fn, slot, nrval, combat)			\
 	static __nocfi long fn(const struct pt_regs *regs)		\
@@ -1676,6 +1689,10 @@ static __nocfi long kstat_wrap_getdents64(const struct pt_regs *regs)
 	susfs_kstat_post(__NR_getdents64, false, a, ret, &out);
 	return out;
 }
+
+#ifdef __aarch64__
+/* The compat half is arm64 only for now: the x86_64 port drops the 32-bit
+ * ABI for v1, AArch32 numbers and layouts do not describe ia32. */
 SUSFS_KSTAT_WRAPPER(kstat_wrap_compat_stat64, kstat_orig_compat_stat64, COMPAT_STAT64_NR, true)
 SUSFS_KSTAT_WRAPPER(kstat_wrap_compat_lstat64, kstat_orig_compat_lstat64, COMPAT_LSTAT64_NR, true)
 SUSFS_KSTAT_WRAPPER(kstat_wrap_compat_fstat64, kstat_orig_compat_fstat64, COMPAT_FSTAT64_NR, true)
@@ -1717,21 +1734,23 @@ static __nocfi long kstat_wrap_compat_getdents(const struct pt_regs *regs)
 	susfs_kstat_post(SUS_NR_GETDENTS_COMPAT, true, a, ret, &out);
 	return out;
 }
+#endif
 
 static struct susfs_fp_hook kstat_hooks[] = {
 	{ .nr = __NR_newfstatat, .nr_compat = 0, .name = "kstat/newfstatat",
-	  .sym = "__arm64_sys_newfstatat",
+	  .sym = SUSFS_SC_WRAPPER_NAME(newfstatat),
 	  .wrapper = kstat_wrap_nfstatat, .orig_slot = &kstat_orig_nfstatat },
 	{ .nr = __NR_fstat, .nr_compat = 0, .name = "kstat/fstat",
-	  .sym = "__arm64_sys_fstat",
+	  .sym = SUSFS_SC_WRAPPER_NAME(fstat),
 	  .wrapper = kstat_wrap_fstat, .orig_slot = &kstat_orig_fstat },
 	{ .nr = __NR_statx, .nr_compat = 0, .name = "kstat/statx",
-	  .sym = "__arm64_sys_statx",
+	  .sym = SUSFS_SC_WRAPPER_NAME(statx),
 	  .wrapper = kstat_wrap_statx, .orig_slot = &kstat_orig_statx },
 	{ .nr = __NR_getdents64, .nr_compat = 0, .name = "kstat/getdents64",
-	  .sym = "__arm64_sys_getdents64",
+	  .sym = SUSFS_SC_WRAPPER_NAME(getdents64),
 	  .wrapper = kstat_wrap_getdents64, .orig_slot = &kstat_orig_getdents64 },
 
+#ifdef __aarch64__
 	/* The AArch32 half.  nr stays -1 for every one of them. */
 	{ .nr = -1, .nr_compat = COMPAT_STAT64_NR, .name = "kstat/compat stat64",
 	  .sym = "__arm64_compat_sys_stat64",
@@ -1763,6 +1782,7 @@ static struct susfs_fp_hook kstat_hooks[] = {
 	{ .nr = -1, .nr_compat = SUS_NR_GETDENTS_COMPAT, .name = "kstat/compat getdents",
 	  .sym = "__arm64_compat_sys_getdents",
 	  .wrapper = kstat_wrap_compat_getdents, .orig_slot_compat = &kstat_orig_compat_getdents },
+#endif
 };
 
 /* ---- path resolution + rule management (original SUSFS semantics) ---- */

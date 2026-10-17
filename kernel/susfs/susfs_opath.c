@@ -65,6 +65,7 @@
 				 * through <asm/syscall.h>). */
 
 #include "symbol_resolver.h"
+#include "susfs_kprobe.h"	/* susfs_sc_arg, the wrappers read the caller's args */
 #include "susfs_log.h"
 #include "susfs.h"		/* susfs_control_node_allowed(), sus_path_inode_hidden_public() */
 #include "susfs_opath.h"
@@ -93,11 +94,9 @@
  * test is written out here so opath_dump can report it on the device for a wrapper that is not
  * installed at all - a dump whose answer only exists when the hook is already live would be
  * useless for the step it is meant for. */
-#define SUSFS_ARM64_BTI_C	0xd503245fu
-
 static inline bool opath_has_landing_pad(const void *fn)
 {
-	return fn && READ_ONCE(*(const u32 *)fn) == SUSFS_ARM64_BTI_C;
+	return fn && READ_ONCE(*(const u32 *)fn) == SUSFS_LANDING_PAD;
 }
 
 /* Resolved by name at init and cached, exactly like sus_open_redirect.c does it.  fget_raw() is
@@ -356,9 +355,9 @@ __nocfi long susfs_opath_post_fd(long ret)
  * (arch/arm64/include/asm/syscall_wrapper.h:13-16, used for COMPAT_SYSCALL_DEFINEx at :27), so
  * the index is just the argument number counting from 0:
  *   - openat (fs/open.c:1336) and the AArch32 openat (fs/open.c:1383) are (dfd, filename,
- *     flags, mode): flags is argument 3 -> regs->regs[2];
+ *     flags, mode): flags is argument 3 -> susfs_sc_arg(regs, 2);
  *   - the AArch32 open (fs/open.c:1374) is COMPAT_SYSCALL_DEFINE3: there is no dirfd, so the
- *     arguments are (filename, flags, mode) and the flags are argument 2 -> regs->regs[1].
+ *     arguments are (filename, flags, mode) and the flags are argument 2 -> susfs_sc_arg(regs, 1).
  *     Reading regs[2] there would test the MODE, which is 0 or 0644/0755 in practice, and the
  *     layer would quietly skip every 32-bit open() it exists to catch.
  *   - openat2 (fs/open.c:1344) has a struct open_how __user * as argument 3: no flags to read,
@@ -398,13 +397,13 @@ __nocfi long susfs_opath_post_fd(long ret)
 			ret = or_hook(regs, (kind));			\
 			if (ret != SUSFS_OR_ENTRY_PASS) {		\
 				if ((flags_reg) >= 0 && ret >= 0 &&	\
-				    !(regs->regs[flags_reg] & O_PATH))	\
+				    !(susfs_sc_arg(regs, flags_reg) & O_PATH))	\
 					return ret;			\
 				return susfs_opath_post_fd(ret);	\
 			}						\
 		}							\
 		ret = orig(regs);					\
-		if ((flags_reg) >= 0 && !(regs->regs[flags_reg] & O_PATH))	\
+		if ((flags_reg) >= 0 && !(susfs_sc_arg(regs, flags_reg) & O_PATH))	\
 			return ret;					\
 		return susfs_opath_post_fd(ret);			\
 	}
@@ -450,7 +449,7 @@ static struct susfs_fp_hook opath_hooks[] = {
 	{
 		.nr		= __NR_openat,
 		.name		= "opath/openat",
-		.sym		= "__arm64_sys_openat",
+		.sym		= SUSFS_SC_WRAPPER_NAME(openat),
 		.wrapper	= susfs_opath_openat,
 		.orig_slot	= &opath_orig_openat,
 	},
@@ -458,23 +457,28 @@ static struct susfs_fp_hook opath_hooks[] = {
 	{
 		.nr		= __NR_openat2,
 		.name		= "opath/openat2",
-		.sym		= "__arm64_sys_openat2",
+		.sym		= SUSFS_SC_WRAPPER_NAME(openat2),
 		.wrapper	= susfs_opath_openat2,
 		.orig_slot	= &opath_orig_openat2,
 	},
+#ifdef __aarch64__
 	/* The 32-bit side of the same syscall is a separate table element - see
 	 * SUSFS_COMPAT_NR_OPENAT2 - so it gets a hook of its own rather than an nr_compat on the
 	 * one above: the two are independent elements and either can be missing on a kernel of
-	 * its own, which is exactly what per-hook install/logging is for. */
+	 * its own, which is exactly what per-hook install/logging is for.
+	 * The whole compat half is arm64 only for now: the x86_64 port drops the
+	 * 32-bit ABI for v1 (ia32 numbers and layouts differ from AArch32). */
 	{
 		.nr		= -1,
 		.nr_compat	= SUSFS_COMPAT_NR_OPENAT2,
 		.name		= "opath/compat openat2",
-		.sym		= "__arm64_sys_openat2",
+		.sym		= SUSFS_SC_WRAPPER_NAME(openat2),
 		.wrapper	= susfs_opath_compat_openat2,
 		.orig_slot_compat = &opath_orig_compat_openat2,
 	},
 #endif
+#endif /* __NR_openat2 */
+#ifdef __aarch64__
 	{
 		.nr		= -1,
 		.nr_compat	= SUSFS_COMPAT_NR_OPEN,
@@ -491,6 +495,7 @@ static struct susfs_fp_hook opath_hooks[] = {
 		.wrapper	= susfs_opath_compat_openat,
 		.orig_slot_compat = &opath_orig_compat_openat,
 	},
+#endif
 };
 
 /* Whether the entries open_redirect's name layer needs actually carry this layer's wrapper.  "The
