@@ -6,6 +6,7 @@
 #include <linux/sched.h>
 #include <linux/workqueue.h>
 
+#include "preinit/preinit.h"
 #include "policy/allowlist.h"
 #include "policy/app_profile.h"
 #include "policy/feature.h"
@@ -189,6 +190,8 @@ int __init kernelsu_init(void)
 
 		ksu_ksud_init();
 
+		ksu_preinit_init();
+
 		ksu_file_wrapper_init();
 	}
 
@@ -207,8 +210,10 @@ void __exit kernelsu_exit(void)
 
 	ksu_supercalls_exit();
 
-	if (!ksu_late_loaded)
+	if (!ksu_late_loaded) {
 		ksu_ksud_exit();
+		ksu_preinit_exit();
+	}
 
 	// Wait for any in-flight RCU readers (e.g. handler traversing allow_list)
 	synchronize_rcu();
