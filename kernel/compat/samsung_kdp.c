@@ -1,6 +1,7 @@
 #include <linux/completion.h>
 #include <linux/cred.h>
 #include <linux/errno.h>
+#include <linux/pid.h>
 #include <linux/rcupdate.h>
 #include <linux/sched.h>
 #include <linux/sched/task.h>
