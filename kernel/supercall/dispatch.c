@@ -13,6 +13,7 @@
 #ifdef CONFIG_KSU_SUSFS
 #include <linux/namei.h>
 #include <linux/susfs.h>
+extern struct work_struct susfs_extra_works;
 #endif
 #include "uapi/supercall.h"
 #include "supercall/internal.h"
@@ -149,6 +150,11 @@ static int do_report_event(void __user *arg)
                 on_boot_completed();
             }
 #ifdef CONFIG_KSU_SUSFS
+#ifdef CONFIG_KSU_SUSFS_SUS_PATH
+            if (!work_pending(&susfs_extra_works)) {
+                schedule_work(&susfs_extra_works);
+            }
+#endif
             susfs_start_sdcard_monitor_fn();
 #endif
         }
@@ -157,6 +163,11 @@ static int do_report_event(void __user *arg)
     case EVENT_MODULE_MOUNTED: {
         pr_info("module mounted!\n");
         on_module_mounted();
+#if defined(CONFIG_KSU_SUSFS) && defined(CONFIG_KSU_SUSFS_SUS_PATH)
+        if (!work_pending(&susfs_extra_works)) {
+            schedule_work(&susfs_extra_works);
+        }
+#endif
         break;
     }
     case EVENT_SERVICES: {

@@ -110,6 +110,35 @@ static bool is_ksud_exists()
 }
 
 #ifdef CONFIG_KSU_SUSFS
+static bool ksu_str_ends_with(const char *str, size_t str_len, const char *suffix)
+{
+    size_t suffix_len = strlen(suffix);
+    if (suffix_len > str_len)
+        return false;
+    return memcmp(str + str_len - suffix_len, suffix, suffix_len) == 0;
+}
+
+static bool ksu_is_zygote_or_adbd(const char *name, size_t len)
+{
+    if (len < 5)
+        return false;
+
+    // Fast-path: Check last character first to skip 99% of processes
+    char last = name[len - 1];
+    if (last == 'd')
+        return ksu_str_ends_with(name, len, "/adbd");
+    if (last == 's')
+        return ksu_str_ends_with(name, len, "/app_process");
+    if (last == '2')
+        return ksu_str_ends_with(name, len, "/app_process32");
+    if (last == '4')
+        return ksu_str_ends_with(name, len, "/app_process64");
+    if (last == 'e')
+        return ksu_str_ends_with(name, len, "/stub_zygote");
+
+    return false;
+}
+
 /*
  * return 0 -> No further checks should be required afterwards
  * return non-zero -> Further checks should be continued afterwards
@@ -134,14 +163,15 @@ int ksu_handle_execveat_init(struct filename *filename, struct user_arg_ptr *arg
             pending_sucompat = ksu_sulog_capture_sucompat_kernel(filename->name, (const char __user *const __user *)argv_user->ptr.native, GFP_KERNEL);
             ksu_sulog_emit_pending(pending_sucompat, ret, GFP_KERNEL);
             return 0;
-        } else if (likely(strstr(filename->name, "/app_process") == NULL &&
-                    strstr(filename->name, "/adbd") == NULL &&
-                    strstr(filename->name, "/stub_zygote") == NULL) &&
-                    !susfs_is_current_proc_no_su())
-        {
-            pr_info("susfs: mark no sucompat checks for pid: '%d', exec: '%s'\n", current->pid, filename->name);
-            susfs_set_current_proc_no_su();
-            return 0;
+        } else {
+            size_t len = strlen(filename->name);
+            if (likely(!ksu_is_zygote_or_adbd(filename->name, len)) &&
+                        !susfs_is_current_proc_no_su())
+            {
+                pr_info("susfs: mark no sucompat checks for pid: '%d', exec: '%s'\n", current->pid, filename->name);
+                susfs_set_current_proc_no_su();
+                return 0;
+            }
         }
 
 #ifdef CONFIG_COMPAT
