@@ -13,6 +13,7 @@
 #include <linux/security.h>	/* security_secctx_to_secid(): the nodes' SELinux label */
 
 #include "symbol_resolver.h"
+#include "ksu_allow_gate.h"	/* susfs_ksu_allow_kind: whether ksu_file applies at all */
 #include "patch_memory.h"	/* ksu_patch_memory_init(): the flush helper's name differs per kernel */
 #include "susfs_log.h"
 #include "ksu_umount_gate.h"
@@ -172,6 +173,16 @@ static void susfs_relabel_control_nodes(void)
 
     if (!susfs_expose_proc)
         return;
+    /* No KernelSU, no ksu_file label.  That label exists so the KernelSU predicate's set
+     * (shell, the manager, su-granted apps) may read the nodes; without the predicate there is
+     * nobody to widen to, so the nodes keep proc's own label and the gate stays the original
+     * root-only one.  susfs_prepare_control_sid() would otherwise succeed here on BTF alone -
+     * a Magisk device has no KernelSU predicate but does have SELinux - and stamp a label this
+     * build has no use for. */
+    if (READ_ONCE(susfs_ksu_allow_kind) != 1) {
+        SUSFS_LOGI("susfs: no KernelSU predicate - control nodes keep proc's label, gate stays root-only\n");
+        return;
+    }
     if (!susfs_prepare_control_sid()) {
         SUSFS_LOGI("susfs: no ksu_file label applied (context or BTF layout unavailable)\n");
         return;
