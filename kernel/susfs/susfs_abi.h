@@ -60,7 +60,7 @@
 #define SUSFS_MAX_VARIANT_BUFSIZE               16
 
 #define SUSFS_VERSION_STR "v2.3.0"
-#define SUSFS_VARIANT_STR "GKI"
+#define SUSFS_VARIANT_STR "GKI-LKM"
 
 /* uid_scheme values of struct st_susfs_open_redirect (upstream enum UID_SCHEME, declared in
  * susfs.h next to the structs) */
