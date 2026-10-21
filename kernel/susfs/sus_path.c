@@ -1614,6 +1614,8 @@ struct sus_dirent_layout {
     unsigned char ino_size;     /* 8 native, 4 compat */
     unsigned char name_off;     /* offset of d_name */
     unsigned char reclen_off;   /* offset of d_reclen */
+    unsigned char align;        /* what d_reclen is rounded up to: 8 native, 4 compat */
+    bool type_at_tail;          /* compat has no d_type field: it is the record's last byte */
 };
 
 static const struct sus_dirent_layout sus_dirent_l64 = {
@@ -1621,6 +1623,8 @@ static const struct sus_dirent_layout sus_dirent_l64 = {
     .ino_size = 8,
     .name_off = offsetof(struct linux_dirent64, d_name),
     .reclen_off = offsetof(struct linux_dirent64, d_reclen),
+    .align = sizeof(u64),
+    .type_at_tail = false,
 };
 
 static const struct sus_dirent_layout sus_dirent_compat = {
@@ -1628,6 +1632,8 @@ static const struct sus_dirent_layout sus_dirent_compat = {
     .ino_size = 4,
     .name_off = offsetof(struct sus_dirent64_compat, d_name),
     .reclen_off = offsetof(struct sus_dirent64_compat, d_reclen),
+    .align = sizeof(u32),
+    .type_at_tail = true,
 };
 
 /* "Did this ABI reach us at all" is a different claim from "did we hide something": only the pair
@@ -1919,7 +1925,11 @@ static long sus_path_filter(unsigned long buf, long count,
          * than a directory that ends early. */
     if (!failed && count > 0 && written == 0) {
         char zero_ino[8] = {0};
-        char nul = '\0';
+        char zbyte = 0;         /* the native layout's d_type field */
+        /* The smallest record this ABI can express: header, one byte of name, and for the
+         * compat layout the type byte that lives in the last one. */
+        unsigned short min_reclen = ALIGN(lay->name_off + (lay->type_at_tail ? 2 : 1),
+                                          lay->align);
 
         /* head_reclen is the first record's own length, read above with this ABI's layout; the
          * buffer still holds it untouched because written == 0 means nothing was moved.  The
@@ -1929,20 +1939,29 @@ static long sus_path_filter(unsigned long buf, long count,
          * cleared.  The hidden name has to be gone from the buffer, not merely invisible to a
          * caller that honours the returned length.
          *
-         * The two scrubs run BEFORE d_ino and name[0] are overwritten, so a failure leaves the
-         * chain itself intact and the `return count` below is honest ("nothing was filtered").
-         * A scrub stopped by a fault can only have zeroed bytes from name[0]'s tail onward -
-         * inside the first record, never its header - so what the caller gets is still a
-         * parseable chain; writing the placeholder first would instead hand it a chain whose
-         * first record is already a placeholder, bytes nothing can parse. */
-        if (head_reclen >= lay->name_off + 1 && head_reclen <= count &&
-            !clear_user((void __user *)(buf + lay->name_off + 1),
-                        head_reclen - lay->name_off - 1) &&
-            !clear_user((void __user *)(buf + head_reclen), count - head_reclen) &&
+         * The scrub runs BEFORE d_ino, d_type and d_reclen are overwritten, so a failure leaves
+         * the chain itself intact and the `return count` below is honest ("nothing was
+         * filtered").  A scrub stopped by a fault can only have zeroed bytes from name[0]
+         * onward - inside the first record, never its header - so what the caller gets is still
+         * a parseable chain; writing the placeholder first would instead hand it a chain whose
+         * first record is already a placeholder, bytes nothing can parse.
+         *
+         * d_reclen is rewritten rather than left alone: the hidden entry's own length is its
+         * name's length rounded up, and d_type is the hidden file's type, so a parser that
+         * ignores d_ino == 0 still read both out of the record this leaves behind.  Shrinking it
+         * to min_reclen and clearing the type byte says one entry and nothing about it.  d_off
+         * stays as the hidden entry had it, deliberately: that is the cookie telldir() hands
+         * back and seekdir() resumes from, and it is the one field the next call needs to be
+         * right. */
+        if (head_reclen >= min_reclen && head_reclen <= count &&
+            !clear_user((void __user *)(buf + lay->name_off), count - lay->name_off) &&
+            (lay->type_at_tail ||
+             !copy_to_user((void __user *)(buf + lay->name_off - 1), &zbyte, 1)) &&
             !copy_to_user((void __user *)buf, zero_ino, lay->ino_size) &&
-            !copy_to_user((void __user *)(buf + lay->name_off), &nul, 1)) {
+            !copy_to_user((void __user *)(buf + lay->reclen_off), &min_reclen,
+                          sizeof(min_reclen))) {
             atomic_inc(&n_dirent_all_hidden);
-            return head_reclen;
+            return min_reclen;
         }
         /* Could not build the placeholder: filtering would be worse than not filtering, because the
          * caller would lose the chunk entirely. */
