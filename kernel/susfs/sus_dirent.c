@@ -129,20 +129,23 @@ static SD_RET sd_filldir(struct dir_context *ctx, const char *name, int namlen,
 		buf->error = -EIO;
 		return SD_STOP;
 	}
-	if (buf->compat) {
-		if (ino > (u64)U32_MAX) {
-			buf->error = -EOVERFLOW;
-			return SD_STOP;
-		}
+	if (buf->compat)
 		reclen = ALIGN(offsetof(struct sd_dirent_compat, d_name) + namlen + 2,
 				       sizeof(u32));
-	} else {
+	else
 		reclen = ALIGN(offsetof(struct sd_dirent64, d_name) + namlen + 1,
 				       sizeof(u64));
-	}
 	buf->error = -EINVAL;
 	if (reclen > buf->count)
 		return SD_STOP;
+	/* After the room check, where compat_filldir() has it: a first entry that both overflows
+	 * the 32-bit d_ino and does not fit answers EINVAL there, and testing the ino first
+	 * answered EOVERFLOW instead.  Any later entry hides the difference anyway, because the
+	 * tail fixup overwrites buf->error with the byte count. */
+	if (buf->compat && ino > (u64)U32_MAX) {
+		buf->error = -EOVERFLOW;
+		return SD_STOP;
+	}
 	prev_reclen = buf->prev_reclen;
 	if (prev_reclen && signal_pending(current))
 		return SD_STOP;
