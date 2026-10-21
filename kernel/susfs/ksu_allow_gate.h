@@ -5,6 +5,17 @@
 #include <linux/cred.h>
 #include <linux/sched.h>
 #include <linux/types.h>
+#include <linux/version.h>
+
+/* Whether the KernelSU set can ever be let through susfs_control_visible(): only where
+ * susfs_relabel_control_nodes() can put the ksu_file label on the control nodes, which is below
+ * 6.4 (susfs_main.c returns early above it).  Used for what the module says at load, not for the
+ * gate itself - susfs_control_relabelled is still what the gate reads. */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
+#define SUSFS_CONTROL_GATE_CAN_WIDEN 0
+#else
+#define SUSFS_CONTROL_GATE_CAN_WIDEN 1
+#endif
 
 /* "Is this process one KernelSU would allow?" - asked OF KernelSU, not re-derived here.
  *
