@@ -109,6 +109,7 @@
  */
 #include <linux/module.h>
 #include <linux/kprobes.h>
+#include <linux/kernel.h>  /* clamp_t()/DIV_ROUND_UP() for the pass cap */
 #include <linux/fs.h>
 #include <linux/seq_file.h>
 #include <linux/stat.h>     /* struct statx (stx_mnt_id) */
@@ -1644,8 +1645,12 @@ static bool sus_mount_path_is_ours(const char *s)
  * afterwards (allocated and freed there, so the pairing the kernel expects stays
  * intact). */
 #define SUS_MOUNT_ID_BATCH 8
-/* Passes of SUS_MOUNT_ID_BATCH each, i.e. the most mounts one enable can mark. */
+/* Passes of SUS_MOUNT_ID_BATCH each.  The floor is what a module store needs without having to
+ * ask the walk first; the real cap comes from the walk's own mount count (see
+ * sus_mount_mark_ksu_mounts()), and the ceiling is what keeps a namespace with tens of thousands
+ * of mounts from turning one enable into a long run of walks under ns_lock. */
 #define SUS_MOUNT_SCAN_PASSES 16
+#define SUS_MOUNT_SCAN_PASSES_MAX 256
 
 /* ---- control surface: which mounts are ours ---- */
 
@@ -2117,7 +2122,7 @@ static const struct proc_ops sus_mount_keep_proc_ops = {
 static struct proc_dir_entry *sus_mount_keep_entry;
 
 static int sus_mount_scan_ns(struct mnt_namespace *ns, char *buf, unsigned long min,
-                             bool *more)
+                             bool *more, unsigned int *seen_out)
 {
     int batch[SUS_MOUNT_ID_BATCH];
     /* The ids the mounts already owned, so they can be handed back to the kernel's ida once
@@ -2133,6 +2138,7 @@ static int sus_mount_scan_ns(struct mnt_namespace *ns, char *buf, unsigned long 
     int marked = 0;
     unsigned int n_devname = 0, n_dpath_ok = 0, n_dpath_err = 0;
     *more = false;
+    *seen_out = 0;
     unsigned int n_skipped_ns = 0, n_skipped_marked = 0;
     bool hit_cap = false;
     int i;
@@ -2273,6 +2279,7 @@ static int sus_mount_scan_ns(struct mnt_namespace *ns, char *buf, unsigned long 
     SUSFS_LOGI("sus_mount: ns %p: seen=%u devname_hits=%u dpath_ok=%u dpath_err=%u skipped(other ns/cursor)=%u skipped(already marked)=%u marked=%d ids_alloc=%d\n",
             ns, seen, n_devname, n_dpath_ok, n_dpath_err, n_skipped_ns,
             n_skipped_marked, marked, n_batch);
+    *seen_out = seen;
     return marked;
 }
 
@@ -2281,7 +2288,8 @@ static int sus_mount_mark_ksu_mounts(void)
     char *buf;
     unsigned long min;
     int marked = 0;
-    int pass;
+    unsigned int pass, max_passes = SUS_MOUNT_SCAN_PASSES;
+    unsigned int want, afford;
     bool more = false;
 
     /* Fail closed: without all three symbols we cannot own a real id, and a
@@ -2333,17 +2341,33 @@ static int sus_mount_mark_ksu_mounts(void)
      * than that left the rest unmarked and visible in /proc/mounts, so run passes until the
      * scan reports nothing more to mark - capped, so a namespace that grows under us cannot
      * spin here. */
-    for (pass = 0; pass < SUS_MOUNT_SCAN_PASSES; pass++) {
-        int n = sus_mount_scan_ns(current->nsproxy->mnt_ns, buf, min, &more);
+    for (pass = 0; pass < max_passes; pass++) {
+        unsigned int seen = 0;
+        int n = sus_mount_scan_ns(current->nsproxy->mnt_ns, buf, min, &more, &seen);
 
         if (n > 0)
             marked += n;
         if (!more)
             break;
+        /* A fixed 16 passes was 128 mounts, and a magic-mount store binds per file: past that
+         * the rest stayed in /proc/mounts behind the warning below.  The walk already counts the
+         * mounts it saw, and a namespace cannot need more passes than it has mounts, so that
+         * count says how many passes the mounts WANT.
+         *
+         * What they cost is the other half: every pass re-walks the whole table under the
+         * namespace lock, so the lock is held for roughly passes * seen.  Bound that at one
+         * cap-sized walk.  A module store - hundreds of mounts - still gets every pass it
+         * wants (600 mounts want 76 and can afford 109), while a table that is not a module
+         * store at all gets one: binding into a shared subtree propagates to every peer, which
+         * is O(N^2) and reached 77056 mounts from 300 binds on the test device, and walking
+         * that hundreds of times is minutes of other tasks waiting for the mount table. */
+        want = DIV_ROUND_UP(seen, SUS_MOUNT_ID_BATCH) + 1;
+        afford = max(SUS_MOUNT_MAX_SCAN / max(seen, 1u), 1u);
+        max_passes = clamp_t(unsigned int, min(want, afford), 1u, SUS_MOUNT_SCAN_PASSES_MAX);
     }
     if (more)
-        pr_warn("sus_mount: still more mounts to mark after %d passes (%d marked); raise SUS_MOUNT_SCAN_PASSES or SUS_MOUNT_ID_BATCH\n",
-                SUS_MOUNT_SCAN_PASSES, marked);
+        pr_warn("sus_mount: still more mounts to mark after %u passes of %d (%d marked); raise SUS_MOUNT_SCAN_PASSES_MAX or SUS_MOUNT_ID_BATCH\n",
+                max_passes, SUS_MOUNT_ID_BATCH, marked);
 
     kfree(buf);
 
