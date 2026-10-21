@@ -37,6 +37,10 @@
  * already did that by hand for its dynamically resolved addresses; these two helpers are the
  * same statement, so the next probe does not have to rediscover why it is needed.
  *
+ * The struct also keeps KPROBE_FLAG_DISABLED after an unregister (__disable_kprobe() sets it on
+ * the way out) and register_kprobe() preserves that one bit from the caller, so the same reuse
+ * that needs .addr cleared needs the flag cleared too, or the probe is registered and never armed.
+ *
  * A kretprobe embeds its kprobe, hence the second helper.
  */
 #ifndef _SUSFS_KPROBE_H
@@ -51,11 +55,17 @@
 static inline void susfs_kp_forget_addr(struct kprobe *kp)
 {
 	kp->addr = NULL;
+	/* An unregistered probe keeps KPROBE_FLAG_DISABLED - __disable_kprobe() sets it, and
+	 * register_kprobe() preserves exactly that one bit (`p->flags &= KPROBE_FLAG_DISABLED`)
+	 * before it decides whether to arm.  Left set, the next registration succeeds, is listed,
+	 * and never fires: the layer reports itself armed while its handler is never called. */
+	kp->flags &= ~KPROBE_FLAG_DISABLED;
 }
 
 static inline void susfs_krp_forget_addr(struct kretprobe *krp)
 {
 	krp->kp.addr = NULL;
+	krp->kp.flags &= ~KPROBE_FLAG_DISABLED;
 }
 
 #endif /* _SUSFS_KPROBE_H */
