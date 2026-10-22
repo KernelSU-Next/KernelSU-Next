@@ -22,6 +22,7 @@
 #include "lsm_hook.h"
 #include "susfs.h"
 #include "susfs_opath.h"	/* SUSFS_OPATH_NODE + the layer's init/exit */
+#include "susfs_fp_hook.h"	/* susfs_fp_init: the sys_call_table cache every fp layer installs through */
 
 /* The module's own name lives in susfs.h (SUSFS_LKM_MODULE_NAME / SUSFS_LKM_SYSFS_DIR):
  * /sys/module's directory and the rules that hide it (susfs_hide_syms.c) must agree, and the
@@ -243,7 +244,14 @@ static struct {
     bool fatal;
     bool armed;			/* exit is run for every layer that was attempted */
 } susfs_layers[] = {
-    /* First, and NOT fatal: this layer only decides whether KernelSU's predicate was found at load.
+    /* First, and FATAL: every fp-hook layer below (create_gate, opath, dirent, kstat, ...)
+     * installs its entries through this cache.  A module that loaded without it would accept
+     * rules that no fp-hook layer can ever apply - the "loaded but inert" shape this table
+     * exists to avoid - so a missing sys_call_table refuses the load.  The init is idempotent
+     * (the later layers' own susfs_fp_init() calls are no-ops once the cache is set), and
+     * there is no exit: only the pointer is cached, the entries are restored by their owner. */
+    { "fp_hook",	susfs_fp_init,			NULL,			true,  false },
+    /* NOT fatal: this layer only decides whether KernelSU's predicate was found at load.
      * When it was not, the gates answer the pre-#34 way and every other layer still works - so a
      * failure here is a degradation, not a reason to refuse the module.  Skipping this init entirely
      * (fail_layer=1) is safe for the same reason: the flag it sets defaults to the pre-#34 answer. */
