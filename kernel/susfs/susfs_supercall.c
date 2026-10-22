@@ -22,6 +22,7 @@
 #include <linux/cred.h>
 #include <linux/syscalls.h>
 #include <linux/string.h>
+#include <linux/bitmap.h>
 #include "susfs_abi.h"
 #include "susfs_log.h"
 #include "susfs.h"
@@ -63,29 +64,44 @@ out:
 }
 
 /* List every feature this LKM implements: the first line marks the source (an LKM, not a built-in
- * SUSFS) and the rest use upstream CONFIG macro names.  Entries with an `active` callback are
- * reported only while the feature is really installed: advertising a feature whose registration
- * failed is the exact inconsistency a detector probes for, so failing ones are omitted (and logged
- * by their init). */
+ * SUSFS) and the rest use upstream CONFIG macro names.  An entry is reported only while its layer
+ * armed it (susfs_supercall_arm_feature(), called by susfs_main.c after that layer's init returned
+ * 0): advertising a feature whose registration failed is the exact inconsistency a detector probes
+ * for, and the same bit is what lets the reboot(2) command through - one registry, so the list and
+ * the command table cannot disagree. */
 struct feature_entry {
 	const char *name;
-	bool (*active)(void);	/* NULL = always present */
+	int feature;		/* enum susfs_feature, or -1 = always present */
 };
+
+static DECLARE_BITMAP(susfs_armed_features, SUSFS_FEAT_COUNT);
+
+void susfs_supercall_arm_feature(enum susfs_feature feature)
+{
+	if ((int)feature >= 0 && feature < SUSFS_FEAT_COUNT)
+		set_bit(feature, susfs_armed_features);
+}
+
+bool susfs_supercall_feature_armed(enum susfs_feature feature)
+{
+	return (int)feature >= 0 && feature < SUSFS_FEAT_COUNT &&
+	       test_bit(feature, susfs_armed_features);
+}
 
 static const struct feature_entry enabled_features[] = {
 	/* First line, and deliberately not a CONFIG_* name: the caller has to be able to tell this
 	 * list apart from a built-in SUSFS's, whose features live in the kernel image and have a
 	 * different lifecycle (no load/unload, no /sys/module entry, no module parameters). */
-	{ "SUSFS_LKM_MODULES\n",		NULL },
-	{ "CONFIG_KSU_SUSFS_SUS_PATH\n",	sus_path_lsm_active },
-	{ "CONFIG_KSU_SUSFS_SUS_MOUNT\n",	NULL },
-	{ "CONFIG_KSU_SUSFS_SUS_KSTAT\n",	NULL },
-	{ "CONFIG_KSU_SUSFS_SPOOF_UNAME\n",	NULL },
-	{ "CONFIG_KSU_SUSFS_ENABLE_LOG\n",	NULL },
-	{ "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS\n",	susfs_hide_syms_active },
-	{ "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG\n", NULL },
-	{ "CONFIG_KSU_SUSFS_OPEN_REDIRECT\n",	NULL },
-	{ "CONFIG_KSU_SUSFS_SUS_MAP\n",		NULL },
+	{ "SUSFS_LKM_MODULES\n",		-1 },
+	{ "CONFIG_KSU_SUSFS_SUS_PATH\n",	SUSFS_FEAT_SUS_PATH },
+	{ "CONFIG_KSU_SUSFS_SUS_MOUNT\n",	SUSFS_FEAT_SUS_MOUNT },
+	{ "CONFIG_KSU_SUSFS_SUS_KSTAT\n",	SUSFS_FEAT_SUS_KSTAT },
+	{ "CONFIG_KSU_SUSFS_SPOOF_UNAME\n",	SUSFS_FEAT_SPOOF_UNAME },
+	{ "CONFIG_KSU_SUSFS_ENABLE_LOG\n",	SUSFS_FEAT_ENABLE_LOG },
+	{ "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS\n",	SUSFS_FEAT_HIDE_SYMS },
+	{ "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG\n",	SUSFS_FEAT_SPOOF_CMDLINE },
+	{ "CONFIG_KSU_SUSFS_OPEN_REDIRECT\n",	SUSFS_FEAT_OPEN_REDIRECT },
+	{ "CONFIG_KSU_SUSFS_SUS_MAP\n",		SUSFS_FEAT_SUS_MAP },
 	/* hide_modules is not upstream's, so it is not listed here - the feature itself is unchanged. */
 };
 
@@ -117,7 +133,8 @@ static void susfs_show_enabled_features(void __user **arg)
 		const char *name = enabled_features[i].name;
 		size_t len = strlen(name);
 
-		if (enabled_features[i].active && !enabled_features[i].active())
+		if (enabled_features[i].feature >= 0 &&
+		    !susfs_supercall_feature_armed(enabled_features[i].feature))
 			continue;
 		if (off + len >= SUSFS_ENABLED_FEATURES_SIZE)
 			break;
@@ -201,29 +218,55 @@ static void susfs_tw_func(struct callback_head *cb)
  * (ERR_CMD_NOT_SUPPORTED) is a USERSPACE sentinel the ksu_susfs C tool pre-seeds and reads
  * back as "the kernel never handled this command" (ksu_susfs/jni/features/sus_map.c:51-53,
  * ksu_susfs/jni/includes/susfs_defs.h:16-18).  So an unknown command must NOT be hijacked:
- * leave the regs and err alone, while every command listed here still short-circuits to 0. */
+ * leave the regs and err alone, while every command listed here still short-circuits to 0.
+ *
+ * A command is handled only while its feature is armed, so a command for a failed non-fatal
+ * layer falls through exactly like an unknown one - the same registry SHOW_ENABLED_FEATURES
+ * reads, so the advertised list and the accepted commands cannot disagree. */
+static int susfs_cmd_feature(unsigned int cmd)
+{
+	switch (cmd) {
+	case CMD_SUSFS_ADD_SUS_PATH:
+	case CMD_SUSFS_ADD_SUS_PATH_LOOP:
+		return SUSFS_FEAT_SUS_PATH;
+	case CMD_SUSFS_ADD_SUS_MAP:
+		return SUSFS_FEAT_SUS_MAP;
+	case CMD_SUSFS_ADD_SUS_KSTAT:
+	case CMD_SUSFS_UPDATE_SUS_KSTAT:
+	case CMD_SUSFS_ADD_SUS_KSTAT_STATICALLY:
+		return SUSFS_FEAT_SUS_KSTAT;
+	case CMD_SUSFS_SET_UNAME:
+		return SUSFS_FEAT_SPOOF_UNAME;
+	case CMD_SUSFS_ENABLE_LOG:
+		return SUSFS_FEAT_ENABLE_LOG;
+	case CMD_SUSFS_ENABLE_AVC_LOG_SPOOFING:
+		return SUSFS_FEAT_AVC_SPOOF;
+	case CMD_SUSFS_SET_CMDLINE_OR_BOOTCONFIG:
+		return SUSFS_FEAT_SPOOF_CMDLINE;
+	case CMD_SUSFS_ADD_OPEN_REDIRECT:
+		return SUSFS_FEAT_OPEN_REDIRECT;
+	case CMD_SUSFS_HIDE_SUS_MNTS_FOR_NON_SU_PROCS:
+		return SUSFS_FEAT_SUS_MOUNT;
+	default:
+		return -1;
+	}
+}
+
 static bool susfs_cmd_handled(unsigned int cmd)
 {
+	int feature;
+
 	switch (cmd) {
 	case CMD_SUSFS_SHOW_VERSION:
 	case CMD_SUSFS_SHOW_VARIANT:
 	case CMD_SUSFS_SHOW_ENABLED_FEATURES:
-	case CMD_SUSFS_ADD_SUS_PATH:
-	case CMD_SUSFS_ADD_SUS_PATH_LOOP:
-	case CMD_SUSFS_ADD_SUS_MAP:
-	case CMD_SUSFS_ADD_SUS_KSTAT:
-	case CMD_SUSFS_UPDATE_SUS_KSTAT:
-	case CMD_SUSFS_ADD_SUS_KSTAT_STATICALLY:
-	case CMD_SUSFS_SET_UNAME:
-	case CMD_SUSFS_ENABLE_LOG:
-	case CMD_SUSFS_ENABLE_AVC_LOG_SPOOFING:
-	case CMD_SUSFS_SET_CMDLINE_OR_BOOTCONFIG:
-	case CMD_SUSFS_ADD_OPEN_REDIRECT:
-	case CMD_SUSFS_HIDE_SUS_MNTS_FOR_NON_SU_PROCS:
 		return true;
 	default:
-		return false;
+		break;
 	}
+
+	feature = susfs_cmd_feature(cmd);
+	return feature >= 0 && susfs_supercall_feature_armed(feature);
 }
 
 static int reboot_pre(struct kprobe *kp, struct pt_regs *regs)

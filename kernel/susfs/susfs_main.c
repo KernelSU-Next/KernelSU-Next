@@ -247,6 +247,7 @@ static struct {
     void (*exit)(void);
     bool fatal;
     bool armed;			/* exit is run for every layer that was attempted */
+    int feature;			/* enum susfs_feature armed on a successful init, or -1 */
 } susfs_layers[] = {
     /* First, and FATAL: every fp-hook layer below (create_gate, opath, dirent, kstat, ...)
      * installs its entries through this cache.  A module that loaded without it would accept
@@ -254,42 +255,42 @@ static struct {
      * exists to avoid - so a missing sys_call_table refuses the load.  The init is idempotent
      * (the later layers' own susfs_fp_init() calls are no-ops once the cache is set), and
      * there is no exit: only the pointer is cached, the entries are restored by their owner. */
-    { "fp_hook",	susfs_fp_init,			NULL,			true,  false },
+    { "fp_hook",	susfs_fp_init,			NULL,			true,  false, -1 },
     /* NOT fatal: this layer only decides whether KernelSU's predicate was found at load.
      * When it was not, the gates answer the pre-#34 way and every other layer still works - so a
      * failure here is a degradation, not a reason to refuse the module.  Skipping this init entirely
      * (fail_layer=2) is safe for the same reason: the flag it sets defaults to the pre-#34 answer. */
-    { "ksu_umount_gate", susfs_ksu_umount_gate_init,	NULL,			false, false },
-    { "ksu_allow_gate",	susfs_ksu_allow_gate_init,	NULL,			false, false },
+    { "ksu_umount_gate", susfs_ksu_umount_gate_init,	NULL,			false, false, -1 },
+    { "ksu_allow_gate",	susfs_ksu_allow_gate_init,	NULL,			false, false, -1 },
     /* FATAL: every LSM layer below (sus_path first) inserts through this file's table hooks.
      * A module that loads without it would accept rules no LSM layer can apply - the same
      * "loaded but inert" shape fp_hook is fatal for.  ksu_lsm_hook_init() itself only
      * reports; the refusal lives here, where a failure can fail the load. */
-    { "lsm_hook",	layer_lsm_hook_init,		ksu_lsm_hook_exit,	true,  false },
-    { "sus_path",	sus_path_init,			sus_path_exit,		true,  false },
+    { "lsm_hook",	layer_lsm_hook_init,		ksu_lsm_hook_exit,	true,  false, -1 },
+    { "sus_path",	sus_path_init,			sus_path_exit,		true,  false, SUSFS_FEAT_SUS_PATH },
     /* After sus_path, whose rule table and per-caller gate it asks.  NOT fatal: when it
      * cannot arm, the create family keeps answering the kernel's own way (EEXIST for a
      * hidden name) - the read paths are unaffected. */
-    { "create_gate",	susfs_create_gate_init,		susfs_create_gate_exit,	false, false },
+    { "create_gate",	susfs_create_gate_init,		susfs_create_gate_exit,	false, false, SUSFS_FEAT_SUS_PATH },
     /* After sus_path, because this layer asks sus_path's rule table for every open it
      * post-checks - arming it first would install table entries that answer from a table
      * nobody has filled in yet.  NOT fatal: a failure here only means open(..., O_PATH) keeps
      * answering the pre-layer way (which is what the layer exists to fix, not what makes the
      * module useful), and every entry carries its own reason in the log. */
-    { "opath",		susfs_opath_init,		susfs_opath_exit,	false, false },
+    { "opath",		susfs_opath_init,		susfs_opath_exit,	false, false, SUSFS_FEAT_SUS_PATH },
     /* After sus_path, whose rule table it asks.  NOT fatal: when it does not arm the
      * post-hoc filter still hides, it is only detectable while doing so. */
-    { "dirent",		susfs_sus_dirent_init,		susfs_sus_dirent_exit,	false, false },
-    { "uname",		susfs_uname_init,		susfs_uname_exit,	false, false },
-    { "kstat",		susfs_kstat_init,		susfs_kstat_exit,	false, false },
-    { "sus_map",	susfs_sus_map_init,		susfs_sus_map_exit,	false, false },
-    { "sus_mount",	susfs_sus_mount_init,		susfs_sus_mount_exit,	false, false },
-    { "cmdline",	susfs_spoof_cmdline_init,	susfs_spoof_cmdline_exit, false, false },
-    { "open_redirect",	susfs_open_redirect_init,	susfs_open_redirect_exit, false, false },
-    { "enable_log",	susfs_enable_log_init,		susfs_enable_log_exit,	false, false },
-    { "avc_spoof",	susfs_avc_spoof_init,		susfs_avc_spoof_exit,	false, false },
-    { "supercall",	susfs_supercall_init,		susfs_supercall_exit,	true,  false },
-    { "hide_syms",	susfs_hide_syms_init,		susfs_hide_syms_exit,	false, false },
+    { "dirent",		susfs_sus_dirent_init,		susfs_sus_dirent_exit,	false, false, SUSFS_FEAT_SUS_PATH },
+    { "uname",		susfs_uname_init,		susfs_uname_exit,	false, false, SUSFS_FEAT_SPOOF_UNAME },
+    { "kstat",		susfs_kstat_init,		susfs_kstat_exit,	false, false, SUSFS_FEAT_SUS_KSTAT },
+    { "sus_map",	susfs_sus_map_init,		susfs_sus_map_exit,	false, false, SUSFS_FEAT_SUS_MAP },
+    { "sus_mount",	susfs_sus_mount_init,		susfs_sus_mount_exit,	false, false, SUSFS_FEAT_SUS_MOUNT },
+    { "cmdline",	susfs_spoof_cmdline_init,	susfs_spoof_cmdline_exit, false, false, SUSFS_FEAT_SPOOF_CMDLINE },
+    { "open_redirect",	susfs_open_redirect_init,	susfs_open_redirect_exit, false, false, SUSFS_FEAT_OPEN_REDIRECT },
+    { "enable_log",	susfs_enable_log_init,		susfs_enable_log_exit,	false, false, SUSFS_FEAT_ENABLE_LOG },
+    { "avc_spoof",	susfs_avc_spoof_init,		susfs_avc_spoof_exit,	false, false, SUSFS_FEAT_AVC_SPOOF },
+    { "supercall",	susfs_supercall_init,		susfs_supercall_exit,	true,  false, -1 },
+    { "hide_syms",	susfs_hide_syms_init,		susfs_hide_syms_exit,	false, false, SUSFS_FEAT_HIDE_SYMS },
 };
 
 /* Diagnostic: make one layer's init fail, by 1-based index, to exercise the rollback path
@@ -368,8 +369,11 @@ static int __init susfs_init(void)
             ret = susfs_layers[i].init ? susfs_layers[i].init() : 0;
         }
 
-        if (!ret)
+        if (!ret) {
+            if (susfs_layers[i].feature >= 0)
+                susfs_supercall_arm_feature(susfs_layers[i].feature);
             continue;
+        }
 
         if (susfs_layers[i].fatal) {
             pr_err("susfs_guard_lkm: %s init failed %d, refusing to load\n",
