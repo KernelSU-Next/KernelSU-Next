@@ -16,10 +16,10 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/types.h>
-#include <linux/version.h>
 
 #include "ksu_allow_gate.h"
 #include "symbol_resolver.h"
+#include "susfs.h"		/* susfs_expose_proc: the warning below depends on it */
 #include "susfs_log.h"
 
 static const char *const ksu_allow_symbols[] = {
@@ -81,8 +81,10 @@ int susfs_ksu_allow_gate_init(void)
 		 * that one answers uid == 0 until susfs_control_relabelled is set, which
 		 * susfs_relabel_control_nodes() cannot do from 6.4 up: on every GKI from 6.6 the
 		 * control surface is root-only whatever this resolves, so a missing symbol changes
-		 * nothing and warning about it names a problem that is not one. */
-		if (SUSFS_CONTROL_GATE_CAN_WIDEN)
+		 * nothing and warning about it names a problem that is not one.  The version alone
+		 * is not enough: below 6.4, expose_proc=0 reaches the same early return and leaves
+		 * the same root-only gate. */
+		if (SUSFS_CONTROL_GATE_CAN_WIDEN && READ_ONCE(susfs_expose_proc))
 			pr_warn("susfs_guard_lkm: neither %s nor %s is in kallsyms - the privileged-view predicate falls back to uid == 0, so a su-granted app and the manager app are NOT covered here.\n",
 				ksu_allow_symbols[0], ksu_allow_symbols[1]);
 		else
