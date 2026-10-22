@@ -32,7 +32,7 @@
 #define KSU_UMOUNT_GATE_SYMBOL	"ksu_uid_should_umount"
 
 /* Fail-safe default: the pre-#34 answer, until the init below proves that KernelSU's symbol exists.
- * A path that skips that init entirely - the fail_layer=1 diagnostic in susfs_main.c is one, and this
+ * A path that skips that init entirely - the fail_layer=2 diagnostic in susfs_main.c is one, and this
  * layer is deliberately not fatal - therefore leaves the gates on the safe branch instead of calling
  * through a NULL pointer.  Only a successful resolve turns it off. */
 bool susfs_ksu_umount_gate_off = true;

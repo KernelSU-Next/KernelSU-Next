@@ -1597,7 +1597,7 @@ static __nocfi void susfs_kstat_post(long nr, bool compat, const unsigned long *
  * before this change, on the getpid line of susfs_bench (no entry of ours is involved there, so it
  * is the cost of whatever fires on every syscall):
  *
- *     kstat layer forced off (fail_layer=6)   126 / 126 / 126 ns   <- no tracepoint
+ *     kstat layer forced off (fail_layer=10)   126 / 126 / 126 ns   <- no tracepoint
  *     everything armed                        151 / 150 / 151 ns   <- tracepoint registered
  *
  * i.e. +25..31 ns per syscall, on every syscall, whether or not it is one this module cares about.
