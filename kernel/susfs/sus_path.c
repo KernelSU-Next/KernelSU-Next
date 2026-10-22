@@ -1929,9 +1929,10 @@ static long sus_path_filter(unsigned long buf, long count,
         /* Everything in this chunk was hidden, and returning 0 here would be read as
          * end-of-directory: the caller stops and never sees the visible entries of the next
          * chunk.  So one record is left behind as a placeholder - d_ino = 0 with an empty
-         * name.  readdir() skips records whose d_ino is 0 (bionic does), which makes the
-         * caller ask again; a hand-written parser sees an entry without a name, still better
-         * than a directory that ends early. */
+         * name.  readdir() returns it like any other record (bionic and glibc both step by
+         * d_reclen and never look at d_ino), so the caller sees one entry without a name and
+         * the next readdir() continues after it - still better than a directory that ends
+         * early, and nothing is hidden by relying on a skip neither libc performs. */
     if (!failed && count > 0 && written == 0) {
         char zero_ino[8] = {0};
         char zbyte = 0;         /* the native layout's d_type field */
@@ -1948,12 +1949,13 @@ static long sus_path_filter(unsigned long buf, long count,
          * cleared.  The hidden name has to be gone from the buffer, not merely invisible to a
          * caller that honours the returned length.
          *
-         * The scrub runs BEFORE d_ino, d_type and d_reclen are overwritten, so a failure leaves
-         * the chain itself intact and the `return count` below is honest ("nothing was
-         * filtered").  A scrub stopped by a fault can only have zeroed bytes from name[0]
-         * onward - inside the first record, never its header - so what the caller gets is still
-         * a parseable chain; writing the placeholder first would instead hand it a chain whose
-         * first record is already a placeholder, bytes nothing can parse.
+         * The scrub runs BEFORE d_ino, d_type and d_reclen are overwritten, so a fault leaves
+         * the first record's own header intact - the placeholder is never written onto a chain
+         * that failed.  A stopped scrub has zeroed a prefix of [name_off, count), so records
+         * behind the fault point can lose their headers too; the `return count` below then
+         * claims "nothing was filtered", which such a chain no longer is.  That is a
+         * copy_from_user fault inside the caller's own buffer, and it fails towards the
+         * kernel's own bytes (the whole chunk is the kernel's output, not ours to leak).
          *
          * d_reclen is rewritten rather than left alone: the hidden entry's own length is its
          * name's length rounded up, and d_type is the hidden file's type, so a parser that
