@@ -28,12 +28,30 @@
 #include <linux/path.h>
 #include <linux/err.h>
 #include <linux/uaccess.h>
+#include <linux/version.h>
 #include <asm/unistd.h>
 
 #include "susfs.h"
 #include "susfs_fp_hook.h"
 #include "symbol_resolver.h"
 #include "susfs_log.h"
+
+/* inode_permission() grew a mount-namespace argument in 5.12 and an idmap in 6.3.
+ * The call below exists only to match the work an absent name does (may_create's
+ * permission check), so the argument that changed is the one the caller cannot
+ * observe here: the check is discarded either way. */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+#include <linux/mnt_idmapping.h>
+#define susfs_create_inode_permission(inode, mask) \
+	inode_permission(&nop_mnt_idmap, (inode), (mask))
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
+#include <linux/user_namespace.h>
+#define susfs_create_inode_permission(inode, mask) \
+	inode_permission(&init_user_ns, (inode), (mask))
+#else
+#define susfs_create_inode_permission(inode, mask) \
+	inode_permission((inode), (mask))
+#endif
 
 /* The AArch32 table numbers (arch/arm/tools/syscall.tbl); the native ones come
  * from __NR_*.  Kept spelled out for the same reason susfs_fp_hook.h spells the
@@ -92,6 +110,18 @@ static __nocfi noinline long create_gate(const struct pt_regs *regs, int dfd,
 		return orig(regs);	/* absent: the kernel's own answer */
 
 	hidden = sus_path_inode_hidden_public(d_inode(p.dentry));
+	if (hidden) {
+		/* Match the work an absent name would have done: the kernel runs
+		 * may_create() against the parent before answering, so run the same
+		 * permission check and throw the answer away.  This is the time/cache
+		 * side of the differential, not the errno: the answer stays EACCES,
+		 * which is what an absent name gets from a non-writable parent (the
+		 * case #115 measured). */
+		struct inode *dir = d_inode(p.dentry->d_parent);
+
+		if (dir)
+			(void)susfs_create_inode_permission(dir, MAY_WRITE | MAY_EXEC);
+	}
 	path_put(&p);
 	if (hidden)
 		return -EACCES;
