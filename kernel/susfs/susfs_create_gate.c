@@ -18,6 +18,17 @@
  * It deliberately does not create anything: the dcache whiteout work (which
  * would make the kernel itself take the absent path) is not ready to carry
  * this, and a rule here must not be turned into a file on disk.
+ *
+ * Side channels considered:
+ *  - errno: EACCES for a non-writable parent is what an absent name answers.
+ *    A writable parent would make an absent name succeed; that difference is
+ *    still there and is documented, not hidden.
+ *  - time/cache: the hit path used to skip may_create()'s permission check, so
+ *    it ran the same lookup parent permission check the absent path runs and
+ *    throws the answer away.
+ *  - linkat: the OLD path is checked too (an absent old name answers ENOENT);
+ *    a hidden old path answering the new-path EACCES would let a caller link a
+ *    hidden inode out of hiding.
  */
 
 #include <linux/kernel.h>
@@ -36,6 +47,14 @@
 #include "symbol_resolver.h"
 #include "susfs_log.h"
 
+/* The AArch32 table numbers (arch/arm/tools/syscall.tbl); the native ones come
+ * from __NR_*.  Kept spelled out for the same reason susfs_fp_hook.h spells the
+ * compat indexes out: the two tables do not share a numbering. */
+#define COMPAT_MKNODAT_NR	33
+#define COMPAT_MKDIRAT_NR	34
+#define COMPAT_SYMLINKAT_NR	36
+#define COMPAT_LINKAT_NR	37
+
 /* inode_permission() grew a mount-namespace argument in 5.12 and an idmap in 6.3.
  * The call below exists only to match the work an absent name does (may_create's
  * permission check), so the argument that changed is the one the caller cannot
@@ -53,14 +72,6 @@
 	inode_permission((inode), (mask))
 #endif
 
-/* The AArch32 table numbers (arch/arm/tools/syscall.tbl); the native ones come
- * from __NR_*.  Kept spelled out for the same reason susfs_fp_hook.h spells the
- * compat indexes out: the two tables do not share a numbering. */
-#define COMPAT_MKNODAT_NR	33
-#define COMPAT_MKDIRAT_NR	34
-#define COMPAT_SYMLINKAT_NR	36
-#define COMPAT_LINKAT_NR	37
-
 static struct filename *(*create_getname_fn)(const char __user *name, int flags, int *empty);
 static int (*create_filename_lookup_fn)(int dfd, struct filename *name, unsigned flags,
 					struct path *path, struct path *root);
@@ -75,117 +86,143 @@ static susfs_syscall_fn_t create_orig_compat_mkdirat;
 static susfs_syscall_fn_t create_orig_compat_symlinkat;
 static susfs_syscall_fn_t create_orig_compat_linkat;
 
-/* One implementation for both tables: the argument registers are the same in a
- * native and a compat call (the compat entry only differs in how it decodes
- * what it reads), so the caller's dfd/path pair is passed in.
+/* Is this (dfd, path) a name sus_path hides from the current caller?  No
+ * LOOKUP_FOLLOW: the last component is what the create would make, so a hidden
+ * symlink must answer for the link itself, not for its target.
  *
- * __nocfi noinline: the calls through create_getname_fn / filename_lookup_fn /
- * putname are indirect calls into the kernel, and the CFI call-site gate the
- * build enforces (tools/cfi_sites.py) refuses an instrumented call site. */
-static __nocfi noinline long create_gate(const struct pt_regs *regs, int dfd,
-					 const char __user *path,
-					 susfs_syscall_fn_t orig)
+ * __nocfi noinline: the calls through the resolved pointers are indirect calls
+ * into the kernel, and the CFI call-site gate the build enforces
+ * (tools/cfi_sites.py) refuses an instrumented call site. */
+static __nocfi noinline bool create_name_hidden(int dfd, const char __user *path)
 {
 	struct filename *name;
 	struct path p;
 	bool hidden;
 	int rc;
 
-	if (!orig)
-		return -ENOSYS;
 	if (!sus_path_rules_present())
-		return orig(regs);
+		return false;
 	if (!create_getname_fn || !create_filename_lookup_fn || !create_putname_fn)
-		return orig(regs);
+		return false;
 
 	name = create_getname_fn(path, 0, NULL);
 	if (IS_ERR(name))
-		return orig(regs);
+		return false;
 
-	/* No LOOKUP_FOLLOW: the last component is what the create would make, and
-	 * a hidden symlink must answer for the link itself, not for its target. */
 	rc = create_filename_lookup_fn(dfd, name, 0, &p, NULL);
 	create_putname_fn(name);
 	if (rc)
-		return orig(regs);	/* absent: the kernel's own answer */
+		return false;		/* absent: the kernel's own answer */
 
 	hidden = sus_path_inode_hidden_public(d_inode(p.dentry));
 	if (hidden) {
 		/* Match the work an absent name would have done: the kernel runs
 		 * may_create() against the parent before answering, so run the same
 		 * permission check and throw the answer away.  This is the time/cache
-		 * side of the differential, not the errno: the answer stays EACCES,
-		 * which is what an absent name gets from a non-writable parent (the
-		 * case #115 measured). */
+		 * side of the differential, not the errno. */
 		struct inode *dir = d_inode(p.dentry->d_parent);
 
 		if (dir)
 			(void)susfs_create_inode_permission(dir, MAY_WRITE | MAY_EXEC);
 	}
 	path_put(&p);
-	if (hidden)
-		return -EACCES;
-
-	return orig(regs);
+	return hidden;
 }
 
 static __nocfi noinline long create_wrap_mkdirat(const struct pt_regs *regs)
 {
-	return create_gate(regs, (int)regs->regs[0],
-			   (const char __user *)regs->regs[1],
-			   READ_ONCE(create_orig_mkdirat));
+	susfs_syscall_fn_t orig = READ_ONCE(create_orig_mkdirat);
+
+	if (!orig)
+		return -ENOSYS;
+	if (create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1]))
+		return -EACCES;
+	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_mknodat(const struct pt_regs *regs)
 {
-	return create_gate(regs, (int)regs->regs[0],
-			   (const char __user *)regs->regs[1],
-			   READ_ONCE(create_orig_mknodat));
+	susfs_syscall_fn_t orig = READ_ONCE(create_orig_mknodat);
+
+	if (!orig)
+		return -ENOSYS;
+	if (create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1]))
+		return -EACCES;
+	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_symlinkat(const struct pt_regs *regs)
 {
 	/* symlinkat(oldname, newdfd, newname): the path created is regs[2]. */
-	return create_gate(regs, (int)regs->regs[1],
-			   (const char __user *)regs->regs[2],
-			   READ_ONCE(create_orig_symlinkat));
+	susfs_syscall_fn_t orig = READ_ONCE(create_orig_symlinkat);
+
+	if (!orig)
+		return -ENOSYS;
+	if (create_name_hidden((int)regs->regs[1], (const char __user *)regs->regs[2]))
+		return -EACCES;
+	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_linkat(const struct pt_regs *regs)
 {
-	/* linkat(olddfd, oldname, newdfd, newname, flags): the path created is
-	 * regs[3]. */
-	return create_gate(regs, (int)regs->regs[2],
-			   (const char __user *)regs->regs[3],
-			   READ_ONCE(create_orig_linkat));
+	/* linkat(olddfd, oldname, newdfd, newname, flags): both ends matter.  An
+	 * absent old name answers ENOENT; a hidden old name must not let a caller
+	 * link the hidden inode out under a visible name. */
+	susfs_syscall_fn_t orig = READ_ONCE(create_orig_linkat);
+
+	if (!orig)
+		return -ENOSYS;
+	if (create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1]))
+		return -ENOENT;
+	if (create_name_hidden((int)regs->regs[2], (const char __user *)regs->regs[3]))
+		return -EACCES;
+	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_compat_mkdirat(const struct pt_regs *regs)
 {
-	return create_gate(regs, (int)regs->regs[0],
-			   (const char __user *)regs->regs[1],
-			   READ_ONCE(create_orig_compat_mkdirat));
+	susfs_syscall_fn_t orig = READ_ONCE(create_orig_compat_mkdirat);
+
+	if (!orig)
+		return -ENOSYS;
+	if (create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1]))
+		return -EACCES;
+	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_compat_mknodat(const struct pt_regs *regs)
 {
-	return create_gate(regs, (int)regs->regs[0],
-			   (const char __user *)regs->regs[1],
-			   READ_ONCE(create_orig_compat_mknodat));
+	susfs_syscall_fn_t orig = READ_ONCE(create_orig_compat_mknodat);
+
+	if (!orig)
+		return -ENOSYS;
+	if (create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1]))
+		return -EACCES;
+	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_compat_symlinkat(const struct pt_regs *regs)
 {
-	return create_gate(regs, (int)regs->regs[1],
-			   (const char __user *)regs->regs[2],
-			   READ_ONCE(create_orig_compat_symlinkat));
+	susfs_syscall_fn_t orig = READ_ONCE(create_orig_compat_symlinkat);
+
+	if (!orig)
+		return -ENOSYS;
+	if (create_name_hidden((int)regs->regs[1], (const char __user *)regs->regs[2]))
+		return -EACCES;
+	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_compat_linkat(const struct pt_regs *regs)
 {
-	return create_gate(regs, (int)regs->regs[2],
-			   (const char __user *)regs->regs[3],
-			   READ_ONCE(create_orig_compat_linkat));
+	susfs_syscall_fn_t orig = READ_ONCE(create_orig_compat_linkat);
+
+	if (!orig)
+		return -ENOSYS;
+	if (create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1]))
+		return -ENOENT;
+	if (create_name_hidden((int)regs->regs[2], (const char __user *)regs->regs[3]))
+		return -EACCES;
+	return orig(regs);
 }
 
 static struct susfs_fp_hook create_hooks[] = {
