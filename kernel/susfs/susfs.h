@@ -179,6 +179,10 @@ long susfs_opath_post_fd(long ret);
 struct inode;
 bool sus_path_inode_hidden_public(struct inode *inode);
 
+/* Whether any sus_path rule is live right now: the create-family entries test this before
+ * they resolve a path, so an empty table costs one load and nothing else. */
+bool sus_path_rules_present(void);
+
 /* Whether a 0777 /proc/susfs_* control node may be created.  Two independent conditions, neither optional: susfs_expose_proc
  * (the operator opted in) and sus_path_lsm_active() (with 0777 DAC passes every caller, so only the LSM layer can still
  * answer ENOENT for an app).  This gates node CREATION ONLY, never hook registration: an earlier revision returned early from
@@ -220,5 +224,10 @@ static inline bool susfs_open_redirect_active(void)
  * rules - and on by default (the or_entry parameter can turn it off). */
 int susfs_or_entry_init(void);
 void susfs_or_entry_exit(void);
+
+/* The create family's entry layer (susfs_create_gate.c): answers EACCES for a hidden name
+ * where filename_create() would have answered EEXIST before any LSM hook could run. */
+int susfs_create_gate_init(void);
+void susfs_create_gate_exit(void);
 
 #endif

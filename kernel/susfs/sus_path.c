@@ -1219,6 +1219,15 @@ bool sus_path_inode_hidden_public(struct inode *inode)
     return sus_path_inode_hidden(inode);
 }
 
+/* Whether any rule is live right now.  The create-family entries run for every
+ * mkdirat/symlinkat/mknodat/linkat on the system, so they test this before they resolve a
+ * path: an empty table costs one load instead of a lookup, and deleting the last rule takes
+ * that cost away again. */
+bool sus_path_rules_present(void)
+{
+    return READ_ONCE(sus_path_count) > 0;
+}
+
 static int sus_path_inode_getattr(const struct path *path)
 {
     struct inode *inode;

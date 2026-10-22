@@ -251,6 +251,10 @@ static struct {
     { "ksu_allow_gate",	susfs_ksu_allow_gate_init,	NULL,			false, false },
     { "lsm_hook",	layer_lsm_hook_init,		ksu_lsm_hook_exit,	false, false },
     { "sus_path",	sus_path_init,			sus_path_exit,		true,  false },
+    /* After sus_path, whose rule table and per-caller gate it asks.  NOT fatal: when it
+     * cannot arm, the create family keeps answering the kernel's own way (EEXIST for a
+     * hidden name) - the read paths are unaffected. */
+    { "create_gate",	susfs_create_gate_init,		susfs_create_gate_exit,	false, false },
     /* After sus_path, because this layer asks sus_path's rule table for every open it
      * post-checks - arming it first would install table entries that answer from a table
      * nobody has filled in yet.  NOT fatal: a failure here only means open(..., O_PATH) keeps
