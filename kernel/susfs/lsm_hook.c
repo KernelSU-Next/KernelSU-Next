@@ -1300,6 +1300,19 @@ void ksu_unregister_lsm_hook(struct ksu_lsm_hook *hook)
     ksu_lsm_unhook(hook);
 }
 
+/* Whether the table the hook insertion actually walks can be resolved at all: the < 6.12
+ * path inserts into security_hook_heads, the >= 6.12 path into static_calls_table.  The init
+ * below only reports; refusing the load is the layer table's call, because only the caller
+ * can turn a missing symbol into a failed module load. */
+bool ksu_lsm_hook_ready(void)
+{
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
+    return find_kernel_symbol_exact("static_calls_table") != 0;
+#else
+    return find_kernel_symbol_exact("security_hook_heads") != 0;
+#endif
+}
+
 /* No __init/__exit annotation on these two on purpose: the layer table (susfs_main.c) holds their
  * addresses and calls the exit from the rollback path of a FAILED load, i.e. from plain .text. */
 void ksu_lsm_hook_init(void)

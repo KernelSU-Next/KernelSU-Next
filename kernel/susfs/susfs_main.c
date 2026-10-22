@@ -233,6 +233,10 @@ static void susfs_relabel_control_nodes(void)
 static int layer_lsm_hook_init(void)
 {
     ksu_lsm_hook_init();
+    if (!ksu_lsm_hook_ready()) {
+        pr_err("lsm_hook: the table hook insertion walks is not resolvable on this kernel - refusing to load\n");
+        return -ENOENT;
+    }
     return 0;
 }
 
@@ -257,7 +261,11 @@ static struct {
      * (fail_layer=1) is safe for the same reason: the flag it sets defaults to the pre-#34 answer. */
     { "ksu_umount_gate", susfs_ksu_umount_gate_init,	NULL,			false, false },
     { "ksu_allow_gate",	susfs_ksu_allow_gate_init,	NULL,			false, false },
-    { "lsm_hook",	layer_lsm_hook_init,		ksu_lsm_hook_exit,	false, false },
+    /* FATAL: every LSM layer below (sus_path first) inserts through this file's table hooks.
+     * A module that loads without it would accept rules no LSM layer can apply - the same
+     * "loaded but inert" shape fp_hook is fatal for.  ksu_lsm_hook_init() itself only
+     * reports; the refusal lives here, where a failure can fail the load. */
+    { "lsm_hook",	layer_lsm_hook_init,		ksu_lsm_hook_exit,	true,  false },
     { "sus_path",	sus_path_init,			sus_path_exit,		true,  false },
     /* After sus_path, whose rule table and per-caller gate it asks.  NOT fatal: when it
      * cannot arm, the create family keeps answering the kernel's own way (EEXIST for a

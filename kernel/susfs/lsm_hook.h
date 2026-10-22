@@ -79,4 +79,9 @@ void ksu_unregister_lsm_hook(struct ksu_lsm_hook *hook);
 void ksu_lsm_hook_init(void);
 void ksu_lsm_hook_exit(void);
 
+/* Whether the table hook insertion walks (security_hook_heads below 6.12, static_calls_table
+ * from 6.12) is resolvable on this kernel.  The layer table makes lsm_hook fatal: without it no
+ * sus_path/LSM layer can be inserted, so the module would load but apply nothing. */
+bool ksu_lsm_hook_ready(void);
+
 #endif
