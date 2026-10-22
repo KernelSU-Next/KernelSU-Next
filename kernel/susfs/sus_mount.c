@@ -398,6 +398,7 @@ static int n_idmap;
 static DEFINE_SPINLOCK(idmap_lock);
 static atomic_t n_idmap_recycled = ATOMIC_INIT(0);	/* stale entries dropped */
 static atomic_t n_idmap_dropped_dev = ATOMIC_INIT(0);	/* dropped at sb teardown */
+static atomic_t n_idmap_full = ATOMIC_INIT(0);		/* marked mounts with no slot left */
 
 static atomic_t n_fdinfo_hits = ATOMIC_INIT(0);
 static atomic_t n_fdinfo_rewrites = ATOMIC_INIT(0);
@@ -424,8 +425,18 @@ static void sus_mount_idmap_add(int sus_id, int shown_id, dev_t s_dev)
             slot = i;
     }
     if (slot < 0) {
-        if (n_idmap >= SUS_MOUNT_IDMAP_MAX)
+        if (n_idmap >= SUS_MOUNT_IDMAP_MAX) {
+            /* Dropping the mapping is not the same as dropping a line: without it
+             * sus_mount_shown_for() answers 0 for this mount, so the statx/fdinfo rewrites
+             * have nothing to substitute and hand the caller the KSU-range id itself - a
+             * number above SUS_MOUNT_KSU_ID_MIN that no ordinary mount carries, which is
+             * exactly the indicator those two rewrites exist to remove.  It used to happen
+             * silently; a full table is now counted, and said once. */
+            if (atomic_inc_return(&n_idmap_full) == 1)
+                pr_warn("sus_mount: id map full at %d entries - further marked mounts keep their KSU-range id in statx(STATX_MNT_ID) and fdinfo; raise SUS_MOUNT_IDMAP_MAX\n",
+                        SUS_MOUNT_IDMAP_MAX);
             goto out;
+        }
         slot = n_idmap++;
     }
     mount_idmap[slot].sus_id = sus_id;
@@ -1444,7 +1455,7 @@ static int sus_mount_stat_show(char *buf, const struct kernel_param *kp)
                      "idmap=%d/%d  ident=%d/%d  hide=%d su_domain=%d\n"
                      "show_probes=%d/3 (show_vfsstat/show_mountinfo/show_vfsmnt)\n"
                      "ident: hits=%d learned_ids=%d full=%d dropped_dev=%d\n"
-                     "idmap: recycled_dropped=%d dropped_dev=%d\n"
+                     "idmap: recycled_dropped=%d dropped_dev=%d full=%d\n"
                      "sb: down=%d (probe=%d)\n"
                      "clone: walks=%d learned=%d (probe=%d)\n"
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
@@ -1464,6 +1475,7 @@ static int sus_mount_stat_show(char *buf, const struct kernel_param *kp)
                      atomic_read(&n_ident_dropped_dev),
                      atomic_read(&n_idmap_recycled),
                      atomic_read(&n_idmap_dropped_dev),
+                     atomic_read(&n_idmap_full),
                      atomic_read(&n_sb_down), (int)kp_sb_down_ok,
                      atomic_read(&n_clone_walks), atomic_read(&n_clone_learned),
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
