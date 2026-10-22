@@ -384,7 +384,14 @@ static DEFINE_MUTEX(sus_mount_ctl_lock);
  * Left over is an id recycled while nobody reads a mount table at all: no reader then holds a
  * mount list to compare the rewritten number against.  A shown_id needs no expiry of its own:
  * an ancestor of its mount cannot be unmounted while the child is alive. */
-#define SUS_MOUNT_IDMAP_MAX 64
+/* 64 was room for a handful of bind mounts.  KernelSU's magic mount binds per FILE, so a module
+ * store reaches a few hundred marked mounts on an ordinary device - measured 140 from one module
+ * tree here - and every one past the table kept its KSU-range id in statx/fdinfo (see the full
+ * path in sus_mount_idmap_add()).  256 entries are 3 KB of .bss and leave the lookup a bounded
+ * scan: sus_mount_shown_for() runs it with interrupts off, which is why this is not simply sized
+ * to whatever the marking scan can mark (SUS_MOUNT_SCAN_PASSES_MAX * SUS_MOUNT_ID_BATCH).  Past
+ * 256 the counter and the warning say so instead of the table failing quietly. */
+#define SUS_MOUNT_IDMAP_MAX 256
 
 /* sus_id == 0 marks a free slot; mnt ids are never 0. */
 struct sus_mount_idmap_entry {
