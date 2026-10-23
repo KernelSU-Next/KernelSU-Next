@@ -2484,6 +2484,12 @@ static int sus_path_publish_entry(struct sus_path_entry *e, bool merge_pending)
             cur->dev = e->dev;
             cur->ino = e->ino;
             strscpy(cur->name, e->name, sizeof(cur->name));
+            /* e was armed before publish: its inode points at our i_op copy and e->orig_iop
+             * holds the original.  The copy now belongs to cur, so the original must move with
+             * it - otherwise cur->orig_iop stays NULL, the restore on retire is a no-op, and
+             * the inode keeps a pointer into this module after it is unloaded. */
+            cur->orig_iop = e->orig_iop;
+            e->orig_iop = NULL;
             cur->inode = e->inode;
             e->inode = NULL;
             atomic_dec(&sus_path_n_pending);
