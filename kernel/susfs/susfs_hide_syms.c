@@ -587,16 +587,15 @@ static int hide_syms_s_show_pre(struct kprobe *kp, struct pt_regs *regs)
 		return 0;
 	iter = (struct kallsym_iter_local *)m->private;
 	if (!hide_syms_iter_plausible(iter)) {
-		/* NOT a feature failure, and "symbol hiding is NOT active" was simply wrong: on the
-		 * by-name fallback path (kallsyms_op_target == NULL) this handler is attached to
-		 * whichever s_show kallsyms listed first, and LTO is free to fold identical ones, so
-		 * it legitimately sees other seq_files whose m->private is a different object.
-		 * Rejecting those per call is the check doing its job - measured on android16-6.12,
-		 * where one such caller made the module announce the whole feature as dead while it
-		 * was filtering thousands of kallsyms lines.  Whether anything is really being hidden
-		 * is answered by the counters in /proc/susfs_hide_modules. */
-		if (atomic_inc_return(&hide_layout_bad) == 1)
-			SUSFS_LOGI("susfs_hide_syms: a caller of s_show is not a kallsyms read (m->private is not a struct kallsym_iter) - skipping those; real kallsyms reads are still filtered\n");
+		/* A rejected caller proves neither state: on the by-name path it may be a shared s_show
+		 * body (hiding still on) or another s_show (hiding off); with the identity resolved it is
+		 * a real mirror drift.  Only the unload counters can settle it. */
+		if (atomic_inc_return(&hide_layout_bad) == 1) {
+			if (kallsyms_op_target)
+				pr_err("susfs_hide_syms: kallsyms m->private is not a struct kallsym_iter - the mirror drifted; /proc/kallsyms is NOT being filtered\n");
+			else
+				pr_warn("susfs_hide_syms: non-kallsyms caller on the by-name path (m->private is not a struct kallsym_iter) - skipping it; this alone proves neither that hiding is off nor that it is on - check the unload counters\n");
+		}
 		return 0;
 	}
 	if (!iter->name[0])
