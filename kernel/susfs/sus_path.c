@@ -806,6 +806,7 @@ static void sus_path_pending_work(struct work_struct *w)
  * looked installed. */
 static int sus_path_inode_getattr(const struct path *path);
 static int sus_path_inode_permission(struct inode *inode, int mask);
+static int sus_path_lsm_readlink(struct dentry *dentry);
 
 /* The signatures MUST match the LSM hook types exactly, and must NOT be __nocfi:
  * this kernel uses kCFI with cross-module checks, so the call site compares type
@@ -844,6 +845,9 @@ static_assert(__builtin_types_compatible_p(LSM_HOOK_FN_TYPE(inode_getattr),
 static_assert(__builtin_types_compatible_p(LSM_HOOK_FN_TYPE(inode_permission),
 					   typeof(&sus_path_inode_permission)),
 	      "inode_permission hook signature mismatch");
+static_assert(__builtin_types_compatible_p(LSM_HOOK_FN_TYPE(inode_readlink),
+					   typeof(&sus_path_lsm_readlink)),
+	      "inode_readlink hook signature mismatch");
 
 /* ---- name-based operations ----
  *
@@ -973,6 +977,11 @@ SUS_LSM_ORIG_CALL(inode_permission, struct inode *inode, int mask)
 	return fn(inode, mask);
 }
 
+SUS_LSM_ORIG_CALL(inode_readlink, struct dentry *dentry)
+{
+	return fn(dentry);
+}
+
 SUS_LSM_ORIG_CALL(inode_unlink, struct inode *dir, struct dentry *dentry)
 {
 	return fn(dir, dentry);
@@ -1097,6 +1106,9 @@ static struct ksu_lsm_hook sus_path_getattr_hook =
 
 static struct ksu_lsm_hook sus_path_perm_hook =
 	KSU_LSM_HOOK_INSERT(inode_permission, (void *)sus_path_inode_permission);
+
+static struct ksu_lsm_hook sus_path_readlink_hook =
+	KSU_LSM_HOOK_INSERT(inode_readlink, (void *)sus_path_lsm_readlink);
 
 static atomic_t n_enoent_getattr = ATOMIC_INIT(0);
 static atomic_t n_enoent_perm = ATOMIC_INIT(0);
@@ -1277,6 +1289,18 @@ static bool sus_path_dentry_hidden(const struct dentry *dentry)
     return inode && sus_path_inode_hidden(inode);
 }
 
+/* Answer readlinkat here, before vfs_readlink() and SELinux's EACCES. */
+static atomic_t n_enoent_readlink_lsm = ATOMIC_INIT(0);
+static int sus_path_lsm_readlink(struct dentry *dentry)
+{
+    if (sus_path_dentry_hidden(dentry)) {
+        atomic_inc(&n_enoent_readlink_lsm);
+        return -ENOENT;
+    }
+    SUS_LSM_PASS_ORIG(sus_path_readlink_hook, inode_readlink, dentry);
+    return 0;
+}
+
 /* ---- readlink: the one face gated on i_op ----
  *
  * do_readlinkat() reaches security_inode_readlink() and vfs_readlink() only when
@@ -1285,14 +1309,14 @@ static bool sus_path_dentry_hidden(const struct dentry *dentry)
  *
  * holds.  For a registered PLAIN FILE neither is true, so the caller got -EINVAL -
  * which says "the path is there" - while the stat family answered ENOENT.  That
- * disagreement is the tell, and no LSM hook can close it: the hook above is not even
- * called on that path.
+ * disagreement is the tell.  The LSM readlink hook above answers that face before the
+ * i_op readlink body; below 6.12 it sits at the chain head, from 6.12 at SELinux's slot.
  *
  * So the gate itself is what gets changed: a registered inode is pointed at a copy of
  * its i_op whose readlink slot is ours.  That makes the condition true, and the slot
  * then answers exactly what the stat family answers, through the same predicate (and
- * therefore the same per-caller gate), at no cost on any other syscall path and with
- * no write into read-only memory.
+ * therefore the same per-caller gate); the copy changes only that slot and writes no
+ * read-only memory.
  *
  * The copy is shared per original i_op and lives as long as the module, so there is no
  * per-inode lifetime to manage: the inode's field simply reverts to the original (or is
@@ -2230,12 +2254,13 @@ static int sus_path_format_list(char *buf, size_t size)
                    hide_from_apps, atomic_read(&n_enoent_getattr),
                    atomic_read(&n_enoent_perm), atomic_read(&n_enoent_nameop),
                    atomic_read(&n_enoent_meta));
-    /* The readlink face works by pointing a registered inode at a copy of its i_op whose
-     * readlink slot is ours (see sus_path_inode_readlink), so what matters here is how
-     * often that slot answers, and whether every copy could be allocated. */
+    /* The readlink face answers in the i_op slot or, before it, in the LSM hook; report
+     * both, plus whether every i_op copy could be allocated. */
     n = sus_path_list_puts(buf, n, &trunc,
-                   "readlink: enoent=%d armfail=%d\n",
-                   atomic_read(&n_enoent_readlink), atomic_read(&n_iop_arm_fail));
+                   "readlink: enoent=%d lsm_enoent=%d armfail=%d\n",
+                   atomic_read(&n_enoent_readlink),
+                   atomic_read(&n_enoent_readlink_lsm),
+                   atomic_read(&n_iop_arm_fail));
     n = sus_path_list_puts(buf, n, &trunc,
                    "dirent: pending=%d (counters: /proc/susfs_kstat)\n",
                    atomic_read(&sus_path_n_pending));
@@ -2658,6 +2683,7 @@ int sus_path_init(void)
             &sus_path_getxattr_hook, &sus_path_listxattr_hook,
             &sus_path_setxattr_hook, &sus_path_removexattr_hook,
             &sus_path_notify_hook,
+            &sus_path_readlink_hook,
         };
         int i;
 
@@ -2769,6 +2795,7 @@ void sus_path_exit(void)
             &sus_path_getxattr_hook, &sus_path_listxattr_hook,
             &sus_path_setxattr_hook, &sus_path_removexattr_hook,
             &sus_path_notify_hook,
+            &sus_path_readlink_hook,
         };
         int i;
 
