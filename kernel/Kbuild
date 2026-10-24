@@ -64,7 +64,7 @@ else
 KSU_KERNEL_DIR := $(src)
 endif
 
-ccflags-y += -I$(KSU_KERNEL_DIR) -I$(KSU_KERNEL_DIR)/include
+ccflags-y += -I$(KSU_KERNEL_DIR) -iquote $(KSU_KERNEL_DIR)/include
 
 # preinit runner: a static nolibc binary embedded into kernelsu, see preinit/.
 # It is built against the installed UAPI headers of the target kernel
@@ -77,7 +77,7 @@ kernelsu-objs += preinit/blob.o
 KSU_RUNNER_CFLAGS := $(CLANG_FLAGS) -std=gnu11 -Os -Wall \
 	-nostdinc -isystem $(shell $(CC) -print-file-name=include) \
 	-I$(KSU_KERNEL_DIR)/preinit/runner/nolibc -I$(KSU_UAPI_INC) \
-	-I$(KSU_KERNEL_DIR)/include \
+	-iquote $(KSU_KERNEL_DIR)/include \
 	-ffreestanding -fno-stack-protector -fno-pic -fno-pie \
 	-fno-asynchronous-unwind-tables -fno-unwind-tables \
 	-ffunction-sections -fdata-sections

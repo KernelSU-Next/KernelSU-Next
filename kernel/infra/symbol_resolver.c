@@ -1,4 +1,5 @@
 #include <linux/bsearch.h>
+#include "compat/kernel_compat.h"
 #include <linux/kallsyms.h>
 #include <linux/module.h>
 #include <linux/mm.h>

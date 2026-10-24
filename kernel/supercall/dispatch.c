@@ -1,4 +1,6 @@
 #include <linux/capability.h>
+#include "compat/kernel_compat.h"
+#include <linux/kallsyms.h>
 #include <linux/cred.h>
 #include <linux/slab.h>
 #include <linux/string.h>

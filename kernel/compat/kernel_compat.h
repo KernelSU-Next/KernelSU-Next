@@ -85,6 +85,15 @@ static inline void ksu_kvfree(const void *buf)
 #define kvfree ksu_kvfree
 #endif
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 18, 0)
+/*
+ * kvcalloc() was added in v4.18; provide a zeroing fallback for
+ * older kernels (4.9/4.14). kzalloc is sufficient for the small
+ * counts used by the symbol-lookup supercall and policydb copies.
+ */
+#define kvcalloc(n, size, flags) kzalloc((n) * (size), flags)
+#endif
+
 // https://elixir.bootlin.com/linux/v4.14.222/source/lib/string.c#L282
 static inline ssize_t __strscpy_pad(char *dest, const char *src, size_t count)
 {
