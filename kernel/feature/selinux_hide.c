@@ -16,6 +16,7 @@
 #include <net/genetlink.h>
 #include <linux/moduleparam.h>
 #include <linux/mutex.h>
+#include <linux/workqueue.h>
 // security/selinux/include/security.h
 #include <security.h>
 #include <ss/context.h>
@@ -514,6 +515,38 @@ static const struct ksu_feature_handler selinux_hide_handler = {
     .set_handler = selinux_hide_feature_set,
 };
 
+/*
+ * Late load: nothing in the boot path ever sets this feature, so the hooks that
+ * answer policy queries from backup_sepolicy are never installed and a policy
+ * oracle ("does ksu_file exist?") reads the live, KSU-modified policy.
+ *
+ * The hooks need backup_sepolicy, which only exists after apply_kernelsu_rules();
+ * in a late-load session that happens after module init, so retry with a
+ * one-second backoff instead of calling once and failing with -EAGAIN.
+ */
+static struct delayed_work selinux_hide_auto_work;
+static int selinux_hide_auto_left = 60;
+
+static void selinux_hide_auto_fn(struct work_struct *w)
+{
+    (void)w;
+
+    if (ksu_selinux_hide_running)
+        return;
+
+    if (selinux_hide_feature_set(1) == 0) {
+        pr_info("selinux_hide: enabled automatically after late load\n");
+        return;
+    }
+
+    if (--selinux_hide_auto_left > 0) {
+        schedule_delayed_work(&selinux_hide_auto_work, HZ);
+        return;
+    }
+
+    pr_warn("selinux_hide: gave up waiting for the policy backup\n");
+}
+
 void ksu_selinux_hide_handle_second_stage()
 {
     initialize_fake_status();
@@ -562,6 +595,12 @@ void __init ksu_selinux_hide_init()
     }
     if (ksu_late_loaded) {
         initialize_fake_status();
+
+        /* Start the retry loop only in late-load mode: a normal boot has no
+         * policy backup yet either, but its userspace boot path does set the
+         * feature, so retrying there would race with the user's own choice. */
+        INIT_DELAYED_WORK(&selinux_hide_auto_work, selinux_hide_auto_fn);
+        schedule_delayed_work(&selinux_hide_auto_work, HZ);
     } else {
         static_key_enable(&fake_status_initialize_key.key);
     }
