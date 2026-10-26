@@ -9,7 +9,6 @@
 #include <linux/slab.h>
 #include <linux/sizes.h>
 #include <linux/version.h>
-#include <linux/flex_array.h>
 
 #include "sepolicy.h"
 #include "klog.h" // IWYU pragma: keep
@@ -179,7 +178,7 @@ static bool remove_avtab_node(struct policydb *db, struct avtab_node *node)
 
     for (i = 0; i < db->te_avtab.nslot; i++) {
         prev = NULL;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
         for (n = db->te_avtab.htable[i]; n; prev = n, n = n->next) {
 #else
         for (n = flex_array_get_ptr(db->te_avtab.htable, i); n;
@@ -191,7 +190,7 @@ static bool remove_avtab_node(struct policydb *db, struct avtab_node *node)
             if (prev)
                 prev->next = n->next;
             else {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
                 db->te_avtab.htable[i] = n->next;
 #else
                 flex_array_put_ptr(db->te_avtab.htable, i, n->next,
@@ -211,7 +210,7 @@ static bool remove_avtab_node(struct policydb *db, struct avtab_node *node)
                 // data is u32
                 shrink_size += sizeof(n->datum.u.data);
             n->next = NULL;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
             removed.htable[0] = n;
 #else
             flex_array_put_ptr(removed.htable, 0, n, GFP_ATOMIC | __GFP_ZERO);
@@ -827,40 +826,6 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
     }
 
     return true;
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
-	/* Linux 4.9 and earlier: policydb uses direct pointers, not flex_array */
-	size_t new_size = sizeof(struct ebitmap) * db->p_types.nprim;
-	struct ebitmap *new_type_attr_map =
-		krealloc(db->type_attr_map, new_size, GFP_ATOMIC);
-	struct type_datum **new_type_val_to_struct =
-		krealloc(db->type_val_to_struct,
-			 sizeof(*db->type_val_to_struct) * db->p_types.nprim,
-			 GFP_ATOMIC);
-	char **new_val_to_name_types =
-		krealloc(db->sym_val_to_name[SYM_TYPES],
-			 sizeof(char *) * db->symtab[SYM_TYPES].nprim,
-			 GFP_ATOMIC);
-	if (!new_type_attr_map || !new_type_val_to_struct ||
-	    !new_val_to_name_types) {
-		pr_err("add_type: alloc failed\n");
-		return false;
-	}
-	db->type_attr_map = new_type_attr_map;
-	ebitmap_init(&db->type_attr_map[value - 1], false);
-	ebitmap_set_bit(&db->type_attr_map[value - 1], value - 1, 1);
-	db->type_val_to_struct = new_type_val_to_struct;
-	db->type_val_to_struct[value - 1] = type;
-	db->sym_val_to_name[SYM_TYPES] = new_val_to_name_types;
-	db->sym_val_to_name[SYM_TYPES][value - 1] = key;
-	{
-		int i;
-		for (i = 0; i < db->p_roles.nprim; ++i) {
-			ebitmap_set_bit(&db->role_val_to_struct[i]->types,
-				value - 1, 1);
-		}
-	}
-	return true;
-
 #elif defined(CONFIG_IS_HW_HISI)
 	/*
    * Huawei use type_attr_map and type_val_to_struct.
@@ -1054,8 +1019,6 @@ static void add_typeattribute_raw(struct policydb *db, struct type_datum *type,
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
     struct ebitmap *sattr = &db->type_attr_map_array[type->value - 1];
-#elif LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
-	struct ebitmap *sattr = &db->type_attr_map[type->value - 1];
 
 #elif defined(CONFIG_IS_HW_HISI)
 	/*
