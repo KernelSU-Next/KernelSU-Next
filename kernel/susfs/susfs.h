@@ -106,6 +106,10 @@ bool susfs_hide_modules_node_ready(void);
  * operator who cannot see the rule table cannot tell "registered" from "hiding"; root-only, everyone else gets ENOENT. */
 #define SUSFS_PATH_NODE "/proc/susfs_path"
 
+/* sus_map's rule node: add/del/clear the mappings the maps/smaps/map_files walk hides.  Root-only
+ * through the same su-side gate as the other control nodes. */
+#define SUSFS_MAP_NODE "/proc/susfs_map"
+
 /* Whether the /proc/susfs_* control nodes are created at all.  Defaults to TRUE; they are created only when the LSM layer
  * that hides them is installed, so nobody ends up with an unprotected control node, and expose_proc=0 removes them. */
 extern bool susfs_expose_proc;

@@ -25,11 +25,14 @@
 #include <linux/slab.h>		/* kmalloc(GFP_ATOMIC), for the deferred path release */
 #include <linux/task_work.h>	/* the map_files reference is released from task_work */
 #include <linux/mutex.h>	/* map_ctl_lock: serialises probe arming */
+#include <linux/proc_fs.h>	/* proc_create() for /proc/susfs_map */
+#include <linux/seq_file.h>
 #include "susfs_abi.h"
 #include "susfs_log.h"
 #include "susfs.h"	/* susfs_abi_path_ok */
 #include "symbol_resolver.h"	/* find_kernel_symbol_exact, for the walk ops */
 #include "ksu_umount_gate.h"	/* susfs_is_current_proc_umounted_app (issue #34) */
+#include "ksu_allow_gate.h"	/* susfs_control_visible(): the node gate is su's own */
 #include "susfs_kprobe.h"
 
 #define SUS_MAP_MAX 64
@@ -42,12 +45,12 @@ struct sus_map_entry {
 static struct sus_map_entry map_entries[SUS_MAP_MAX];
 static int nmap;
 
-/* Serialises rule PUBLICATION only; the reader stays lock-free: entries are append-only
- * (kstat's are replaced wholesale, hence its reader-side snapshot), so a release/acquire
- * pair on nmap publishes a filled entry or none - and it has to be that on arm64, where
- * plain WRITE_ONCE/READ_ONCE could publish the count first.  The lock itself is for two
- * concurrent supercalls (each in its own task_work), which would otherwise fill one slot
- * and silently drop a rule while both report success. */
+/* Serialises rule PUBLICATION only; the reader stays lock-free: a slot is published by
+ * writing target_dev first and target_ino last with release semantics (0 = free), and nmap
+ * only advances under the lock with the appended slot.  Deletion clears target_ino back to 0
+ * (never target_dev), so a reader that saw the old ino also saw its own dev instead of a
+ * cleared wildcard.  The lock itself is for concurrent writers, which would otherwise
+ * fill one slot and silently drop a rule while both report success. */
 static DEFINE_SPINLOCK(map_table_lock);
 
 /* temporary interface: insmod susfs_guard_lkm.ko map_ino=<n> hides that inode */
@@ -55,19 +58,34 @@ static unsigned long param_map_ino;
 module_param_named(map_ino, param_map_ino, ulong, 0644);
 
 /* dev==0 means "any filesystem": only the map_ino parameter can pick that. */
-static int sus_map_add_full(unsigned long ino, dev_t dev)
+static int sus_map_add_full(unsigned long ino, dev_t dev, bool *added)
 {
     unsigned long flags;
-    int rc = 0;
+    int i, rc = 0;
 
+    *added = false;
     if (!ino)
         return -EINVAL;
 
     spin_lock_irqsave(&map_table_lock, flags);
+    for (i = 0; i < nmap; i++) {
+        if (map_entries[i].target_ino == ino && map_entries[i].target_dev == dev) {
+            spin_unlock_irqrestore(&map_table_lock, flags);
+            return 0;
+        }
+        if (map_entries[i].target_ino)
+            continue;
+        WRITE_ONCE(map_entries[i].target_dev, dev);
+        smp_store_release(&map_entries[i].target_ino, ino);
+        *added = true;
+        spin_unlock_irqrestore(&map_table_lock, flags);
+        return 0;
+    }
     if (nmap < SUS_MAP_MAX) {
-        map_entries[nmap].target_ino = ino;
-        map_entries[nmap].target_dev = dev;
+        WRITE_ONCE(map_entries[nmap].target_dev, dev);
+        smp_store_release(&map_entries[nmap].target_ino, ino);
         smp_store_release(&nmap, nmap + 1);
+        *added = true;
     } else {
         rc = -ENOSPC;
     }
@@ -75,9 +93,80 @@ static int sus_map_add_full(unsigned long ino, dev_t dev)
     return rc;
 }
 
+/* A deleted rule leaves a zero inode behind; add_full() reuses that slot, so a script
+ * that adds and removes paths does not exhaust the 64 entries. */
+static int sus_map_del_full(unsigned long ino, dev_t dev)
+{
+    unsigned long flags;
+    int i, rc = -ENOENT;
+
+    if (!ino)
+        return -EINVAL;
+
+    spin_lock_irqsave(&map_table_lock, flags);
+    for (i = 0; i < nmap; i++) {
+        if (map_entries[i].target_ino != ino)
+            continue;
+        if (map_entries[i].target_dev && map_entries[i].target_dev != dev)
+            continue;
+        /* target_ino is the publish word; leave target_dev alone so a reader that
+         * saw the old ino never sees it paired with the dev==0 wildcard. */
+        smp_store_release(&map_entries[i].target_ino, 0);
+        rc = 0;
+        break;
+    }
+    spin_unlock_irqrestore(&map_table_lock, flags);
+    return rc;
+}
+
+static int sus_map_del_exact(unsigned long ino, dev_t dev)
+{
+    unsigned long flags;
+    int i, rc = -ENOENT;
+
+    if (!ino)
+        return -EINVAL;
+
+    spin_lock_irqsave(&map_table_lock, flags);
+    for (i = 0; i < nmap; i++) {
+        if (map_entries[i].target_ino != ino || map_entries[i].target_dev != dev)
+            continue;
+        smp_store_release(&map_entries[i].target_ino, 0);
+        rc = 0;
+        break;
+    }
+    spin_unlock_irqrestore(&map_table_lock, flags);
+    return rc;
+}
+
+static int sus_map_clear(void)
+{
+    unsigned long flags;
+    int i;
+
+    spin_lock_irqsave(&map_table_lock, flags);
+    for (i = 0; i < nmap; i++)
+        smp_store_release(&map_entries[i].target_ino, 0);
+    smp_store_release(&nmap, 0);
+    spin_unlock_irqrestore(&map_table_lock, flags);
+    return 0;
+}
+
+static int sus_map_active(void)
+{
+    int i, n = smp_load_acquire(&nmap), active = 0;
+
+    for (i = 0; i < n; i++)
+        if (smp_load_acquire(&map_entries[i].target_ino))
+            active++;
+    return active;
+}
+
 static void sus_map_add(unsigned long ino)
 {
-    sus_map_add_full(ino, 0);
+    bool added;
+
+    sus_map_add_full(ino, 0, &added);
 }
 
 static bool sus_map_lookup(unsigned long ino, dev_t dev)
@@ -85,10 +174,16 @@ static bool sus_map_lookup(unsigned long ino, dev_t dev)
     int n = smp_load_acquire(&nmap);
     int i;
 
+    if (!ino)
+        return false;
     for (i = 0; i < n; i++) {
-        if (map_entries[i].target_ino != ino)
+        unsigned long e_ino = smp_load_acquire(&map_entries[i].target_ino);
+        dev_t e_dev;
+
+        if (!e_ino || e_ino != ino)
             continue;
-        if (map_entries[i].target_dev && map_entries[i].target_dev != dev)
+        e_dev = READ_ONCE(map_entries[i].target_dev);
+        if (e_dev && e_dev != dev)
             continue;
         return true;
     }
@@ -667,6 +762,19 @@ static struct kprobe *const map_probes[] = {
 static bool map_registered;
 static bool map_probe_armed[N_MAP_PROBES];
 
+/* maps is covered by show_map_vma (0) or show_map (2); show_smap (1) is the smaps half and
+ * cannot substitute for either.  Requiring index 0 alone made a successful show_map arm look
+ * like a total failure. */
+static bool sus_map_maps_armed(void)
+{
+    return READ_ONCE(map_probe_armed[0]) || READ_ONCE(map_probe_armed[2]);
+}
+
+static bool sus_map_smaps_armed(void)
+{
+    return READ_ONCE(map_probe_armed[1]);
+}
+
 /* Reachability, not configuration: "the probe is registered" says nothing on a kernel built
  * with CONFIG_LTO_CLANG_FULL, where the call site it should catch may have been inlined away
  * (walk_page_range() is EXPORT_SYMBOL_GPL and LTO may still inline the calls inside
@@ -684,7 +792,7 @@ static int sus_map_stat_show(char *buf, const struct kernel_param *kp)
                      "ops_hit=%d scan_fail=%d nofile=%d nomatch=%d getlink: calls=%d skip=%d nomatch=%d hides=%d putfail=%d line_hides=%d\n"
                      "vm: gup_calls=%d inner_calls=%d hides=%d\n"
                      "ops: smaps=%px smaps_shmem=%px pagemap=%px\n",
-                     nmap, armed, (int)N_MAP_PROBES,
+                     sus_map_active(), armed, (int)N_MAP_PROBES,
                      atomic_read(&n_walk_seen), atomic_read(&n_walk_seen_vma),
                      atomic_read(&n_walk_skip),
                      atomic_read(&n_walk_ops_hit), atomic_read(&n_walk_scan_fail),
@@ -765,7 +873,9 @@ static int sus_map_register_probes(void)
         }
     }
 
-    map_registered = map_probe_armed[0];   /* show_map_vma is the required one */
+    map_registered = sus_map_maps_armed();
+    if (map_registered && !sus_map_smaps_armed())
+        pr_warn("sus_map: smaps listing is not filtered (show_smap probe unavailable)\n");
     ret = map_registered ? 0 : first_err;
 
     mutex_unlock(&map_ctl_lock);
@@ -773,9 +883,183 @@ static int sus_map_register_probes(void)
 }
 
 
+static int sus_map_ensure_probes(unsigned long ino, dev_t dev, bool added)
+{
+    int rc;
+
+    if (READ_ONCE(map_registered))
+        return 0;
+    rc = sus_map_register_probes();
+    if (sus_map_maps_armed()) {
+        if (!sus_map_smaps_armed())
+            pr_warn("sus_map: smaps listing is not filtered (show_smap probe unavailable)\n");
+        return 0;
+    }
+    /* No maps listing hook: a rule that cannot hide anything must not stay.  Delete only
+     * the rule this call inserted; an existing rule must survive a failed re-add. */
+    if (added)
+        sus_map_del_exact(ino, dev);
+    return rc;
+}
+
+static int sus_map_add_path(const char *path)
+{
+    struct path p;
+    struct inode *inode;
+    int rc;
+
+    if (!path || !*path)
+        return -EINVAL;
+    if (strlen(path) >= SUSFS_MAX_LEN_PATHNAME)
+        return -ENAMETOOLONG;
+
+    rc = kern_path(path, LOOKUP_FOLLOW, &p);
+    if (rc)
+        return rc;
+    inode = d_backing_inode(p.dentry);
+    if (!inode) {
+        path_put(&p);
+        return -ENOENT;
+    }
+    {
+        unsigned long ino = inode->i_ino;
+        dev_t dev = inode->i_sb->s_dev;
+
+        bool added;
+
+        rc = sus_map_add_full(ino, dev, &added);
+        path_put(&p);
+        if (rc)
+            return rc;
+        return sus_map_ensure_probes(ino, dev, added);
+    }
+}
+
+static int sus_map_del_path(const char *path)
+{
+    struct path p;
+    struct inode *inode;
+    int rc;
+
+    if (!path || !*path)
+        return -EINVAL;
+    if (strlen(path) >= SUSFS_MAX_LEN_PATHNAME)
+        return -ENAMETOOLONG;
+
+    rc = kern_path(path, LOOKUP_FOLLOW, &p);
+    if (rc)
+        return rc;
+    inode = d_backing_inode(p.dentry);
+    if (!inode) {
+        path_put(&p);
+        return -ENOENT;
+    }
+    rc = sus_map_del_full(inode->i_ino, inode->i_sb->s_dev);
+    path_put(&p);
+    return rc;
+}
+
+#define SUS_MAP_CMD_MAX 512
+
+static int sus_map_proc_show(struct seq_file *m, void *v)
+{
+    int i, n = smp_load_acquire(&nmap), active = 0;
+
+    for (i = 0; i < n; i++)
+        if (smp_load_acquire(&map_entries[i].target_ino))
+            active++;
+
+    seq_printf(m, "rules: %d/%d\n", active, SUS_MAP_MAX);
+    for (i = 0; i < n; i++) {
+        unsigned long ino = smp_load_acquire(&map_entries[i].target_ino);
+
+        if (!ino)
+            continue;
+        seq_printf(m, "ino=%lu dev=%lu\n", ino,
+                   (unsigned long)READ_ONCE(map_entries[i].target_dev));
+    }
+    return 0;
+}
+
+static int sus_map_proc_open(struct inode *inode, struct file *file)
+{
+    if (!susfs_control_visible())
+        return -ENOENT;
+    return single_open(file, sus_map_proc_show, NULL);
+}
+
+static ssize_t sus_map_proc_write(struct file *file, const char __user *buf,
+                                  size_t len, loff_t *off)
+{
+    char *cmd, *arg;
+    size_t i;
+    int rc;
+
+    if (!susfs_control_visible())
+        return -ENOENT;
+    if (len == 0)
+        return 0;
+    if (len >= SUS_MAP_CMD_MAX)
+        return -EINVAL;
+
+    cmd = kvmalloc(len + 1, GFP_KERNEL);
+    if (!cmd)
+        return -ENOMEM;
+    if (copy_from_user(cmd, buf, len)) {
+        kvfree(cmd);
+        return -EFAULT;
+    }
+    cmd[len] = 0;
+
+    for (i = strlen(cmd); i > 0; i--) {
+        if (cmd[i - 1] != 10 && cmd[i - 1] != 13 && cmd[i - 1] != ' ')
+            break;
+        cmd[i - 1] = 0;
+    }
+
+    if (!strcmp(cmd, "clear")) {
+        rc = sus_map_clear();
+    } else if (!strncmp(cmd, "add ", 4) || !strncmp(cmd, "del ", 4)) {
+        arg = cmd + 4;
+        while (*arg == ' ')
+            arg++;
+        if (!*arg || strlen(arg) >= SUSFS_MAX_LEN_PATHNAME) {
+            rc = -EINVAL;
+        } else if (cmd[0] == 'a') {
+            rc = sus_map_add_path(arg);
+        } else {
+            rc = sus_map_del_path(arg);
+        }
+    } else {
+        rc = -EINVAL;
+    }
+
+    kvfree(cmd);
+    return rc ? rc : (ssize_t)len;
+}
+
+static const struct proc_ops sus_map_proc_ops = {
+    .proc_open = sus_map_proc_open,
+    .proc_read = seq_read,
+    .proc_write = sus_map_proc_write,
+    .proc_lseek = seq_lseek,
+    .proc_release = single_release,
+};
+
+static struct proc_dir_entry *sus_map_entry;
+
 int susfs_sus_map_init(void)
 {
     int rc;
+
+    if (susfs_control_node_allowed()) {
+        sus_map_entry = proc_create("susfs_map", 0777, NULL, &sus_map_proc_ops);
+        if (!sus_map_entry)
+            pr_warn("sus_map: proc_create(susfs_map) failed - runtime rule control unavailable, use the map_ino parameter\n");
+    } else {
+        SUSFS_LOGI("sus_map: /proc/susfs_map not created (expose_proc=%d)\n",
+                   (int)susfs_expose_proc);
+    }
 
     sus_map_add(param_map_ino);
     if (nmap == 0) {
@@ -786,8 +1070,16 @@ int susfs_sus_map_init(void)
     /* Every probe is optional on its own: without show_smap the maps listing is still
      * filtered, so one missing symbol must not take the rest down. */
     rc = sus_map_register_probes();
-    if (rc)
+    if (rc) {
+        /* The layer is non-fatal, but a rule that cannot hide anything must not stay:
+         * drop it and remove the node so add does not report success later. */
+        sus_map_clear();
+        if (sus_map_entry) {
+            proc_remove(sus_map_entry);
+            sus_map_entry = NULL;
+        }
         return rc;
+    }
     return 0;
 }
 
@@ -795,11 +1087,15 @@ void susfs_sus_map_exit(void)
 {
     int i;
 
+    if (sus_map_entry) {
+        proc_remove(sus_map_entry);
+        sus_map_entry = NULL;
+    }
+
     /* Same lock as the registration side.  The arm path is check-then-act on map_probe_armed[],
      * so disarming without it would break the invariant the duplicate-registration fix
-     * established: one probe's arm and disarm belong under the same lock.  (No /proc write
-     * reaches the arm path today - it runs from init and the supercall, and the supercall's
-     * task_work holds a module reference - so this is symmetry rather than a live window.) */
+     * established: one probe's arm and disarm belong under the same lock.  The supercall and
+     * /proc/susfs_map both add rules while the module is loaded; the node cannot outlive it. */
     mutex_lock(&map_ctl_lock);
     for (i = 0; i < (int)N_MAP_PROBES; i++) {
         if (!map_probe_armed[i])
@@ -854,26 +1150,27 @@ void susfs_sus_map_supercall(void __user **arg)
         goto out;
     }
 
-    if (nmap >= SUS_MAP_MAX) {
-        path_put(&p);
-        info.err = -ENOSPC;
-        goto out;
-    }
     /* One call fills both fields: the old two-step form let sus_map_add() return early on
      * ino==0 and then wrote map_entries[nmap-1] regardless - indexing -1 at worst,
      * corrupting the previous rule's device at best. */
-    rc = sus_map_add_full(inode->i_ino, inode->i_sb->s_dev);
-    if (rc) {
-        path_put(&p);
-        info.err = rc;
-        goto out;
-    }
-    SUSFS_LOGI("sus_map: added %s (ino=%lu) via supercall\n",
-            info.target_pathname, inode->i_ino);
-    path_put(&p);
+    {
+        unsigned long ino = inode->i_ino;
+        dev_t dev = inode->i_sb->s_dev;
 
-    if (!map_registered) {
-        rc = sus_map_register_probes();
+        bool added;
+
+        rc = sus_map_add_full(ino, dev, &added);
+        if (rc) {
+            path_put(&p);
+            info.err = rc;
+            goto out;
+        }
+        if (added)
+            SUSFS_LOGI("sus_map: added %s (ino=%lu) via supercall\n",
+                    info.target_pathname, ino);
+        path_put(&p);
+
+        rc = sus_map_ensure_probes(ino, dev, added);
         if (rc) {
             info.err = rc;
             goto out;

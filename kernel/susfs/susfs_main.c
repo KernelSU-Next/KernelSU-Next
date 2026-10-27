@@ -58,6 +58,7 @@ static const char *const susfs_self_hide_paths[] = {
     /* The O_PATH layer's node: it reports the four sys_call_table/compat_sys_call_table
      * entries and the counters that say whether a wrapper ever ran. */
     SUSFS_OPATH_NODE,
+    SUSFS_MAP_NODE,
     /* The module's own sysfs directory is NOT here: it belongs to hide_module
      * (susfs_hide_syms.c), which adds and drops that rule at runtime. */
 };
