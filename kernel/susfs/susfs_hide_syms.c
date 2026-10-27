@@ -22,6 +22,8 @@
 #include "susfs.h"		/* sus_path_add_self_hidden / sus_path_del_path */
 #include "symbol_resolver.h"	/* find_kernel_symbol_exact (kallsyms_op) */
 #include "susfs_kprobe.h"	/* susfs_kp_forget_addr: a probe struct must be usable twice */
+#include "patch_memory.h"
+#include "susfs_fp_hook.h"	/* susfs_fp_drain: wait out in-flight wrappers */
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 
 /* ---- hide_modules: filter other kernel modules out of /proc/modules ----
@@ -636,7 +638,7 @@ static int hide_syms_s_show_pre(struct kprobe *kp, struct pt_regs *regs)
  * cannot protect the dereference of a wild m, and a probe sitting on another s_show can still skip
  * one line of an unrelated /proc file.  That is exactly the exposure this probe had before it was
  * changed at all; the m->op check is what removes it, and it is off precisely on this path. */
-static struct kprobe kp_s_show = {
+static struct kprobe kp_s_show __maybe_unused = {
 	.pre_handler = hide_syms_s_show_pre,
 };
 
@@ -666,7 +668,67 @@ static int hide_syms_m_show_pre(struct kprobe *kp, struct pt_regs *regs)
 	return 1;
 }
 
-static struct kprobe kp_m_show = {
+typedef int (*susfs_show_fn_t)(struct seq_file *, void *);
+static susfs_show_fn_t orig_s_show;
+static susfs_show_fn_t orig_m_show;
+
+/* seq_operations.show replacements: unlike a kprobe, these leave the function entry (and its BTI
+ * landing pad) untouched.  The original show runs first; a hidden line is discarded by rewinding
+ * seq_file->count, which is exactly the "no output for this entry" the kprobe achieved by skipping
+ * the body. */
+static int __nocfi hide_syms_s_show_wrap(struct seq_file *m, void *p)
+{
+	struct kallsym_iter_local *iter;
+
+	if (!m || !orig_s_show)
+		return -EINVAL;
+	if (kallsyms_op_target && m->op != kallsyms_op_target)
+		return orig_s_show(m, p);
+
+	/* Decide before running the original: a hidden line must cost the same as
+	 * the probe version, where the body never ran (no timing fingerprint). */
+	atomic_inc(&hide_enter_count);
+	iter = (struct kallsym_iter_local *)m->private;
+	if (!iter || !hide_syms_iter_plausible(iter)) {
+		if (atomic_inc_return(&hide_layout_bad) == 1) {
+			if (kallsyms_op_target)
+				pr_err("susfs_hide_syms: kallsyms m->private is not a struct kallsym_iter - the mirror drifted; /proc/kallsyms is NOT being filtered\n");
+			else
+				pr_warn("susfs_hide_syms: non-kallsyms caller (m->private is not a struct kallsym_iter) - skipping it\n");
+		}
+		return orig_s_show(m, p);
+	}
+	if (!iter->name[0])
+		return orig_s_show(m, p);
+	if (name_should_hide(iter->name)) {
+		atomic_inc(&hide_hit_count);
+		return 0;
+	}
+	if (iter->module_name[0] && hide_module_name_match(iter->module_name)) {
+		atomic_inc(&n_kallsyms_mod_skipped);
+		return 0;
+	}
+	return orig_s_show(m, p);
+}
+
+static int __nocfi hide_syms_m_show_wrap(struct seq_file *m, void *p)
+{
+	struct module *mod;
+
+	if (!m || !orig_m_show)
+		return -EINVAL;
+	if (modules_op_target && m->op != modules_op_target)
+		return orig_m_show(m, p);
+	if (!p)
+		return orig_m_show(m, p);
+	mod = (struct module *)((char *)p - offsetof(struct module, list));
+	if (!hide_module_name_match(mod->name))
+		return orig_m_show(m, p);
+	atomic_inc(&n_modlines_skipped);
+	return 0;
+}
+
+static struct kprobe kp_m_show __maybe_unused = {
 	.pre_handler = hide_syms_m_show_pre,
 };
 
@@ -740,6 +802,10 @@ static bool hide_registered;
 int susfs_hide_syms_init(void)
 {
 	int rc;
+	struct kprobe resolve = {0};
+	const struct seq_operations *op = NULL;
+	susfs_show_fn_t wrapper;
+	susfs_show_fn_t image;
 
 	/* Apply what the insmod parameter cached (see hide_modules_pending_val) FIRST, and before the
 	 * kprobe registrations below: those can fail without failing the load (this layer is non-fatal in
@@ -764,56 +830,51 @@ int susfs_hide_syms_init(void)
 	 * is ever added it MUST re-run hide_syms_resolve_show() instead of calling register_kprobe()
 	 * again: on the identity path susfs_kp_forget_addr() leaves neither .addr nor .symbol_name
 	 * set, and the kernel answers -EINVAL for that combination (see susfs_kprobe.h). */
-	rc = hide_syms_resolve_show(&kp_s_show, "kallsyms_op", "s_show",
-			&kallsyms_op_target);
+	rc = hide_syms_resolve_show(&resolve, "kallsyms_op", "s_show", &op);
 	if (rc) {
-		/* Identity resolution failed: the table is not there, or its .show is not the body of a
-		 * function named s_show (see hide_syms_resolve_show()).  Register BY NAME instead of
-		 * hiding nothing - the name-based path was measured to work on a device where the table
-		 * check does not.  kallsyms_op_target stays NULL, which is how the handler knows the
-		 * m->op identity check is off and that hide_syms_iter_plausible() is the only gate; and
-		 * .addr is cleared explicitly so the two fields are never set at once (that pair is what
-		 * the kernel refuses with -EINVAL). */
-		SUSFS_LOGI("susfs_hide_syms: kallsyms_op.show could not be validated (%d) - arming s_show BY NAME instead: the m->op check is OFF for this probe, so hide_syms_iter_plausible() is the only gate (if the name selects another s_show, that file can lose a line, and kallsyms hiding stays off)\n",
+		pr_warn("susfs_hide_syms: kallsyms_op.show could not be validated (%d) - kallsyms hiding stays off\n",
 				rc);
-		kp_s_show.addr = NULL;
-		kp_s_show.symbol_name = "s_show";
-	}
-	rc = register_kprobe(&kp_s_show);
-	if (rc) {
-		pr_warn("susfs_hide_syms: cannot arm kallsyms s_show (%d) - /proc/kallsyms keeps listing susfs_/ksu_ symbols\n",
-				rc);
-		susfs_kp_forget_addr(&kp_s_show);
 		return rc;
 	}
-	hide_registered = true;
-
-	SUSFS_LOGI("susfs_hide_syms: s_show armed at %px (%s)\n",
-			(void *)kp_s_show.addr,
-			kallsyms_op_target ? "by table identity" :
-			"BY NAME - the table value could not be validated, so the m->op check is off");
-
-	/* Separate probe, separate failure: hiding symbol names and hiding module entries are independent. */
-	rc = hide_syms_resolve_show(&kp_m_show, "modules_op", "m_show",
-			&modules_op_target);
-	if (rc) {
-		/* Same fallback as s_show, same reason: by name, with modules_op_target left NULL. */
-		SUSFS_LOGI("susfs_hide_syms: modules_op.show could not be validated (%d) - arming m_show BY NAME instead\n",
-				rc);
-		kp_m_show.addr = NULL;
-		kp_m_show.symbol_name = "m_show";
+	image = READ_ONCE(op->show);
+	wrapper = hide_syms_s_show_wrap;
+	/* Publish the original before the pointer that reaches it: once the table
+	 * points at the wrapper, an SMP reader may run it immediately. */
+	orig_s_show = image;
+	kallsyms_op_target = op;
+	smp_wmb();
+	if (ksu_patch_text((void *)&op->show, &wrapper, sizeof(wrapper),
+			   KSU_PATCH_TEXT_FLUSH_DCACHE)) {
+		pr_warn("susfs_hide_syms: cannot replace kallsyms s_show\n");
+		kallsyms_op_target = NULL;
+		orig_s_show = NULL;
+		return -EIO;
 	}
-	rc = register_kprobe(&kp_m_show);
+	hide_registered = true;
+	SUSFS_LOGI("susfs_hide_syms: s_show replaced at %px (original %px)\n",
+			(void *)&op->show, (void *)image);
+
+	/* Separate entry, separate failure: hiding symbol names and hiding module entries are independent. */
+	rc = hide_syms_resolve_show(&resolve, "modules_op", "m_show", &op);
 	if (rc) {
-		susfs_kp_forget_addr(&kp_m_show);
-		pr_warn("susfs_hide_syms: cannot arm modules m_show (%d) - /proc/modules keeps listing the modules in hide_modules\n",
-			rc);
+		SUSFS_LOGI("susfs_hide_syms: modules_op.show could not be validated (%d) - /proc/modules hiding stays off\n",
+				rc);
 	} else {
-		m_show_registered = true;
-		SUSFS_LOGI("susfs_hide_syms: m_show armed at %px (%s)\n",
-				(void *)kp_m_show.addr,
-				modules_op_target ? "by table identity" :
-				"BY NAME - the table value could not be validated, so the m->op check is off");
+		image = READ_ONCE(op->show);
+		wrapper = hide_syms_m_show_wrap;
+		orig_m_show = image;
+		modules_op_target = op;
+		smp_wmb();
+		if (ksu_patch_text((void *)&op->show, &wrapper, sizeof(wrapper),
+				   KSU_PATCH_TEXT_FLUSH_DCACHE)) {
+			pr_warn("susfs_hide_syms: cannot replace modules m_show\n");
+			modules_op_target = NULL;
+			orig_m_show = NULL;
+		} else {
+			m_show_registered = true;
+			SUSFS_LOGI("susfs_hide_syms: m_show replaced at %px (original %px)\n",
+					(void *)&op->show, (void *)image);
+		}
 	}
 
 	/* hide_modules starts with just this module in its list: a built-in SUSFS has no module entry, so leaving ours visible
@@ -862,17 +923,23 @@ void susfs_hide_syms_exit(void)
 		hide_modules_entry = NULL;
 	}
 	if (m_show_registered) {
-		unregister_kprobe(&kp_m_show);
-		susfs_kp_forget_addr(&kp_m_show);	/* after the call, never before: susfs_kprobe.h */
+		susfs_show_fn_t orig = orig_m_show;
+
+		if (!modules_op_target || !orig ||
+		    ksu_patch_text((void *)&modules_op_target->show, &orig,
+				   sizeof(orig), KSU_PATCH_TEXT_FLUSH_DCACHE))
+			pr_warn("susfs_hide_syms: m_show restore failed\n");
 		m_show_registered = false;
 	}
 	if (hide_registered) {
-		unregister_kprobe(&kp_s_show);
-		susfs_kp_forget_addr(&kp_s_show);
+		susfs_show_fn_t orig = orig_s_show;
+
+		if (!kallsyms_op_target || !orig ||
+		    ksu_patch_text((void *)&kallsyms_op_target->show, &orig,
+				   sizeof(orig), KSU_PATCH_TEXT_FLUSH_DCACHE))
+			pr_warn("susfs_hide_syms: s_show restore failed\n");
 		hide_registered = false;
 	}
-	modules_op_target = NULL;
-	kallsyms_op_target = NULL;
 	/* The /sys/module rules are ours: drop them here, not in sus_path's teardown - this layer cleans up what it registered. */
 	hide_modules_commit(hide_modules_applied, 0);
 	hide_modules_sync_sysfs();
@@ -880,4 +947,11 @@ void susfs_hide_syms_exit(void)
 		atomic_read(&hide_enter_count), atomic_read(&hide_hit_count),
 		atomic_read(&hide_layout_bad),
 		atomic_read(&n_modlines_skipped), atomic_read(&n_kallsyms_mod_skipped));
+	/* A caller can still be inside the wrapper after its entry is restored: wait
+	 * for it before the module text may go away. */
+	susfs_fp_drain();
+	orig_s_show = NULL;
+	orig_m_show = NULL;
+	kallsyms_op_target = NULL;
+	modules_op_target = NULL;
 }

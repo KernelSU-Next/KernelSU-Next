@@ -66,7 +66,7 @@ static const char *const susfs_self_hide_paths[] = {
 /* Register our control nodes in sus_path's hidden set: probing them must answer ENOENT,
  * not EACCES.  Runs after every feature init (the nodes must exist for kern_path() to
  * resolve them) and after sus_path_init(), so the hooks are already patched. */
-static void susfs_self_hide_nodes(void)
+void susfs_self_hide_nodes(void)
 {
     int i;
 
