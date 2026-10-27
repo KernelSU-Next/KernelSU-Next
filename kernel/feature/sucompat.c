@@ -99,7 +99,7 @@ long ksu_handle_faccessat_sucompat(int orig_nr, struct pt_regs *regs)
 		old_cred = override_creds(ksu_cred);
 		if (is_ksud_exists()) {
 			ksu_compat_sulog('a');
-			pr_info("faccessat su->ksud!\n");
+			ksu_dbg("faccessat su->ksud!\n");
 			orig_filename = *filename_user;
 			*filename_user = ksud_user_path();
 			ret = ksu_syscall_table[orig_nr](regs);
@@ -135,7 +135,7 @@ long ksu_handle_stat_sucompat(int orig_nr, struct pt_regs *regs)
 		old_cred = override_creds(ksu_cred);
 		if (is_ksud_exists()) {
 			ksu_compat_sulog('s');
-			pr_info("newfstatat su->ksud!\n");
+			ksu_dbg("newfstatat su->ksud!\n");
 			orig_filename = *filename_user;
 			*filename_user = ksud_user_path();
 			ret = ksu_syscall_table[orig_nr](regs);
@@ -188,7 +188,7 @@ static long ksu_handle_execve_sucompat_common(const char __user **filename_user,
 		goto do_orig_execve;
 
 	ksu_compat_sulog('x');
-	pr_info("sys_execve su found\n");
+	ksu_dbg("sys_execve su found\n");
 
 	tmp_fd = get_unused_fd_flags(O_CLOEXEC);
 	if (tmp_fd < 0) {
