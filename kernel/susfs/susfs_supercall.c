@@ -333,7 +333,88 @@ static struct susfs_fp_hook reboot_hook = {
 	.orig_slot = &reboot_orig,
 };
 
-static bool sc_registered;
+/* Fallback delivery for kernels whose sys_call_table cannot be hooked: on arm64 GKI under pKVM the
+ * table page is EL2-protected and susfs_fp_install() above finds no landing pad (it logs "no valid
+ * call landing pad ... not installed").  This is the pre-792ac97 kprobe path, still what sus_map and
+ * sus_mount use.  susfs_supercall_init() only reaches it when the table hook could not arm, so BTI
+ * kernels keep the sys_call_table path above (792ac97 moved off kprobes on indirect-call entries for
+ * them); a kernel that is both BTI and pKVM takes neither and the layer fails. */
+static int reboot_pre(struct kprobe *kp, struct pt_regs *regs)
+{
+	struct pt_regs *real_regs = (struct pt_regs *)regs->regs[0];
+	int magic1, magic2;
+	unsigned int cmd;
+	void __user *payload;
+	struct susfs_tw *tw;
+
+	/* A prober runs before the callee, so an argument the callee would have checked is
+	 * still raw here (see the filename_lookup lesson in sus_path.c). */
+	if (!real_regs)
+		return 0;
+
+	magic1 = (int)real_regs->regs[0];
+	magic2 = (int)real_regs->regs[1];
+	cmd = (unsigned int)real_regs->regs[2];
+	payload = (void __user *)real_regs->regs[3];
+
+	if (magic1 != KSU_INSTALL_MAGIC1)
+		return 0;
+	if (magic2 != SUSFS_MAGIC)
+		return 0;
+	if (current_uid().val != 0)
+		return 0;
+
+	/* Not ours to answer: leave the syscall alone so reboot(2) reports the -EINVAL
+	 * upstream reports and payload.err keeps the caller's value. */
+	if (!susfs_cmd_handled(cmd)) {
+		SUSFS_LOGI("susfs supercall: unsupported cmd 0x%x\n", cmd);
+		return 0;
+	}
+
+	/* The callback runs from module .text when this task next returns to userspace, which can
+	 * be after `rmmod` has already freed the module: the kprobe is on a vmlinux symbol, so
+	 * its registration does not hold a reference for us, and unregister_kprobe() cannot
+	 * cancel a task_work that is already queued.  Pin the module until the callback has
+	 * run.  GFP_ATOMIC context, so no sleeping here. */
+	if (!try_module_get(THIS_MODULE))
+		return 0;
+
+	tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
+	if (!tw) {
+		module_put(THIS_MODULE);
+		return 0;
+	}
+	tw->cmd = cmd;
+	tw->payload = payload;
+	tw->cb.func = susfs_tw_func;
+
+	if (task_work_add(current, &tw->cb, TWA_RESUME)) {
+		kfree(tw);
+		module_put(THIS_MODULE);
+		pr_warn("susfs supercall: task_work_add failed\n");
+		return 0;
+	}
+
+	/* Upstream's reboot.c patch makes a handled supercall return 0 instead of falling
+	 * through to the real reboot path:
+	 *     if (ret) goto orig_flow;
+	 *     return ret;
+	 * We cannot patch reboot.c, so mirror it from the kprobe: skip the rest of
+	 * __arm64_sys_reboot and return 0 - with these magic values reboot would otherwise
+	 * return -EINVAL, and the prebuilt ksu_susfs tool checks the syscall result.  The
+	 * command itself still runs from task_work before we return to userspace. */
+	regs->pc = regs->regs[30];
+	regs->regs[0] = 0;
+	return 1;
+}
+
+static struct kprobe reboot_kp = {
+	.symbol_name = "__arm64_sys_reboot",
+	.pre_handler = reboot_pre,
+};
+
+static bool sc_registered;	/* sys_call_table path armed */
+static bool sc_kp_registered;	/* kprobe fallback armed */
 
 /* ---- ABI layout assertions ----
  * These sizes and `err` offsets ARE the userspace contract (ksu_susfs, ksud and
@@ -386,13 +467,24 @@ int susfs_supercall_init(void)
 	int rc;
 
 	susfs_abi_layout_check();
+
 	rc = susfs_fp_install(&reboot_hook);
+	if (!rc) {
+		sc_registered = true;
+		SUSFS_LOGI("susfs supercall: armed via sys_call_table (reboot ABI, version " SUSFS_VERSION_STR ")\n");
+		return 0;
+	}
+
+	/* The table could not be hooked (pKVM EL2-protected sys_call_table: no landing pad).  Fall
+	 * back to the kprobe, which does not touch the table.  See reboot_kp above. */
+	pr_warn("susfs supercall: sys_call_table reboot hook failed %d, trying kprobe fallback\n", rc);
+	rc = register_kprobe(&reboot_kp);
 	if (rc) {
-		pr_warn("susfs supercall: sys_call_table reboot hook failed %d\n", rc);
+		pr_warn("susfs supercall: register_kprobe(reboot) failed %d\n", rc);
 		return rc;
 	}
-	sc_registered = true;
-	SUSFS_LOGI("susfs supercall: armed via sys_call_table (reboot ABI, version " SUSFS_VERSION_STR ")\n");
+	sc_kp_registered = true;
+	SUSFS_LOGI("susfs supercall: armed via kprobe (reboot ABI, version " SUSFS_VERSION_STR ")\n");
 	return 0;
 }
 
@@ -402,5 +494,9 @@ void susfs_supercall_exit(void)
 		susfs_fp_remove(&reboot_hook);
 		susfs_fp_drain();
 		sc_registered = false;
+	}
+	if (sc_kp_registered) {
+		unregister_kprobe(&reboot_kp);
+		sc_kp_registered = false;
 	}
 }
