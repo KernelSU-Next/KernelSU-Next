@@ -488,6 +488,11 @@ int susfs_supercall_init(void)
 	return 0;
 }
 
+bool susfs_supercall_kprobe_active(void)
+{
+	return sc_kp_registered;
+}
+
 void susfs_supercall_exit(void)
 {
 	if (sc_registered) {

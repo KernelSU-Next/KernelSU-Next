@@ -145,6 +145,9 @@ void susfs_avc_spoof_exit(void);
 
 int susfs_supercall_init(void);
 void susfs_supercall_exit(void);
+/* True when the sys_call_table hook could not arm and the supercall is delivered
+ * through the kprobe fallback (see susfs_supercall_init()). */
+bool susfs_supercall_kprobe_active(void);
 
 /* Feature registry for the reboot(2) supercall.  A layer arms its feature only after its init
  * returned 0, so a non-fatal layer that failed is neither advertised by SHOW_ENABLED_FEATURES

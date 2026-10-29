@@ -480,6 +480,13 @@ static int __init susfs_init(void)
     pr_info("loaded. This module is filtered out of /proc/modules for every caller including root, so `lsmod | grep susfs` stays empty - check /sys/module/%s instead (a second insmod fails with -EEXIST while it is loaded).\n",
             SUSFS_LKM_MODULE_NAME);
 
+    /* A fallback kprobe on __arm64_sys_reboot is a visible breakpoint, not just an
+     * implementation detail.  Emit this after every layer has armed and only when the
+     * module is actually loaded; keep it unconditional (pr_warn, not SUSFS_LOGI) so it
+     * survives enable_log=0, like the loaded line above. */
+    if (susfs_supercall_kprobe_active())
+        pr_warn("supercall delivery fell back to the kprobe path: it leaves a breakpoint on __arm64_sys_reboot, visible through /sys/kernel/debug/kprobes/list and text/instruction inspection - treat this as a side channel.\n");
+
     return 0;
 }
 
