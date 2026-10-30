@@ -110,7 +110,13 @@ static __nocfi noinline bool create_name_hidden(int dfd, const char __user *path
 		return false;
 
 	rc = create_filename_lookup_fn(dfd, name, 0, &p, NULL);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0)
+	/* filename_lookup() consumed `name` through 5.14; 5.15 removed that putname() and
+	 * made the caller own it.  Do not put it twice on 5.10/5.14: the second putname()
+	 * is the double free that panics init (create_name_hidden -> putname). */
+#else
 	create_putname_fn(name);
+#endif
 	if (rc)
 		return false;		/* absent: the kernel's own answer */
 
