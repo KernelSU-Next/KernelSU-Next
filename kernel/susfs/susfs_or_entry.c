@@ -381,7 +381,12 @@ static __nocfi noinline long or_entry_redirect(const struct pt_regs *regs, int k
 	if (IS_ERR(name))
 		return SUSFS_OR_ENTRY_PASS;
 	res = or_filename_lookup_fn(dfd, name, or_lookup_flags(flags, resolve), &path, NULL);
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0)
+	/* filename_lookup() consumed `name` through 5.14; 5.15 made the caller own it.
+	 * Putting it here again double-frees and panics (the create_gate 5.10 KE). */
+#else
 	or_putname_fn(name);
+#endif
 	if (res)
 		return SUSFS_OR_ENTRY_PASS;
 
