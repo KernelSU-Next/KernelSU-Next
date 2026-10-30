@@ -37,7 +37,7 @@ struct ksu_install_fd_tw {
 static int anon_ksu_release(struct inode *inode, struct file *filp)
 {
     kfree(filp->private_data);
-    pr_info("ksu fd released\n");
+    ksu_dbg("ksu fd released\n");
     return 0;
 }
 
@@ -83,7 +83,7 @@ static int ksu_install_fd_with_permissions(unsigned int fd_flags, unsigned long 
     }
 
     fd_install(fd, filp);
-    pr_info("ksu fd installed: %d for pid %d\n", fd, current->pid);
+    ksu_dbg("ksu fd installed: %d for pid %d\n", fd, current->pid);
     return fd;
 }
 
