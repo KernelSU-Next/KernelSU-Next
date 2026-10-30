@@ -250,7 +250,6 @@ enum susfs_layer_id {
     SUSFS_L_KSU_ALLOW_GATE,
     SUSFS_L_LSM_HOOK,
     SUSFS_L_SUS_PATH,
-    SUSFS_L_CREATE_GATE,
     SUSFS_L_OPATH,
     SUSFS_L_DIRENT,
     SUSFS_L_UNAME,
@@ -274,7 +273,7 @@ static struct susfs_layer {
     bool armed;			/* exit is run for every layer that was attempted */
     int feature;			/* enum susfs_feature armed on a successful init, or -1 */
 } susfs_layers[] = {
-    /* First, and FATAL: every fp-hook layer below (create_gate, opath, dirent, kstat, ...)
+    /* First, and FATAL: every fp-hook layer below (opath, dirent, kstat, ...)
      * installs its entries through this cache.  A module that loaded without it would accept
      * rules that no fp-hook layer can ever apply - the "loaded but inert" shape this table
      * exists to avoid - so a missing sys_call_table refuses the load.  The init is idempotent
@@ -293,10 +292,6 @@ static struct susfs_layer {
      * reports; the refusal lives here, where a failure can fail the load. */
     { "lsm_hook",	layer_lsm_hook_init,		ksu_lsm_hook_exit,	false, -1 },
     { "sus_path",	sus_path_init,			sus_path_exit,		false, SUSFS_FEAT_SUS_PATH },
-    /* After sus_path, whose rule table and per-caller gate it asks.  NOT fatal: when it
-     * cannot arm, the create family keeps answering the kernel's own way (EEXIST for a
-     * hidden name) - the read paths are unaffected. */
-    { "create_gate",	susfs_create_gate_init,		susfs_create_gate_exit,	false, SUSFS_FEAT_SUS_PATH },
     /* After sus_path, because this layer asks sus_path's rule table for every open it
      * post-checks - arming it first would install table entries that answer from a table
      * nobody has filled in yet.  NOT fatal: a failure here only means open(..., O_PATH) keeps
@@ -326,8 +321,8 @@ static struct susfs_layer {
  * Index map (keep this list and the fail_layer= references in tools/verify-gki.sh and the layer
  * comments in sync whenever a layer is inserted):
  *   1 fp_hook   2 ksu_umount_gate  3 ksu_allow_gate  4 lsm_hook   5 sus_path
- *   6 create_gate  7 opath  8 dirent  9 uname  10 kstat  11 sus_map  12 sus_mount
- *   13 cmdline  14 open_redirect  15 enable_log  16 avc_spoof  17 supercall  18 hide_syms
+ *   6 opath  7 dirent  8 uname  9 kstat  10 sus_map  11 sus_mount
+ *   12 cmdline  13 open_redirect  14 enable_log  15 avc_spoof  16 supercall  17 hide_syms
  */
 static int fail_layer;
 module_param_named(fail_layer, fail_layer, int, 0644);
@@ -360,7 +355,6 @@ static const struct {
     { SUSFS_L_KSU_ALLOW_GATE, false },
     { SUSFS_L_LSM_HOOK, true },
     { SUSFS_L_SUS_PATH, true },
-    { SUSFS_L_CREATE_GATE, false },
     { SUSFS_L_OPATH, false },
     { SUSFS_L_DIRENT, false },
     { SUSFS_L_UNAME, false },

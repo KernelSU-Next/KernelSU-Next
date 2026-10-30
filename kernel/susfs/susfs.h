@@ -254,9 +254,4 @@ static inline bool susfs_open_redirect_active(void)
 int susfs_or_entry_init(void);
 void susfs_or_entry_exit(void);
 
-/* The create family's entry layer (susfs_create_gate.c): answers EACCES for a hidden name
- * where filename_create() would have answered EEXIST before any LSM hook could run. */
-int susfs_create_gate_init(void);
-void susfs_create_gate_exit(void);
-
 #endif
