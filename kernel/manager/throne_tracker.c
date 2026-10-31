@@ -346,7 +346,11 @@ void track_throne(bool prune_only)
 		if (ksu_is_manager_appid_valid()) {
 			pr_info("manager is uninstalled, invalidate it!\n");
 			ksu_invalidate_manager_uid();
-			goto prune;
+			// Do not return here: replacing a manager uninstalls the old
+			// package and installs the new one, and a single packages.list
+			// update can carry both. Returning would leave the replacement
+			// uncrowned until some later package event or a reboot, and the
+			// rescan below is exactly where an unpinned kernel finds it.
 		}
 #ifndef KSU_MANAGER_PACKAGE
 		// Unpinned: package name unknown; rescan to find it
