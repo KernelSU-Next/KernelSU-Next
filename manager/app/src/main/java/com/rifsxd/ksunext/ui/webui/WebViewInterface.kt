@@ -346,7 +346,7 @@ class WebViewInterface(
                     val iconBase64 = "data:image/png;base64," + Base64.encodeToString(byteArray, Base64.NO_WRAP)
                     packageIconCache[pkgName] = iconBase64
                 } ?: run {
-                     packageIconCache[pkgName] = ""
+                    packageIconCache[pkgName] = ""
                 }
             } catch (_: Exception) {
                 packageIconCache[pkgName] = ""
@@ -386,7 +386,7 @@ class WebViewInterface(
         return jsonArray.toString()
     }
 
-     @JavascriptInterface
+    @JavascriptInterface
     fun listFile(path: String): String {
         return try {
             val suFile = SuFile(path)
@@ -400,8 +400,9 @@ class WebViewInterface(
     @JavascriptInterface
     fun readFile(path: String): String {
         return try {
-            val cmd = "cat '${path.replace("'", "'\\''")}'"
-            withNewRootShell(true) { ShellUtils.fastCmd(this, cmd) }
+            val suFile = SuFile(path)
+            if (!suFile.exists()) return ""
+            SuFileInputStream.open(suFile).bufferedReader().use { it.readText() }
         } catch (e: Exception) {
             ""
         }
