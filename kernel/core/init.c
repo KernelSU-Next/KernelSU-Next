@@ -94,6 +94,8 @@ module_param_named(bundled, ksu_bundled, bool, 0);
 
 int __init kernelsu_init(void)
 {
+	int ret;
+
 #ifdef KSU_MANAGER_PACKAGE
 	pr_info("welcome to KernelSU version " __stringify(KERNEL_SU_VERSION) ", package name " KSU_MANAGER_PACKAGE "\n");
 #else
@@ -140,7 +142,16 @@ int __init kernelsu_init(void)
 		return -ENOSYS;
 	}
 
+	pr_info("initializing symbol resolver\n");
 	ksu_init_symbol_resolver();
+
+	ret = ksu_selinux_inode_init();
+	if (ret) {
+		put_cred(ksu_cred);
+		ksu_cred = NULL;
+		return ret;
+	}
+
 	ksu_syscall_hook_init();
 
 	// Block modules early, before vendor modules are loaded in second stage.
