@@ -338,8 +338,8 @@
   <string name="susfs_auto_load_failed">Failed to update SUSFS auto-load</string>
   <string name="susfs_load_success">SUSFS LKM loaded</string>
   <string name="susfs_load_failed">Failed to load SUSFS LKM</string>
-  <string name="settings_shell_su_adb_only">Restrict shell root to ADB</string>
-  <string name="settings_shell_su_adb_only_summary">Extra check when Shell is granted root: only processes spawned by adbd or a KernelSU root process (e.g. an ADB module) can use it, preventing apps that obtain shell privileges from escalating to root</string>
+  <string name="settings_shell_su_adb_only">Batasi akses root shell ke ADB</string>
+  <string name="settings_shell_su_adb_only_summary">Pemeriksaan tambahan saat Shell diberi akses root: hanya proses yang dijalankan oleh adbd atau proses root KernelSU (misalnya modul ADB) yang dapat menggunakannya, mencegah aplikasi yang mendapatkan hak istimewa shell untuk melakukan eskalasi ke root</string>
   <string name="install_block_modules">Block kernel modules (risky)</string>
   <string name="install_block_modules_warning">Stop the listed kernel modules from loading at boot. Blocking a module the system depends on can make the device hang on the boot logo or bootloop (e.g. MediaTek mkp on some devices). Only enable this if you know the modules are safe to block on your device. To recover, flash the stock boot / init_boot image with fastboot.</string>
   <string name="install_block_modules_list">Modules to block</string>
