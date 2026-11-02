@@ -232,6 +232,11 @@ int susfs_fp_install(struct susfs_fp_hook *h)
 			h->name, h->wrapper ? READ_ONCE(*(const u32 *)h->wrapper) : 0);
 		return -EINVAL;
 	}
+	if (h->wrapper_compat && !fp_has_landing_pad((const void *)h->wrapper_compat)) {
+		pr_warn("susfs_fp: %s compat wrapper has no valid call landing pad (0x%08x) - not installed\n",
+			h->name, READ_ONCE(*(const u32 *)h->wrapper_compat));
+		return -EINVAL;
+	}
 
 	if (h->nr >= 0) {
 		old = READ_ONCE(sys_call_table_ptr[h->nr]);
@@ -269,11 +274,12 @@ int susfs_fp_install(struct susfs_fp_hook *h)
 				h->name);
 		} else {
 			susfs_syscall_fn_t cold = READ_ONCE(compat_sys_call_table_ptr[cnr]);
+			susfs_syscall_fn_t compat_wrapper = h->wrapper_compat ? h->wrapper_compat : h->wrapper;
 
 			if (!cold) {
 				pr_warn("susfs_fp: %s: compat entry %d is NULL\n",
 					h->name, cnr);
-			} else if (cold == h->wrapper) {
+			} else if (cold == compat_wrapper) {
 				pr_warn("susfs_fp: %s: compat entry %d already points at our wrapper - stale from a previous load, refusing to recurse\n",
 					h->name, cnr);
 				if (native_done)
@@ -286,7 +292,7 @@ int susfs_fp_install(struct susfs_fp_hook *h)
 					WRITE_ONCE(*h->orig_slot_compat, cold);
 				smp_wmb();
 				err = fp_patch_entry(compat_sys_call_table_ptr, cnr, h->name,
-						     h->wrapper, cold);
+						     compat_wrapper, cold);
 				if (err) {
 					/* Keep the two tables consistent rather than half-armed. */
 					if (native_done)
@@ -318,6 +324,7 @@ int susfs_fp_install(struct susfs_fp_hook *h)
 
 void susfs_fp_remove(struct susfs_fp_hook *h)
 {
+	susfs_syscall_fn_t compat_wrapper;
 	bool native_ours = true;
 	int cnr, err;
 
@@ -325,6 +332,7 @@ void susfs_fp_remove(struct susfs_fp_hook *h)
 		return;
 
 	cnr = fp_compat_nr(h);
+	compat_wrapper = h->wrapper_compat ? h->wrapper_compat : h->wrapper;
 
 	if (h->nr >= 0 && READ_ONCE(sys_call_table_ptr[h->nr]) != h->wrapper) {
 		pr_warn("susfs_fp: nr %d is not ours any more, leaving the native entry alone\n",
@@ -333,7 +341,7 @@ void susfs_fp_remove(struct susfs_fp_hook *h)
 	}
 
 	if (cnr >= 0 && compat_sys_call_table_ptr && h->orig_compat &&
-	    READ_ONCE(compat_sys_call_table_ptr[cnr]) == h->wrapper) {
+	    READ_ONCE(compat_sys_call_table_ptr[cnr]) == compat_wrapper) {
 		err = ksu_patch_text(&compat_sys_call_table_ptr[cnr], &h->orig_compat,
 				     sizeof(h->orig_compat), KSU_PATCH_TEXT_FLUSH_DCACHE);
 		if (err)
