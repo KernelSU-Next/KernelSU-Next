@@ -16,7 +16,7 @@
  * Matching mirrors upstream: exact inode identity (not name substrings), any number
  * of registered paths, hidden wherever that inode is reached ('..', '//', relative
  * paths, symlinks, hard links, /proc/self/root/...), and the upstream gate - app
- * processes only and never a file owned by the caller (sus_path_gate_ok;
+ * processes only and never a file owned by the caller (sus_path_entry_gate(),
  * hide_from_apps=0 disables the gate for a root shell).  A path registered before it
  * exists is kept and hidden once it appears, upstream's CMD_SUSFS_ADD_SUS_PATH_LOOP /
  * LH_SUS_PATH_LOOP behaviour (sus_path_resolve_pending()).
@@ -126,7 +126,7 @@ struct sus_path_entry {
      * retrying the same rule, without holding a pointer across kern_path(). */
     unsigned int pass;
     /* One of the module's own control nodes (/proc/susfs_*): hidden from every
-     * non-root caller, not only apps - see sus_path_entry_gate_any(). */
+     * non-root caller, not only apps - see sus_path_entry_gate(e, NULL). */
     bool self_protect;
     /* Pre-relax mode, 0 = this rule did not touch it (sus_path_relax_mode()). */
     umode_t orig_mode;
@@ -179,6 +179,9 @@ static DEFINE_SPINLOCK(sus_path_lock);
 static DEFINE_MUTEX(sus_path_lifecycle_lock);
 static DECLARE_WAIT_QUEUE_HEAD(sus_path_release_wait);
 static unsigned int sus_path_count;
+/* Ordinary rules only (self_protect == false).  The create-family fast path must not treat the
+ * module's own hidden /proc nodes as operator policy. */
+static unsigned int sus_path_user_count;
 static bool sus_path_stopping;
 /* BTF-backed filesystem lifetime cleanup is optional on older GKI kernels. */
 static bool sus_path_lifetime_watch;
@@ -199,6 +202,8 @@ static void sus_path_retire_entry(struct sus_path_entry *e, struct list_head *do
 {
     list_move_tail(&e->list, doomed);
     sus_path_count--;
+    if (!e->self_protect && sus_path_user_count)
+        sus_path_user_count--;
     if (e->inode)
         list_add_tail(&e->retiring_list, &sus_path_retiring);
     else
@@ -431,55 +436,32 @@ static atomic_t sus_path_pend_logged_rc = ATOMIC_INIT(1);   /* rc already report
 static int hide_from_apps = 1;
 module_param(hide_from_apps, int, 0644);
 
-/* UID half of the upstream gate: a PENDING rule has no inode to ask about ownership
- * (sus_path_entry_gate_any()). */
-static inline bool sus_path_gate_uid_ok(void)
-{
-    if (!hide_from_apps)
-        return true;
-    return susfs_is_current_proc_umounted_app();
-}
-
-/* Full upstream gate for the LSM layer: app process, and the file is not owned by the caller
- * (upstream is_i_uid_not_allowed()).  hide_from_apps=0 must bypass the WHOLE gate, ownership check
- * included - otherwise a root-owned file would still be skipped for root (0 != 0 is false) and
- * disabling the gate would silently do nothing for exactly the case it is meant for. */
-static inline bool sus_path_gate_ok(struct inode *inode)
+/* One identity gate for every layer.  `inode` is the object whose ownership the
+ * rule is asking about; NULL means a pending rule has no inode yet and only the
+ * app half can be answered. */
+static inline bool sus_path_gate(struct inode *inode)
 {
     if (!hide_from_apps)
         return true;
     if (!susfs_is_current_proc_umounted_app())
         return false;
-    return current_uid().val != inode->i_uid.val;
+    return !inode || current_uid().val != inode->i_uid.val;
 }
 
-/* Per-rule gate.  A self_protect rule is one of this module's own control nodes, which must be
- * invisible to EVERY non-root caller: the ordinary gate needs an app uid, so a probe running as
- * system (1000) or shell (2000) would read /proc/susfs_kstat straight out of the listing - exactly
- * the trace this module exists to avoid.  Root keeps access to manage the module; ordinary rules
- * keep the upstream semantics untouched. */
-static inline bool sus_path_entry_gate_inode(const struct sus_path_entry *e,
-                                             struct inode *inode)
+/* The only per-rule gate.  A self_protect rule is one of the module's own control
+ * nodes, which must be invisible to EVERY non-root caller: the ordinary gate needs
+ * an app uid, so a probe running as system (1000) or shell (2000) would read
+ * /proc/susfs_kstat straight out of the listing - exactly the trace this module
+ * exists to avoid.  Root keeps access to manage the module; ordinary rules keep
+ * the upstream semantics untouched. */
+static inline bool sus_path_entry_gate(const struct sus_path_entry *e,
+                                       struct inode *inode)
 {
     if (e->self_protect)
         return !susfs_control_visible();
-    return sus_path_gate_ok(inode);
-}
-
-/* Gate for the layers that match by (ino, name) or by path string rather than by the inode being
- * accessed: the dirent filter and the path matcher.  Applying the uid half alone made them answer
- * differently from the LSM layer for the case upstream's gate is really about - a file owned by the
- * calling app disappeared from the listing while stat()/open() still succeeded, and a listing that
- * omits a file the caller can open is a far louder signal than either behaviour alone.  The rule
- * keeps its inode ihold'ed, so the ownership question is asked of that very inode: no cached uid,
- * and a chown() moves both layers together.  A rule not resolved yet falls back to the uid half. */
-static inline bool sus_path_entry_gate_any(const struct sus_path_entry *e)
-{
-    if (e->self_protect)
-        return !susfs_control_visible();
-    if (!e->inode)
-        return sus_path_gate_uid_ok();
-    return sus_path_gate_ok(e->inode);
+    if (!inode)
+        inode = e->inode;
+    return sus_path_gate(inode);
 }
 
 static bool sus_path_is_hidden(u64 ino, const char *name)
@@ -509,7 +491,7 @@ static bool sus_path_is_hidden(u64 ino, const char *name)
         spin_lock(&sus_path_lock);
         list_for_each_entry(e, &sus_path_list, list) {
             if (e->ino && e->ino == ino && !strcmp(e->name, name) &&
-                sus_path_entry_gate_any(e)) {
+                sus_path_entry_gate(e, NULL)) {
                 hidden = true;
                 break;
             }
@@ -1181,7 +1163,7 @@ static bool sus_path_inode_hidden(struct inode *inode)
     list_for_each_entry(e, &sus_path_list, list) {
         /* Fast path: the exact object the rule resolved. */
         if (e->inode == inode) {
-            if (sus_path_entry_gate_inode(e, inode)) {
+            if (sus_path_entry_gate(e, inode)) {
                 hidden = true;
                 break;
             }
@@ -1193,7 +1175,7 @@ static bool sus_path_inode_hidden(struct inode *inode)
             continue;
         if (e->dev == dev) {
             by_identity = true;
-            if (sus_path_entry_gate_inode(e, inode)) {
+            if (sus_path_entry_gate(e, inode)) {
                 hidden = true;
                 break;
             }
@@ -1203,7 +1185,7 @@ static bool sus_path_inode_hidden(struct inode *inode)
         if (e->self_protect && e->inode &&
             e->inode->i_sb->s_type == inode->i_sb->s_type) {
             by_identity = true;
-            if (sus_path_entry_gate_inode(e, inode)) {
+            if (sus_path_entry_gate(e, inode)) {
                 hidden = true;
                 break;
             }
@@ -1238,6 +1220,14 @@ bool sus_path_inode_hidden_public(struct inode *inode)
 bool sus_path_rules_present(void)
 {
     return READ_ONCE(sus_path_count) > 0;
+}
+
+/* The create-family fast path only cares about operator rules.  Self-protect entries keep the
+ * module's own /proc nodes invisible, but they must not turn every create syscall into a path
+ * lookup. */
+bool sus_path_user_rules_present(void)
+{
+    return READ_ONCE(sus_path_user_count) > 0;
 }
 
 static int sus_path_inode_getattr(const struct path *path)
@@ -2437,8 +2427,8 @@ static int sus_path_probe_apply(const char *val)
         i = scnprintf(sus_path_probe_report + n, room,
                   "  rule: inode=%px name=%s self_protect=%d ptr_equal=%d gate_inode=%d gate_any=%d\n",
                   e->inode, e->name, (int)e->self_protect,
-                  (int)(e->inode == inode), (int)sus_path_entry_gate_inode(e, inode),
-                  (int)sus_path_entry_gate_any(e));
+                  (int)(e->inode == inode), (int)sus_path_entry_gate(e, inode),
+                  (int)sus_path_entry_gate(e, NULL));
         if (i >= room)
             break;
         n += i;
@@ -2529,6 +2519,8 @@ static int sus_path_publish_entry(struct sus_path_entry *e, bool merge_pending)
     }
     list_add_tail(&e->list, &sus_path_list);
     sus_path_count++;
+    if (!e->self_protect)
+        sus_path_user_count++;
     if (e->inode)
         sus_path_relax_mode(e);
     else
@@ -2584,7 +2576,7 @@ static int sus_path_add_hidden_ex(const char *path, bool self_protect)
 }
 
 /* Register one of the module's own control nodes: same table, flagged so the gate hides it from
- * every non-root caller rather than only from apps (sus_path_entry_gate_any()). */
+ * every non-root caller rather than only from apps (sus_path_entry_gate(e, NULL)). */
 int sus_path_add_self_hidden(const char *path)
 {
 	return sus_path_add_hidden_ex(path, true);
