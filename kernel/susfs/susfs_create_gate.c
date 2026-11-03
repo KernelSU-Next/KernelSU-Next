@@ -216,10 +216,12 @@ static __nocfi noinline long create_takeover_mkdirat(int dfd,
 		create_putname_fn(name);
 		return err;
 	}
+	/* "/", "foo/." and "foo/..": filename_create() answers EEXIST for these, and
+	 * mkdir -p relies on it when it walks the components of an existing path. */
 	if (type != LAST_NORM) {
 		path_put(&path);
 		create_putname_fn(name);
-		return -EINVAL;
+		return -EEXIST;
 	}
 
 	err2 = mnt_want_write(path.mnt);
