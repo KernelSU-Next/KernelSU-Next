@@ -581,6 +581,15 @@ module_param_named(mount_dbg, mount_dbg, int, 0644);
  * hook sees, so "why did identity not match" is answerable from dmesg instead of guessed. */
 static atomic_t n_dbg_logged = ATOMIC_INIT(0);
 
+/* Device paths are not source-path identities.  A bind mount carries the source
+ * mount's mnt_devname ("/dev/block/dm-N" for a /data-backed bind), and matching that
+ * string against every mount sharing the device would hide the parent /data mount
+ * too (issue #167).  Keep the devname fallback for real source paths only. */
+static bool sus_mount_devname_is_path(const char *name)
+{
+    return name && name[0] == '/' && strncmp(name, "/dev/", 5) != 0;
+}
+
 /* Process context.  Takes no reference on anything (see the note above): the
  * record is three numbers and a string, so a record whose mount is long gone costs
  * nothing and cannot keep a filesystem alive. */
@@ -623,7 +632,7 @@ static void sus_mount_ident_add(struct mount *r)
         struct sus_mount_ident *e = &mount_ident[slot];
 
         e->s_dev = r->mnt.mnt_sb->s_dev;
-        e->devname_is_path = devname && devname[0] == '/';
+        e->devname_is_path = sus_mount_devname_is_path(devname);
         if (e->devname_is_path) {
             e->devname_truncated = strlen(devname) >= sizeof(e->devname);
             strscpy(e->devname, devname, sizeof(e->devname));
