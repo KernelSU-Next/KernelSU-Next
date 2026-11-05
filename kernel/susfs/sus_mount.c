@@ -148,6 +148,7 @@
 #include "susfs_log.h"
 #include "susfs.h"	/* module-wide declarations */
 #include "sus_mount_identity.h"
+#include "sus_mount_policy.h"
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 #include "susfs_kprobe.h"
 
@@ -587,33 +588,6 @@ static struct kprobe kp_sb_down = {
 };
 static bool kp_sb_down_ok;
 
-/* Is this mount one of KernelSU's?  Two tests, cheapest first:
- *   - the id range, which is upstream's rule and what the marking scan produces;
- *   - the identity recorded by that scan, which is what catches the same mount in
- *     a namespace the scan could not reach (see the note above). */
-static bool sus_mount_is_ours(struct mount *r)
-{
-    if ((unsigned int)r->mnt_id >= SUS_MOUNT_KSU_ID_MIN)
-        return true;
-    if (sus_mount_path_is_ours(r->mnt_devname))
-        return true;
-    return sus_mount_ident_match(r);
-}
-
-/* The id the caller is allowed to see for a mount we hide: the first ancestor
- * that is not ours.  Starts at the PARENT when the mount itself is not in the id
- * range, because an identity-recognised mount keeps a normal id and would
- * otherwise report its own (hidden) number. */
-static int sus_mount_shown_id_from(struct mount *mnt)
-{
-    if (mnt && (unsigned int)mnt->mnt_id < SUS_MOUNT_KSU_ID_MIN)
-        mnt = mnt->mnt_parent;
-    while (mnt && mnt->mnt_parent && mnt != mnt->mnt_parent &&
-           sus_mount_is_ours(mnt))
-        mnt = mnt->mnt_parent;
-    return mnt ? (int)mnt->mnt_id : 0;
-}
-
 /* Remember the id -> shown-id pair for a mount we are about to hide, so the
  * fdinfo/statx faces rewrite the very same id the app would otherwise see.  The
  * hide hooks are the only place that has a mount pointer in an app's namespace,
@@ -625,7 +599,7 @@ static void sus_mount_note_id(struct mount *r)
 
     if (sus_mount_shown_for((int)r->mnt_id))
         return;
-    shown = sus_mount_shown_id_from(r);
+    shown = sus_mount_shown_id_from(r, SUS_MOUNT_KSU_ID_MIN, sus_mount_path_is_ours);
     if (shown > 0 && shown != (int)r->mnt_id) {
         sus_mount_idmap_add((int)r->mnt_id, shown, r->mnt.mnt_sb->s_dev);
         atomic_inc(&n_ident_learned);
@@ -722,11 +696,11 @@ static void sus_mount_learn_ns(struct mnt_namespace *ns)
         r = SUS_MOUNT_ITER_MOUNT(pos);
         if (SUS_MOUNT_MNT_NOT_IN_NS(r, ns))
             continue;
-        if (!sus_mount_is_ours(r))
+        if (!sus_mount_is_ours(r, SUS_MOUNT_KSU_ID_MIN, sus_mount_path_is_ours))
             continue;
         if (sus_mount_shown_for((int)r->mnt_id))
             continue;
-        shown = sus_mount_shown_id_from(r);
+        shown = sus_mount_shown_id_from(r, SUS_MOUNT_KSU_ID_MIN, sus_mount_path_is_ours);
         if (shown > 0 && shown != (int)r->mnt_id) {
             sus_mount_idmap_add((int)r->mnt_id, shown, r->mnt.mnt_sb->s_dev);
             learned++;
@@ -788,11 +762,11 @@ static int sus_mount_learn_ns_walk(struct mnt_namespace *ns)
         r = SUS_MOUNT_ITER_MOUNT(pos);
         if (SUS_MOUNT_MNT_NOT_IN_NS(r, ns))
             continue;
-        if (!sus_mount_is_ours(r))
+        if (!sus_mount_is_ours(r, SUS_MOUNT_KSU_ID_MIN, sus_mount_path_is_ours))
             continue;
         if (sus_mount_shown_for((int)r->mnt_id))
             continue;
-        shown = sus_mount_shown_id_from(r);
+        shown = sus_mount_shown_id_from(r, SUS_MOUNT_KSU_ID_MIN, sus_mount_path_is_ours);
         if (shown > 0 && shown != (int)r->mnt_id) {
             sus_mount_idmap_add((int)r->mnt_id, shown, r->mnt.mnt_sb->s_dev);
             learned++;
@@ -1375,7 +1349,7 @@ static int sus_mount_show_pre(struct kprobe *kp, struct pt_regs *regs)
     /* Cheap path first, and NOT only the id: a KSU mount in a namespace the
      * marking scan never reached (the zygote's, hence every app's) keeps a normal
      * id - see the identity note above sus_mount_is_ours(). */
-    if (!sus_mount_is_ours(r)) {
+    if (!sus_mount_is_ours(r, SUS_MOUNT_KSU_ID_MIN, sus_mount_path_is_ours)) {
         /* This mount is not ours but carries this id right now, which is proof the
          * id was recycled if we ever learned it (see the idmap note above). */
         sus_mount_idmap_drop((int)r->mnt_id);
