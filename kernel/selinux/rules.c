@@ -90,6 +90,10 @@ void apply_kernelsu_rules()
 
     db = &pol->policydb;
 
+    pol->latest_granting = old_pol->latest_granting + 1;
+    if (!ksu_set_original_types(db, &old_pol->policydb, pol->latest_granting))
+        pr_warn("failed to save original type metadata, use backup lookups\n");
+
     ksu_type(db, KERNEL_SU_DOMAIN, "domain");
     ksu_permissive(db, KERNEL_SU_DOMAIN);
     ksu_typeattribute(db, KERNEL_SU_DOMAIN, "mlstrustedsubject");
@@ -164,7 +168,6 @@ void apply_kernelsu_rules()
 
     // Return value ignored: the policy is published either way.
     ksu_policydb_fixup_len(db, "apply_kernelsu_rules");
-    pol->latest_granting = old_pol->latest_granting + 1;
     rcu_assign_pointer(selinux_state.policy, pol);
     synchronize_rcu();
     ksu_destroy_sepolicy(old_pol);
@@ -542,6 +545,9 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
     // Return value ignored: the policy is published either way.
     ksu_policydb_fixup_len(db, "handle_sepolicy");
     pol->latest_granting = old_pol->latest_granting + 1;
+    if (!ksu_advance_original_types(db, &old_pol->policydb, old_pol->latest_granting, pol->latest_granting))
+        pr_warn("failed to carry original type metadata, use backup lookups\n");
+
     rcu_assign_pointer(selinux_state.policy, pol);
     synchronize_rcu();
     ksu_destroy_sepolicy(old_pol);
