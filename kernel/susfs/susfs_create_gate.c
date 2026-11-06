@@ -63,9 +63,17 @@ static susfs_syscall_fn_t create_orig_compat(enum susfs_create_syscall id)
 
 static __nocfi noinline long create_wrap_mkdirat(const struct pt_regs *regs)
 {
-	return susfs_create_vfs_mkdirat((int)regs->regs[0],
-					(const char __user *)regs->regs[1],
-					(umode_t)regs->regs[2], susfs_create_existing_answer);
+	susfs_syscall_fn_t orig = create_orig(SUSFS_CREATE_MKDIRAT);
+
+	if (!orig)
+		return -ENOSYS;
+	/* Hand ordinary mkdirat back to the kernel.  Taking the whole syscall
+	 * over changed the behaviour of callers with no sus_path rule at all
+	 * (issue #184); only a hidden positive name needs an answer here. */
+	if (susfs_create_name_hidden((int)regs->regs[0],
+				     (const char __user *)regs->regs[1]))
+		return -EACCES;
+	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_mknodat(const struct pt_regs *regs)
@@ -109,9 +117,14 @@ static __nocfi noinline long create_wrap_linkat(const struct pt_regs *regs)
 
 static __nocfi noinline long create_wrap_compat_mkdirat(const struct pt_regs *regs)
 {
-	return susfs_create_vfs_mkdirat((int)regs->regs[0],
-					(const char __user *)regs->regs[1],
-					(umode_t)regs->regs[2], susfs_create_existing_answer);
+	susfs_syscall_fn_t orig = create_orig_compat(SUSFS_CREATE_MKDIRAT);
+
+	if (!orig)
+		return -ENOSYS;
+	if (susfs_create_name_hidden((int)regs->regs[0],
+				     (const char __user *)regs->regs[1]))
+		return -EACCES;
+	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_compat_mknodat(const struct pt_regs *regs)
@@ -188,10 +201,6 @@ int susfs_create_gate_init(void)
 	for (i = 0; i < (int)ARRAY_SIZE(create_hooks); i++) {
 		struct susfs_fp_hook *h = &create_hooks[i];
 
-		if (h->nr == __NR_mkdirat && !susfs_create_vfs_takeover_ready()) {
-			pr_warn("create_gate: mkdirat takeover not ready - leaving the native syscall alone\n");
-			continue;
-		}
 		rc = susfs_fp_install(h);
 		if (rc) {
 			pr_warn("create_gate: %s not installed (%d) - that syscall answers the kernel's own way\n",
