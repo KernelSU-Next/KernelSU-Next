@@ -64,16 +64,19 @@ static susfs_syscall_fn_t create_orig_compat(enum susfs_create_syscall id)
 static __nocfi noinline long create_wrap_mkdirat(const struct pt_regs *regs)
 {
 	susfs_syscall_fn_t orig = create_orig(SUSFS_CREATE_MKDIRAT);
+	long ret;
 
 	if (!orig)
 		return -ENOSYS;
-	/* Hand ordinary mkdirat back to the kernel.  Taking the whole syscall
-	 * over changed the behaviour of callers with no sus_path rule at all
-	 * (issue #184); only a hidden positive name needs an answer here. */
-	if (susfs_create_name_hidden((int)regs->regs[0],
+	/* Let the kernel answer first.  Only a successful "it already exists"
+	 * needs the hidden-name translation; absent names, ".", ".." and
+	 * trailing non-name components keep the kernel's own answer. */
+	ret = orig(regs);
+	if (ret == -EEXIST &&
+	    susfs_create_name_hidden((int)regs->regs[0],
 				     (const char __user *)regs->regs[1]))
 		return -EACCES;
-	return orig(regs);
+	return ret;
 }
 
 static __nocfi noinline long create_wrap_mknodat(const struct pt_regs *regs)
@@ -118,13 +121,16 @@ static __nocfi noinline long create_wrap_linkat(const struct pt_regs *regs)
 static __nocfi noinline long create_wrap_compat_mkdirat(const struct pt_regs *regs)
 {
 	susfs_syscall_fn_t orig = create_orig_compat(SUSFS_CREATE_MKDIRAT);
+	long ret;
 
 	if (!orig)
 		return -ENOSYS;
-	if (susfs_create_name_hidden((int)regs->regs[0],
+	ret = orig(regs);
+	if (ret == -EEXIST &&
+	    susfs_create_name_hidden((int)regs->regs[0],
 				     (const char __user *)regs->regs[1]))
 		return -EACCES;
-	return orig(regs);
+	return ret;
 }
 
 static __nocfi noinline long create_wrap_compat_mknodat(const struct pt_regs *regs)
