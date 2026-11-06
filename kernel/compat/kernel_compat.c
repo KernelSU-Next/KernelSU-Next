@@ -15,10 +15,57 @@ struct file *ksu_filp_open_compat(const char *filename, int flags, umode_t mode)
 	return filp_open(filename, flags, mode);
 }
 
+/*
+ * File I/O for the driver.
+ *
+ * Huawei's 4.9 fork (HISI, EMUI 8/9) does not follow a single argument-order
+ * rule: it keeps the pre-4.14 kernel_read() while backporting the post-4.14
+ * kernel_write(). Both are called with plain pointer/integer arguments, so
+ * picking the wrong one still compiles and only fails at runtime with -EFAULT,
+ * which callers cannot tell from a short read.
+ *
+ * On Huawei the VFS is therefore used directly: vfs_read()/vfs_write() take a
+ * loff_t* on every version we support, so they cannot depend on which variant
+ * a particular ROM carries. CONFIG_IS_HW_HISI is the existing Huawei marker
+ * from kernel_compat.h; every other kernel keeps the upstream behaviour below
+ * unchanged.
+ */
+#if defined(CONFIG_IS_HW_HISI)
+
+static ssize_t ksu_huawei_vfs_read(struct file *p, void *buf, size_t count,
+				   loff_t *pos)
+{
+	mm_segment_t old_fs = get_fs();
+	ssize_t ret;
+
+	set_fs(KERNEL_DS);
+	ret = vfs_read(p, (char __user *)buf, count, pos);
+	set_fs(old_fs);
+
+	return ret;
+}
+
+static ssize_t ksu_huawei_vfs_write(struct file *p, const void *buf,
+				    size_t count, loff_t *pos)
+{
+	mm_segment_t old_fs = get_fs();
+	ssize_t ret;
+
+	set_fs(KERNEL_DS);
+	ret = vfs_write(p, (const char __user *)buf, count, pos);
+	set_fs(old_fs);
+
+	return ret;
+}
+
+#endif /* CONFIG_IS_HW_HISI */
+
 ssize_t ksu_kernel_read_compat(struct file *p, void *buf, size_t count,
 			       loff_t *pos)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0) ||                          \
+#if defined(CONFIG_IS_HW_HISI)
+	return ksu_huawei_vfs_read(p, buf, count, pos);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0) ||                        \
 	defined(KSU_OPTIONAL_KERNEL_READ)
 	return kernel_read(p, buf, count, pos);
 #else
@@ -34,7 +81,9 @@ ssize_t ksu_kernel_read_compat(struct file *p, void *buf, size_t count,
 ssize_t ksu_kernel_write_compat(struct file *p, const void *buf, size_t count,
 				loff_t *pos)
 {
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0) ||                          \
+#if defined(CONFIG_IS_HW_HISI)
+	return ksu_huawei_vfs_write(p, buf, count, pos);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0) ||                        \
 	defined(KSU_OPTIONAL_KERNEL_WRITE)
 	return kernel_write(p, buf, count, pos);
 #else
@@ -47,6 +96,34 @@ ssize_t ksu_kernel_write_compat(struct file *p, const void *buf, size_t count,
 #endif
 }
 
+/*
+ * One-shot probe for the read direction, run once from on_post_fs_data().
+ *
+ * A wrong argument order cannot be caught at compile time (the parameters
+ * convert silently) and it degrades the driver into "installed but useless"
+ * instead of failing loudly, so verify that a plain read really returns data.
+ * The write direction needs no probe: the /proc/ksu_debug dump exercises it.
+ */
+int ksu_compat_read_selftest(void)
+{
+	static const char path[] = "/proc/version";
+	struct file *fp;
+	loff_t pos = 0;
+	char buf[16];
+	ssize_t n;
+
+	fp = filp_open(path, O_RDONLY, 0);
+	if (IS_ERR(fp))
+		return PTR_ERR(fp);
+
+	n = ksu_kernel_read_compat(fp, buf, sizeof(buf), &pos);
+	filp_close(fp, NULL);
+
+	if (n <= 0)
+		return n < 0 ? n : -EIO;
+
+	return 0;
+}
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 9, 0) && !defined(KSU_HAS_PATH_MOUNT))
 extern long do_mount(const char *dev_name, const char __user *dir_name,

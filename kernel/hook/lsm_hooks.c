@@ -9,6 +9,7 @@
 #include "runtime/ksud_boot.h"
 #include "compat/kernel_compat.h"
 #include "setuid_hook.h"
+#include "manager/manager_identity.h"
 #include "manager/throne_tracker.h"
 
 #ifndef KSU_KPROBES_HOOK
@@ -75,9 +76,17 @@ static int ksu_inode_rename(struct inode *old_dir, struct dentry *old_dentry,
 		return 0;
 	}
 
-	// Do not track anything until the system has fully booted.
-	// Parsing files during early boot from an LSM hook can causes VFS deadlocks
+	/*
+	 * Parsing files during early boot from an LSM hook can deadlock the
+	 * VFS, so the scan is deferred to a workqueue until the system has
+	 * finished booting.
+	 *
+	 * Before boot_completed the manager still has to be crowned, otherwise
+	 * it never gets the driver fd, ksud is never installed, boot_completed
+	 * never arrives and the driver stays unusable for good.
+	 */
 	if (!ksu_boot_completed) {
+		ksu_request_manager_scan(true);
 		return 0;
 	}
 
@@ -90,11 +99,12 @@ static int ksu_inode_rename(struct inode *old_dir, struct dentry *old_dentry,
 
 	// atomic_xchg swaps the value to 0 and returns the old value.
 	// If the old value was 1, we are the first thread to reach here.
-	if (atomic_xchg(&first_time, 0) == 1) {
-		track_throne(true);
-	} else {
-		track_throne(false);
-	}
+	//
+	// The first rename only prunes, because searching /data/app and verifying
+	// signatures is expensive. That shortcut is only safe when the manager is
+	// already known: otherwise nothing would ever crown it.
+	bool first = atomic_xchg(&first_time, 0) == 1;
+	track_throne(first && ksu_is_manager_appid_valid());
 
 	return 0;
 }

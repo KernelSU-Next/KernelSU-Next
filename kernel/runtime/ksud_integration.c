@@ -45,6 +45,7 @@
 #include "selinux/selinux.h"
 #include "policy/feature.h"
 #include "compat/kernel_compat.h"
+#include "runtime/debug_state.h"
 
 static const char KERNEL_SU_RC[] =
 	"\n"
@@ -135,7 +136,7 @@ static void load_module_rc_once(void)
 		goto out_close_file;
 	}
 
-	r = kernel_read(f, module_rc_buf, fsize, &pos);
+	r = ksu_kernel_read_compat(f, module_rc_buf, fsize, &pos);
 
 	if (r <= 0) {
 		pr_err("module rc: read failed: %zd\n", r);
@@ -312,6 +313,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		if (!init_second_stage_executed &&
 		    check_argv(*argv, 1, "second_stage", buf, sizeof(buf))) {
 			pr_info("/system/bin/init second_stage executed\n");
+			ksu_dbg_log("second_stage via /system/bin/init");
 			struct callback_head *cb = kzalloc(sizeof(*cb), GFP_ATOMIC);
 			if (cb) {
 				cb->func = ksu_initialize_selinux_tw_func;
@@ -333,6 +335,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		    check_argv(*argv, 1, "--second-stage", buf, sizeof(buf))) {
 			/* This applies to versions between Android 6 ~ 7 */
 			pr_info("/init second_stage executed\n");
+			ksu_dbg_log("second_stage via /init --second-stage");
 			apply_kernelsu_rules();
 			setup_ksu_cred();
 			init_second_stage_executed = true;
@@ -364,6 +367,7 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 					    (!strcmp(env_value, "1") ||
 					     !strcmp(env_value, "true"))) {
 						pr_info("/init second_stage executed\n");
+						ksu_dbg_log("second_stage via INIT_SECOND_STAGE env");
 						apply_kernelsu_rules();
 						setup_ksu_cred();
 						init_second_stage_executed = true;
@@ -379,6 +383,8 @@ int ksu_handle_execveat_ksud(int *fd, struct filename **filename_ptr,
 		if (check_argv(*argv, 1, "-Xzygote", buf, sizeof(buf))) {
 			pr_info("exec zygote, /data prepared, second_stage: %d\n",
 				init_second_stage_executed);
+			ksu_dbg_log("zygote exec detected, stage2=%d",
+				    init_second_stage_executed ? 1 : 0);
 			rcu_read_lock();
 			struct task_struct *init_task =
 				rcu_dereference(current->real_parent);
@@ -639,6 +645,7 @@ void ksu_handle_sys_read(unsigned int fd)
     if (!file) return;
 
     if (is_init_rc(file)) {
+        ksu_dbg_log("init.rc read hooked, injecting rc");
         ksu_apply_init_rc_proxy(file);
     }
 
