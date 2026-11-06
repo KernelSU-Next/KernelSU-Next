@@ -72,6 +72,25 @@ void on_post_fs_data(void)
 	// sanity check, this may influence the performance
 	ksu_stop_input_hook_runtime();
 	ksu_selinux_hide_handle_post_fs_data();
+
+	/*
+	 * Scan for the manager while /data is ready, instead of waiting for
+	 * boot_completed.
+	 *
+	 * ksu_manager_appid is otherwise only set from on_boot_completed() (driven
+	 * by `ksud boot-completed`) or from the packages.list rename hook, which
+	 * returns early while ksu_boot_completed is false. On a device where
+	 * /data/adb/ksud is not present yet, the injected rc
+	 * `exec ... /data/adb/ksud post-fs-data` never runs, so the appid is never
+	 * set, allowed_for_su() stays false and the driver fd install is refused.
+	 * The manager then cannot obtain a fd, cannot install ksud, and can never
+	 * be crowned.
+	 *
+	 * This runs from the zygote execve path (task_work on init), so the scan
+	 * does not depend on any userspace helper being present.
+	 */
+	pr_info("post-fs-data triggered, scanning manager...\n");
+	track_throne(false);
 }
 
 extern void ext4_unregister_sysfs(struct super_block *sb);
