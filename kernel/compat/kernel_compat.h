@@ -8,14 +8,21 @@
 #include "linux/key.h"
 
 /*
- * Adapt to Huawei HISI kernel without affecting other kernels ,
- * Huawei Hisi Kernel EBITMAP Enable or Disable Flag ,
- * From ss/ebitmap.h
+ * Adapt to Huawei HISI kernel without affecting other kernels.
+ *
+ * HISI_SELINUX_EBITMAP_RO comes from the Huawei patched ss/ebitmap.h and is
+ * defined on their kernels either way (as true or false), so this tests for
+ * the presence of that Huawei-only patch, not for the feature being enabled.
+ * The version window keeps the marker off unrelated trees that happen to
+ * define the same macro name.
+ *
+ * The explicit parentheses keep the two accepted ranges readable; without them
+ * the && / || mix is easy to misread as "(4.9..4.10 && 4.14..4.15)".
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)) &&                         \
-		(LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)) ||             \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)) &&                    \
-		(LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0))
+#if ((LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0)) &&                        \
+     (LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0))) ||                       \
+    ((LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)) &&                       \
+     (LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)))
 #ifdef HISI_SELINUX_EBITMAP_RO
 #define CONFIG_IS_HW_HISI
 #endif
@@ -34,6 +41,13 @@ extern ssize_t ksu_kernel_read_compat(struct file *p, void *buf, size_t count,
 				      loff_t *pos);
 extern ssize_t ksu_kernel_write_compat(struct file *p, const void *buf,
 				       size_t count, loff_t *pos);
+
+/*
+ * Verify that ksu_kernel_read_compat() really reads on this kernel: a wrong
+ * kernel_read() argument order fails with -EFAULT instead of erroring out
+ * loudly. Returns 0 on success. Call once, after /proc is mounted.
+ */
+extern int ksu_compat_read_selftest(void);
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0) ||                           \
 	defined(CONFIG_IS_HW_HISI) || defined(CONFIG_KSU_ALLOWLIST_WORKAROUND)

@@ -16,6 +16,7 @@
 #include "hook/hook_manager.h"
 #include "runtime/ksud.h"
 #include "runtime/ksud_boot.h"
+#include "runtime/debug_state.h"
 #include "supercall/supercall.h"
 #include "ksu.h"
 #include "feature/sulog.h"
@@ -39,6 +40,7 @@ extern int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
 			void *envp, int *flags)
 {
+	ksu_dbg_try_flush();
 	ksu_handle_execveat_ksud(fd, filename_ptr,
 				 (struct user_arg_ptr *)argv,
 				 (struct user_arg_ptr *)envp, flags);
@@ -152,6 +154,8 @@ int __init kernelsu_init(void)
 
 	ksu_app_profile_init();
 
+	ksu_debug_state_init();
+
 	if (ksu_late_loaded) {
 		pr_info("late load mode, skipping kprobe hooks\n");
 
@@ -234,6 +238,8 @@ void __exit kernelsu_exit(void)
 	ksu_shell_su_adb_only_exit();
 
 	ksu_feature_exit();
+
+	ksu_debug_state_exit();
 
 	if (ksu_cred) {
 		put_cred(ksu_cred);
