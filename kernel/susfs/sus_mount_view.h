@@ -103,7 +103,9 @@ static inline enum sus_mount_record_action
 sus_mount_record_decide(const struct sus_mount_view *v, bool devname_ours,
 			bool path_ours)
 {
-	(void)v;
+	if (v)
+		return v->prefix_matched ? SUS_MOUNT_RECORD_TAKE
+					 : SUS_MOUNT_RECORD_SKIP;
 	return (devname_ours || path_ours) ? SUS_MOUNT_RECORD_TAKE
 					   : SUS_MOUNT_RECORD_SKIP;
 }
