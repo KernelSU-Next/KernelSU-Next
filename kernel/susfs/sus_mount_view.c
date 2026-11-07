@@ -26,13 +26,14 @@ struct sus_mount_walk {
 	bool ended;
 };
 
-static void sus_mount_view_fill(struct sus_mount_view *out, struct mount *m)
+static void sus_mount_view_fill(struct sus_mount_view *out, struct mount *m,
+				     enum sus_mount_context ctx)
 {
 	struct dentry *root = m->mnt.mnt_root;
 	struct inode *inode = root ? d_inode(root) : NULL;
 
 	memset(out, 0, sizeof(*out));
-	out->ctx = 0;
+	out->ctx = ctx;
 	out->mnt_id = (int)m->mnt_id;
 	out->valid_mask |= SUS_MOUNT_V_MNT_ID;
 	if (m->mnt_parent && m->mnt_parent != m) {
@@ -55,6 +56,13 @@ static void sus_mount_view_fill(struct sus_mount_view *out, struct mount *m)
 			       ? SUS_MOUNT_SRC_PATH : SUS_MOUNT_SRC_DEVNAME;
 		out->valid_mask |= SUS_MOUNT_V_DEVNAME;
 	}
+}
+
+void sus_mount_view_from_mount(struct sus_mount_view *out, struct mount *m,
+			       enum sus_mount_context ctx)
+{
+	if (out && m)
+		sus_mount_view_fill(out, m, ctx);
 }
 
 struct sus_mount_walk *sus_mount_walk_begin(struct mount *start,
@@ -81,8 +89,7 @@ bool sus_mount_walk_next(struct sus_mount_walk *walk, struct sus_mount_view *out
 		*err = 0;
 	if (!walk || !out || walk->ended || !walk->cur)
 		return false;
-	sus_mount_view_fill(out, walk->cur);
-	out->ctx = walk->ctx;
+	sus_mount_view_fill(out, walk->cur, walk->ctx);
 	walk->depth++;
 	if (walk->depth >= SUS_MOUNT_WALK_MAX_DEPTH ||
 	    !walk->cur->mnt_parent || walk->cur->mnt_parent == walk->cur) {
