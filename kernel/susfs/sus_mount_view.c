@@ -65,22 +65,6 @@ void sus_mount_view_from_mount(struct sus_mount_view *out, struct mount *m,
 		sus_mount_view_fill(out, m, ctx);
 }
 
-void sus_mount_view_set_path(struct sus_mount_view *out, const char *path,
-			     size_t len)
-{
-	size_t n;
-
-	if (!out || !path)
-		return;
-	n = min(len, sizeof(out->mountpoint_path) - 1);
-	memcpy(out->mountpoint_path, path, n);
-	out->mountpoint_path[n] = 0;
-	out->path_len = (u16)n;
-	out->path_truncated = len > n;
-	out->path_unavailable = false;
-	out->source = SUS_MOUNT_SRC_PATH;
-	out->valid_mask |= SUS_MOUNT_V_PATH;
-}
 
 struct sus_mount_walk *sus_mount_walk_begin(struct mount *start,
 					    enum sus_mount_context ctx)
