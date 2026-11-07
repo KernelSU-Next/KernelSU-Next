@@ -522,60 +522,24 @@ static atomic_t n_clone_refused_logged = ATOMIC_INIT(0);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
 static struct rw_semaphore *sus_mount_namespace_sem;
-
-static bool sus_mount_ns_walk_begin(void)
-{
-    if (!sus_mount_namespace_sem)
-        return false;
-    down_read(sus_mount_namespace_sem);
-    return true;
-}
-
-static void sus_mount_ns_walk_end(void)
-{
-    up_read(sus_mount_namespace_sem);
-}
-
-#define SUS_MOUNT_ITER_TYPE		struct rb_node *
-#define SUS_MOUNT_ITER_FOR(ns, it)	for ((it) = rb_first(&(ns)->mounts); (it); (it) = rb_next(it))
-#define SUS_MOUNT_ITER_MOUNT(it)	rb_entry((it), struct mount, mnt_node)
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 13, 0)
-#define SUS_MOUNT_MNT_NOT_IN_NS(r, ns)	((r)->mnt_ns != (ns) || !mnt_ns_attached(r))
-#else
-
-#define SUS_MOUNT_MNT_NOT_IN_NS(r, ns)	((r)->mnt_ns != (ns) || RB_EMPTY_NODE(&(r)->mnt_node))
-#endif
-#else
-static bool sus_mount_ns_walk_begin(void)
-{
-    return true;	/* the caller takes ns_lock instead */
-}
-
-static void sus_mount_ns_walk_end(void)
-{
-}
-
-#define SUS_MOUNT_ITER_TYPE		struct list_head *
-#define SUS_MOUNT_ITER_FOR(ns, it)	for ((it) = (ns)->list.next; (it) != &(ns)->list; (it) = (it)->next)
-#define SUS_MOUNT_ITER_MOUNT(it)	list_entry((it), struct mount, mnt_list)
-#define SUS_MOUNT_MNT_NOT_IN_NS(r, ns)	((r)->mnt_ns != (ns) || ((r)->mnt.mnt_flags & MNT_CURSOR))
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 12, 0)
 
 static void sus_mount_learn_ns(struct mnt_namespace *ns)
 {
-    SUS_MOUNT_ITER_TYPE pos;
+    struct sus_mount_ns_iter *iter;
     struct mount *r;
     int learned = 0;
 
-    spin_lock(&ns->ns_lock);
-    SUS_MOUNT_ITER_FOR(ns, pos) {
+    iter = sus_mount_ns_iter_begin(ns);
+    if (!iter) {
+        atomic_inc(&n_clone_refused_logged);
+        return;
+    }
+    while ((r = sus_mount_ns_iter_next(iter))) {
         int shown;
 
-        r = SUS_MOUNT_ITER_MOUNT(pos);
-        if (SUS_MOUNT_MNT_NOT_IN_NS(r, ns))
-            continue;
         if (!sus_mount_is_ours(r, SUS_MOUNT_KSU_ID_MIN, sus_mount_path_is_ours))
             continue;
         if (sus_mount_idmap_shown_for((int)r->mnt_id))
@@ -586,7 +550,7 @@ static void sus_mount_learn_ns(struct mnt_namespace *ns)
             learned++;
         }
     }
-    spin_unlock(&ns->ns_lock);
+    sus_mount_ns_iter_end(iter);
     atomic_inc(&n_clone_walks);
     if (learned)
         atomic_add(learned, &n_clone_learned);
@@ -625,23 +589,20 @@ static struct mnt_namespace *sus_mount_learn_pop(void)
 
 static int sus_mount_learn_ns_walk(struct mnt_namespace *ns)
 {
-    SUS_MOUNT_ITER_TYPE pos;
+    struct sus_mount_ns_iter *iter;
+    struct mount *r;
     unsigned int seen = 0;
     int learned = 0;
 
-    if (!sus_mount_ns_walk_begin())
+    iter = sus_mount_ns_iter_begin(ns);
+    if (!iter)
         return -ENOSYS;
 
-    rcu_read_lock();
-    SUS_MOUNT_ITER_FOR(ns, pos) {
-        struct mount *r;
+    while ((r = sus_mount_ns_iter_next(iter))) {
         int shown;
 
         if (seen++ >= SUS_MOUNT_MAX_SCAN)
             break;
-        r = SUS_MOUNT_ITER_MOUNT(pos);
-        if (SUS_MOUNT_MNT_NOT_IN_NS(r, ns))
-            continue;
         if (!sus_mount_is_ours(r, SUS_MOUNT_KSU_ID_MIN, sus_mount_path_is_ours))
             continue;
         if (sus_mount_idmap_shown_for((int)r->mnt_id))
@@ -652,8 +613,7 @@ static int sus_mount_learn_ns_walk(struct mnt_namespace *ns)
             learned++;
         }
     }
-    rcu_read_unlock();
-    sus_mount_ns_walk_end();
+    sus_mount_ns_iter_end(iter);
     return learned;
 }
 
