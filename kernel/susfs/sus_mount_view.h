@@ -38,6 +38,11 @@ enum sus_mount_source {
 	SUS_MOUNT_SRC_PATH,
 };
 
+enum sus_mount_show_action {
+	SUS_MOUNT_SHOW_VISIBLE,
+	SUS_MOUNT_SHOW_HIDE,
+};
+
 enum sus_mount_valid {
 	SUS_MOUNT_V_MNT_ID    = 1u << 0,
 	SUS_MOUNT_V_PARENT    = 1u << 1,
@@ -79,6 +84,15 @@ static inline bool sus_mount_view_has(const struct sus_mount_view *v, u32 bit)
 	return v && (v->valid_mask & bit) == bit;
 }
 
+static inline enum sus_mount_show_action
+sus_mount_show_decide(const struct sus_mount_view *v, bool is_ours, bool su)
+{
+	(void)v;
+	if (!is_ours || su)
+		return SUS_MOUNT_SHOW_VISIBLE;
+	return SUS_MOUNT_SHOW_HIDE;
+}
+
 static inline bool sus_mount_view_ctx_valid(enum sus_mount_context ctx)
 {
 	return ctx == SUS_MOUNT_CTX_SHOW || ctx == SUS_MOUNT_CTX_SCAN ||
@@ -113,6 +127,8 @@ struct sus_mount_walk;
 
 struct sus_mount_walk *
 sus_mount_walk_begin(struct mount *start, enum sus_mount_context ctx);
+void sus_mount_view_from_mount(struct sus_mount_view *out, struct mount *m,
+			       enum sus_mount_context ctx);
 bool sus_mount_walk_next(struct sus_mount_walk *walk,
 			 struct sus_mount_view *out, int *err);
 void sus_mount_walk_end(struct sus_mount_walk *walk);
