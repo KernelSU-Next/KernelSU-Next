@@ -151,6 +151,7 @@
 #include "sus_mount_idmap.h"
 #include "sus_mount_policy.h"
 #include "sus_mount_view.h"
+#include "sus_mount_ns_iter.h"
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 #include "susfs_kprobe.h"
 
@@ -1858,7 +1859,8 @@ static int sus_mount_scan_ns(struct mnt_namespace *ns, char *buf, unsigned long 
      * batch, because at most one old id is produced per id consumed. */
     int replaced[SUS_MOUNT_ID_BATCH];
     int n_batch = 0, used = 0, n_replaced = 0;
-    SUS_MOUNT_ITER_TYPE pos;
+    struct sus_mount_ns_iter *iter;
+    struct mount *r;
     unsigned int seen = 0;
     int scan_logged = 0;
     int marked = 0;
@@ -1868,12 +1870,6 @@ static int sus_mount_scan_ns(struct mnt_namespace *ns, char *buf, unsigned long 
     unsigned int n_skipped_ns = 0, n_skipped_marked = 0;
     bool hit_cap = false;
     int i;
-
-    if (!sus_mount_ns_walk_begin()) {
-        pr_warn("sus_mount: namespace_sem could not be resolved at load time - refusing to walk ns %p without the lock the kernel's own mount-table iterator holds (mounts stay unmarked)\n",
-                ns);
-        return -ENOSYS;
-    }
 
     for (i = 0; i < SUS_MOUNT_ID_BATCH; i++) {
         int id = sus_mount_ida_alloc();
@@ -1889,19 +1885,20 @@ static int sus_mount_scan_ns(struct mnt_namespace *ns, char *buf, unsigned long 
         batch[n_batch++] = id;
     }
     if (!n_batch) {
-        pr_warn("sus_mount: could not allocate KSU-range ids for ns %p - that namespace is left unmarked\n",
-                ns);
-        sus_mount_ns_walk_end();
+        pr_warn("sus_mount: could not allocate KSU-range ids for ns %p - that namespace is left unmarked", ns);
         return 0;
     }
 
-    rcu_read_lock();
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 12, 0)
-    spin_lock(&ns->ns_lock);
-#endif
-    SUS_MOUNT_ITER_FOR(ns, pos) {
+    iter = sus_mount_ns_iter_begin(ns);
+    if (!iter) {
+        pr_warn("sus_mount: could not lock ns %p for the mount scan (mounts stay unmarked)", ns);
+        for (i = 0; i < n_batch; i++)
+            sus_mount_ida_release(batch[i]);
+        return -ENOSYS;
+    }
+
+    while ((r = sus_mount_ns_iter_next(iter))) {
         struct path mnt_path;
-        struct mount *r;
         const char *shown;
         char *dp;
         int new_id;
@@ -1910,15 +1907,7 @@ static int sus_mount_scan_ns(struct mnt_namespace *ns, char *buf, unsigned long 
             hit_cap = true;
             break;
         }
-        r = SUS_MOUNT_ITER_MOUNT(pos);
-        /* proc_mounts cursors are fake mounts anchored in this same list
-         * (fs/namespace.c:678-681 mnt_is_cursor(), include/linux/mount.h:70): below
-         * 6.12 MNT_CURSOR is what keeps them out of the walk, from 6.12 on they are
-         * simply not in ns->mounts - both are what SUS_MOUNT_MNT_NOT_IN_NS() tests. */
-        if (SUS_MOUNT_MNT_NOT_IN_NS(r, ns)) {
-            n_skipped_ns++;
-            continue;
-        }
+        /* The iterator already filtered cursors and stale mounts. */
         /* Anything already carrying a KSU-range id: the idempotency guard for a re-enable (a
          * second id for the same mount would leak the first for its lifetime) AND the cover
          * for KernelSU's own mounts, which this kernel already hands such an id to - measured
@@ -1997,11 +1986,7 @@ static int sus_mount_scan_ns(struct mnt_namespace *ns, char *buf, unsigned long 
         sus_mount_ident_add(r, mount_dbg);
         marked++;
     }
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 12, 0)
-    spin_unlock(&ns->ns_lock);
-#endif
-    rcu_read_unlock();
-    sus_mount_ns_walk_end();
+    sus_mount_ns_iter_end(iter);
 
     /* Hand back whatever the batch did not use. */
     for (i = used; i < n_batch; i++)
@@ -2162,6 +2147,7 @@ int susfs_sus_mount_init(void)
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
     sus_mount_namespace_sem = (struct rw_semaphore *)find_kernel_symbol_exact("namespace_sem");
+    sus_mount_ns_iter_set_sem(sus_mount_namespace_sem);
     pfn_put_mnt_ns = (void *)find_kernel_symbol_exact("put_mnt_ns");
 #endif
 
