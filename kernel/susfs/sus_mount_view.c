@@ -56,11 +56,6 @@ static void sus_mount_view_fill(struct sus_mount_view *out, struct mount *m,
 		out->idmap_cookie = sus_mount_ptr_cookie(m->mnt.mnt_idmap);
 		out->valid_mask |= SUS_MOUNT_V_IDMAP_NS;
 	}
-#else
-	if (m->mnt.mnt_userns) {
-		out->idmap_cookie = sus_mount_ptr_cookie(m->mnt.mnt_userns);
-		out->valid_mask |= SUS_MOUNT_V_IDMAP_NS;
-	}
 #endif
 	if (m->mnt_ns) {
 		out->mnt_ns_cookie = sus_mount_ptr_cookie(m->mnt_ns);
