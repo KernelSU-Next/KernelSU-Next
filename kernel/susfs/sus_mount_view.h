@@ -43,6 +43,11 @@ enum sus_mount_show_action {
 	SUS_MOUNT_SHOW_HIDE,
 };
 
+enum sus_mount_record_action {
+	SUS_MOUNT_RECORD_SKIP,
+	SUS_MOUNT_RECORD_TAKE,
+};
+
 enum sus_mount_valid {
 	SUS_MOUNT_V_MNT_ID    = 1u << 0,
 	SUS_MOUNT_V_PARENT    = 1u << 1,
@@ -82,6 +87,15 @@ struct sus_mount_view {
 static inline bool sus_mount_view_has(const struct sus_mount_view *v, u32 bit)
 {
 	return v && (v->valid_mask & bit) == bit;
+}
+
+static inline enum sus_mount_record_action
+sus_mount_record_decide(const struct sus_mount_view *v, bool devname_ours,
+			bool path_ours)
+{
+	(void)v;
+	return (devname_ours || path_ours) ? SUS_MOUNT_RECORD_TAKE
+					   : SUS_MOUNT_RECORD_SKIP;
 }
 
 static inline enum sus_mount_show_action
@@ -129,6 +143,8 @@ struct sus_mount_walk *
 sus_mount_walk_begin(struct mount *start, enum sus_mount_context ctx);
 void sus_mount_view_from_mount(struct sus_mount_view *out, struct mount *m,
 			       enum sus_mount_context ctx);
+void sus_mount_view_set_path(struct sus_mount_view *out, const char *path,
+			     size_t len);
 bool sus_mount_walk_next(struct sus_mount_walk *walk,
 			 struct sus_mount_view *out, int *err);
 void sus_mount_walk_end(struct sus_mount_walk *walk);
