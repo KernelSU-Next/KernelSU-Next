@@ -1933,31 +1933,43 @@ static int sus_mount_scan_ns(struct mnt_namespace *ns, char *buf, unsigned long 
             continue;
         }
 
-        if (sus_mount_path_is_ours(r->mnt_devname)) {
-            n_devname++;
-            shown = r->mnt_devname;
-        } else {
-            /* meta-overlayfs style: the source is /dev/block/loopNN, so only the
-             * mount point says /data/adb/... .  d_path() of {mnt, mnt_root} is the
-             * mountpoint path show_mountinfo() prints. */
-            mnt_path.mnt = &r->mnt;
-            mnt_path.dentry = r->mnt.mnt_root;
-            dp = sus_mount_d_path(&mnt_path, buf, PATH_MAX);
-            /* Diagnostic while the matching rule is being validated: the first few
-             * mounts show what d_path() actually renders for them. */
-            if (scan_logged < 40) {
-                scan_logged++;
-                SUSFS_LOGI("sus_mount: scan %s -> %s\n", r->mnt_devname,
-                        IS_ERR_OR_NULL(dp) ? "(d_path failed)" : dp);
+        {
+            struct sus_mount_view view;
+            bool devname_ours, path_ours = false;
+
+            sus_mount_view_from_mount(&view, r, SUS_MOUNT_CTX_SCAN);
+            devname_ours = sus_mount_path_is_ours(r->mnt_devname);
+            if (devname_ours) {
+                n_devname++;
+                shown = r->mnt_devname;
+            } else {
+                /* meta-overlayfs style: the source is /dev/block/loopNN, so only the
+                 * mount point says /data/adb/... .  d_path() of {mnt, mnt_root} is the
+                 * mountpoint path show_mountinfo() prints. */
+                mnt_path.mnt = &r->mnt;
+                mnt_path.dentry = r->mnt.mnt_root;
+                dp = sus_mount_d_path(&mnt_path, buf, PATH_MAX);
+                /* Diagnostic while the matching rule is being validated: the first few
+                 * mounts show what d_path() actually renders for them. */
+                if (scan_logged < 40) {
+                    scan_logged++;
+                    SUSFS_LOGI("sus_mount: scan %s -> %s\n", r->mnt_devname,
+                            IS_ERR_OR_NULL(dp) ? "(d_path failed)" : dp);
+                }
+                if (IS_ERR_OR_NULL(dp)) {
+                    n_dpath_err++;
+                    continue;
+                }
+                n_dpath_ok++;
+                sus_mount_view_set_path(&view, dp, strlen(dp));
+                path_ours = sus_mount_path_is_ours(dp);
+                if (!path_ours)
+                    continue;
+                shown = dp;
             }
-            if (IS_ERR_OR_NULL(dp)) {
-                n_dpath_err++;
+            if (sus_mount_record_decide(&view, devname_ours, path_ours) !=
+                SUS_MOUNT_RECORD_TAKE)
                 continue;
-            }
-            n_dpath_ok++;
-            if (!sus_mount_path_is_ours(dp))
-                continue;
-            shown = dp;
         }
 
         if (used >= n_batch) {
