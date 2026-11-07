@@ -11,10 +11,12 @@
 
 #ifdef __KERNEL__
 #include <linux/types.h>
+#include <linux/string.h>
 #else
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 typedef uint16_t u16;
 typedef uint32_t u32;
@@ -134,6 +136,24 @@ static inline u32 sus_mount_view_required(enum sus_mount_context ctx)
 	}
 }
 
+static inline void sus_mount_view_set_path(struct sus_mount_view *out,
+					   const char *path, size_t len)
+{
+	size_t n;
+
+	if (!out || !path)
+		return;
+	n = len < sizeof(out->mountpoint_path) - 1 ?
+		len : sizeof(out->mountpoint_path) - 1;
+	memcpy(out->mountpoint_path, path, n);
+	out->mountpoint_path[n] = 0;
+	out->path_len = (u16)n;
+	out->path_truncated = len > n;
+	out->path_unavailable = false;
+	out->source = SUS_MOUNT_SRC_PATH;
+	out->valid_mask |= SUS_MOUNT_V_PATH;
+}
+
 #ifdef __KERNEL__
 struct mount;
 
@@ -143,8 +163,6 @@ struct sus_mount_walk *
 sus_mount_walk_begin(struct mount *start, enum sus_mount_context ctx);
 void sus_mount_view_from_mount(struct sus_mount_view *out, struct mount *m,
 			       enum sus_mount_context ctx);
-void sus_mount_view_set_path(struct sus_mount_view *out, const char *path,
-			     size_t len);
 bool sus_mount_walk_next(struct sus_mount_walk *walk,
 			 struct sus_mount_view *out, int *err);
 void sus_mount_walk_end(struct sus_mount_walk *walk);
