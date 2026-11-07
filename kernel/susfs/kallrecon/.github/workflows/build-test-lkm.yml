@@ -1,0 +1,45 @@
+name: Build Test All GKI
+on:
+  push:
+    paths:
+      - 'lib/**'
+      - 'src/**'
+      - 'test/**'
+      - 'Makefile'
+      - 'deps.mk'
+      - '.github/workflows/build-test-lkm.yml'
+  workflow_dispatch:
+
+jobs:
+  build-matrix:
+    strategy:
+      matrix:
+        include:
+          - kmi: android12-5.10
+            image: ghcr.io/ylarod/ddk-min:android12-5.10-20260313
+          - kmi: android13-5.10
+            image: ghcr.io/ylarod/ddk-min:android13-5.10-20260313
+          - kmi: android13-5.15
+            image: ghcr.io/ylarod/ddk-min:android13-5.15-20260313
+          - kmi: android14-5.15
+            image: ghcr.io/ylarod/ddk-min:android14-5.15-20260313
+          - kmi: android14-6.1
+            image: ghcr.io/ylarod/ddk-min:android14-6.1-20260313
+          - kmi: android15-6.6
+            image: ghcr.io/ylarod/ddk-min:android15-6.6-20260313
+          - kmi: android16-6.12
+            image: ghcr.io/ylarod/ddk-min:android16-6.12-20260313
+          - kmi: android17-6.18
+            image: ghcr.io/ylarod/ddk-min:android17-6.18
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.image }}
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: make TARGET=test VER=${{ matrix.kmi }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: test_probe-${{ matrix.kmi }}
+          path: out/${{ matrix.kmi }}/test_probe.ko
