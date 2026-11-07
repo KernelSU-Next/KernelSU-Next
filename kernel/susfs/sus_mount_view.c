@@ -2,9 +2,9 @@
 /*
  * sus_mount_view.c - P-owned mount walk
  *
- * v5 view contract: values only.  The walk holds one reference on the starting
- * mount; next() copies values and climbs mnt_parent.  No path string is
- * produced here yet, so V_PATH stays clear and callers must not assume it.
+ * View contract: values only.  The walk holds rcu_read_lock() from begin to
+ * end and climbs mnt_parent only while staying in the starting namespace.  No
+ * path string is produced here yet, so V_PATH stays clear.
  */
 
 #include <linux/kernel.h>
@@ -12,6 +12,7 @@
 #include <linux/string.h>
 #include <linux/mount.h>
 #include <linux/dcache.h>
+#include <linux/rcupdate.h>
 
 #include "mount.h"
 #include "sus_mount_view.h"
@@ -19,8 +20,8 @@
 #define SUS_MOUNT_WALK_MAX_DEPTH 64
 
 struct sus_mount_walk {
-	struct mount *ref;
 	struct mount *cur;
+	struct mnt_namespace *ns;
 	enum sus_mount_context ctx;
 	unsigned int depth;
 	bool ended;
@@ -46,7 +47,7 @@ static void sus_mount_view_fill(struct sus_mount_view *out, struct mount *m,
 	}
 	if (inode) {
 		out->root_ino = inode->i_ino;
-		out->valid_mask |= SUS_MOUNT_V_MNT_ID;
+		out->valid_mask |= SUS_MOUNT_V_ROOT_INO;
 	}
 	if (m->mnt_devname) {
 		strscpy(out->source_devname, m->mnt_devname,
@@ -76,10 +77,10 @@ struct sus_mount_walk *sus_mount_walk_begin(struct mount *start,
 	walk = kzalloc(sizeof(*walk), GFP_ATOMIC);
 	if (!walk)
 		return NULL;
-	walk->ref = start;
 	walk->cur = start;
+	walk->ns = start->mnt_ns;
 	walk->ctx = ctx;
-	mntget(&start->mnt);
+	rcu_read_lock();
 	return walk;
 }
 
@@ -93,6 +94,7 @@ bool sus_mount_walk_next(struct sus_mount_walk *walk, struct sus_mount_view *out
 	sus_mount_view_fill(out, walk->cur, walk->ctx);
 	walk->depth++;
 	if (walk->depth >= SUS_MOUNT_WALK_MAX_DEPTH ||
+	    walk->cur->mnt_ns != walk->ns ||
 	    !walk->cur->mnt_parent || walk->cur->mnt_parent == walk->cur) {
 		walk->ended = true;
 	} else {
@@ -105,7 +107,6 @@ void sus_mount_walk_end(struct sus_mount_walk *walk)
 {
 	if (!walk)
 		return;
-	if (walk->ref)
-		mntput(&walk->ref->mnt);
+	rcu_read_unlock();
 	kfree(walk);
 }

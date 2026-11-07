@@ -61,6 +61,7 @@ enum sus_mount_valid {
 	SUS_MOUNT_V_IDMAP_NS  = 1u << 7,
 	SUS_MOUNT_V_SU_DOMAIN = 1u << 8,
 	SUS_MOUNT_V_CONTROL   = 1u << 9,
+	SUS_MOUNT_V_ROOT_INO  = 1u << 10,
 };
 
 struct sus_mount_view {
@@ -121,14 +122,14 @@ static inline u32 sus_mount_view_required(enum sus_mount_context ctx)
 	switch (ctx) {
 	case SUS_MOUNT_CTX_SHOW:
 		return SUS_MOUNT_V_MNT_ID | SUS_MOUNT_V_PARENT |
-		       SUS_MOUNT_V_DEVID | SUS_MOUNT_V_DEVNAME |
+		       SUS_MOUNT_V_DEVID | SUS_MOUNT_V_ROOT_INO | SUS_MOUNT_V_DEVNAME |
 		       SUS_MOUNT_V_MNT_NS | SUS_MOUNT_V_USER_NS |
 		       SUS_MOUNT_V_IDMAP_NS | SUS_MOUNT_V_SU_DOMAIN |
 		       SUS_MOUNT_V_CONTROL;
 	case SUS_MOUNT_CTX_SCAN:
 	case SUS_MOUNT_CTX_RECORD:
 		return SUS_MOUNT_V_MNT_ID | SUS_MOUNT_V_PARENT |
-		       SUS_MOUNT_V_DEVID | SUS_MOUNT_V_DEVNAME |
+		       SUS_MOUNT_V_DEVID | SUS_MOUNT_V_ROOT_INO | SUS_MOUNT_V_DEVNAME |
 		       SUS_MOUNT_V_PATH | SUS_MOUNT_V_MNT_NS |
 		       SUS_MOUNT_V_USER_NS | SUS_MOUNT_V_IDMAP_NS;
 	default:
