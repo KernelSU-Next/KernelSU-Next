@@ -152,6 +152,10 @@
 #include "sus_mount_policy.h"
 #include "sus_mount_view.h"
 #include "sus_mount_prefix.h"
+
+/* F keeps the rescan counter and the sysfs truncation reserve; the records are in D. */
+#define SUS_MOUNT_KEEP_TRUNC_RESERVE (SUS_MOUNT_KEEP_LEN + 64)
+static atomic_t n_keep_rescans = ATOMIC_INIT(0);
 #include "sus_mount_ns_iter.h"
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 #include "susfs_kprobe.h"
