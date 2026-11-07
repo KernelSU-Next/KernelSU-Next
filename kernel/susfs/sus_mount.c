@@ -814,6 +814,7 @@ static bool sus_mount_should_record(struct mount *r, char *buf, int buflen, char
         if (path_ours)
             *why = dp;
     }
+    sus_mount_view_set_prefix(&view, devname_ours || path_ours);
     if (sus_mount_record_decide(&view, devname_ours, path_ours) !=
         SUS_MOUNT_RECORD_TAKE)
         return false;
@@ -1221,6 +1222,7 @@ static int sus_mount_show_pre(struct kprobe *kp, struct pt_regs *regs)
         return 0;
     r = real_mount(mnt);
     sus_mount_view_from_mount(&view, r, SUS_MOUNT_CTX_SHOW);
+    sus_mount_view_set_prefix(&view, sus_mount_path_is_ours(r->mnt_devname));
     /* Cheap path first, and NOT only the id: a KSU mount in a namespace the
      * marking scan never reached (the zygote's, hence every app's) keeps a normal
      * id - see the identity note above sus_mount_is_ours(). */
@@ -1967,6 +1969,7 @@ static int sus_mount_scan_ns(struct mnt_namespace *ns, char *buf, unsigned long 
                     continue;
                 shown = dp;
             }
+            sus_mount_view_set_prefix(&view, devname_ours || path_ours);
             if (sus_mount_record_decide(&view, devname_ours, path_ours) !=
                 SUS_MOUNT_RECORD_TAKE)
                 continue;
