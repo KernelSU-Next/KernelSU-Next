@@ -41,17 +41,38 @@ static __nocfi noinline const char *kr_lookup(unsigned long addr, char **modname
 	return kr_lookup_fn(addr, NULL, NULL, modname, buf);
 }
 
-unsigned long find_kernel_symbol_exact(const char *symbol_name)
+unsigned long find_kernel_symbol_exact_any(const char *symbol_name)
 {
-	return ksu_kallsyms_lookup_name(symbol_name);
-}
-
-unsigned long __nocfi ksu_kallsyms_lookup_name(const char *name)
-{
-	if (!name || !name[0] || !kr_ready || !kallrecon_klp)
+	if (!symbol_name || !symbol_name[0] || !kr_ready || !kallrecon_klp)
 		return 0;
 
-	return kr_klp(name);
+	return kr_klp(symbol_name);
+}
+
+unsigned long ksu_kallsyms_lookup_name(const char *name)
+{
+	return find_kernel_symbol_exact_any(name);
+}
+
+unsigned long find_kernel_symbol_exact(const char *symbol_name)
+{
+	unsigned long addr;
+	char buf[KSYM_SYMBOL_LEN];
+	char *mod = NULL;
+
+	addr = find_kernel_symbol_exact_any(symbol_name);
+	if (!addr || !kr_lookup_fn)
+		return 0;
+
+	if (!kr_lookup(addr, &mod, buf))
+		return 0;
+
+	if (mod) {
+		pr_warn("ignore symbol %s of module %s\n", symbol_name, mod);
+		return 0;
+	}
+
+	return addr;
 }
 
 void *ksu_resolve_symbol_for_functable_hook(const char *symbol_name)
@@ -62,7 +83,7 @@ void *ksu_resolve_symbol_for_functable_hook(const char *symbol_name)
 		return NULL;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
-	addr = ksu_kallsyms_lookup_name(symbol_name);
+	addr = find_kernel_symbol_exact(symbol_name);
 	if (!addr)
 		addr = kallrecon_find_variant(symbol_name, 0);
 #else
@@ -70,11 +91,11 @@ void *ksu_resolve_symbol_for_functable_hook(const char *symbol_name)
 		char cfi_name[KSYM_NAME_LEN];
 
 		snprintf(cfi_name, sizeof(cfi_name), "%s.cfi_jt", symbol_name);
-		addr = ksu_kallsyms_lookup_name(cfi_name);
+		addr = find_kernel_symbol_exact(cfi_name);
 		if (!addr)
 			addr = kallrecon_find_variant(symbol_name, 1);
 		if (!addr)
-			addr = ksu_kallsyms_lookup_name(symbol_name);
+			addr = find_kernel_symbol_exact(symbol_name);
 	}
 #endif
 
