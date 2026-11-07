@@ -13,12 +13,6 @@
 #include <linux/mount.h>
 #include <linux/dcache.h>
 #include <linux/rcupdate.h>
-#include <linux/version.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
-#include <linux/mnt_idmapping.h>
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
-#include <linux/user_namespace.h>
-#endif
 
 #include "mount.h"
 #include "sus_mount_view.h"
@@ -64,17 +58,6 @@ static void sus_mount_view_fill(struct sus_mount_view *out, struct mount *m,
 			out->valid_mask |= SUS_MOUNT_V_USER_NS;
 		}
 	}
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
-	if (mnt_idmap(&m->mnt)) {
-		out->idmap_cookie = sus_mount_ptr_cookie(mnt_idmap(&m->mnt));
-		out->valid_mask |= SUS_MOUNT_V_IDMAP_NS;
-	}
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
-	if (mnt_user_ns(&m->mnt)) {
-		out->idmap_cookie = sus_mount_ptr_cookie(mnt_user_ns(&m->mnt));
-		out->valid_mask |= SUS_MOUNT_V_IDMAP_NS;
-	}
-#endif
 	if (inode) {
 		out->root_ino = inode->i_ino;
 		out->valid_mask |= SUS_MOUNT_V_ROOT_INO;
