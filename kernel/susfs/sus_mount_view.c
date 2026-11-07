@@ -13,6 +13,7 @@
 #include <linux/mount.h>
 #include <linux/dcache.h>
 #include <linux/rcupdate.h>
+#include <linux/version.h>
 
 #include "mount.h"
 #include "sus_mount_view.h"
