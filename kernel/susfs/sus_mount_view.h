@@ -106,4 +106,16 @@ static inline u32 sus_mount_view_required(enum sus_mount_context ctx)
 	}
 }
 
+#ifdef __KERNEL__
+struct mount;
+
+struct sus_mount_walk;
+
+struct sus_mount_walk *
+sus_mount_walk_begin(struct mount *start, enum sus_mount_context ctx);
+bool sus_mount_walk_next(struct sus_mount_walk *walk,
+			 struct sus_mount_view *out, int *err);
+void sus_mount_walk_end(struct sus_mount_walk *walk);
+#endif
+
 #endif /* __SUS_MOUNT_VIEW_H */
