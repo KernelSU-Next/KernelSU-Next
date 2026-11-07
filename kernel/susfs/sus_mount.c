@@ -790,27 +790,34 @@ static int sus_mount_newmnt_entry(struct kretprobe_instance *ri, struct pt_regs 
  * and the mountpoints this rule accepts are short (/data/adb/modules/<name>/mnt). */
 static bool sus_mount_should_record(struct mount *r, char *buf, int buflen, char **why)
 {
+    struct sus_mount_view view;
     struct path p;
     char *dp;
+    bool devname_ours, path_ours = false;
 
-    if (sus_mount_path_is_ours(r->mnt_devname)) {
+    sus_mount_view_from_mount(&view, r, SUS_MOUNT_CTX_RECORD);
+    devname_ours = sus_mount_path_is_ours(r->mnt_devname);
+    if (devname_ours) {
         *why = "devname";
-        return true;
+    } else {
+        if (!pfn_d_path)
+            return false;
+        p.mnt = &r->mnt;
+        p.dentry = r->mnt.mnt_root;
+        dp = sus_mount_d_path(&p, buf, buflen);
+        if (IS_ERR_OR_NULL(dp)) {
+            atomic_inc(&n_newmnt_pathfail);
+            return false;
+        }
+        sus_mount_view_set_path(&view, dp, strlen(dp));
+        path_ours = sus_mount_path_is_ours(dp);
+        if (path_ours)
+            *why = dp;
     }
-    if (!pfn_d_path)
+    if (sus_mount_record_decide(&view, devname_ours, path_ours) !=
+        SUS_MOUNT_RECORD_TAKE)
         return false;
-    p.mnt = &r->mnt;
-    p.dentry = r->mnt.mnt_root;
-    dp = sus_mount_d_path(&p, buf, buflen);
-    if (IS_ERR_OR_NULL(dp)) {
-        atomic_inc(&n_newmnt_pathfail);
-        return false;
-    }
-    if (sus_mount_path_is_ours(dp)) {
-        *why = dp;
-        return true;
-    }
-    return false;
+    return true;
 }
 
 static int sus_mount_newmnt_ret(struct kretprobe_instance *ri, struct pt_regs *regs)
