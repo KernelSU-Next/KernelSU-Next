@@ -533,10 +533,8 @@ static void sus_mount_learn_ns(struct mnt_namespace *ns)
     int learned = 0;
 
     iter = sus_mount_ns_iter_begin(ns);
-    if (!iter) {
-        atomic_inc(&n_clone_refused_logged);
+    if (!iter)
         return;
-    }
     while ((r = sus_mount_ns_iter_next(iter))) {
         int shown;
 
