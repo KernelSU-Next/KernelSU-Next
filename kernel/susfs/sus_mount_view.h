@@ -92,6 +92,13 @@ static inline bool sus_mount_view_has(const struct sus_mount_view *v, u32 bit)
 	return v && (v->valid_mask & bit) == bit;
 }
 
+static inline void sus_mount_view_set_prefix(struct sus_mount_view *v,
+					     bool matched)
+{
+	if (v)
+		v->prefix_matched = matched;
+}
+
 static inline enum sus_mount_record_action
 sus_mount_record_decide(const struct sus_mount_view *v, bool devname_ours,
 			bool path_ours)
