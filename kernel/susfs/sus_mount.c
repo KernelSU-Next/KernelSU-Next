@@ -151,6 +151,7 @@
 #include "sus_mount_idmap.h"
 #include "sus_mount_policy.h"
 #include "sus_mount_view.h"
+#include "sus_mount_prefix.h"
 #include "sus_mount_ns_iter.h"
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 #include "susfs_kprobe.h"
@@ -163,23 +164,6 @@
  * the control node may carry a whole list - it is bounded by SUS_MOUNT_KEEP_CMDLINE, i.e. 8352 bytes,
  * which is 64 entries of a 128-byte prefix - and the static cost of the two buffers below is roughly
  * 16 KB. */
-#define SUS_MOUNT_KEEP_MAX 64
-#define SUS_MOUNT_KEEP_LEN 128
-#define SUS_MOUNT_KEEP_CMDLINE (SUS_MOUNT_KEEP_MAX * (SUS_MOUNT_KEEP_LEN + 2) + 32)
-
-/* Room for one more full prefix line PLUS the "there is more" notice, in the sysfs read path.
- * Short of that, the notice is what gets cut: 64 prefixes of 127 characters stopped the loop 96 bytes
- * from the end, so the "N more; cat /proc/susfs_hide_mounts for all" text was itself truncated
- * mid-path and the final newline went with it - the read that needs the notice cannot print it.  One
- * more entry than strictly needed is deliberate: the notice's own length is not fixed. */
-#define SUS_MOUNT_KEEP_TRUNC_RESERVE (SUS_MOUNT_KEEP_LEN + 64)
-
-static char mount_keep[SUS_MOUNT_KEEP_MAX][SUS_MOUNT_KEEP_LEN];
-static int n_mount_keep;
-static DEFINE_SPINLOCK(mount_keep_lock);
-static const char *const mount_keep_default = "/data/adb/";
-static atomic_t n_keep_rescans = ATOMIC_INIT(0);
-
 /* How many of the three mount-table hooks (show_vfsstat / show_mountinfo /
  * show_vfsmnt) are armed; 3 is healthy.  1 or 2 means the feature hides fewer files
  * than it says, which must be visible rather than inferred (see
@@ -1154,7 +1138,7 @@ static int sus_mount_stat_show(char *buf, const struct kernel_param *kp)
                      (int)kr_clone_ns_ok,
                      atomic_read(&n_newmnt_seen), atomic_read(&n_newmnt_recorded),
                      atomic_read(&n_newmnt_pathfail), (int)kr_newmnt_ok,
-                     n_mount_keep, atomic_read(&n_keep_rescans),
+                     sus_mount_prefix_count(), atomic_read(&n_keep_rescans),
                      n_fdinfo_probes,
                      atomic_read(&n_fdinfo_entry), atomic_read(&n_fdinfo_hits),
                      atomic_read(&n_fdinfo_rewrites),
@@ -1264,24 +1248,7 @@ static bool sus_mount_show_armed[SUS_MOUNT_SHOW_N];
 /* Interrupt/kprobe safe: read-only, no allocation. */
 static bool sus_mount_path_is_ours(const char *s)
 {
-    unsigned long flags;
-    bool hit = false;
-    int i;
-
-    if (!s)
-        return false;
-
-    spin_lock_irqsave(&mount_keep_lock, flags);
-    for (i = 0; i < n_mount_keep; i++) {
-        size_t len = strlen(mount_keep[i]);
-
-        if (len && !strncmp(s, mount_keep[i], len)) {
-            hit = true;
-            break;
-        }
-    }
-    spin_unlock_irqrestore(&mount_keep_lock, flags);
-    return hit;
+    return sus_mount_prefix_match(s);
 }
 
 /* Retro-fit upstream's "KSU mounts carry an id >= DEFAULT_KSU_MNT_ID" onto the
@@ -1386,13 +1353,7 @@ static int sus_mount_keep_parse(const char *val, char dst[][SUS_MOUNT_KEEP_LEN],
 
 static void sus_mount_keep_commit(char dst[][SUS_MOUNT_KEEP_LEN], int n)
 {
-	unsigned long flags;
-
-	spin_lock_irqsave(&mount_keep_lock, flags);
-	memset(mount_keep, 0, sizeof(mount_keep));
-	memcpy(mount_keep, dst, (size_t)n * SUS_MOUNT_KEEP_LEN);
-	n_mount_keep = n;
-	spin_unlock_irqrestore(&mount_keep_lock, flags);
+    (void)sus_mount_prefix_commit(dst, n);
 }
 
 static void sus_mount_keep_rescan(void)
@@ -1439,7 +1400,7 @@ static int sus_mount_keep_command(const char *val, bool bare_list)
 		cmd[i] = '\0';
 
 	if (!strcmp(cmd, "reset")) {
-		strscpy(staged[0], mount_keep_default, SUS_MOUNT_KEEP_LEN);
+		strscpy(staged[0], sus_mount_prefix_default(), SUS_MOUNT_KEEP_LEN);
 		sus_mount_keep_commit(staged, 1);
 		sus_mount_keep_rescan();
 		SUSFS_LOGI("sus_mount: prefix list reset to the default\n");
@@ -1472,12 +1433,7 @@ static int sus_mount_keep_command(const char *val, bool bare_list)
 			goto out;
 		}
 
-		spin_lock(&mount_keep_lock);
-		n = n_mount_keep;
-		if (n > SUS_MOUNT_KEEP_MAX)
-			n = SUS_MOUNT_KEEP_MAX;
-		memcpy(staged, mount_keep, (size_t)n * SUS_MOUNT_KEEP_LEN);
-		spin_unlock(&mount_keep_lock);
+		n = sus_mount_prefix_snapshot(staged);
 
 		{
 			bool found = false;
@@ -1543,19 +1499,7 @@ out:
  * reports 0 entries rather than quietly reading the live array unlocked. */
 static int sus_mount_keep_snapshot(char (*dst)[SUS_MOUNT_KEEP_LEN])
 {
-	unsigned long flags;
-	int n;
-
-	if (!dst)
-		return 0;
-	spin_lock_irqsave(&mount_keep_lock, flags);
-	n = n_mount_keep;
-	if (n > SUS_MOUNT_KEEP_MAX)
-		n = SUS_MOUNT_KEEP_MAX;
-	if (n > 0)
-		memcpy(dst, mount_keep, (size_t)n * SUS_MOUNT_KEEP_LEN);
-	spin_unlock_irqrestore(&mount_keep_lock, flags);
-	return n;
+    return sus_mount_prefix_snapshot(dst);
 }
 
 /* The list as one string, for the sysfs parameter read (whose buffer the kernel caps at PAGE_SIZE).
@@ -1620,7 +1564,7 @@ static void sus_mount_keep_show_seq(struct seq_file *m)
 /* ---- insmod parameters must not touch the guard-protected side --------------------------------
  * module_param_cb()'s setter runs during load_module()'s parse_args(), i.e. BEFORE susfs_init() has
  * reached susfs_imports_guard() and before this layer is up.  sus_mount_keep_command() is not
- * import-free: committing the list takes spin_lock_irqsave(&mount_keep_lock) and the rescan walks the
+ * import-free: committing the list takes the prefix data lock and the rescan walks the
  * mount namespace - and _raw_spin_lock_irqsave is one of the imports the guard's table covers
  * (imports_guard.c), so a loader that left it at zero jumped to address 0 before anything could refuse
  * the load.  The setter therefore validates the shape and caches the raw value, and
@@ -2170,7 +2114,7 @@ int susfs_sus_mount_init(void)
          * (SUS_MOUNT_KEEP_MAX is 64 now), and commit() only copies the one row it is told about. */
         char staged[1][SUS_MOUNT_KEEP_LEN] = { { 0 } };
 
-        strscpy(staged[0], mount_keep_default, SUS_MOUNT_KEEP_LEN);
+        strscpy(staged[0], sus_mount_prefix_default(), SUS_MOUNT_KEEP_LEN);
         sus_mount_keep_commit(staged, 1);
     }
 
