@@ -797,23 +797,23 @@ int susfs_hide_syms_init(void)
 	rc = hide_syms_resolve_show(&kp_m_show, "modules_op", "m_show",
 			&modules_op_target);
 	if (rc) {
-		/* Same fallback as s_show, same reason: by name, with modules_op_target left NULL. */
-		SUSFS_LOGI("susfs_hide_syms: modules_op.show could not be validated (%d) - arming m_show BY NAME instead\n",
-				rc);
-		kp_m_show.addr = NULL;
-		kp_m_show.symbol_name = "m_show";
-	}
-	rc = register_kprobe(&kp_m_show);
-	if (rc) {
+		/* Fail closed: a name-only fallback would arm an unvalidated function and
+		 * cannot tell /proc/modules' m_show from another same-named callback. */
 		susfs_kp_forget_addr(&kp_m_show);
-		pr_warn("susfs_hide_syms: cannot arm modules m_show (%d) - /proc/modules keeps listing the modules in hide_modules\n",
-			rc);
+		modules_op_target = NULL;
+		SUSFS_LOGI("susfs_hide_syms: modules_op.show could not be validated (%d) - NOT arming m_show; /proc/modules keeps listing the hidden modules\n",
+				rc);
 	} else {
-		m_show_registered = true;
-		SUSFS_LOGI("susfs_hide_syms: m_show armed at %px (%s)\n",
-				(void *)kp_m_show.addr,
-				modules_op_target ? "by table identity" :
-				"BY NAME - the table value could not be validated, so the m->op check is off");
+		rc = register_kprobe(&kp_m_show);
+		if (rc) {
+			susfs_kp_forget_addr(&kp_m_show);
+			pr_warn("susfs_hide_syms: cannot arm modules m_show (%d) - /proc/modules keeps listing the modules in hide_modules\n",
+				rc);
+		} else {
+			m_show_registered = true;
+			SUSFS_LOGI("susfs_hide_syms: m_show armed at %px (by table identity)\n",
+					(void *)kp_m_show.addr);
+		}
 	}
 
 	/* hide_modules starts with just this module in its list: a built-in SUSFS has no module entry, so leaving ours visible
