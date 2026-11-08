@@ -8,7 +8,10 @@
 
 #include <linux/types.h>
 
-bool susfs_create_name_hidden(int dfd, const char __user *path);
+#include "susfs_create_view.h"
+
+bool susfs_create_name_hidden(int dfd, const char __user *path,
+			      enum susfs_create_kind kind, bool link_old);
 int susfs_create_existing_answer(struct inode *inode);
 
 #endif /* __SUSFS_CREATE_POLICY_H */
