@@ -74,7 +74,7 @@ static __nocfi noinline long create_wrap_mkdirat(const struct pt_regs *regs)
 	ret = orig(regs);
 	if (ret == -EEXIST &&
 	    susfs_create_name_hidden((int)regs->regs[0],
-				     (const char __user *)regs->regs[1], SUSFS_CREATE_MKDIRAT, false))
+				     (const char __user *)regs->regs[1], SUSFS_CREATE_VIEW_MKDIRAT, false))
 		return -EACCES;
 	return ret;
 }
@@ -85,7 +85,7 @@ static __nocfi noinline long create_wrap_mknodat(const struct pt_regs *regs)
 
 	if (!orig)
 		return -ENOSYS;
-	if (susfs_create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1], SUSFS_CREATE_MKNODAT, false))
+	if (susfs_create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1], SUSFS_CREATE_VIEW_MKNODAT, false))
 		return -EACCES;
 	return orig(regs);
 }
@@ -97,7 +97,7 @@ static __nocfi noinline long create_wrap_symlinkat(const struct pt_regs *regs)
 
 	if (!orig)
 		return -ENOSYS;
-	if (susfs_create_name_hidden((int)regs->regs[1], (const char __user *)regs->regs[2], SUSFS_CREATE_SYMLINKAT, false))
+	if (susfs_create_name_hidden((int)regs->regs[1], (const char __user *)regs->regs[2], SUSFS_CREATE_VIEW_SYMLINKAT, false))
 		return -EACCES;
 	return orig(regs);
 }
@@ -111,9 +111,9 @@ static __nocfi noinline long create_wrap_linkat(const struct pt_regs *regs)
 
 	if (!orig)
 		return -ENOSYS;
-	if (susfs_create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1], SUSFS_CREATE_LINKAT, true))
+	if (susfs_create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1], SUSFS_CREATE_VIEW_LINKAT, true))
 		return -ENOENT;
-	if (susfs_create_name_hidden((int)regs->regs[2], (const char __user *)regs->regs[3], SUSFS_CREATE_LINKAT, false))
+	if (susfs_create_name_hidden((int)regs->regs[2], (const char __user *)regs->regs[3], SUSFS_CREATE_VIEW_LINKAT, false))
 		return -EACCES;
 	return orig(regs);
 }
@@ -128,7 +128,7 @@ static __nocfi noinline long create_wrap_compat_mkdirat(const struct pt_regs *re
 	ret = orig(regs);
 	if (ret == -EEXIST &&
 	    susfs_create_name_hidden((int)regs->regs[0],
-				     (const char __user *)regs->regs[1], SUSFS_CREATE_MKDIRAT, false))
+				     (const char __user *)regs->regs[1], SUSFS_CREATE_VIEW_MKDIRAT, false))
 		return -EACCES;
 	return ret;
 }
@@ -139,7 +139,7 @@ static __nocfi noinline long create_wrap_compat_mknodat(const struct pt_regs *re
 
 	if (!orig)
 		return -ENOSYS;
-	if (susfs_create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1], SUSFS_CREATE_MKNODAT, false))
+	if (susfs_create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1], SUSFS_CREATE_VIEW_MKNODAT, false))
 		return -EACCES;
 	return orig(regs);
 }
@@ -150,7 +150,7 @@ static __nocfi noinline long create_wrap_compat_symlinkat(const struct pt_regs *
 
 	if (!orig)
 		return -ENOSYS;
-	if (susfs_create_name_hidden((int)regs->regs[1], (const char __user *)regs->regs[2], SUSFS_CREATE_SYMLINKAT, false))
+	if (susfs_create_name_hidden((int)regs->regs[1], (const char __user *)regs->regs[2], SUSFS_CREATE_VIEW_SYMLINKAT, false))
 		return -EACCES;
 	return orig(regs);
 }
@@ -161,9 +161,9 @@ static __nocfi noinline long create_wrap_compat_linkat(const struct pt_regs *reg
 
 	if (!orig)
 		return -ENOSYS;
-	if (susfs_create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1], SUSFS_CREATE_LINKAT, true))
+	if (susfs_create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1], SUSFS_CREATE_VIEW_LINKAT, true))
 		return -ENOENT;
-	if (susfs_create_name_hidden((int)regs->regs[2], (const char __user *)regs->regs[3], SUSFS_CREATE_LINKAT, false))
+	if (susfs_create_name_hidden((int)regs->regs[2], (const char __user *)regs->regs[3], SUSFS_CREATE_VIEW_LINKAT, false))
 		return -EACCES;
 	return orig(regs);
 }

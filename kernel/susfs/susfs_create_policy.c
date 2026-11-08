@@ -55,7 +55,7 @@ bool susfs_create_name_hidden(int dfd, const char __user *path,
 	v.link_old = link_old;
 	v.ino = inode->i_ino;
 	v.s_dev = inode->i_sb->s_dev;
-	v.i_uid = inode->i_uid.val;
+	v.i_uid = 0;
 	v.sb_magic = inode->i_sb->s_magic;
 	v.caller_uid = current_fsuid();
 	strscpy(v.name, name->name, sizeof(v.name));
