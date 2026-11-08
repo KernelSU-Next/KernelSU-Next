@@ -23,10 +23,10 @@ typedef uint32_t uid_t;
 #define SUSFS_CREATE_NAME_MAX 256
 
 enum susfs_create_kind {
-	SUSFS_CREATE_MKDIRAT,
-	SUSFS_CREATE_MKNODAT,
-	SUSFS_CREATE_SYMLINKAT,
-	SUSFS_CREATE_LINKAT,
+	SUSFS_CREATE_VIEW_MKDIRAT,
+	SUSFS_CREATE_VIEW_MKNODAT,
+	SUSFS_CREATE_VIEW_SYMLINKAT,
+	SUSFS_CREATE_VIEW_LINKAT,
 };
 
 enum susfs_create_state {
@@ -106,7 +106,7 @@ susfs_create_decide_core(const struct susfs_create_view *v)
 		return d;
 	}
 
-	if (v->kind == SUSFS_CREATE_LINKAT) {
+	if (v->kind == SUSFS_CREATE_VIEW_LINKAT) {
 		d.action = v->link_old ? SUSFS_CREATE_HIDE_OLD
 				       : SUSFS_CREATE_HIDE_NEW;
 	} else {
