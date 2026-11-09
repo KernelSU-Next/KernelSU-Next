@@ -287,13 +287,35 @@ static void or_unlink(struct sus_or_entry *e)
 	}
 }
 
+/* Append, never prepend: the old linear scan returned the oldest matching slot for rules that
+ * share one inode (hard links), and that order is observable through which rule wins. */
+static void or_link(struct sus_or_entry *e)
+{
+	u32 h = or_hash_key(e->target_ino, e->target_dev);
+	u32 rh = or_hash_key(e->redirected_ino, e->redirected_dev);
+	int *pp;
+	int idx = (int)(e - or_entries);
+
+	e->next = -1;
+	e->rnext = -1;
+	pp = &or_buckets[h];
+	while (READ_ONCE(*pp) >= 0)
+		pp = &or_entries[READ_ONCE(*pp)].next;
+	smp_store_release(pp, idx);
+
+	pp = &or_rev_buckets[rh];
+	while (READ_ONCE(*pp) >= 0)
+		pp = &or_entries[READ_ONCE(*pp)].rnext;
+	smp_store_release(pp, idx);
+}
+
 static struct sus_or_entry *or_find_by_inode(unsigned long ino, dev_t dev, unsigned int gen)
 {
 	struct sus_or_entry *e;
 	u32 h = or_hash_key(ino, dev);
 	int i;
 
-	for (i = smp_load_acquire(&or_buckets[h]); i >= 0; i = READ_ONCE(or_entries[i].next)) {
+	for (i = smp_load_acquire(&or_buckets[h]); i >= 0; i = smp_load_acquire(&or_entries[i].next)) {
 		e = &or_entries[i];
 		/* dead is cleared LAST by the writer, so skipping dead entries also skips any entry whose
 		 * fields are still being written. */
@@ -345,7 +367,7 @@ static struct sus_or_entry *or_find_by_redirected_inode(unsigned long ino, dev_t
 	u32 h = or_hash_key(ino, dev);
 	int i;
 
-	for (i = smp_load_acquire(&or_rev_buckets[h]); i >= 0; i = READ_ONCE(or_entries[i].rnext)) {
+	for (i = smp_load_acquire(&or_rev_buckets[h]); i >= 0; i = smp_load_acquire(&or_entries[i].rnext)) {
 		e = &or_entries[i];
 		if (READ_ONCE(e->dead))
 			continue;
@@ -1173,7 +1195,6 @@ static int or_add(const char *target, const char *redirected, int scheme)
 	struct path tp, rp;
 	struct inode *ti, *ri;
 	struct kstatfs spoofed_kstatfs;
-	u32 h, rh;
 	int rc;
 
 	/* upstream susfs.c:792-796 */
@@ -1309,14 +1330,8 @@ static int or_add(const char *target, const char *redirected, int scheme)
 	e->spoofed_kstatfs = spoofed_kstatfs;
 	e->uid_scheme = scheme;
 
-	h = or_hash_key(e->target_ino, e->target_dev);
-	rh = or_hash_key(e->redirected_ino, e->redirected_dev);
-	e->next = READ_ONCE(or_buckets[h]);
-	e->rnext = READ_ONCE(or_rev_buckets[rh]);
-	smp_wmb();
 	WRITE_ONCE(e->dead, false);	/* fields are complete before the index publishes it */
-	smp_store_release(&or_buckets[h], (int)(e - or_entries));
-	smp_store_release(&or_rev_buckets[rh], (int)(e - or_entries));
+	or_link(e);
 
 	/* Both parsed paths are dropped right here: the entry keeps the numbers and the snapshot, and
 	 * the names as strings, so the rule holds nothing that a filesystem teardown would wait for. */
