@@ -29,8 +29,6 @@
 #include "susfs_create_view.h"
 
 static struct filename *(*create_getname_fn)(const char __user *name, int flags, int *empty);
-static int (*create_filename_lookup_fn)(int dfd, struct filename *name, unsigned flags,
-                                        struct path *path, struct path *root);
 static void (*create_putname_fn)(struct filename *name);
 static int (*create_filename_parentat_fn)(int dfd, struct filename *name,
                                           unsigned int flags, struct path *parent,
@@ -58,10 +56,9 @@ static bool create_takeover_ready;
 int susfs_create_vfs_init(void)
 {
 	create_getname_fn = (void *)find_kernel_symbol_exact("getname_flags");
-	create_filename_lookup_fn = (void *)find_kernel_symbol_exact("filename_lookup");
 	create_putname_fn = (void *)find_kernel_symbol_exact("putname");
-	if (!create_getname_fn || !create_filename_lookup_fn || !create_putname_fn) {
-		pr_warn("create_gate: missing getname_flags/filename_lookup/putname - the create family keeps answering the kernel's own way\n");
+	if (!create_getname_fn || !create_putname_fn) {
+		pr_warn("create_gate: missing getname_flags/putname - the create family keeps answering the kernel's own way\n");
 		return -ENOENT;
 	}
 
@@ -86,49 +83,14 @@ int susfs_create_vfs_init(void)
 	return 0;
 }
 
-bool susfs_create_vfs_takeover_ready(void)
-{
-	return create_takeover_ready;
-}
-
 static __nocfi noinline struct filename *create_getname(const char __user *name)
 {
 	return create_getname_fn(name, 0, NULL);
 }
 
-struct filename *susfs_create_vfs_getname(const char __user *name)
-{
-	return create_getname(name);
-}
-
-static __nocfi noinline int create_lookup(int dfd, struct filename *name,
-                                          struct path *path)
-{
-	return create_filename_lookup_fn(dfd, name, 0, path, NULL);
-}
-
-int susfs_create_vfs_lookup(int dfd, struct filename *name, struct path *path)
-{
-	return create_lookup(dfd, name, path);
-}
-
 static __nocfi noinline void create_putname(struct filename *name)
 {
 	create_putname_fn(name);
-}
-
-void susfs_create_vfs_putname_after_lookup(struct filename *name)
-{
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0)
-	(void)name;	/* filename_lookup() consumed it through 5.14 */
-#else
-	create_putname(name);
-#endif
-}
-
-void susfs_create_vfs_path_put(struct path *path)
-{
-	path_put(path);
 }
 
 void susfs_create_vfs_parent_permission(struct inode *dir)
@@ -309,14 +271,6 @@ int susfs_create_vfs_status(struct susfs_create_op *op,
 	return 1;
 }
 
-struct inode *susfs_create_vfs_inode(struct susfs_create_op *op)
-{
-	if (!op || op->state != CREATE_OP_LOCKED || !op->dentry_held ||
-	    !d_is_positive(op->dentry))
-		return NULL;
-	return d_inode(op->dentry);
-}
-
 void susfs_create_vfs_parent_permission_op(struct susfs_create_op *op)
 {
 	if (!op || !op->parent_held)
@@ -395,76 +349,4 @@ int susfs_create_vfs_commit(struct susfs_create_op *op, umode_t mode)
 	op->write_held = false;
 	op->state = rc ? CREATE_OP_COMMITTED_ERROR : CREATE_OP_COMMITTED;
 	return rc;
-}
-
-long __nocfi noinline susfs_create_vfs_mkdirat(int dfd, const char __user *pathname,
-                                               umode_t mode,
-                                               int (*existing)(struct inode *inode))
-{
-	struct filename *name;
-	struct path path;
-	struct qstr last;
-	int type = 0, err, err2;
-	struct dentry *dentry;
-
-	if (!create_takeover_ready)
-		return -ENOSYS;
-
-	name = create_getname(pathname);
-	if (IS_ERR(name))
-		return PTR_ERR(name);
-
-	err = create_filename_parentat_fn(dfd, name, 0, &path, &last, &type, NULL);
-	if (err) {
-		create_putname(name);
-		return err;
-	}
-	if (type != LAST_NORM) {
-		path_put(&path);
-		create_putname(name);
-		return -EEXIST;
-	}
-
-	err2 = mnt_want_write(path.mnt);
-	inode_lock_nested(d_inode(path.dentry), I_MUTEX_PARENT);
-	dentry = create_lookup_one_qstr_excl_fn(&last, path.dentry,
-						LOOKUP_CREATE | LOOKUP_EXCL);
-	if (IS_ERR(dentry)) {
-		err = PTR_ERR(dentry);
-		inode_unlock(d_inode(path.dentry));
-		if (!err2)
-			mnt_drop_write(path.mnt);
-		path_put(&path);
-		create_putname(name);
-		return err;
-	}
-
-	if (d_is_positive(dentry)) {
-		int answer = existing ? existing(d_inode(dentry)) : -EEXIST;
-
-		dput(dentry);
-		inode_unlock(d_inode(path.dentry));
-		if (!err2)
-			mnt_drop_write(path.mnt);
-		path_put(&path);
-		create_putname(name);
-		return answer;
-	}
-
-	if (err2) {
-		dput(dentry);
-		inode_unlock(d_inode(path.dentry));
-		path_put(&path);
-		create_putname(name);
-		return err2;
-	}
-
-	err = create_security_mkdir(&path, dentry,
-				    create_strip_umask(d_inode(path.dentry), mode));
-	if (!err)
-		err = create_vfs_mkdir(&path, dentry, mode);
-
-	create_done_path(&path, dentry);
-	create_putname(name);
-	return err;
 }
