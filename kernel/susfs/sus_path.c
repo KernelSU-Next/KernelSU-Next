@@ -52,6 +52,8 @@
 #include <linux/version.h>	/* LINUX_VERSION_CODE: the setxattr hook's first argument */
 #include "susfs_abi.h"
 #include "susfs_log.h"
+#include "sus_path_match.h"
+#include "susfs_create_view.h"
 #include "susfs.h"	/* susfs_abi_path_ok */
 #include "symbol_resolver.h"	/* find_kernel_symbol_exact, for optional compat probes */
 #include "ksu_umount_gate.h"	/* susfs_is_current_proc_umounted_app (issue #34) */
@@ -1204,6 +1206,42 @@ static bool sus_path_inode_hidden(struct inode *inode)
 bool sus_path_inode_hidden_public(struct inode *inode)
 {
     return sus_path_inode_hidden(inode);
+}
+
+bool sus_path_hide_from_apps(void)
+{
+    return hide_from_apps != 0;
+}
+
+/* D-side facts for the create gate.  The view has already resolved the target, so
+ * the identity is (dev, ino) - the same key sus_path_inode_hidden() uses.  The
+ * caller/self-protect gate is deliberately not applied here: that is the L layer's
+ * job, and D must not read creds. */
+int sus_path_rule_match(const struct susfs_create_view *v,
+                        struct sus_path_match *out)
+{
+    struct sus_path_entry *e;
+
+    if (!v || !out)
+        return -EINVAL;
+    memset(out, 0, sizeof(*out));
+    if (!v->ino || !v->s_dev || !READ_ONCE(sus_path_count))
+        return 0;
+
+    spin_lock(&sus_path_lock);
+    list_for_each_entry(e, &sus_path_list, list) {
+        if (!e->inode || !e->ino)
+            continue;
+        if (e->dev != v->s_dev || e->ino != v->ino)
+            continue;
+        out->rule_matched = true;
+        if (e->self_protect)
+            out->self_protect = true;
+        else
+            out->ordinary_rule = true;
+    }
+    spin_unlock(&sus_path_lock);
+    return 0;
 }
 
 /* Whether any rule is live right now.  The create-family entries run for every
