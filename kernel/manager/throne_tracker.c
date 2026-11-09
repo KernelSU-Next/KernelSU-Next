@@ -1,20 +1,25 @@
 #include "ksu.h"
+#include "compat/kernel_compat.h"
 #include "linux/cred.h"
 #include "linux/namei.h"
 #include "util.h"
 #include <linux/err.h>
 #include <linux/fs.h>
+#include <linux/jiffies.h>
 #include <linux/list.h>
 #include <linux/slab.h>
 #include <linux/string.h>
 #include <linux/types.h>
 #include <linux/version.h>
+#include <linux/workqueue.h>
 
 #include "policy/allowlist.h"
 #include "manager/apk_sign.h"
 #include "klog.h" // IWYU pragma: keep
 #include "manager/manager_identity.h"
 #include "manager/throne_tracker.h"
+#include "runtime/ksud_boot.h"
+#include "runtime/debug_state.h"
 
 static DEFINE_MUTEX(throne_tracker_mutex);
 
@@ -53,20 +58,27 @@ static void crown_manager(const char *apk, struct list_head *uid_data)
 
 	if (get_pkg_from_apk_dir_path(pkg, dir_path) < 0) {
 		pr_err("Failed to get package name from apk dir path: %s\n", dir_path);
+		ksu_dbg_log("crown: pkg derive failed for %s", dir_path);
 		return;
 	}
+	ksu_dbg_log("crown: pkg=%s", pkg);
 	pr_info("manager pkg: %s\n", pkg);
 	target_pkg = pkg;
 #endif
 
+	bool crowned = false;
 	list_for_each_entry (np, list, list) {
 		if (strncmp(np->package, target_pkg, KSU_MAX_PACKAGE_NAME) == 0) {
+			crowned = true;
 			pr_info("Crowning manager: %s(uid=%d)\n", target_pkg, np->uid);
+			ksu_dbg_log("crown %s uid=%d", target_pkg, np->uid);
 			strscpy(manager_pkg, target_pkg, sizeof(manager_pkg));
 			ksu_set_manager_appid(np->uid);
 			break;
 		}
 	}
+	if (!crowned)
+		ksu_dbg_log("crown: %s not found in packages.list", target_pkg);
 }
 
 struct data_path {
@@ -206,6 +218,8 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 			if (IS_ERR(file)) {
 				pr_err("Failed to open directory: %s, err: %ld\n",
 					pos->dirpath, PTR_ERR(file));
+				ksu_dbg_log("scan: open dir %s failed: %ld",
+					    pos->dirpath, PTR_ERR(file));
 				goto skip_iterate;
 			}
 
@@ -238,6 +252,9 @@ void search_manager(const char *path, int depth, struct list_head *uid_data)
 
 			bool is_manager = is_manager_apk(candidate_path);
 			pr_info("Found manager base.apk at path: %s, is_manager: %d\n", candidate_path, is_manager);
+			if (ksu_dbg_scan_verbose())
+				ksu_dbg_log("scan: apk %s is_manager=%d", candidate_path,
+					    is_manager ? 1 : 0);
 
 			if (unlikely(!is_manager))
 				goto skip_iterate;
@@ -285,6 +302,7 @@ void track_throne(bool prune_only)
 	if (IS_ERR(fp)) {
 		pr_err("%s: open " SYSTEM_PACKAGES_LIST_PATH " failed: %ld\n", __func__,
 			PTR_ERR(fp));
+		ksu_dbg_log("scan: open packages.list failed: %ld", PTR_ERR(fp));
 		goto out_revert_cred;
 	}
 
@@ -296,13 +314,13 @@ void track_throne(bool prune_only)
 	loff_t line_start = 0;
 	char buf[KSU_MAX_PACKAGE_NAME];
 	for (;;) {
-		ssize_t count = kernel_read(fp, &chr, sizeof(chr), &pos);
+		ssize_t count = ksu_kernel_read_compat(fp, &chr, sizeof(chr), &pos);
 		if (count != sizeof(chr))
 			break;
 		if (chr != '\n')
 			continue;
 
-		count = kernel_read(fp, buf, sizeof(buf) - 1, &line_start);
+		count = ksu_kernel_read_compat(fp, buf, sizeof(buf) - 1, &line_start);
 		if (count <= 0) {
 			break;
 		}
@@ -364,6 +382,9 @@ void track_throne(bool prune_only)
 
 	if (manager_package_uid == KSU_INVALID_APPID) {
 		cached_manager_apk_path[0] = 0;
+		if (ksu_dbg_scan_verbose())
+			ksu_dbg_log("scan: manager not in packages.list (appid=%d)",
+				    ksu_get_manager_appid());
 		if (ksu_is_manager_appid_valid()) {
 			pr_info("manager is uninstalled, invalidate it!\n");
 			ksu_invalidate_manager_uid();
@@ -409,6 +430,9 @@ void track_throne(bool prune_only)
 #endif
 		search_manager("/data/app", 2, &uid_list);
 		pr_info("Search manager finished\n");
+		if (ksu_dbg_scan_verbose())
+			ksu_dbg_log("scan: search done, appid=%d",
+				    ksu_get_manager_appid());
 	}
 
 prune:
@@ -423,6 +447,63 @@ out:
 out_revert_cred:
 	revert_creds(old_cred);
 	mutex_unlock(&throne_tracker_mutex);
+}
+
+static void ksu_throne_scan_work_fn(struct work_struct *work)
+{
+	track_throne(false);
+}
+
+static DECLARE_WORK(ksu_throne_scan_work, ksu_throne_scan_work_fn);
+static unsigned long ksu_throne_scan_last;
+static unsigned int ksu_throne_scan_attempts;
+
+/*
+ * A scan walks /data/app and verifies APK signatures until it finds the
+ * manager, so it is not cheap. Triggers that upstream already uses (a
+ * packages.list write) are only rate limited, because they are rare and are
+ * the normal crowning moment. The extra triggers added here - zygote start
+ * and every app launch before the manager is known - are additionally capped,
+ * so a device without a manager installed does not keep sweeping /data/app
+ * for the whole uptime.
+ */
+#define KSU_THRONE_SCAN_INTERVAL (5 * HZ)
+#define KSU_THRONE_SCAN_MAX_EXTRA_ATTEMPTS 8
+
+/*
+ * Ask for a manager scan from a context that must not do VFS work itself
+ * (rename and setresuid hooks run on the critical path of other processes).
+ *
+ * Crowning only happens once the manager can be identified, and every path
+ * that identifies it is reachable only after boot_completed has been set,
+ * which itself needs ksud, which needs the manager to hold the driver fd,
+ * which needs the manager to be crowned. Deferring the scan keeps the hooks
+ * cheap and lets the very first packages.list write crown the manager
+ * instead of leaving the driver deadlocked until a reboot that never helps.
+ *
+ * Nothing here runs once the manager is known, so kernels where crowning
+ * already works are unaffected beyond one cheap check.
+ *
+ * @from_rename: the trigger was a packages.list write, i.e. the moment
+ * upstream also scans. Such events are rare (boot, install, uninstall) and
+ * bypass the attempt cap so a manager installed later still gets crowned.
+ */
+void ksu_request_manager_scan(bool from_rename)
+{
+	if (ksu_is_manager_appid_valid())
+		return;
+
+	if (!from_rename &&
+	    ksu_throne_scan_attempts >= KSU_THRONE_SCAN_MAX_EXTRA_ATTEMPTS)
+		return;
+	if (ksu_throne_scan_last &&
+	    !time_after(jiffies, ksu_throne_scan_last + KSU_THRONE_SCAN_INTERVAL))
+		return;
+
+	ksu_throne_scan_last = jiffies;
+	ksu_throne_scan_attempts++;
+
+	schedule_work(&ksu_throne_scan_work);
 }
 
 void __init ksu_throne_tracker_init()

@@ -29,6 +29,11 @@ kernelsu-objs += policy/feature.o
 kernelsu-objs += runtime/boot_event.o
 kernelsu-objs += runtime/ksud_integration.o
 
+# Diagnostics for ROMs where the shell cannot read the kernel log.
+ifdef CONFIG_KSU_DEBUG
+kernelsu-objs += runtime/debug_state.o
+endif
+
 kernelsu-objs += selinux/selinux.o
 kernelsu-objs += selinux/rules.o
 kernelsu-objs += selinux/sepolicy.o

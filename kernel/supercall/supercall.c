@@ -17,6 +17,7 @@
 #include "arch.h"
 #include "util.h"
 #include "klog.h" // IWYU pragma: keep
+#include "runtime/debug_state.h"
 #include "manager/manager_identity.h"
 #include "compat/kernel_compat.h"
 
@@ -142,8 +143,11 @@ int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd,
 		 * the always_allow GET_INFO / CHECK_SAFEMODE ioctls).
 		 * Restrict to root, manager, and apps allowed for su.
 		 */
-		if (current_uid().val != 0 && !allowed_for_su())
+		if (current_uid().val != 0 && !allowed_for_su()) {
+			ksu_dbg_log("install fd refused: uid=%d appid=%d",
+				    current_uid().val, ksu_get_manager_appid());
 			return 0;
+		}
 
 		tw = kzalloc(sizeof(*tw), GFP_ATOMIC);
 		if (!tw)

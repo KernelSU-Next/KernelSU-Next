@@ -17,6 +17,7 @@
 
 #include "uapi/selinux.h"
 #include "klog.h" // IWYU pragma: keep
+#include "runtime/debug_state.h"
 #include "selinux.h"
 #include "sepolicy.h"
 #include "ss/services.h"
@@ -210,6 +211,11 @@ static int apply_kernelsu_rules_fn(void *ptr)
 void apply_kernelsu_rules()
 {
 	struct policydb *db;
+
+#ifdef CONFIG_KSU_DEBUG
+	/* Only exists to show up in the driver's debug dump. */
+	ksu_dbg_rules_applied = 1;
+#endif
 
 	if (!getenforce()) {
 		pr_info("SELinux permissive or disabled, apply rules!\n");
