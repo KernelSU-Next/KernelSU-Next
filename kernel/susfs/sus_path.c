@@ -278,8 +278,9 @@ static char hide_name[NAME_MAX + 1];
 module_param_string(hide_name, hide_name, sizeof(hide_name), 0644);
 
 static char *dirent_tmp;
-/* Isolation test: with no_extra=1 the LSM replacement and the dirent filter are
- * not registered at all. */
+/* no_extra=1 only suppresses the /proc/susfs_path control node.  The LSM
+ * replacement and the dirent filter stay active: this is the "no proc, but
+ * the layer still works" switch. */
 static int no_extra;
 module_param(no_extra, int, 0644);
 
@@ -505,18 +506,10 @@ static bool sus_path_is_hidden(u64 ino, const char *name)
     return hidden;
 }
 
-/* The same question sus_path_is_hidden() answers, for the pre-emission filter in sus_dirent.c:
- * that layer decides whether to EMIT a record, so it needs the verdict before any byte is
- * written, not after.  Same predicate - and the same isolation switch as
- * sus_path_dirent_filter(): with no_extra=1 this layer is not registered at all (sus_path_init()
- * says so in the log), so a rule a supercall registers afterwards must not start filtering
- * listings while stat/open keep succeeding.  That mismatch is the one the two-layer design exists
- * to avoid, and the switch belongs here rather than at the call site so that both entries into the
- * predicate answer the same way. */
+/* The same predicate as sus_path_is_hidden(), for the pre-emission layer in
+ * sus_dirent.c.  no_extra does not gate it: it only suppresses the control node. */
 bool sus_path_dirent_hidden(u64 ino, const char *name)
 {
-    if (READ_ONCE(no_extra))
-        return false;
 
     /* The "no rule, no work" short circuit sus_path_dirent_filter() opens with, for the same
      * reason: without it every record of every listing takes this file's spinlock, even on a
@@ -1570,8 +1563,8 @@ static int sus_path_path_notify(const struct path *path, u64 mask, unsigned int 
  * a patched call site, but through the kernel's own register/unregister paths instead of hand-written
  * text patching.  The LSM hooks are exempt: pointer swaps, already cost-free.
  * Nothing is left to arm that way: the listing filter rides the stat family's tracepoint, and its
- * callback bails out on an empty rule table (and on no_extra) by itself, so this flag now only makes
- * the "hooks armed" line - and the no_extra warning beside it - one-shot (sus_path_hooks_arm()). */
+ * callback bails out on an empty rule table by itself, so this flag now only makes
+ * the "hooks armed" line - one-shot (sus_path_hooks_arm()). */
 static bool hooks_armed;
 /* Secondary LSM hooks that could not be registered: the core two are fatal, these only mean one
  * class of operation is uncovered - reported through hide_list as well as the log. */
@@ -1666,8 +1659,8 @@ static atomic_t n_dirent_calls[SUS_DIRENT_N];
 
 /* Nothing is armed any more, and the first rule no longer has a flag to set: the tracepoint is
  * registered unconditionally with the stat family, and what keeps its callback cheap is the
- * callback's own first checks - no_extra (a real gate, see sus_path_dirent_filter()), ret <= 0,
- * and "no rule and no hide_name" - which all run before the first uaccess.  The per-ABI split of
+ * callback's own first checks - ret <= 0, and "no rule and no hide_name" - which all run before
+ * the first uaccess.  The per-ABI split of
  * the counters below is what then tells a listing call that never arrived from one that was
  * answered "nothing to filter" and from one that really was filtered. */
 static atomic_t n_dirent_no_filter[SUS_DIRENT_N];   /* sus_path_filter() found no buffer/knows the layout not */
@@ -1704,17 +1697,6 @@ int sus_path_dirent_layout_id(long syscall_nr, bool compat)
  * what tells a working path from one that never fires. */
 long sus_path_dirent_filter(int lay_id, unsigned long buf, long ret)
 {
-    /* no_extra is the isolation switch, and it is a real gate here rather than the log line
-     * sus_path_hooks_arm() prints.  With the switch on, nothing else of this layer is registered
-     * (sus_path_init() returns before the LSM hooks go in), so a rule added later through the
-     * supercall - which still bumps sus_path_count - would otherwise start filtering listings while
-     * stat/open keep succeeding: a listing that omits a name a caller can open is the one mismatch
-     * the two-layer design exists to avoid, and it is not what "the LSM layer and the dirent filter
-     * are OFF" claims.  This is also where the switch is cheapest: one READ_ONCE on a listing
-     * syscall, before any argument is read, so with no_extra=1 the per-ABI counters stay at zero
-     * and /proc/susfs_kstat says the filter really did nothing. */
-    if (READ_ONCE(no_extra))
-        return ret;
 
     /* The counters are indexed by this id, so an id that did not come from the classifier is
      * answered with "nothing filtered" instead of being used as an index. */
@@ -1768,14 +1750,12 @@ static void sus_path_hooks_arm(void)
      * Nothing else is needed: entry-layer hooks matched the caller's path STRING, which the LSM
      * match already covers more thoroughly, and a hook that cannot fire reads as coverage - so
      * those layers are DELETED, not disabled (see the note above sus_path_init()).
-     * no_extra is the isolation switch: no LSM, no dirent filter.
+     * no_extra only suppresses the /proc/susfs_path node; it does not gate these layers.
      *
      * The listing filter rides a tracepoint it does not own (the stat family registers it), so a
      * failed registration there would leave this layer silently dead: that is not checked from here
      * any more, and the per-ABI call counters in /proc/susfs_kstat are what answers the same
      * question from the other side - a listing call that never arrives keeps them at zero. */
-    if (no_extra)
-        pr_warn("sus_path: no_extra - dirent filter off\n");
 
     SUSFS_LOGI("sus_path: hooks armed (LSM + dirent rewrite on the stat layer's table entries)\n");
     mutex_unlock(&sus_path_arm_lock);
@@ -2623,19 +2603,10 @@ int sus_path_init(void)
     /* The dirent rewrite rides the stat layer's table entries (registered with the stat family),
      * not a probe of its own, and nothing has to be armed for it on the first rule: what keeps that
      * callback cheap while there is nothing to filter is the rule-count check inside
-     * sus_path_filter() (and the no_extra gate in sus_path_dirent_filter()).  The scratch buffer
-     * above is what the rewrite itself needs, so it is allocated here rather than at first use. */
+     * sus_path_filter().  The scratch buffer above is what the rewrite itself needs, so it is
+     * allocated here rather than at first use. */
     SUSFS_LOGI("sus_path: dirent rewrite rides the stat layer's table entries (no probe of its own)\n");
 
-    if (no_extra) {
-        mutex_lock(&sus_path_param_lock);
-        if (hide_list_given || sus_path_probe_given)
-            pr_warn("sus_path: no_extra=1 - the hide_list/sus_path_probe value given at insmod is dropped (the LSM layer is off)\n");
-        sus_path_ready = true;	/* later writes behave exactly as before this change */
-        mutex_unlock(&sus_path_param_lock);
-        SUSFS_LOGI("sus_path: no_extra=1 - the LSM layer and the dirent filter are OFF (isolation test)\n");
-        return 0;
-    }
 
     /* LSM hooks: reject path-based access to registered inodes outright.  These two ARE the
      * mechanism - a registered path is hidden only because this layer answers ENOENT.  A failure
@@ -2711,10 +2682,12 @@ int sus_path_init(void)
      * ENOENT for it must not exist.  It has to be created before susfs_self_hide_nodes() runs,
      * which is why it is here and not in susfs_main.c - that list is registered after every
      * layer's own init, so paths resolve. */
-    if (susfs_control_node_allowed()) {
+    if (susfs_control_node_allowed() && !READ_ONCE(no_extra)) {
         sus_path_node_entry = proc_create("susfs_path", 0777, NULL, &sus_path_proc_ops);
         if (!sus_path_node_entry)
             pr_warn("sus_path: proc_create(susfs_path) failed - the listing stays reachable through the hide_list parameter\n");
+    } else if (READ_ONCE(no_extra)) {
+        SUSFS_LOGI("sus_path: /proc/susfs_path not created (no_extra=1); LSM/dirent stay active\n");
     } else {
         SUSFS_LOGI("sus_path: /proc/susfs_path not created (expose_proc=%d lsm=%d)\n",
                 (int)susfs_expose_proc, (int)sus_path_lsm_active());
