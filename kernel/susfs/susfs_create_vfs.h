@@ -26,6 +26,8 @@ bool susfs_create_vfs_takeover_ready(void);
  * failed and *err carries the reason.  end() is called exactly once. */
 struct susfs_create_op *susfs_create_vfs_begin(int dfd, const char __user *path,
 					       int *err);
+bool susfs_create_vfs_is_name(struct susfs_create_op *op);
+int susfs_create_vfs_lock(struct susfs_create_op *op);
 int susfs_create_vfs_status(struct susfs_create_op *op,
 			    struct susfs_create_view *view);
 void susfs_create_vfs_parent_permission_op(struct susfs_create_op *op);

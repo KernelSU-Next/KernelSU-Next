@@ -81,6 +81,13 @@ bool susfs_create_name_hidden(int dfd, const char __user *path,
 		return false;
 
 	memset(&v, 0, sizeof(v));
+	if (!susfs_create_vfs_is_name(op)) {
+		rc = susfs_create_vfs_status(op, &v);	/* NOT_NAME */
+		goto out;
+	}
+	rc = susfs_create_vfs_lock(op);
+	if (rc)
+		goto out;
 	rc = susfs_create_vfs_status(op, &v);
 	if (rc <= 0)
 		goto out;

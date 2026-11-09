@@ -146,17 +146,42 @@ void susfs_create_vfs_parent_permission(struct inode *dir)
 enum susfs_create_op_state {
 	CREATE_OP_NEW,
 	CREATE_OP_GETNAME,
-	CREATE_OP_EXISTS,
-	CREATE_OP_ABSENT,
+	CREATE_OP_PARENTAT,
+	CREATE_OP_NOT_NAME,
+	CREATE_OP_LOCKED,
 	CREATE_OP_ERROR,
 };
 
 struct susfs_create_op {
 	struct filename *name;
-	struct path path;
+	struct path parent;
+	struct qstr last;
+	int type;
+	struct dentry *dentry;
 	enum susfs_create_op_state state;
 	int err;
+	bool parent_held;
+	bool write_held;
+	bool lock_held;
+	bool dentry_held;
 };
+
+static void create_op_unlock(struct susfs_create_op *op)
+{
+	if (op->dentry_held) {
+		dput(op->dentry);
+		op->dentry = NULL;
+		op->dentry_held = false;
+	}
+	if (op->lock_held) {
+		inode_unlock(d_inode(op->parent.dentry));
+		op->lock_held = false;
+	}
+	if (op->write_held) {
+		mnt_drop_write(op->parent.mnt);
+		op->write_held = false;
+	}
+}
 
 struct susfs_create_op *susfs_create_vfs_begin(int dfd, const char __user *path,
 					       int *err)
@@ -184,17 +209,58 @@ struct susfs_create_op *susfs_create_vfs_begin(int dfd, const char __user *path,
 	}
 	op->state = CREATE_OP_GETNAME;
 
-	op->err = create_lookup(dfd, op->name, &op->path);
-	if (!op->err) {
-		op->state = CREATE_OP_EXISTS;
-	} else if (op->err == -ENOENT) {
-		op->state = CREATE_OP_ABSENT;
-	} else {
+	op->err = create_filename_parentat_fn(dfd, op->name, 0, &op->parent,
+					      &op->last, &op->type, NULL);
+	if (op->err) {
 		op->state = CREATE_OP_ERROR;
+	} else {
+		op->parent_held = true;
+		op->state = (op->type == LAST_NORM) ? CREATE_OP_PARENTAT
+						    : CREATE_OP_NOT_NAME;
 	}
 	if (err)
 		*err = op->err;
 	return op;
+}
+
+bool susfs_create_vfs_is_name(struct susfs_create_op *op)
+{
+	return op && op->state == CREATE_OP_PARENTAT;
+}
+
+int susfs_create_vfs_lock(struct susfs_create_op *op)
+{
+	int rc;
+
+	if (!op)
+		return -EINVAL;
+	if (op->state != CREATE_OP_PARENTAT)
+		return op->err ? op->err : -EINVAL;
+
+	rc = mnt_want_write(op->parent.mnt);
+	if (rc) {
+		op->err = rc;
+		op->state = CREATE_OP_ERROR;
+		return rc;
+	}
+	op->write_held = true;
+
+	inode_lock_nested(d_inode(op->parent.dentry), I_MUTEX_PARENT);
+	op->lock_held = true;
+
+	op->dentry = create_lookup_one_qstr_excl_fn(&op->last, op->parent.dentry,
+						    LOOKUP_CREATE | LOOKUP_EXCL);
+	if (IS_ERR(op->dentry)) {
+		rc = PTR_ERR(op->dentry);
+		op->dentry = NULL;
+		op->err = rc;
+		op->state = CREATE_OP_ERROR;
+		create_op_unlock(op);
+		return rc;
+	}
+	op->dentry_held = true;
+	op->state = CREATE_OP_LOCKED;
+	return 0;
 }
 
 int susfs_create_vfs_status(struct susfs_create_op *op,
@@ -204,12 +270,17 @@ int susfs_create_vfs_status(struct susfs_create_op *op,
 
 	if (!op || !view)
 		return -EINVAL;
-	if (op->state == CREATE_OP_ABSENT)
+	if (op->state == CREATE_OP_NOT_NAME) {
+		memset(view, 0, sizeof(*view));
+		view->state = SUSFS_CREATE_ST_NOT_NAME;
+		return 1;
+	}
+	if (op->state != CREATE_OP_LOCKED)
+		return op->err ? op->err : 0;
+	if (!d_is_positive(op->dentry))
 		return 0;
-	if (op->state != CREATE_OP_EXISTS)
-		return op->err ? op->err : -EIO;
 
-	inode = d_inode(op->path.dentry);
+	inode = d_inode(op->dentry);
 	if (!inode)
 		return 0;
 	memset(view, 0, sizeof(*view));
@@ -218,25 +289,26 @@ int susfs_create_vfs_status(struct susfs_create_op *op,
 	view->s_dev = inode->i_sb->s_dev;
 	view->i_uid = inode->i_uid.val;
 	view->sb_magic = inode->i_sb->s_magic;
-	strscpy(view->name, op->path.dentry->d_name.name, sizeof(view->name));
+	strscpy(view->name, op->dentry->d_name.name, sizeof(view->name));
 	return 1;
 }
 
 void susfs_create_vfs_parent_permission_op(struct susfs_create_op *op)
 {
-	if (!op || op->state != CREATE_OP_EXISTS)
+	if (!op || !op->parent_held)
 		return;
-	susfs_create_vfs_parent_permission(d_inode(op->path.dentry->d_parent));
+	susfs_create_vfs_parent_permission(d_inode(op->parent.dentry));
 }
 
 void susfs_create_vfs_end(struct susfs_create_op *op)
 {
 	if (!op)
 		return;
-	if (op->state == CREATE_OP_EXISTS)
-		path_put(&op->path);
+	create_op_unlock(op);
+	if (op->parent_held)
+		path_put(&op->parent);
 	if (op->name)
-		susfs_create_vfs_putname_after_lookup(op->name);
+		create_putname(op->name);
 	kfree(op);
 }
 
