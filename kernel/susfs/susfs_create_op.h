@@ -13,7 +13,6 @@
 
 struct susfs_create_op;
 struct susfs_create_view;
-struct inode;
 
 struct susfs_create_op *susfs_create_vfs_begin(int dfd, const char __user *path,
 					       int *err);
@@ -22,7 +21,6 @@ int susfs_create_vfs_lock(struct susfs_create_op *op);
 int susfs_create_vfs_status(struct susfs_create_op *op,
 			    struct susfs_create_view *view);
 int susfs_create_vfs_commit(struct susfs_create_op *op, umode_t mode);
-struct inode *susfs_create_vfs_inode(struct susfs_create_op *op);
 void susfs_create_vfs_parent_permission_op(struct susfs_create_op *op);
 void susfs_create_vfs_end(struct susfs_create_op *op);
 

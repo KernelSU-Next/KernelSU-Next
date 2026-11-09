@@ -18,31 +18,6 @@
 #include "ksu_umount_gate.h"
 #include "ksu_allow_gate.h"
 
-/* 0 keeps the pre-view decision (P2a rollback), 1 is the P2b default. */
-static int create_view = 1;
-module_param(create_view, int, 0644);
-
-static void create_view_fill(struct susfs_create_view *v, struct inode *inode,
-			     enum susfs_create_kind kind, bool link_old,
-			     const char *name)
-{
-	memset(v, 0, sizeof(*v));
-	v->kind = kind;
-	v->state = SUSFS_CREATE_ST_EXISTS;
-	v->link_old = link_old;
-	v->ino = inode->i_ino;
-	v->s_dev = inode->i_sb->s_dev;
-	v->i_uid = inode->i_uid.val;
-	v->sb_magic = inode->i_sb->s_magic;
-	v->caller_uid = current_uid().val;
-	v->caller_is_app = susfs_is_current_proc_umounted_app();
-	v->caller_is_su = susfs_control_visible();
-	v->control_visible = susfs_control_visible();
-	v->hide_from_apps = sus_path_hide_from_apps();
-	if (name)
-		strscpy(v->name, name, sizeof(v->name));
-}
-
 static void create_view_fill_caller(struct susfs_create_view *v)
 {
 	v->caller_uid = current_uid().val;
@@ -101,13 +76,6 @@ bool susfs_create_name_hidden(int dfd, const char __user *path,
 	v.link_old = link_old;
 	create_view_fill_caller(&v);
 
-	if (!READ_ONCE(create_view)) {
-		struct inode *inode = susfs_create_vfs_inode(op);
-
-		hidden = inode && sus_path_inode_hidden_public(inode);
-		goto out;
-	}
-
 	rc = create_view_decide(&v, &d);
 	if (rc)
 		goto out;
@@ -120,19 +88,4 @@ bool susfs_create_name_hidden(int dfd, const char __user *path,
 out:
 	susfs_create_vfs_end(op);
 	return hidden;
-}
-
-int susfs_create_existing_answer(struct inode *inode)
-{
-	struct susfs_create_view v;
-	struct susfs_create_decision d;
-
-	if (!inode)
-		return -EEXIST;
-	if (!READ_ONCE(create_view))
-		return sus_path_inode_hidden_public(inode) ? -EACCES : -EEXIST;
-	create_view_fill(&v, inode, SUSFS_CREATE_VIEW_MKDIRAT, false, NULL);
-	if (create_view_decide(&v, &d))
-		return -EEXIST;
-	return d.action == SUSFS_CREATE_HIDE ? -EACCES : -EEXIST;
 }
