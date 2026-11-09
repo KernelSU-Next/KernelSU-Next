@@ -197,6 +197,37 @@ static bool fp_has_landing_pad(const void *fn)
 	}
 }
 
+/*
+ * Whether our wrapper must start with a landing pad, decided by what the table holds now.
+ *
+ * invoke_syscall() reaches the entry with an indirect call, and that call faults only when the
+ * kernel enforces BTI for its own text (CONFIG_ARM64_BTI_KERNEL on a core with BTI).  In that case
+ * every entry the kernel put in the table starts with a landing pad.  When the current entry does
+ * not, the same call site already lands on a target without one, so a wrapper without one is
+ * equally safe.  Measured on a Pixel 6a (GS101, android14-6.1): ARM64_BTI_KERNEL is not set, the
+ * cores report no bti, and the wrappers start with the shadow call stack push
+ * (0xf800865e, str x30, [x18], #8).  Before this check every table entry (kstat, the getdents64
+ * listing filter, opath, create) was refused there.
+ *
+ * Every entry the hook would replace is checked; if any of them has a landing pad, ours needs one.
+ */
+static bool fp_pad_required(const struct susfs_fp_hook *h, int cnr)
+{
+	susfs_syscall_fn_t cur;
+
+	if (h->nr >= 0 && sys_call_table_ptr) {
+		cur = READ_ONCE(sys_call_table_ptr[h->nr]);
+		if (!cur || fp_has_landing_pad((const void *)cur))
+			return true;
+	}
+	if (cnr >= 0 && compat_sys_call_table_ptr) {
+		cur = READ_ONCE(compat_sys_call_table_ptr[cnr]);
+		if (!cur || fp_has_landing_pad((const void *)cur))
+			return true;
+	}
+	return false;
+}
+
 int susfs_fp_install(struct susfs_fp_hook *h)
 {
 	susfs_syscall_fn_t old;
@@ -227,12 +258,17 @@ int susfs_fp_install(struct susfs_fp_hook *h)
 		pr_warn("susfs_fp: %s: no native entry and no compat entry\n", h->name);
 		return -EINVAL;
 	}
-	if (!h->wrapper || !fp_has_landing_pad((const void *)h->wrapper)) {
-		pr_warn("susfs_fp: %s has no valid call landing pad (0x%08x) - not installed\n",
-			h->name, h->wrapper ? READ_ONCE(*(const u32 *)h->wrapper) : 0);
+	if (!h->wrapper) {
+		pr_warn("susfs_fp: %s has no wrapper - not installed\n", h->name);
 		return -EINVAL;
 	}
-	if (h->wrapper_compat && !fp_has_landing_pad((const void *)h->wrapper_compat)) {
+	if (fp_pad_required(h, cnr) && !fp_has_landing_pad((const void *)h->wrapper)) {
+		pr_warn("susfs_fp: %s has no valid call landing pad (0x%08x) - not installed\n",
+			h->name, READ_ONCE(*(const u32 *)h->wrapper));
+		return -EINVAL;
+	}
+	if (h->wrapper_compat && fp_pad_required(h, cnr) &&
+	    !fp_has_landing_pad((const void *)h->wrapper_compat)) {
 		pr_warn("susfs_fp: %s compat wrapper has no valid call landing pad (0x%08x) - not installed\n",
 			h->name, READ_ONCE(*(const u32 *)h->wrapper_compat));
 		return -EINVAL;
