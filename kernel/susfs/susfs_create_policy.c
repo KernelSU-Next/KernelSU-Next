@@ -18,9 +18,8 @@
 #include "ksu_umount_gate.h"
 #include "ksu_allow_gate.h"
 
-/* P2a rollback switch: 0 keeps the pre-view decision, 1 uses the D facts/L
- * decision.  P2b flips the default. */
-static int create_view;
+/* 0 keeps the pre-view decision (P2a rollback), 1 is the P2b default. */
+static int create_view = 1;
 module_param(create_view, int, 0644);
 
 static void create_view_fill(struct susfs_create_view *v, struct inode *inode,
