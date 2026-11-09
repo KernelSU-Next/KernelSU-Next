@@ -149,6 +149,8 @@ enum susfs_create_op_state {
 	CREATE_OP_PARENTAT,
 	CREATE_OP_NOT_NAME,
 	CREATE_OP_LOCKED,
+	CREATE_OP_COMMITTED,
+	CREATE_OP_COMMITTED_ERROR,
 	CREATE_OP_ERROR,
 };
 
@@ -357,6 +359,33 @@ static __nocfi noinline int create_vfs_mkdir(struct path *path,
 static __nocfi noinline void create_done_path(struct path *path, struct dentry *dentry)
 {
 	create_done_path_create_fn(path, dentry);
+}
+
+/* Commit only the mkdir shape for now.  The security hook runs first, then vfs_mkdir();
+ * done_path_create() consumes the parent lock, mount write reference and dentry, so
+ * those held bits are cleared here even when the mkdir itself failed. */
+int susfs_create_vfs_commit(struct susfs_create_op *op, umode_t mode)
+{
+	int rc;
+
+	if (!op || op->state != CREATE_OP_LOCKED || !op->dentry_held ||
+	    d_is_positive(op->dentry))
+		return -EINVAL;
+	if (!create_takeover_ready)
+		return -EOPNOTSUPP;
+
+	mode = create_strip_umask(d_inode(op->parent.dentry), mode);
+	rc = create_security_mkdir(&op->parent, op->dentry, mode);
+	if (!rc)
+		rc = create_vfs_mkdir(&op->parent, op->dentry, mode);
+
+	create_done_path(&op->parent, op->dentry);
+	op->dentry = NULL;
+	op->dentry_held = false;
+	op->lock_held = false;
+	op->write_held = false;
+	op->state = rc ? CREATE_OP_COMMITTED_ERROR : CREATE_OP_COMMITTED;
+	return rc;
 }
 
 long __nocfi noinline susfs_create_vfs_mkdirat(int dfd, const char __user *pathname,
