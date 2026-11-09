@@ -308,6 +308,14 @@ int susfs_create_vfs_status(struct susfs_create_op *op,
 	return 1;
 }
 
+struct inode *susfs_create_vfs_inode(struct susfs_create_op *op)
+{
+	if (!op || op->state != CREATE_OP_LOCKED || !op->dentry_held ||
+	    !d_is_positive(op->dentry))
+		return NULL;
+	return d_inode(op->dentry);
+}
+
 void susfs_create_vfs_parent_permission_op(struct susfs_create_op *op)
 {
 	if (!op || !op->parent_held)
