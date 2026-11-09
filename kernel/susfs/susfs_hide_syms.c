@@ -697,6 +697,7 @@ static int __nocfi noinline hide_syms_resolve_show(struct kprobe *kp,
 	const struct seq_operations *op;
 	unsigned long addr = find_kernel_symbol_exact(table_name);
 	unsigned long show, target, pc;
+	u32 insn;
 
 	*table_out = NULL;
 	if (!addr)
@@ -709,7 +710,6 @@ static int __nocfi noinline hide_syms_resolve_show(struct kprobe *kp,
 
 	target = show;
 	if (!ksu_symbol_is_start(show, symbol_name)) {
-		u32 insn;
 
 		pc = show;
 		if (copy_from_kernel_nofault(&insn, (void *)pc, sizeof(insn)))
@@ -728,6 +728,16 @@ static int __nocfi noinline hide_syms_resolve_show(struct kprobe *kp,
 				table_name, (void *)show, (void *)target);
 	}
 
+	/* The indirect call that reaches this function is BTI-checked.  A kprobe
+	 * breakpoint placed on the first instruction would overwrite the `bti c`
+	 * landing pad and turn every seq_read() of the file into a BTI fault.
+	 * Keep the landing pad and probe the instruction after it. */
+	if (!copy_from_kernel_nofault(&insn, (void *)target, sizeof(insn)) &&
+	    insn == 0xd503245f) {
+		target += sizeof(insn);
+		SUSFS_LOGI("susfs_hide_syms: %s.show BTI landing pad kept, probing %px\n",
+				table_name, (void *)target);
+	}
 	kp->addr = (kprobe_opcode_t *)target;
 	*table_out = op;
 	SUSFS_LOGI("susfs_hide_syms: %s.show=%px, probe body=%px\n",
