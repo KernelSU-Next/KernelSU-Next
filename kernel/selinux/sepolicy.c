@@ -696,7 +696,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
         return true;
     }
 
-    u32 value = ++db->p_types.nprim;
+    u32 value = db->p_types.nprim + 1;
     type = (struct type_datum *)kzalloc(sizeof(struct type_datum), GFP_KERNEL);
     if (!type) {
         pr_err("add_type: alloc type_datum failed.\n");
@@ -710,49 +710,55 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
     char *key = kstrdup(type_name, GFP_KERNEL);
     if (!key) {
         pr_err("add_type: alloc key failed.\n");
-        return false;
+        goto out_free_type;
     }
 
-    if (symtab_insert(&db->p_types, key, type)) {
-        pr_err("add_type: insert symtab failed.\n");
-        return false;
-    }
-
+    /*
+     * Grow the arrays before touching the symtab or nprim. kvrealloc() frees
+     * the old block when it moves it, so store each pointer in db right away:
+     * a later failure then never leaves db pointing at freed memory, and the
+     * (harmlessly larger) arrays still match an unchanged nprim.
+     */
     struct ebitmap *new_type_attr_map_array =
         ksu_kvrealloc(db->type_attr_map_array, value * sizeof(struct ebitmap),
                       (value - 1) * sizeof(struct ebitmap));
-
     if (!new_type_attr_map_array) {
         pr_err("add_type: alloc type_attr_map_array failed\n");
-        return false;
+        goto out_free;
     }
+    db->type_attr_map_array = new_type_attr_map_array;
 
     struct type_datum **new_type_val_to_struct =
         ksu_kvrealloc(db->type_val_to_struct,
                       sizeof(*db->type_val_to_struct) * value,
                       sizeof(*db->type_val_to_struct) * (value - 1));
-
     if (!new_type_val_to_struct) {
         pr_err("add_type: alloc type_val_to_struct failed\n");
-        return false;
+        goto out_free;
     }
+    db->type_val_to_struct = new_type_val_to_struct;
 
     char **new_val_to_name_types =
         ksu_kvrealloc(db->sym_val_to_name[SYM_TYPES], sizeof(char *) * value,
                       sizeof(char *) * (value - 1));
     if (!new_val_to_name_types) {
         pr_err("add_type: alloc val_to_name failed\n");
-        return false;
+        goto out_free;
+    }
+    db->sym_val_to_name[SYM_TYPES] = new_val_to_name_types;
+
+    if (symtab_insert(&db->p_types, key, type)) {
+        pr_err("add_type: insert symtab failed.\n");
+        goto out_free;
     }
 
-    db->type_attr_map_array = new_type_attr_map_array;
+    db->p_types.nprim = value;
+
     ebitmap_init(&db->type_attr_map_array[value - 1]);
     ebitmap_set_bit(&db->type_attr_map_array[value - 1], value - 1, 1);
 
-    db->type_val_to_struct = new_type_val_to_struct;
     db->type_val_to_struct[value - 1] = type;
 
-    db->sym_val_to_name[SYM_TYPES] = new_val_to_name_types;
     db->sym_val_to_name[SYM_TYPES][value - 1] = key;
 
     int i;
@@ -761,6 +767,12 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
     }
 
     return true;
+
+out_free:
+    kfree(key);
+out_free_type:
+    kfree(type);
+    return false;
 }
 
 static bool set_type_state(struct policydb *db, const char *type_name,
