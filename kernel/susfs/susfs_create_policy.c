@@ -16,16 +16,18 @@
 #include "susfs_create_vfs.h"
 #include "susfs_create_policy.h"
 #include "susfs_create_view.h"
+#include "sus_path_match.h"
 
 bool susfs_create_name_hidden(int dfd, const char __user *path,
 			      enum susfs_create_kind kind, bool link_old)
 {
 	struct susfs_create_view v;
 	struct susfs_create_decision d;
+	struct susfs_create_view *vp = &v;
+	struct sus_path_match m;
 	struct inode *inode;
 	struct filename *name;
 	struct path p;
-	bool hidden;
 	int rc;
 
 	if (!sus_path_user_rules_present())
@@ -47,25 +49,33 @@ bool susfs_create_name_hidden(int dfd, const char __user *path,
 		susfs_create_vfs_path_put(&p);
 		return false;
 	}
-	hidden = sus_path_inode_hidden_public(inode);
-
-	memset(&v, 0, sizeof(v));
-	v.kind = kind;
-	v.state = SUSFS_CREATE_ST_EXISTS;
-	v.link_old = link_old;
-	v.ino = inode->i_ino;
-	v.s_dev = inode->i_sb->s_dev;
-	v.i_uid = 0;
-	v.sb_magic = inode->i_sb->s_magic;
-	v.caller_uid = 0;
-	strscpy(v.name, name->name, sizeof(v.name));
+	memset(vp, 0, sizeof(*vp));
+	vp->kind = kind;
+	vp->state = SUSFS_CREATE_ST_EXISTS;
+	vp->link_old = link_old;
+	vp->ino = inode->i_ino;
+	vp->s_dev = inode->i_sb->s_dev;
+	vp->i_uid = inode->i_uid.val;
+	vp->sb_magic = inode->i_sb->s_magic;
+	vp->caller_uid = current_uid().val;
+	vp->caller_is_app = susfs_is_current_proc_umounted_app();
+	vp->caller_is_su = susfs_control_visible();
+	vp->control_visible = susfs_control_visible();
+	vp->hide_from_apps = sus_path_hide_from_apps();
+	strscpy(vp->name, name->name, sizeof(vp->name));
 	susfs_create_vfs_putname_after_lookup(name);
 
-	/* The old D answer is still the source of truth; the view only carries it
-	 * through the pure decision until sus_path_rule_match() replaces it. */
-	v.rule_matched = hidden;
-	v.hide_from_apps = hidden;
-	d = susfs_create_decide_core(&v);
+	rc = sus_path_rule_match(vp, &m);
+	if (rc) {
+		susfs_create_vfs_path_put(&p);
+		return false;
+	}
+	vp->rule_matched = m.rule_matched;
+	vp->ordinary_rule = m.ordinary_rule;
+	vp->self_protect = m.self_protect;
+	vp->pending = m.pending;
+
+	d = susfs_create_decide_core(vp);
 	if (d.need_parent_permission)
 		susfs_create_vfs_parent_permission(d_inode(p.dentry->d_parent));
 	susfs_create_vfs_path_put(&p);

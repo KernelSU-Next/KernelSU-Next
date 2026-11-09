@@ -64,6 +64,7 @@ struct susfs_create_view {
 	bool control_visible;
 
 	bool rule_matched;
+	bool ordinary_rule;
 	bool self_protect;
 	bool pending;
 	bool is_resolver;
@@ -101,9 +102,28 @@ susfs_create_decide_core(const struct susfs_create_view *v)
 		return d;
 	}
 
-	if (!v->rule_matched || !v->hide_from_apps) {
+	if (!v->rule_matched) {
 		d.action = SUSFS_CREATE_PASS;
 		return d;
+	}
+
+	{
+		bool hidden = false;
+
+		if (v->ordinary_rule) {
+			/* hide_from_apps=0 applies the set to every process; otherwise the
+			 * upstream gate is app-only and never hides the owner's own object. */
+			if (!v->hide_from_apps ||
+			    (v->caller_is_app && v->caller_uid != v->i_uid))
+				hidden = true;
+		}
+		/* Control nodes are invisible to every non-root caller, not only apps. */
+		if (v->self_protect && !v->control_visible)
+			hidden = true;
+		if (!hidden) {
+			d.action = SUSFS_CREATE_PASS;
+			return d;
+		}
 	}
 
 	if (v->kind == SUSFS_CREATE_VIEW_LINKAT) {
