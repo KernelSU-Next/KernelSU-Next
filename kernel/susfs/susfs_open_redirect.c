@@ -69,6 +69,7 @@
 #define OR_HASH_BUCKETS (1U << OR_HASH_BITS)
 #define OR_BUCKET_MAX 13
 #define OR_INDEX_COUNT 2
+#define OR_REHASH_MAX 20
 /* The ABI fields are char[256]; matching that width stops a legal long path from being truncated into a rule for a
  * different path. */
 #define OR_PATH_MAX 256
@@ -156,6 +157,7 @@ struct or_index {
 static struct sus_or_entry or_entries[SUS_OR_MAX];
 static struct or_index or_indexes[OR_INDEX_COUNT];
 static struct or_index *or_active_index;
+static unsigned int or_rehash_count;
 static int nor;		/* highest index ever handed out, plus one: the allocation bound */
 /* Slots that were handed out and have been taken back (or_reclaim_slot()).  A slot returns here once
  * a grace period has passed, which is what turns the UPPER BOUND into "how many rules exist at the
@@ -287,10 +289,19 @@ static void or_index_reset(struct or_index *idx, u32 seed)
 static void or_rehash_locked(void)
 {
 	struct or_index *old = or_active_index;
-	struct or_index *new = (old == &or_indexes[0]) ? &or_indexes[1] : &or_indexes[0];
-	u32 seed = old->seed;
+	struct or_index *new;
+	u32 seed;
 	int attempt;
 
+	if (or_rehash_count >= OR_REHASH_MAX)
+		return;
+	or_rehash_count++;
+	if (or_rehash_count == OR_REHASH_MAX)
+		SUSFS_LOGI("open_redirect: rehash limit reached (%u) - keeping the current index until rmmod\n",
+			OR_REHASH_MAX);
+
+	new = (old == &or_indexes[0]) ? &or_indexes[1] : &or_indexes[0];
+	seed = old->seed;
 	for (attempt = 0; attempt < 4; attempt++) {
 		bool too_big = false;
 		int i;
@@ -397,7 +408,8 @@ static void or_link(struct sus_or_entry *e)
 	}
 	smp_store_release(pp, slot);
 
-	if (count_f + 1 >= OR_BUCKET_MAX || count_r + 1 >= OR_BUCKET_MAX)
+	if ((count_f + 1 >= OR_BUCKET_MAX || count_r + 1 >= OR_BUCKET_MAX) &&
+	    READ_ONCE(or_rehash_count) < OR_REHASH_MAX)
 		or_rehash_locked();
 }
 
@@ -1140,6 +1152,7 @@ int susfs_open_redirect_init(void)
 	or_index_reset(&or_indexes[0], (u32)(unsigned long)&or_entries);
 	or_index_reset(&or_indexes[1], (u32)(unsigned long)&or_entries + 1);
 	or_active_index = &or_indexes[0];
+	or_rehash_count = 0;
 	for (i = 0; i < SUS_OR_MAX; i++)
 		WRITE_ONCE(or_entries[i].dead, true);
 
