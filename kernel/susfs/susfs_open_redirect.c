@@ -276,6 +276,10 @@ static void or_index_reset(struct or_index *idx, u32 seed)
 		idx->buckets[i] = -1;
 		idx->rev_buckets[i] = -1;
 	}
+	for (i = 0; i < SUS_OR_MAX; i++) {
+		idx->next[i] = -1;
+		idx->rnext[i] = -1;
+	}
 }
 
 /* Rebuild the inactive index from the live slots, then publish it and wait for the readers that
@@ -377,6 +381,8 @@ static void or_link(struct sus_or_entry *e)
 	int count_f = 0, count_r = 0;
 	int slot = (int)(e - or_entries);
 
+	idx->next[slot] = -1;
+	idx->rnext[slot] = -1;
 	pp = &idx->buckets[h];
 	while (READ_ONCE(*pp) >= 0) {
 		pp = &idx->next[READ_ONCE(*pp)];
