@@ -183,6 +183,20 @@ static void create_op_unlock(struct susfs_create_op *op)
 	}
 }
 
+static __nocfi noinline int create_parentat(int dfd, struct filename *name,
+					     struct path *parent, struct qstr *last,
+					     int *type)
+{
+	return create_filename_parentat_fn(dfd, name, 0, parent, last, type, NULL);
+}
+
+static __nocfi noinline struct dentry *create_lookup_excl(const struct qstr *last,
+							  struct dentry *parent)
+{
+	return create_lookup_one_qstr_excl_fn(last, parent,
+					      LOOKUP_CREATE | LOOKUP_EXCL);
+}
+
 struct susfs_create_op *susfs_create_vfs_begin(int dfd, const char __user *path,
 					       int *err)
 {
@@ -209,8 +223,8 @@ struct susfs_create_op *susfs_create_vfs_begin(int dfd, const char __user *path,
 	}
 	op->state = CREATE_OP_GETNAME;
 
-	op->err = create_filename_parentat_fn(dfd, op->name, 0, &op->parent,
-					      &op->last, &op->type, NULL);
+	op->err = create_parentat(dfd, op->name, &op->parent, &op->last,
+				  &op->type);
 	if (op->err) {
 		op->state = CREATE_OP_ERROR;
 	} else {
@@ -248,8 +262,7 @@ int susfs_create_vfs_lock(struct susfs_create_op *op)
 	inode_lock_nested(d_inode(op->parent.dentry), I_MUTEX_PARENT);
 	op->lock_held = true;
 
-	op->dentry = create_lookup_one_qstr_excl_fn(&op->last, op->parent.dentry,
-						    LOOKUP_CREATE | LOOKUP_EXCL);
+	op->dentry = create_lookup_excl(&op->last, op->parent.dentry);
 	if (IS_ERR(op->dentry)) {
 		rc = PTR_ERR(op->dentry);
 		op->dentry = NULL;
