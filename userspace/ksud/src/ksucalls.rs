@@ -193,6 +193,11 @@ pub fn is_lkm() -> bool {
     get_info().flags & ksu_uapi::KSU_GET_INFO_FLAG_LKM != 0
 }
 
+/// Whether the kernel runs module preinit actions on boot.
+pub fn is_preinit_supported() -> bool {
+    get_info().flags & ksu_uapi::KSU_GET_INFO_FLAG_PREINIT != 0
+}
+
 pub const fn uapi_version() -> u32 {
     ksu_uapi::KERNEL_SU_UAPI_VERSION
 }
@@ -232,6 +237,13 @@ pub fn report_post_fs_data() {
     report_event(ksu_uapi::EVENT_POST_FS_DATA);
 }
 
+pub fn report_services() -> Result<bool> {
+    let mut cmd = ksu_uapi::ksu_report_event_cmd {
+        event: ksu_uapi::EVENT_SERVICES,
+    };
+    Ok(ksuctl(ksu_uapi::KSU_IOCTL_REPORT_EVENT, &raw mut cmd)? == 1)
+}
+
 pub fn report_boot_complete() {
     report_event(ksu_uapi::EVENT_BOOT_COMPLETED);
 }
@@ -255,16 +267,29 @@ pub fn set_sepolicy(payload: *const u8, payload_len: u64) -> Result<i32> {
     ksuctl(ksu_uapi::KSU_IOCTL_SET_SEPOLICY, &raw mut ioctl_cmd)
 }
 
+#[derive(Debug, Clone, Copy, Default)]
+pub struct FeatureState {
+    pub value: u64,
+    pub supported: bool,
+    /// Forced by boot config (ksu_config), the kernel refuses to change it
+    pub forced: bool,
+}
+
 /// Get feature value and support status from kernel
-/// Returns (value, supported)
-pub fn get_feature(feature_id: u32) -> Result<(u64, bool)> {
+pub fn get_feature(feature_id: u32) -> Result<FeatureState> {
     let mut cmd = ksu_uapi::ksu_get_feature_cmd {
         feature_id,
         value: 0,
         supported: 0,
     };
     ksuctl(ksu_uapi::KSU_IOCTL_GET_FEATURE, &raw mut cmd)?;
-    Ok((cmd.value, cmd.supported != 0))
+    let flags = u32::from(cmd.supported);
+    Ok(FeatureState {
+        value: cmd.value,
+        // older kernels report 1 for supported, matching the flag
+        supported: flags & ksu_uapi::KSU_FEATURE_FLAG_SUPPORTED != 0,
+        forced: flags & ksu_uapi::KSU_FEATURE_FLAG_FORCED != 0,
+    })
 }
 
 /// Set feature value in kernel
@@ -384,6 +409,31 @@ pub fn set_init_pgrp() -> Result<()> {
         std::ptr::null_mut::<u8>(),
     )?;
     Ok(())
+}
+
+/// Look up the addresses of kernel symbols, exported or not.
+///
+/// Returns one entry per name, `None` when the running kernel has no such
+/// symbol.
+pub fn lookup_symbols(names: &[&str]) -> Result<Vec<Option<u64>>> {
+    let mut result = Vec::with_capacity(names.len());
+    for chunk in names.chunks(ksu_uapi::KSU_LOOKUP_SYMBOLS_MAX as usize) {
+        let c_names = chunk
+            .iter()
+            .map(|name| std::ffi::CString::new(*name))
+            .collect::<Result<Vec<_>, _>>()?;
+        let ptrs: Vec<u64> = c_names.iter().map(|name| name.as_ptr() as u64).collect();
+        let mut addrs = vec![0u64; chunk.len()];
+        let mut cmd = ksu_uapi::ksu_lookup_symbols_cmd {
+            names: ptrs.as_ptr() as u64,
+            addrs: addrs.as_mut_ptr() as u64,
+            count: chunk.len() as u32,
+            flags: 0,
+        };
+        ksuctl(ksu_uapi::KSU_IOCTL_LOOKUP_SYMBOLS, &raw mut cmd)?;
+        result.extend(addrs.into_iter().map(|addr| (addr != 0).then_some(addr)));
+    }
+    Ok(result)
 }
 
 pub fn set_ksu_no_new_privs() -> anyhow::Result<()> {

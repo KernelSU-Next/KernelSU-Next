@@ -28,11 +28,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.text.BidiFormatter
 import androidx.lifecycle.compose.dropUnlessResumed
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootGraph
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import com.ramcosta.composedestinations.navigation.EmptyDestinationsNavigator
+import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.R
 import com.rifsxd.ksunext.ui.component.ConfirmResult
 import com.rifsxd.ksunext.ui.component.KeyEventBlocker
@@ -69,14 +71,16 @@ fun flashModulesSequentially(
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit
 ): FlashResult {
+    var needsReboot = false
     for (uri in uris) {
         flashModule(uri, onStdout, onStderr).apply {
+            needsReboot = needsReboot || showReboot
             if (code != 0) {
-                return FlashResult(code, err, showReboot)
+                return FlashResult(code, err, needsReboot)
             }
         }
     }
-    return FlashResult(0, "", true)
+    return FlashResult(0, "", needsReboot)
 }
 
 /**
@@ -108,6 +112,7 @@ fun FlashScreen(
 
     val prefs = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     val developerOptionsEnabled = prefs.getBoolean("enable_developer_options", false)
+    val softRebootAfterModuleFlash = prefs.getBoolean("soft_reboot_after_module_flash", false)
 
     val activity = context.findActivity()
 
@@ -204,7 +209,7 @@ fun FlashScreen(
                 logContent.append(it).append("\n")
             }).apply {
                 if (code != 0) {
-                    text += "Error code: $code.\n $err Please save and check the log.\n"
+                    text += context.getString(R.string.flash_error_output, code, err)
                 }
                 if (showReboot) {
                     text += "\n\n\n"
@@ -231,20 +236,20 @@ fun FlashScreen(
                             "KernelSU_Next_install_log_${date}.log"
                         )
                         file.writeText(logContent.toString())
-                        snackBarHost.showSnackbar("Log saved to ${file.absolutePath}")
+                        snackBarHost.showSnackbar(context.getString(R.string.log_saved_to, BidiFormatter.getInstance().unicodeWrap(file.absolutePath)))
                     }
                 },
                 scrollBehavior = scrollBehavior
             )
         },
         floatingActionButton = {
-            if (flashIt is FlashIt.FlashModules && (flashing == FlashingStatus.SUCCESS)) {
+            if (flashIt is FlashIt.FlashModules && (flashing == FlashingStatus.SUCCESS) && showFloatAction) {
                 // Reboot button for modules flashing
                 ExtendedFloatingActionButton(
                     onClick = {
                         scope.launch {
                             withContext(Dispatchers.IO) {
-                                reboot()
+                                reboot(if (softRebootAfterModuleFlash) "soft-reboot" else "")
                             }
                         }
                     },
@@ -439,8 +444,13 @@ fun Uri.getFileName(context: Context): String {
 
 @Parcelize
 sealed class FlashIt : Parcelable {
-    data class FlashBoot(val boot: Uri? = null, val lkm: LkmSelection, val ota: Boolean, val allowShell: Boolean = false, val enableAdb: Boolean = false) :
-        FlashIt()
+    data class FlashBoot(
+        val boot: Uri? = null,
+        val lkm: LkmSelection,
+        val ota: Boolean,
+        val allowShell: Boolean = false,
+        val enableAdb: Boolean = false
+    ) : FlashIt()
 
     data class FlashModules(val uris: List<Uri>) : FlashIt()
 
@@ -456,6 +466,16 @@ fun flashIt(
     onStdout: (String) -> Unit,
     onStderr: (String) -> Unit
 ): FlashResult {
+    if (Natives.isLateLoadMode && (
+            flashIt is FlashIt.FlashAnyKernel ||
+                flashIt is FlashIt.FlashUninstall ||
+                flashIt is FlashIt.FlashRestore ||
+                flashIt is FlashIt.FlashBoot && (flashIt.boot == null || flashIt.ota)
+            )
+    ) {
+        return FlashResult(1, "", false)
+    }
+
     return when (flashIt) {
         is FlashIt.FlashBoot -> installBoot(
             flashIt.boot,
@@ -523,7 +543,7 @@ private fun TopBar(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Save,
-                    contentDescription = "Localized description"
+                    contentDescription = null
                 )
             }
         },

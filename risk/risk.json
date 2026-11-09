@@ -1,5 +1,5 @@
 {
-	"hash": "a48d1e15824d045633c627e0c378f9b1726547adcf50c8777841698f9ffec2f2",
+	"hash": "2606fd6ddbb8667523b25f37d7670a26741a9be51e67b957000f7d8270d02d79",
 	"rules": [
 		{
 			"reason": "Possible bootloop | Break other modules | Signs of ai-generated code",
@@ -42,7 +42,7 @@
 		},
 				{
 			"reason": "Possible unexpected behaviour on VFS mode | Possible bootloop | Signs of ai-generated code",
-			"severity": "low",
+			"severity": "medium",
 			"patterns": [
 				"zeromount",
 				"meta-zeromount"

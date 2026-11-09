@@ -65,7 +65,11 @@ class SulogViewModel : ViewModel() {
             _uiState.update { it.copy(isLoading = !refreshing, isRefreshing = refreshing, errorMessage = null) }
             runCatching {
                 val sulogStatus = getFeatureStatus("sulog")
-                val isSulogEnabled = getFeaturePersistValue("sulog") == 1L
+                val isSulogEnabled = if (sulogStatus == "forced") {
+                    getFeatureValue("sulog") == 1L
+                } else {
+                    getFeaturePersistValue("sulog") == 1L
+                }
                 val files = listSulogFiles()
                 currentCoroutineContext().ensureActive()
                 val selectedFile = when {

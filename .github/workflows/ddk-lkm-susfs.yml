@@ -1,0 +1,75 @@
+name: Build SusFS Kernel Module
+
+on:
+  workflow_call:
+    inputs:
+      kmi:
+        description: 'KMI version'
+        required: true
+        type: string
+      ddk_release:
+        description: 'DDK release version'
+        required: false
+        default: '20260828'
+        type: string
+
+jobs:
+  build-susfs-ko:
+    name: Build susfs_guard_lkm.ko for ${{ inputs.kmi }}
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/ylarod/ddk-min:${{ inputs.kmi }}-${{ inputs.ddk_release }}
+      options: --privileged
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v7
+
+      - name: Build susfs_guard_lkm.ko
+        run: |
+          set -e
+
+          echo "=== Preparing DDK environment ==="
+          echo "KMI: ${{ inputs.kmi }}"
+          echo "KDIR=$KDIR"
+          echo "KERNEL_SRC=$KERNEL_SRC"
+          echo "CLANG_PATH=$CLANG_PATH"
+
+          if [ -z "$KDIR" ] || [ ! -f "$KDIR/Makefile" ]; then
+            echo "::error::KDIR is not a prepared kernel build tree"
+            exit 1
+          fi
+
+          cd kernel/susfs
+
+          echo "=== Building susfs_guard_lkm.ko for KMI: ${{ inputs.kmi }} ==="
+
+          make -k -C "$KDIR" M="$PWD" ARCH=arm64 CC=clang LLVM=1 LLVM_IAS=1 modules -j"$(nproc)"
+
+          echo "=== Build completed ==="
+
+          if [ ! -f susfs_guard_lkm.ko ]; then
+            echo "::error::susfs_guard_lkm.ko was not generated"
+            exit 1
+          fi
+
+          # Create output directory in GitHub workspace
+          OUT_DIR=/github/workspace/out/aarch64
+          mkdir -p "$OUT_DIR"
+
+          # Copy with KMI-specific naming
+          OUTPUT_NAME="${{ inputs.kmi }}_susfs_guard_lkm.ko"
+          cp susfs_guard_lkm.ko "$OUT_DIR/$OUTPUT_NAME"
+
+          echo "Copied to: $OUT_DIR/$OUTPUT_NAME"
+          ls -la "$OUT_DIR/$OUTPUT_NAME"
+          echo "Size: $(du -h "$OUT_DIR/$OUTPUT_NAME" | cut -f1)"
+          llvm-strip -d "$OUT_DIR/$OUTPUT_NAME"
+          echo "Size after stripping: $(du -h "$OUT_DIR/$OUTPUT_NAME" | cut -f1)"
+
+      - name: Upload susfs_guard_lkm.ko artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: aarch64-${{ inputs.kmi }}-susfs-lkm
+          path: /github/workspace/out/aarch64/${{ inputs.kmi }}_susfs_guard_lkm.ko
+          if-no-files-found: error

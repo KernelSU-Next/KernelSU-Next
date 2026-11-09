@@ -16,7 +16,6 @@ use std::{
 use crate::{assets, boot_patch, defs, ksucalls, module, restorecon};
 #[allow(unused_imports)]
 use std::fs::{Permissions, set_permissions};
-#[cfg(unix)]
 use std::os::unix::prelude::PermissionsExt;
 
 use std::path::PathBuf;
@@ -110,7 +109,6 @@ pub fn ensure_binary<T: AsRef<Path>>(
     }
 
     write(&path, contents)?;
-    #[cfg(unix)]
     set_permissions(&path, Permissions::from_mode(0o755))?;
     Ok(())
 }
@@ -166,9 +164,10 @@ pub fn is_safe_mode() -> bool {
 
 pub fn get_zip_uncompressed_size(zip_path: &str) -> Result<u64> {
     let mut zip = zip::ZipArchive::new(std::fs::File::open(zip_path)?)?;
-    let total: u64 = (0..zip.len())
-        .map(|i| zip.by_index(i).unwrap().size())
-        .sum();
+    let mut total: u64 = 0;
+    for i in 0..zip.len() {
+        total += zip.by_index(i)?.size();
+    }
     Ok(total)
 }
 
@@ -262,6 +261,7 @@ pub fn uninstall(package_name: &str) -> Result<()> {
     std::fs::remove_dir_all(defs::WORKING_DIR).ok();
     std::fs::remove_file(defs::DAEMON_PATH).ok();
     std::fs::remove_dir_all(defs::MODULE_DIR).ok();
+    std::fs::remove_dir_all(defs::PREINIT_DIR_VOLD).ok();
     std::fs::remove_dir_all(defs::PREINIT_DIR_WATCHDOG).ok();
     std::fs::remove_dir_all(defs::PREINIT_DIR_DEFAULT).ok();
     println!("- Restore boot image..");

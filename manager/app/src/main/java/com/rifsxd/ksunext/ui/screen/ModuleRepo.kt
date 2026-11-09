@@ -87,6 +87,8 @@ private const val KEY_NON_FREE_ENABLED = "non_free_enabled"
 private const val DEFAULT_JSON_URL = "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next-Modules-Repo/refs/heads/main/modules.json"
 private const val NON_FREE_JSON_URL = "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next-Modules-Repo/refs/heads/main/non_free_modules.json"
 private const val URL_SEPARATOR = "|||"
+private const val NET_CONNECT_TIMEOUT_MS = 15_000
+private const val NET_READ_TIMEOUT_MS = 15_000
 
 private fun getModuleRepoPrefs(context: Context): SharedPreferences {
     return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -176,6 +178,8 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
         return withContext(Dispatchers.IO) {
             try {
                 val conn = URL(jsonUrl).openConnection() as java.net.HttpURLConnection
+                conn.connectTimeout = NET_CONNECT_TIMEOUT_MS
+                conn.readTimeout = NET_READ_TIMEOUT_MS
                 conn.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
                 val text = BufferedReader(InputStreamReader(conn.inputStream)).use { it.readText() }
                 conn.disconnect()
@@ -221,7 +225,7 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
                 .filter { module -> seen.add("${module.name}||${module.repoUrl}") }
 
             if (visibleModules.isEmpty()) {
-                moduleState = ModuleRepoState.Error("No modules found across all repositories")
+                moduleState = ModuleRepoState.Error(context.getString(R.string.repo_no_modules))
                 return
             }
 
@@ -261,7 +265,7 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
                 }
             }
         } catch (e: Exception) {
-            moduleState = ModuleRepoState.Error(e.message ?: "Unknown error")
+            moduleState = ModuleRepoState.Error(e.message ?: context.getString(R.string.unknown_error))
         }
     }
 
@@ -334,7 +338,7 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
                                         showAddEditDialog = true
                                     }
                                 ) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Edit")
+                                    Icon(Icons.Default.Edit, contentDescription = null)
                                 }
                                 // Prevent deletion of the last remaining repo
                                 IconButton(
@@ -345,7 +349,7 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
                                     },
                                     enabled = jsonUrls.size > 1
                                 ) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Remove")
+                                    Icon(Icons.Default.Delete, contentDescription = null)
                                 }
                             }
                             if (index < jsonUrls.lastIndex) {
@@ -394,11 +398,11 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
                 showAddEditDialog = false
                 pendingUrl = ""
             },
-            title = { Text(if (editingIndex == null) "Add Repository" else "Edit Repository") },
+            title = { Text(stringResource(if (editingIndex == null) R.string.add_repository else R.string.repo_edit_title)) },
             text = {
                 Column {
                     Text(
-                        text = "Enter the module repository JSON URL:",
+                        text = stringResource(R.string.repo_enter_json_url),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
@@ -427,7 +431,7 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
                         }
                     }
                 ) {
-                    Text(if (editingIndex == null) "Add" else "Apply")
+                    Text(stringResource(if (editingIndex == null) R.string.add_repository else R.string.repo_apply))
                 }
             },
             dismissButton = {
@@ -437,7 +441,7 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
                         pendingUrl = ""
                     }
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -461,7 +465,7 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
                     IconButton(onClick = { showRepoManagerDialog = true }) {
                         Icon(
                             imageVector = Icons.Filled.Edit,
-                            contentDescription = "Manage Repositories"
+                            contentDescription = null
                         )
                     }
                     IconButton(onClick = { navigator.navigate(MetaModuleScreenDestination) }) {
@@ -654,10 +658,10 @@ fun ModuleRepoScreen(navigator: DestinationsNavigator) {
                                                 context,
                                                 selectedModule.downloadUrl,
                                                 fileName,
-                                                "Downloading ${selectedModule.name}"
+                                                context.getString(R.string.repo_download_progress, selectedModule.name)
                                             )
                                         } catch (e: Exception) {
-                                            snackBarHost.showSnackbar("Error downloading module: ${e.message}")
+                                            snackBarHost.showSnackbar(context.getString(R.string.repo_download_error, e.message.orEmpty()))
                                             downloadingModuleName = null
                                         }
                                     }
@@ -891,7 +895,7 @@ private fun ModuleRepoCard(
                         } else {
                             Icon(
                                 imageVector = Icons.Default.CloudDownload,
-                                contentDescription = "Download",
+                                contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -932,10 +936,10 @@ private fun TopBar(
         },
         actions = {
             IconButton(onClick = onManageRepos) {
-                Icon(Icons.Filled.Edit, contentDescription = "Manage Repositories")
+                Icon(Icons.Filled.Edit, contentDescription = null)
             }
             IconButton(onClick = onMetaModuleClick) {
-                Icon(Icons.Filled.SettingsSuggest, contentDescription = stringResource(id = R.string.module_repo_screen))
+                Icon(Icons.Filled.SettingsSuggest, contentDescription = null)
             }
         },
         windowInsets = WindowInsets.safeDrawing.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal),
@@ -948,6 +952,8 @@ private suspend fun fetchLatestReleaseInfo(repoUrl: String): ReleaseInfoModuleRe
         try {
             val stars = try {
                 val htmlConn = URL(repoUrl).openConnection() as java.net.HttpURLConnection
+                htmlConn.connectTimeout = NET_CONNECT_TIMEOUT_MS
+                htmlConn.readTimeout = NET_READ_TIMEOUT_MS
                 htmlConn.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
                 htmlConn.setRequestProperty("Accept", "text/html")
                 val html = BufferedReader(InputStreamReader(htmlConn.inputStream)).use { it.readText() }
@@ -962,6 +968,8 @@ private suspend fun fetchLatestReleaseInfo(repoUrl: String): ReleaseInfoModuleRe
 
             val latestUrl = "$repoUrl/releases/latest"
             val connection = URL(latestUrl).openConnection() as java.net.HttpURLConnection
+            connection.connectTimeout = NET_CONNECT_TIMEOUT_MS
+            connection.readTimeout = NET_READ_TIMEOUT_MS
             connection.instanceFollowRedirects = false
             connection.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
 
@@ -980,6 +988,8 @@ private suspend fun fetchLatestReleaseInfo(repoUrl: String): ReleaseInfoModuleRe
 
             val releasePageUrl = "$repoUrl/releases/expanded_assets/$tagMatch"
             val pageConnection = URL(releasePageUrl).openConnection()
+            pageConnection.connectTimeout = NET_CONNECT_TIMEOUT_MS
+            pageConnection.readTimeout = NET_READ_TIMEOUT_MS
             pageConnection.setRequestProperty("User-Agent", "KernelSU-Next/${BuildConfig.VERSION_CODE}")
 
             val pageHtml = BufferedReader(InputStreamReader(pageConnection.getInputStream())).use {

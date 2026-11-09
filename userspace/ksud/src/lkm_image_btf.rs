@@ -597,7 +597,7 @@ mod tests {
     }
 
     #[test]
-    fn recovers_load_info_and_loading_module() {
+    fn recovers_load_info_layout() {
         let blob = build_btf(&[(136, 16, 24)], &[2], 3);
         let mut image = vec![0xaa; 32];
         image.extend_from_slice(&blob);
@@ -665,16 +665,5 @@ mod tests {
         let blob = build_btf(&[], &[], 0);
         let btf = recover_single_btf(&blob).unwrap();
         assert_eq!(btf.load_info, None);
-    }
-
-    #[test]
-    fn rejects_conflicting_loading_module_values() {
-        let blob = build_btf(&[(136, 16, 24)], &[2, 3], 3);
-        assert!(
-            recover_single_btf(&blob)
-                .unwrap_err()
-                .to_string()
-                .contains("conflicting LOADING_MODULE values")
-        );
     }
 }

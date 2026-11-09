@@ -78,7 +78,8 @@ jobs:
           files: |
             manager/*.apk
             manager-spoofed/*.apk
-            *android*-lkm/*_kernelsu.ko
+            *android*-ksu-lkm/*_kernelsu.ko
+            *android*-susfs-lkm/*_susfs_guard_lkm.ko
             AnyKernel3-*.zip
             boot-images-*/Image-*/*.img.gz
             kernel-WSA*.zip

@@ -12,8 +12,14 @@
     <a href="https://github.com/KernelSU-Next/KernelSU-Next/releases/latest">
       <img src="https://img.shields.io/github/v/release/KernelSU-Next/KernelSU-Next?label=Release&logo=github" alt="Latest Release">
     </a>
-    <a href="https://nightly.link/KernelSU-Next/KernelSU-Next/workflows/build-manager-ci/next/Manager">
+    <a href="https://github.com/KernelSU-Next/KernelSU-Next/releases">
+      <img src="https://img.shields.io/github/downloads/KernelSU-Next/KernelSU-Next/total?label=Downloads&logo=github" alt="Total Downloads">
+    </a>
+    <a href="https://nightly.link/KernelSU-Next/KernelSU-Next/workflows/build-manager-ci/dev/manager">
       <img src="https://img.shields.io/badge/Nightly%20Release-gray?logo=hackthebox&logoColor=fff" alt="Nightly Build">
+    </a>
+    <a href="https://github.com/KernelSU-Next/KernelSU-Next/actions/workflows/build-manager-ci.yml">
+      <img src="https://github.com/KernelSU-Next/KernelSU-Next/actions/workflows/build-manager-ci.yml/badge.svg" alt="Build Status">
     </a>
     <a href="https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html">
       <img src="https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu" alt="License: GPL v2">
@@ -30,51 +36,54 @@
 ## 🚀 特性
 
 - 基于内核的 `su` 和超级用户权限管理。
-- 动态挂载系统基于 [Magic Mount](https://topjohnwu.github.io/Magisk/details.html#magic-mount) 以及 [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS)。
-- [App Profile](https://kernelsu.org/zh_CN/guide/app-profile.html)：把 Root 权限关进笼子里。
+- 基于 [metamodules](https://kernelsu.org/guide/metamodule.html) 的模块系统：用于无系统修改的可插拔基础设施。
+- GKI 2.0 设备支持内置 SUSFS LKM 驱动加载。
+- 风险检测：阻止可疑模块被安装。
+- 支持备份和恢复模块及应用配置文件。
+- [应用配置文件](https://kernelsu.org/guide/app-profile.html)：把 Root 权限关进笼子里。
 
 ---
 
 ## ✅ 兼容性
 
-KernelSU Next 支持从 **4.4 到 6.12** 的大多数安卓内核。
+KernelSU Next 支持从 **4.4 到 6.18** 的 Android 内核。
 
-| 内核版本              | 支持情况                                                                       |
-|----------------------|--------------------------------------------------------------------------------|
-| 5.10+ (GKI 2.0)      | 可运行预置镜像和 LKM/KMI                                                        |
-| 4.19 – 5.4 (GKI 1.0) | 需要使用 KernelSU 内核驱动重新编译                                               |
-| < 4.14 (EOL)         | 需要使用 KernelSU 内核驱动重新编译（3.18+ 的版本处于试验阶段，可能需要进行回溯移植） |
+| 内核版本 | 支持说明 |
+|----------------------|-------------------------------------------------------------------------|
+| 5.10+ (GKI 2.0)      | 支持预构建镜像和 LKM/KMI |
+| 4.19 – 5.4 (GKI 1.0) | 需要将 KernelSU 驱动编译到内核中 |
+| < 4.14 (EOL)         | 需要 KernelSU 驱动（3.18+ 为实验性版本，可能需要回溯移植） |
 
-**支持的架构：** `arm64-v8a`、`armeabi-v7a`、`x86_64`
+**支持架构：** `arm64-v8a` 和 `x86_64`
 
 > [!CAUTION]
-> 最近的内核版本引入了一项破坏性更改，导致 KernelSU Next 在 `x86_64` 上运行失败，甚至可能引发内核恐慌 (kernel panic)！请查看网站获取更多信息！
+> 较新的内核版本引入了破坏性变更，导致 KernelSU Next 在 `x86_64` 上运行失败，甚至可能触发 kernel panic！请前往网站获取更多信息。
 
 ---
 
 ## 📦 安装
 
-请遵循该[安装说明](https://kernelsu-next.github.io/webpage/zh_CN/pages/installation.html)进行操作。
+请参考 [安装指南](https://kernelsu-next.github.io/webpage/pages/installation.html) 以获取设置说明。
 
 ---
 
 ## 🏅 贡献
 
 - 前往 [Crowdin](https://crowdin.com/project/kernelsu-next) 为管理器提交翻译！
-- 有关报告 KernelSU Next 漏洞的信息，请参阅 [SECURITY.md](/SECURITY.md)。
+- 有关安全问题的报告，请参见 [SECURITY.md](/SECURITY.md)。
 
 ---
 
-## 📜 许可
+## 📜 许可证
 
-- **目录 `/kernel` 下所有文件**为 [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)。
-- **`/kernel` 目录以外的其他部分**均为 [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html)。
+- **`/kernel` 目录:** [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)。
+- **其他所有文件:** [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html)。
 
 ---
 
 ## 💸 捐赠
 
-如果你喜欢这个项目还请支持：
+如果您希望支持该项目：
 
 - **USDT (BEP20, ERC20)**: `0x0b269716dc00692676e4217e23c7f67abd5f0f3e`
 - **USDT (TRC20)**: `TXu6VX8dvJLQPx4WBobjbYT5tefHTDikWo`
@@ -82,11 +91,13 @@ KernelSU Next 支持从 **4.4 到 6.12** 的大多数安卓内核。
 
 ---
 
-## 🙏 鸣谢
+## 🙏 致谢
 
-- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/) – KernelSU 的灵感
-- [Magisk](https://github.com/topjohnwu/Magisk) – 强大的 Root 工具
-- [Genuine](https://github.com/brevent/genuine/) – APK v2 签名验证
-- [Diamorphine](https://github.com/m0nad/Diamorphine) – 一些 Rootkit 技巧
-- [KernelSU](https://github.com/tiann/KernelSU) – 感谢 tiann，否则 KernelSU Next 根本不会存在
-- [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs) – 💜 5ec1cff 为了拯救 KernelSU！
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/) – 概念启发
+- [Magisk](https://github.com/topjohnwu/Magisk) – 核心 root 实现
+- [Genuine](https://github.com/brevent/genuine/) – APK v2 签名校验
+- [Diamorphine](https://github.com/m0nad/Diamorphine) – rootkit 技术
+- [KernelSU](https://github.com/tiann/KernelSU) – 让 KernelSU Next 成为可能的原始基础
+- [Susfs4ksu](https://gitlab.com/simonpunk/susfs4ksu) – KernelSU 的内核级 root 隐藏扩展
+- [Susfs4ksu-lkm](https://github.com/inforcqb/susfs4ksu-lkm) – 作为可加载内核模块移植的 SUSFS
+

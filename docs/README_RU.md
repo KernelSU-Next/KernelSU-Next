@@ -6,14 +6,20 @@
   <img src="/assets/kernelsu_next.png" width="96" alt="KernelSU Next Logo">
 
   <h2>KernelSU Next</h2>
-  <p><strong>Решение root на базе ядра для устройств Android.</strong></p>
+  <p><strong>Решение для root на базе ядра для устройств Android.</strong></p>
 
   <p>
     <a href="https://github.com/KernelSU-Next/KernelSU-Next/releases/latest">
       <img src="https://img.shields.io/github/v/release/KernelSU-Next/KernelSU-Next?label=Release&logo=github" alt="Latest Release">
     </a>
-    <a href="https://nightly.link/KernelSU-Next/KernelSU-Next/workflows/build-manager-ci/next/Manager">
+    <a href="https://github.com/KernelSU-Next/KernelSU-Next/releases">
+      <img src="https://img.shields.io/github/downloads/KernelSU-Next/KernelSU-Next/total?label=Downloads&logo=github" alt="Total Downloads">
+    </a>
+    <a href="https://nightly.link/KernelSU-Next/KernelSU-Next/workflows/build-manager-ci/dev/manager">
       <img src="https://img.shields.io/badge/Nightly%20Release-gray?logo=hackthebox&logoColor=fff" alt="Nightly Build">
+    </a>
+    <a href="https://github.com/KernelSU-Next/KernelSU-Next/actions/workflows/build-manager-ci.yml">
+      <img src="https://github.com/KernelSU-Next/KernelSU-Next/actions/workflows/build-manager-ci.yml/badge.svg" alt="Build Status">
     </a>
     <a href="https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html">
       <img src="https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu" alt="License: GPL v2">
@@ -27,53 +33,57 @@
 
 ---
 
-## 🚀 Функции
+## 🚀 Возможности
 
-- Управление `su` и root-доступом на уровне ядра.
-- Система модулей на основе [Magic Mount](https://topjohnwu.github.io/Magisk/details.html#magic-mount) и [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
-- [Профиль приложений](https://kernelsu.org/ru_RU/guide/app-profile.html): Ограничение root-прав для отдельных приложений.
+- Управление доступом root и `su` на основе ядра.
+- Система модулей на базе [metamodules](https://kernelsu.org/guide/metamodule.html): подключаемая инфраструктура для системных модификаций.
+- Встроенная загрузка драйвера SUSFS LKM для устройств GKI 2.0.
+- Обнаружение рисков, блокирующее установку подозрительных модулей.
+- Поддержка резервного копирования и восстановления модулей и профилей приложений.
+- [Профиль приложения](https://kernelsu.org/guide/app-profile.html): ограничивает право root в безопасной клетке.
 
 ---
 
 ## ✅ Совместимость
 
-KernelSU Next поддерживает ядра Android версий **от 4.4 до 6.12**.
+KernelSU Next поддерживает ядра Android с **4.4 до 6.18**.
 
-| Версия ядра          | Примечания по поддержке                                                                  |
-|----------------------|------------------------------------------------------------------------------------------|
-| 5.10+ (GKI 2.0)      | Поддержка предсобранных образов и LKM/KMI                                                |
-| 4.19 – 5.4 (GKI 1.0) | Требуется встроенный драйвер KernelSU                                                    |
-| < 4.14 (EOL)         | Требуется драйвер KernelSU (3.18+ экспериментальная поддержка, может потребоваться порт) |
+| Версия ядра | Примечания по поддержке |
+|----------------------|-------------------------------------------------------------------------|
+| 5.10+ (GKI 2.0)      | Поддержка предварительно собранных образов и LKM/KMI |
+| 4.19 – 5.4 (GKI 1.0) | Требуется встроенный драйвер KernelSU в ядро |
+| < 4.14 (EOL)         | Требуется драйвер KernelSU (3.18+ экспериментальный и может потребовать бэкпорты) |
 
-**Поддерживаемые архитектуры:** `arm64-v8a`, `armeabi-v7a`, `x86_64`
+**Поддерживаемые архитектуры:** `arm64-v8a` и `x86_64`
 
 > [!CAUTION]
-> В последних версиях ядра реализовано критическое изменение, из-за которого KernelSU Next перестает работать и может вызвать панику ядра (kernel panic) на `x86_64`! Дополнительную информацию смотрите на сайте!
+> Новые версии ядра внесли критическое изменение, из-за которого KernelSU Next может перестать работать и даже вызвать kernel panic на `x86_64`! Проверьте сайт для получения дополнительной информации!
 
 ---
 
 ## 📦 Установка
 
-Пожалуйста, ознакомьтесь с [руководством по установке](https://kernelsu-next.github.io/webpage/pages/installation.html) для получения инструкций по настройке.
+Пожалуйста, обратитесь к руководству по [установке](https://kernelsu-next.github.io/webpage/pages/installation.html) для получения инструкций.
 
 ---
 
-## 🏅 Безопасность
+## 🏅 Вклад
 
-Для сообщений о проблемах безопасности см. [SECURITY.md](/SECURITY.md).
+- Перейдите на [Crowdin](https://crowdin.com/project/kernelsu-next), чтобы отправить перевод для менеджера!
+- Чтобы сообщить о проблемах безопасности, см. [SECURITY.md](/SECURITY.md).
 
 ---
 
 ## 📜 Лицензия
 
-- **Каталог `/kernel`:** [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
+- **каталог `/kernel`:** [GPL-2.0-only](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html).
 - **Все остальные файлы:** [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ---
 
 ## 💸 Пожертвования
 
-Если хотите поддержать проект:
+Если вы хотите поддержать проект:
 
 - **USDT (BEP20, ERC20)**: `0x0b269716dc00692676e4217e23c7f67abd5f0f3e`
 - **USDT (TRC20)**: `TXu6VX8dvJLQPx4WBobjbYT5tefHTDikWo`
@@ -83,9 +93,11 @@ KernelSU Next поддерживает ядра Android версий **от 4.4 
 
 ## 🙏 Благодарности
 
-- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/) – Вдохновение для концепции
+- [Kernel-Assisted Superuser](https://git.zx2c4.com/kernel-assisted-superuser/about/) – Идеи и концепция
 - [Magisk](https://github.com/topjohnwu/Magisk) – Основная реализация root
 - [Genuine](https://github.com/brevent/genuine/) – Проверка подписи APK v2
-- [Diamorphine](https://github.com/m0nad/Diamorphine) – Техники Rootkit
-- [KernelSU](https://github.com/tiann/KernelSU) – Основа для создания KernelSU Next
-- [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs) – За поддержку Magic Mount
+- [Diamorphine](https://github.com/m0nad/Diamorphine) – Техники rootkit
+- [KernelSU](https://github.com/tiann/KernelSU) – Исходная база, благодаря которой стал возможен KernelSU Next
+- [Susfs4ksu](https://gitlab.com/simonpunk/susfs4ksu) – Расширение скрытия root уровня ядра для KernelSU
+- [Susfs4ksu-lkm](https://github.com/inforcqb/susfs4ksu-lkm) – SUSFS, портированный как загружаемый модуль ядра
+

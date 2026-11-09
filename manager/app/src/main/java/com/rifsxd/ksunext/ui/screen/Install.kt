@@ -83,6 +83,10 @@ fun InstallScreen(navigator: DestinationsNavigator) {
 
     val onInstall = {
         installMethod?.let { method ->
+            if (Natives.isLateLoadMode && method !is InstallMethod.SelectFile) {
+                return@let
+            }
+
             if (method is InstallMethod.AnyKernel) {
                 method.uri?.let {
                     navigator.navigate(
@@ -103,7 +107,9 @@ fun InstallScreen(navigator: DestinationsNavigator) {
         }
     }
 
-    val currentKmi by produceState(initialValue = "") { value = getCurrentKmi() }
+    val currentKmi by produceState(initialValue = "") {
+        value = runCatching { getCurrentKmi().trim() }.getOrDefault("")
+    }
 
     val selectKmiDialog = rememberSelectKmiDialog { kmi ->
         kmi?.let {
@@ -307,14 +313,16 @@ private fun SelectInstallMethod(
     radioOptions.add(InstallMethod.SelectFile(summary = selectFileTip))
 
     if (rootAvailable) {
-        if (kernelVersion.isGKI()) {
-            radioOptions.add(InstallMethod.DirectInstall)
-            if (isAbDevice) {
-                radioOptions.add(InstallMethod.DirectInstallToInactiveSlot)
+        if (!Natives.isLateLoadMode) {
+            if (kernelVersion.isGKI()) {
+                radioOptions.add(InstallMethod.DirectInstall)
+                if (isAbDevice) {
+                    radioOptions.add(InstallMethod.DirectInstallToInactiveSlot)
+                }
             }
-        }
 
-        radioOptions.add(InstallMethod.AnyKernel())
+            radioOptions.add(InstallMethod.AnyKernel())
+        }
     }
 
     val selectImageLauncher = rememberLauncherForActivityResult(

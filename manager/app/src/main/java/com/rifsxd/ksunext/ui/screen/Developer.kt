@@ -8,6 +8,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DeveloperMode
 import androidx.compose.material.icons.filled.Web
+import androidx.compose.material.icons.filled.Coronavirus
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -31,7 +33,7 @@ import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.R
 import com.rifsxd.ksunext.ksuApp
 import com.rifsxd.ksunext.ui.component.SwitchItem
-import com.rifsxd.ksunext.ui.util.LocalSnackbarHost
+import com.rifsxd.ksunext.ui.util.*
 
 /**
  * @author rifsxd
@@ -126,6 +128,37 @@ fun DeveloperScreen(navigator: DestinationsNavigator) {
                     enableWebDebugging = it
                 }
             }
+
+            var softRebootAfterModuleFlash by rememberSaveable {
+                mutableStateOf(prefs.getBoolean("soft_reboot_after_module_flash", false))
+            }
+            if (ksuVersion != null) {
+                SwitchItem(
+                    icon = Icons.Filled.Refresh,
+                    title = stringResource(R.string.soft_reboot_after_module_flash),
+                    summary = stringResource(R.string.soft_reboot_after_module_flash_summary),
+                    checked = softRebootAfterModuleFlash
+                ) { checked ->
+                    prefs.edit { putBoolean("soft_reboot_after_module_flash", checked) }
+                    softRebootAfterModuleFlash = checked
+                }
+            }
+
+            var isRiskEnabled by rememberSaveable {
+                mutableStateOf(getRiskStatus() == true)
+            }
+
+            SwitchItem(
+                icon = Icons.Filled.Coronavirus,
+                title = stringResource(R.string.enable_risk),
+                summary = stringResource(R.string.enable_risk_summary),
+                checked = isRiskEnabled
+            ) { checked ->
+                if (setRisk(checked)) {
+                    isRiskEnabled = getRiskStatus() == true
+                }
+            }
+
         }
     }
 }

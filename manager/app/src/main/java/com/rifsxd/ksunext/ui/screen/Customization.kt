@@ -13,6 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Contrast
+import androidx.compose.material.icons.filled.Animation
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.filled.ViewCarousel
 import androidx.compose.material.icons.filled.Vibration
@@ -193,6 +194,19 @@ fun CustomizationScreen(navigator: DestinationsNavigator) {
             ) { checked ->
                 activity?.setNavBarEnabled(checked)
                 enableNavBar = checked
+            }
+
+            var enableStartupAnimation by rememberSaveable {
+                mutableStateOf(prefs.getBoolean("enable_startup_animation", true))
+            }
+            SwitchItem(
+                icon = Icons.Filled.Animation,
+                title = stringResource(id = R.string.settings_startup_animation),
+                summary = stringResource(id = R.string.settings_startup_animation_summary),
+                checked = enableStartupAnimation
+            ) { checked ->
+                prefs.edit { putBoolean("enable_startup_animation", checked) }
+                enableStartupAnimation = checked
             }
         }
     }

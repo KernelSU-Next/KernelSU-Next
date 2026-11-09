@@ -37,12 +37,17 @@ jobs:
     - name: Download artifacts
       uses: actions/download-artifact@v7
     
-    - name: Prepare LKM fies
+    - name: Prepare ksu LKM fies
       if: ${{ inputs.pack_lkm }}
       run: |
-        cp aarch64-android*-lkm/*_kernelsu.ko ./userspace/ksud/bin/aarch64/
-        cp x86_64-android*-lkm/*_kernelsu.ko ./userspace/ksud/bin/x86_64/
-    
+        cp aarch64-android*-ksu-lkm/*_kernelsu.ko ./userspace/ksud/bin/aarch64/
+        cp x86_64-android*-ksu-lkm/*_kernelsu.ko ./userspace/ksud/bin/x86_64/
+
+    - name: Prepare susfs LKM fies
+      if: ${{ inputs.pack_lkm }}
+      run: |
+        cp aarch64-android*-susfs-lkm/*_susfs_guard_lkm.ko ./userspace/ksud/bin/aarch64/
+
     - name: Prepare ksuinit
       if: ${{ inputs.pack_ksuinit }}
       run: |

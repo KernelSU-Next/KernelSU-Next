@@ -19,6 +19,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -62,6 +63,7 @@ import com.rifsxd.ksunext.Natives
 import com.rifsxd.ksunext.R
 import com.rifsxd.ksunext.ui.component.*
 import com.rifsxd.ksunext.ui.util.*
+import com.rifsxd.ksunext.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -133,6 +135,8 @@ fun SettingScreen(navigator: DestinationsNavigator) {
     var suCompatStatus by rememberSaveable { mutableStateOf("") }
     var kernelUmountStatus by rememberSaveable { mutableStateOf("") }
     var adbRootStatus by rememberSaveable { mutableStateOf("") }
+    var shellSuAdbOnlyStatus by rememberSaveable { mutableStateOf("") }
+    var isShellSuAdbOnlyEnabled by rememberSaveable { mutableStateOf(false) }
     var selinuxHideStatus by rememberSaveable { mutableStateOf("") }
     var sulogStatus by rememberSaveable { mutableStateOf("") }
     var isSulogEnabled by rememberSaveable { mutableStateOf(false) }
@@ -142,8 +146,18 @@ fun SettingScreen(navigator: DestinationsNavigator) {
         suCompatStatus = getFeatureStatus("su_compat")
         kernelUmountStatus = getFeatureStatus("kernel_umount")
         sulogStatus = getFeatureStatus("sulog")
-        isSulogEnabled = getFeaturePersistValue("sulog") == 1L
+        isSulogEnabled = if (sulogStatus == "forced") {
+            getFeatureValue("sulog") == 1L
+        } else {
+            getFeaturePersistValue("sulog") == 1L
+        }
         adbRootStatus = getFeatureStatus("adb_root")
+        shellSuAdbOnlyStatus = getFeatureStatus("shell_su_adb_only")
+        isShellSuAdbOnlyEnabled = if (shellSuAdbOnlyStatus == "forced") {
+            getFeatureValue("shell_su_adb_only") == 1L
+        } else {
+            getFeaturePersistValue("shell_su_adb_only") == 1L
+        }
 
         selinuxHideStatus = getFeatureStatus("selinux_hide")
         avcSpoofStatus = getFeatureStatus("avc_spoof")
@@ -182,6 +196,9 @@ fun SettingScreen(navigator: DestinationsNavigator) {
                     isSulogEnabled = isSulogEnabled,
                     onSulogEnabledChange = { isSulogEnabled = it },
                     adbRootStatus = adbRootStatus,
+                    shellSuAdbOnlyStatusParam = shellSuAdbOnlyStatus,
+                    isShellSuAdbOnlyEnabled = isShellSuAdbOnlyEnabled,
+                    onShellSuAdbOnlyEnabledChange = { isShellSuAdbOnlyEnabled = it },
                     selinuxHideStatus = selinuxHideStatus,
                     avcSpoofStatus = avcSpoofStatus,
                     scope = scope
@@ -216,6 +233,9 @@ private fun KernelFeaturesCard(
     isSulogEnabled: Boolean,
     onSulogEnabledChange: (Boolean) -> Unit,
     adbRootStatus: String,
+    shellSuAdbOnlyStatusParam: String,
+    isShellSuAdbOnlyEnabled: Boolean,
+    onShellSuAdbOnlyEnabledChange: (Boolean) -> Unit,
     selinuxHideStatus: String,
     avcSpoofStatus: String,
     scope: kotlinx.coroutines.CoroutineScope
@@ -225,6 +245,7 @@ private fun KernelFeaturesCard(
     val kernelUmountSupported = kernelUmountStatus == "supported"
     val sulogSupported = sulogStatusParam == "supported"
     val adbRootSupported = adbRootStatus == "supported"
+    val shellSuAdbOnlySupported = shellSuAdbOnlyStatusParam == "supported"
     val selinuxHideSupported = selinuxHideStatus == "supported"
     val avcSpoofSupported = avcSpoofStatus == "supported"
 
@@ -253,14 +274,16 @@ private fun KernelFeaturesCard(
             var isSuEnabled by rememberSaveable {
                 mutableStateOf(Natives.isSuEnabled())
             }
+            val suCompatSummary = when (suCompatStatus) {
+                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                "forced" -> stringResource(id = R.string.feature_status_forced_summary)
+                else -> stringResource(R.string.settings_enable_su_summary)
+            }
             SwitchItem(
                 icon = Icons.Filled.RemoveModerator,
                 title = stringResource(R.string.settings_enable_su),
-                summary = if (suCompatSupported) {
-                    stringResource(R.string.settings_enable_su_summary)
-                } else {
-                    stringResource(id = R.string.feature_status_unsupported_summary)
-                },
+                summary = suCompatSummary,
                 checked = isSuEnabled,
                 enabled = suCompatSupported,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
@@ -277,14 +300,16 @@ private fun KernelFeaturesCard(
             var isKernelUmountEnabled by rememberSaveable {
                 mutableStateOf(Natives.isKernelUmountEnabled())
             }
+            val kernelUmountSummary = when (kernelUmountStatus) {
+                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                "forced" -> stringResource(id = R.string.feature_status_forced_summary)
+                else -> stringResource(id = R.string.settings_enable_kernel_umount_summary)
+            }
             SwitchItem(
                 icon = Icons.Filled.RemoveCircle,
                 title = stringResource(id = R.string.settings_enable_kernel_umount),
-                summary = if (kernelUmountSupported) {
-                    stringResource(id = R.string.settings_enable_kernel_umount_summary)
-                } else {
-                    stringResource(id = R.string.feature_status_unsupported_summary)
-                },
+                summary = kernelUmountSummary,
                 checked = isKernelUmountEnabled,
                 enabled = kernelUmountSupported,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
@@ -301,6 +326,7 @@ private fun KernelFeaturesCard(
             val sulogSummary = when (sulogStatusParam) {
                 "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
                 "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                "forced" -> stringResource(id = R.string.feature_status_forced_summary)
                 else -> stringResource(id = R.string.settings_sulog_summary)
             }
             SwitchItem(
@@ -321,14 +347,16 @@ private fun KernelFeaturesCard(
             var isAdbRootEnabled by rememberSaveable {
                 mutableStateOf(Natives.isAdbRootEnabled())
             }
+            val adbRootSummary = when (adbRootStatus) {
+                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                "forced" -> stringResource(id = R.string.feature_status_forced_summary)
+                else -> stringResource(id = R.string.settings_adb_root_summary)
+            }
             SwitchItem(
                 icon = Icons.Filled.Usb,
                 title = stringResource(id = R.string.settings_adb_root),
-                summary = if (adbRootSupported) {
-                    stringResource(id = R.string.settings_adb_root_summary)
-                } else {
-                    stringResource(id = R.string.feature_status_unsupported_summary)
-                },
+                summary = adbRootSummary,
                 checked = isAdbRootEnabled,
                 enabled = adbRootSupported,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
@@ -343,17 +371,40 @@ private fun KernelFeaturesCard(
                 }
             }
 
+            val shellSuAdbOnlySummary = when (shellSuAdbOnlyStatusParam) {
+                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                "forced" -> stringResource(id = R.string.feature_status_forced_summary)
+                else -> stringResource(id = R.string.settings_shell_su_adb_only_summary)
+            }
+            SwitchItem(
+                icon = Icons.Filled.VerifiedUser,
+                title = stringResource(id = R.string.settings_shell_su_adb_only),
+                summary = shellSuAdbOnlySummary,
+                checked = isShellSuAdbOnlyEnabled,
+                enabled = shellSuAdbOnlySupported,
+                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent)
+            ) { checked ->
+                if (execKsud("feature set shell_su_adb_only ${if (checked) 1 else 0}", true)) {
+                    execKsud("feature save", true)
+                    onShellSuAdbOnlyEnabledChange(checked)
+                }
+            }
+
             var isSelinuxHideEnabled by rememberSaveable {
                 mutableStateOf(Natives.isSelinuxHideEnabled())
+            }
+            val selinuxHideSummary = when (selinuxHideStatus) {
+                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                "forced" -> stringResource(id = R.string.feature_status_forced_summary)
+                else -> stringResource(id = R.string.settings_selinux_hide_summary)
             }
             SwitchItem(
                 icon = Icons.Filled.Policy,
                 title = stringResource(id = R.string.settings_selinux_hide),
-                summary = if (selinuxHideSupported) {
-                    stringResource(id = R.string.settings_selinux_hide_summary)
-                } else {
-                    stringResource(id = R.string.feature_status_unsupported_summary)
-                },
+                summary = selinuxHideSummary,
                 checked = isSelinuxHideEnabled,
                 enabled = selinuxHideSupported,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
@@ -391,14 +442,16 @@ private fun KernelFeaturesCard(
             var isAvcSpoofEnabled by rememberSaveable {
                 mutableStateOf(Natives.isAvcSpoofEnabled())
             }
+            val avcSpoofSummary = when (avcSpoofStatus) {
+                "unsupported" -> stringResource(id = R.string.feature_status_unsupported_summary)
+                "managed" -> stringResource(id = R.string.feature_status_managed_summary)
+                "forced" -> stringResource(id = R.string.feature_status_forced_summary)
+                else -> stringResource(id = R.string.settings_enable_avc_spoof_summary)
+            }
             SwitchItem(
                 icon = Icons.Filled.Shield,
                 title = stringResource(id = R.string.settings_enable_avc_spoof),
-                summary = if (avcSpoofSupported) {
-                    stringResource(id = R.string.settings_enable_avc_spoof_summary)
-                } else {
-                    stringResource(id = R.string.feature_status_unsupported_summary)
-                },
+                summary = avcSpoofSummary,
                 checked = isAvcSpoofEnabled,
                 enabled = avcSpoofSupported,
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)),
@@ -420,6 +473,128 @@ private fun SecurityCard(
     navigator: DestinationsNavigator,
     loadingDialog: LoadingDialogHandle
 ) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val isGkiKernel = remember { getKernelVersion().isGKI() }
+    var susfsAlreadySupported by remember { mutableStateOf(false) }
+    var susfsGuardLkmLoaded by remember { mutableStateOf(false) }
+    var susfsLoadInProgress by remember { mutableStateOf(false) }
+    var showSusfsLoadSheet by remember { mutableStateOf(false) }
+    var autoLoadSusfs by rememberSaveable { mutableStateOf(false) }
+    var autoLoadStateLoaded by remember { mutableStateOf(false) }
+    var autoLoadUpdating by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        autoLoadSusfs = runCatching { getSusfsAutoLoadEnabled() }.getOrDefault(false)
+        autoLoadStateLoaded = true
+    }
+    LaunchedEffect(isGkiKernel) {
+        if (isGkiKernel) {
+            val state = withContext(Dispatchers.IO) {
+                val supported = runCatching { getSuSFS().trim() == "Supported" }.getOrDefault(false)
+                val lkmLoaded = runCatching { isSusfsGuardLkmLoaded() }.getOrDefault(false)
+                supported to lkmLoaded
+            }
+            susfsAlreadySupported = state.first
+            susfsGuardLkmLoaded = state.second
+        }
+    }
+
+    val persistAutoLoad: (Boolean, String?) -> Unit = { enabled, kmi ->
+        if (!autoLoadUpdating) {
+            autoLoadUpdating = true
+            scope.launch {
+                val updated = withContext(Dispatchers.IO) {
+                    runCatching { setSusfsAutoLoadEnabled(enabled, kmi) }.getOrDefault(false)
+                }
+                autoLoadUpdating = false
+                if (updated) {
+                    autoLoadSusfs = enabled
+                    Toast.makeText(
+                        context,
+                        if (enabled) R.string.susfs_auto_load_enabled
+                        else R.string.susfs_auto_load_disabled,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(context, R.string.susfs_auto_load_failed, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    val selectAutoLoadKmiDialog = rememberSelectKmiDialog { selectedKmi ->
+        if (selectedKmi != null) {
+            persistAutoLoad(true, selectedKmi)
+        }
+    }
+    val onAutoLoadChanged: (Boolean) -> Unit = { enabled ->
+        if (enabled) {
+            autoLoadUpdating = true
+            scope.launch {
+                val detectedKmi = withContext(Dispatchers.IO) {
+                    runCatching { getCurrentKmi().trim() }
+                        .getOrNull()
+                        ?.takeIf { it.matches(Regex("[A-Za-z0-9._-]+")) }
+                }
+                autoLoadUpdating = false
+                if (detectedKmi == null) {
+                    showSusfsLoadSheet = false
+                    selectAutoLoadKmiDialog.show()
+                } else {
+                    persistAutoLoad(true, detectedKmi)
+                }
+            }
+        } else {
+            persistAutoLoad(false, null)
+        }
+    }
+
+    val startSusfsLoad: (String?) -> Unit = { selectedKmi ->
+        susfsLoadInProgress = true
+        scope.launch {
+            val loaded = withContext(Dispatchers.IO) {
+                runCatching { loadSusfsGuardLkm(selectedKmi) }.getOrDefault(false)
+            }
+            susfsLoadInProgress = false
+            if (loaded) {
+                susfsAlreadySupported = true
+                susfsGuardLkmLoaded = true
+            }
+            showSusfsLoadSheet = false
+            Toast.makeText(
+                context,
+                if (loaded) R.string.susfs_load_success else R.string.susfs_load_failed,
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+    val selectSusfsKmiDialog = rememberSelectKmiDialog { selectedKmi ->
+        selectedKmi?.let(startSusfsLoad)
+    }
+    val unloadSusfs: () -> Unit = {
+        if (!susfsLoadInProgress) {
+            susfsLoadInProgress = true
+            scope.launch {
+                val unloaded = withContext(Dispatchers.IO) {
+                    runCatching { unloadSusfsGuardLkm() }.getOrDefault(false)
+                }
+                susfsLoadInProgress = false
+                if (unloaded) {
+                    susfsGuardLkmLoaded = false
+                    susfsAlreadySupported = withContext(Dispatchers.IO) {
+                        runCatching { getSuSFS().trim() == "Supported" }.getOrDefault(false)
+                    }
+                }
+                showSusfsLoadSheet = false
+                Toast.makeText(
+                    context,
+                    if (unloaded) R.string.susfs_unload_success else R.string.susfs_unload_failed,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(12.dp),
@@ -441,6 +616,27 @@ private fun SecurityCard(
                 if (setSelinuxEnforce(shouldEnforce)) {
                     isSelinuxPermissive = !shouldEnforce
                 }
+            }
+
+            if (isGkiKernel) {
+                ListItem(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(enabled = !susfsLoadInProgress) { showSusfsLoadSheet = true },
+                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                    leadingContent = { Icon(Icons.Filled.Memory, null) },
+                    headlineContent = {
+                        Text(
+                            text = stringResource(R.string.susfs_load_action),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    },
+                    supportingContent = {
+                        Text(stringResource(R.string.susfs_load_summary))
+                    }
+                )
             }
 
             ListItem(
@@ -494,11 +690,112 @@ private fun SecurityCard(
                 }
             )
 
-            if (Natives.isLkmMode) {
+            if (Natives.isLkmMode && !Natives.isLateLoadMode) {
                 UninstallItem(
                     navigator = navigator,
                     withLoading = { loadingDialog.withLoading(it) },
                     modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp))
+                )
+            }
+        }
+    }
+
+    if (showSusfsLoadSheet) {
+        SusfsLoadBottomSheet(
+            loading = susfsLoadInProgress,
+            susfsAlreadySupported = susfsAlreadySupported,
+            autoLoadEnabled = autoLoadSusfs,
+            autoLoadUpdating = autoLoadUpdating || !autoLoadStateLoaded,
+            onAutoLoadChanged = onAutoLoadChanged,
+            onDismiss = { showSusfsLoadSheet = false },
+            onLoad = {
+                if (susfsLoadInProgress) return@SusfsLoadBottomSheet
+                susfsLoadInProgress = true
+                scope.launch {
+                    val kmi = runCatching { getCurrentKmi().trim() }.getOrDefault("")
+                    if (kmi.isBlank()) {
+                        susfsLoadInProgress = false
+                        selectSusfsKmiDialog.show()
+                    } else {
+                        startSusfsLoad(null)
+                    }
+                }
+            },
+            onUnload = unloadSusfs,
+            susfsGuardLkmLoaded = susfsGuardLkmLoaded
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SusfsLoadBottomSheet(
+    loading: Boolean,
+    susfsAlreadySupported: Boolean,
+    autoLoadEnabled: Boolean,
+    autoLoadUpdating: Boolean,
+    onAutoLoadChanged: (Boolean) -> Unit,
+    onDismiss: () -> Unit,
+    onLoad: () -> Unit,
+    onUnload: () -> Unit,
+    susfsGuardLkmLoaded: Boolean
+) {
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp)
+                .padding(bottom = 24.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.susfs_load_action),
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = stringResource(R.string.susfs_load_summary),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            ListItem(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .toggleable(
+                        value = autoLoadEnabled,
+                        enabled = !autoLoadUpdating,
+                        role = Role.Switch,
+                        onValueChange = onAutoLoadChanged
+                    ),
+                colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                headlineContent = { Text(stringResource(R.string.susfs_auto_load)) },
+                supportingContent = { Text(stringResource(R.string.susfs_auto_load_summary)) },
+                trailingContent = {
+                    Switch(
+                        checked = autoLoadEnabled,
+                        enabled = !autoLoadUpdating,
+                        onCheckedChange = onAutoLoadChanged
+                    )
+                }
+            )
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .alpha(if (susfsAlreadySupported && !susfsGuardLkmLoaded) 0.55f else 1f),
+                enabled = !loading && (susfsGuardLkmLoaded || !susfsAlreadySupported),
+                onClick = if (susfsGuardLkmLoaded) onUnload else onLoad
+            ) {
+                Text(
+                    stringResource(
+                        when {
+                            loading && susfsGuardLkmLoaded -> R.string.susfs_unload_in_progress
+                            loading -> R.string.susfs_load_in_progress
+                            susfsGuardLkmLoaded -> R.string.susfs_unload_button
+                            susfsAlreadySupported -> R.string.susfs_builtin_loaded
+                            else -> R.string.susfs_load_button
+                        }
+                    )
                 )
             }
         }
@@ -513,7 +810,7 @@ private fun AppSettingsCard(
     exportBugreportLauncher: androidx.activity.result.ActivityResultLauncher<String>,
     loadingDialog: LoadingDialogHandle,
     scope: kotlinx.coroutines.CoroutineScope,
-    context: android.content.Context,
+    context: Context,
     isUnrooted: Boolean
 ) {
     Card(modifier = Modifier.fillMaxWidth()) {
@@ -556,6 +853,14 @@ private fun AppSettingsCard(
             val timeoutLabelRes = timeoutOptions.find { it.first == appLockTimeout }?.second
                 ?: R.string.settings_app_lock_timeout_1m
             val timeoutLabel = stringResource(timeoutLabelRes)
+            val onRequireBiometricChange: (Boolean) -> Unit = { newValue ->
+                if (newValue && !(context.getSystemService(Context.KEYGUARD_SERVICE) as android.app.KeyguardManager).isDeviceSecure) {
+                    Toast.makeText(context, context.getString(R.string.settings_app_lock_no_credential), Toast.LENGTH_SHORT).show()
+                } else {
+                    requireBiometric = newValue
+                    prefs.edit { putBoolean("enable_biometric_lock", newValue) }
+                }
+            }
 
             ListItem(
                 modifier = Modifier
@@ -564,18 +869,17 @@ private fun AppSettingsCard(
                     .toggleable(
                         value = requireBiometric,
                         role = Role.Switch,
-                        onValueChange = { newValue ->
-                            if (newValue && !(context.getSystemService(Context.KEYGUARD_SERVICE) as android.app.KeyguardManager).isDeviceSecure) {
-                                Toast.makeText(context, context.getString(R.string.settings_app_lock_no_credential), Toast.LENGTH_SHORT).show()
-                                return@toggleable
-                            }
-                            requireBiometric = newValue
-                            prefs.edit { putBoolean("enable_biometric_lock", newValue) }
-                        }
+                        onValueChange = onRequireBiometricChange
                     ),
                     colors = ListItemDefaults.colors(containerColor = Color.Transparent),
                     leadingContent = { Icon(Icons.Filled.Lock, null) },
-                    headlineContent = { Text(stringResource(R.string.settings_app_lock)) },
+                    headlineContent = {
+                        Text(
+                            text = stringResource(R.string.settings_app_lock),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    },
                     supportingContent = {
                         Column(modifier = Modifier.animateContentSize()) {
                             Text(stringResource(R.string.settings_app_lock_summary))
@@ -618,7 +922,7 @@ private fun AppSettingsCard(
                     trailingContent = {
                         Switch(
                             checked = requireBiometric,
-                            onCheckedChange = null // Handled by toggleable
+                            onCheckedChange = onRequireBiometricChange
                         )
                     }
                 )
@@ -794,7 +1098,7 @@ fun UninstallItem(
     val scope = rememberCoroutineScope()
     val uninstallConfirmDialog = rememberConfirmDialog()
     val showTodo = {
-        Toast.makeText(context, "TODO", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, context.getString(R.string.feature_not_implemented), Toast.LENGTH_SHORT).show()
     }
     val uninstallDialog = rememberUninstallDialog { uninstallType ->
         scope.launch {

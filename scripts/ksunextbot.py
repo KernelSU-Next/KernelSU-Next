@@ -37,7 +37,7 @@ def get_caption():
 
     available_space = 1024 - len(template_without_msg)
 
-    msg_text = COMMIT_MESSAGE
+    msg_text = COMMIT_MESSAGE.replace("```", "'''")
     if len(msg_text) > available_space:
         msg_text = msg_text[:max(0, available_space - 3)] + "..."
 

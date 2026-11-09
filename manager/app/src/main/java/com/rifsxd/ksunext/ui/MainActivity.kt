@@ -124,8 +124,9 @@ fun rememberScrollConnection(
 fun Modifier.horizontalSwipeNavigator(
     currentRoute: String?,
     destinations: List<BottomBarDestination>,
+    isRtl: Boolean,
     onNavigate: (Int) -> Unit
-): Modifier = pointerInput(currentRoute) {
+): Modifier = pointerInput(currentRoute, isRtl) {
 
     var totalDrag = 0f
 
@@ -145,7 +146,7 @@ fun Modifier.horizontalSwipeNavigator(
 
                 if (currentIndex == -1) return@detectHorizontalDragGestures
 
-                if (totalDrag < 0) {
+                if (if (isRtl) totalDrag > 0 else totalDrag < 0) {  
                     val next = (currentIndex + 1)
                         .coerceAtMost(destinations.lastIndex)
                     if (next != currentIndex) onNavigate(next)
@@ -248,6 +249,7 @@ class MainActivity : FragmentActivity() {
         }
 
         val prefsInit = getSharedPreferences("settings", MODE_PRIVATE)
+        val enableStartupAnimation = prefsInit.getBoolean("enable_startup_animation", true)
         val requireBiometric = prefsInit.getBoolean("enable_biometric_lock", false)
 
         if (savedInstanceState != null) {
@@ -261,7 +263,7 @@ class MainActivity : FragmentActivity() {
 
         setContent { Box(modifier = Modifier.fillMaxSize()) {
             KernelSUTheme(amoledMode = amoledModeState.value) {
-                var showSplash by remember { mutableStateOf(true) }
+                var showSplash by remember { mutableStateOf(enableStartupAnimation) }
                 var splashRotationTarget by remember { mutableStateOf(0f) }
                 val splashRotation by animateFloatAsState(
                     targetValue = splashRotationTarget,
@@ -439,6 +441,8 @@ class MainActivity : FragmentActivity() {
                                     }
 
                                     val haptic = androidx.compose.ui.platform.LocalHapticFeedback.current
+                                    val isRtl = androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl
+                                    val animationDirection = if (isRtl) -1 else 1
 
                                     val hostModifier = Modifier
                                         .padding(innerPadding)
@@ -446,6 +450,7 @@ class MainActivity : FragmentActivity() {
                                         .horizontalSwipeNavigator(
                                             currentRoute = currentRoute,
                                             destinations = visibleDestinations,
+                                            isRtl = isRtl,
                                             onNavigate = {
                                                 haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.GestureEnd)
                                                 navigateToIndex(it)
@@ -467,15 +472,15 @@ class MainActivity : FragmentActivity() {
                                                 when {
                                                     // Bottom bar → bottom bar: slide based on index direction
                                                     targetIndex != -1 && initialIndex != -1 -> {
-                                                        val offsetSign = if (targetIndex > initialIndex) 1 else -1
+                                                        val offsetSign = (if (targetIndex > initialIndex) 1 else -1) * animationDirection
                                                         slideInHorizontally(initialOffsetX = { it * offsetSign }, animationSpec = tween(300))
                                                     }
                                                     // Detail page → bottom bar: slide in from left
                                                     targetRoute in bottomBarRoutes && initialRoute !in bottomBarRoutes -> {
-                                                        slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(300))
+                                                        slideInHorizontally(initialOffsetX = { -it * animationDirection }, animationSpec = tween(300))
                                                     }
                                                     // Bottom bar → detail page: slide in from right
-                                                    else -> slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(300))
+                                                    else -> slideInHorizontally(initialOffsetX = { it * animationDirection }, animationSpec = tween(300))
                                                 }
                                             }
 
@@ -489,15 +494,15 @@ class MainActivity : FragmentActivity() {
                                                 when {
                                                     // Bottom bar → bottom bar: slide out opposite direction
                                                     targetIndex != -1 && initialIndex != -1 -> {
-                                                        val offsetSign = if (targetIndex > initialIndex) -1 else 1
+                                                        val offsetSign = (if (targetIndex > initialIndex) -1 else 1) * animationDirection
                                                         slideOutHorizontally(targetOffsetX = { it * offsetSign }, animationSpec = tween(300))
                                                     }
                                                     // Bottom bar → detail page: slide out to left
                                                     initialRoute in bottomBarRoutes && targetRoute !in bottomBarRoutes -> {
-                                                        slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween(300))
+                                                        slideOutHorizontally(targetOffsetX = { -it * animationDirection }, animationSpec = tween(300))
                                                     }
                                                     // Default
-                                                    else -> slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween(300))
+                                                    else -> slideOutHorizontally(targetOffsetX = { -it * animationDirection }, animationSpec = tween(300))
                                                 }
                                             }
 
@@ -511,14 +516,14 @@ class MainActivity : FragmentActivity() {
                                                 when {
                                                     // Bottom bar → bottom bar pop: mirror of exit
                                                     targetIndex != -1 && initialIndex != -1 -> {
-                                                        val offsetSign = if (targetIndex > initialIndex) 1 else -1
+                                                        val offsetSign = (if (targetIndex > initialIndex) 1 else -1) * animationDirection
                                                         slideInHorizontally(initialOffsetX = { it * offsetSign }, animationSpec = tween(300))
                                                     }
                                                     // Returning from detail → bottom bar: slide in from left
                                                     targetRoute in bottomBarRoutes -> {
-                                                        slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(300))
+                                                        slideInHorizontally(initialOffsetX = { -it * animationDirection }, animationSpec = tween(300))
                                                     }
-                                                    else -> slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(300))
+                                                    else -> slideInHorizontally(initialOffsetX = { -it * animationDirection }, animationSpec = tween(300))
                                                 }
                                             }
 
@@ -532,14 +537,14 @@ class MainActivity : FragmentActivity() {
                                                 when {
                                                     // Bottom bar → bottom bar pop
                                                     targetIndex != -1 && initialIndex != -1 -> {
-                                                        val offsetSign = if (targetIndex > initialIndex) -1 else 1
+                                                        val offsetSign = (if (targetIndex > initialIndex) -1 else 1) * animationDirection
                                                         slideOutHorizontally(targetOffsetX = { it * offsetSign }, animationSpec = tween(300))
                                                     }
                                                     // Detail page closing: slide out to right
                                                     initialRoute !in bottomBarRoutes -> {
-                                                        slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(300))
+                                                        slideOutHorizontally(targetOffsetX = { it * animationDirection }, animationSpec = tween(300))
                                                     }
-                                                    else -> slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(300))
+                                                    else -> slideOutHorizontally(targetOffsetX = { it * animationDirection }, animationSpec = tween(300))
                                                 }
                                             }
                                         }
@@ -604,7 +609,7 @@ class MainActivity : FragmentActivity() {
                                             },
                                             onError = {
                                                 isPromptShowing = false
-                                                Toast.makeText(this@MainActivity, "Auth failed: $it", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(this@MainActivity, getString(R.string.auth_failed, it), Toast.LENGTH_SHORT).show()
                                                 finish()
                                             }
                                         )
@@ -784,6 +789,7 @@ private fun BottomBar(
                         (containerPadding * 2)
 
                 val density = LocalDensity.current
+                val isRtl = androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl
                 val itemSizePx = with(density) { itemSize.toPx() }
                 val itemSpacingPx = with(density) { itemSpacing.toPx() }
                 val containerPaddingPx = with(density) { containerPadding.toPx() }
@@ -792,13 +798,15 @@ private fun BottomBar(
                     modifier = Modifier
                         .width(navBarWidth)
                         .height(72.dp)
-                        .pointerInput(visibleDestinations, effectiveSelectedIndex) {
+                        .pointerInput(visibleDestinations, effectiveSelectedIndex, isRtl) {
                             detectDragGestures(
                                 onDragStart = { offset ->
                                     val extraTouchArea = with(density) { 20.dp.toPx() }
 
+                                    val visualIndex = if (isRtl) visibleDestinations.lastIndex - effectiveSelectedIndex else effectiveSelectedIndex
+
                                     val pillLeft = containerPaddingPx +
-                                            effectiveSelectedIndex * (itemSizePx + itemSpacingPx) - extraTouchArea
+                                            visualIndex * (itemSizePx + itemSpacingPx) - extraTouchArea
 
                                     val pillRight = pillLeft + itemSizePx + (extraTouchArea * 2)
 
@@ -820,11 +828,11 @@ private fun BottomBar(
                                     if (isDraggingPill) {
                                         change.consume()
                                         // Map finger X to nearest icon index
-                                        val index = ((change.position.x - containerPaddingPx) /
+                                        val visualIndex = ((change.position.x - containerPaddingPx) /
                                                 (itemSizePx + itemSpacingPx))
                                             .toInt()
                                             .coerceIn(0, visibleDestinations.lastIndex)
-                                        dragTargetIndex = index
+                                        dragTargetIndex = if (isRtl) visibleDestinations.lastIndex - visualIndex else visualIndex
                                     }
                                 }
                             )

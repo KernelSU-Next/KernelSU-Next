@@ -52,6 +52,8 @@ class ModuleViewModel : ViewModel() {
         val webUiIconPath: String?,
         val donate: String,
         val isZygisk: Boolean,
+        // preinit state for the next boot: "", "ok", "no_space", "error" or "bootloop"
+        val preinit: String = "",
     )
 
     data class ModuleUpdateInfo(
@@ -163,7 +165,8 @@ class ModuleViewModel : ViewModel() {
                                 obj.optString("actionIcon").takeIf { it.isNotBlank() },
                                 obj.optString("webuiIcon").takeIf { it.isNotBlank() },
                                 obj.optString("donate"),
-                                isZygisk
+                                isZygisk,
+                                obj.optString("preinit")
                             )
                         }.toList()
                     isNeedRefresh = false

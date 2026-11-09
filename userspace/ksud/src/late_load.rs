@@ -1,9 +1,9 @@
 use anyhow::{Context, Result};
 use log::{info, warn};
 use rustix::cstr;
-use std::process::Command;
+use std::{process::Command, time::Instant};
 
-use crate::module::{handle_updated_modules, prune_modules};
+use crate::module::{ScriptWait, handle_updated_modules, prune_modules};
 use crate::{assets, defs, init_event, metamodule, restorecon, utils};
 
 fn dump_process_info(label: &str) {
@@ -82,6 +82,8 @@ pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Res
 
     utils::install(None).context("Failed to install ksud")?;
 
+    crate::hot_install::clean_trash();
+
     // 5. Handle module updates
     if let Err(e) = handle_updated_modules() {
         warn!("handle updated modules failed: {e}");
@@ -105,12 +107,14 @@ pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Res
     }
 
     // 7. Initialize features
+    crate::feature::init_forced_features();
     if let Err(e) = crate::feature::init_features() {
         warn!("init features failed: {e}");
     }
 
-    // 8. Execute late-load stage scripts (blocking)
-    init_event::run_stage("late-load", true);
+    // 8. Execute late-load stage scripts with a shared boot deadline
+    let wait = ScriptWait::Until(Instant::now() + defs::BOOT_STAGE_TIMEOUT);
+    init_event::run_stage("late-load", wait);
 
     // 9. Load system.prop
     if let Err(e) = crate::module::load_system_prop() {
@@ -122,14 +126,14 @@ pub fn run(package_name: &String, kmi: Option<String>, allow_shell: bool) -> Res
         warn!("execute metamodule mount failed: {e}");
     }
 
-    // 11. Execute post-mount stage scripts (blocking)
-    init_event::run_stage("post-mount", true);
+    // 11. Execute post-mount stage scripts using the same deadline
+    init_event::run_stage("post-mount", wait);
 
     // 12. Execute service stage scripts (non-blocking)
-    init_event::run_stage("service", false);
+    init_event::run_stage("service", ScriptWait::NoWait);
 
     // 13. Execute boot-completed stage scripts (non-blocking)
-    init_event::run_stage("boot-completed", false);
+    init_event::run_stage("boot-completed", ScriptWait::NoWait);
 
     // 14. Restart Manager so it gets a fresh ksu fd from the newly loaded kernel module
     info!("Restarting KernelSU Next Manager {package_name}...");

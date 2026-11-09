@@ -442,6 +442,7 @@ private fun SELinuxPanel(
     profile: Natives.Profile,
     onSELinuxChange: (domain: String, rules: String) -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val editSELinuxDialog = rememberCustomDialog { dismiss ->
         var domain by remember { mutableStateOf(profile.context) }
         var rules by remember { mutableStateOf(profile.rules) }
@@ -465,7 +466,7 @@ private fun SELinuxPanel(
                     // value can be a-zA-Z0-9_
                     val regex = Regex("^[a-z_]+:[a-z0-9_]+:[a-z0-9_]+(:[a-z0-9_]+)?$")
                     if (value?.matches(regex) == true) ValidationResult.Valid
-                    else ValidationResult.Invalid("Domain must be in the format of \"user:role:type:level\"")
+                    else ValidationResult.Invalid(context.getString(R.string.profile_selinux_domain_invalid))
                 }
             ),
             InputTextField(
@@ -483,7 +484,7 @@ private fun SELinuxPanel(
                 },
                 validationListener = { value ->
                     if (isSepolicyValid(value)) ValidationResult.Valid
-                    else ValidationResult.Invalid("SELinux rules is invalid!")
+                    else ValidationResult.Invalid(context.getString(R.string.profile_selinux_rules_invalid))
                 }
             )
         )

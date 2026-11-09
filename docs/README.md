@@ -12,8 +12,14 @@
     <a href="https://github.com/KernelSU-Next/KernelSU-Next/releases/latest">
       <img src="https://img.shields.io/github/v/release/KernelSU-Next/KernelSU-Next?label=Release&logo=github" alt="Latest Release">
     </a>
-    <a href="https://nightly.link/KernelSU-Next/KernelSU-Next/workflows/build-manager-ci/next/Manager">
+    <a href="https://github.com/KernelSU-Next/KernelSU-Next/releases">
+      <img src="https://img.shields.io/github/downloads/KernelSU-Next/KernelSU-Next/total?label=Downloads&logo=github" alt="Total Downloads">
+    </a>
+    <a href="https://nightly.link/KernelSU-Next/KernelSU-Next/workflows/build-manager-ci/dev/manager">
       <img src="https://img.shields.io/badge/Nightly%20Release-gray?logo=hackthebox&logoColor=fff" alt="Nightly Build">
+    </a>
+    <a href="https://github.com/KernelSU-Next/KernelSU-Next/actions/workflows/build-manager-ci.yml">
+      <img src="https://github.com/KernelSU-Next/KernelSU-Next/actions/workflows/build-manager-ci.yml/badge.svg" alt="Build Status">
     </a>
     <a href="https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html">
       <img src="https://img.shields.io/badge/License-GPL%20v2-orange.svg?logo=gnu" alt="License: GPL v2">
@@ -30,14 +36,17 @@
 ## 🚀 Features
 
 - Kernel-based `su` and root access management.
-- Module system based on [Magic Mount](https://topjohnwu.github.io/Magisk/details.html#magic-mount) and [OverlayFS](https://en.wikipedia.org/wiki/OverlayFS).
-- [App Profile](https://kernelsu.org/guide/app-profile.html): Limit root privileges per app.
+- Module system based on [metamodules](https://kernelsu.org/guide/metamodule.html): Pluggable infrastructure for systemless modifications.
+- Built-in SUSFS LKM driver loading for GKI 2.0 devices.
+- Risk detection that blocks suspicious modules from installation.
+- Backup and restore support for modules and app profiles.
+- [App Profile](https://kernelsu.org/guide/app-profile.html): Lock up the root power in a cage.
 
 ---
 
 ## ✅ Compatibility
 
-KernelSU Next supports Android kernels from **4.4 up to 6.12**.
+KernelSU Next supports Android kernels from **4.4 up to 6.18**.
 
 | Kernel version       | Support notes                                                           |
 |----------------------|-------------------------------------------------------------------------|
@@ -45,7 +54,7 @@ KernelSU Next supports Android kernels from **4.4 up to 6.12**.
 | 4.19 – 5.4 (GKI 1.0) | Requires KernelSU driver built-in                                       |
 | < 4.14 (EOL)         | Requires KernelSU driver (3.18+ is experimental and may need backports) |
 
-**Supported architectures:** `arm64-v8a`, `armeabi-v7a` and `x86_64`
+**Supported architectures:** `arm64-v8a` and `x86_64`
 
 > [!CAUTION]
 > Recent kernel versions have implemented a breaking change causing KernelSU Next to fail and potentially trigger a kernel panic on `x86_64`! Check the website for more info!
@@ -89,4 +98,5 @@ If you'd like to support the project:
 - [Genuine](https://github.com/brevent/genuine/) – APK v2 signature validation
 - [Diamorphine](https://github.com/m0nad/Diamorphine) – Rootkit techniques
 - [KernelSU](https://github.com/tiann/KernelSU) – The original base that made KernelSU Next possible
-- [Magic Mount Port](https://github.com/5ec1cff/KernelSU/blob/main/userspace/ksud/src/magic_mount.rs) – For Magic Mount support
+- [Susfs4ksu](https://gitlab.com/simonpunk/susfs4ksu) – A kernel-level root-hiding extension for KernelSU
+- [Susfs4ksu-lkm](https://github.com/inforcqb/susfs4ksu-lkm) – SUSFS ported as a loadable kernel module
