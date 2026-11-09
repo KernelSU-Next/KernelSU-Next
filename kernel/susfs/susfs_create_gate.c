@@ -130,9 +130,17 @@ static __nocfi noinline long create_wrap_compat_mkdirat(const struct pt_regs *re
 {
 	susfs_syscall_fn_t orig = create_orig_compat(SUSFS_CREATE_MKDIRAT);
 	long ret;
+	int handled;
 
 	if (!orig)
 		return -ENOSYS;
+	if (susfs_create_commit_enabled()) {
+		ret = susfs_create_mkdirat_commit((int)regs->regs[0],
+						  (const char __user *)regs->regs[1],
+						  (umode_t)regs->regs[2], &handled);
+		if (handled)
+			return ret;
+	}
 	ret = orig(regs);
 	if (ret == -EEXIST &&
 	    susfs_create_name_hidden((int)regs->regs[0],
