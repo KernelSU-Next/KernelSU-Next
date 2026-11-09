@@ -17,6 +17,8 @@
 #include "susfs_create_policy.h"
 #include "susfs_create_view.h"
 #include "sus_path_match.h"
+#include "ksu_umount_gate.h"
+#include "ksu_allow_gate.h"
 
 bool susfs_create_name_hidden(int dfd, const char __user *path,
 			      enum susfs_create_kind kind, bool link_old)
