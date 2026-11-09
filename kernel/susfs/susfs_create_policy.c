@@ -20,13 +20,50 @@
 #include "ksu_umount_gate.h"
 #include "ksu_allow_gate.h"
 
+static void create_view_fill(struct susfs_create_view *v, struct inode *inode,
+			     enum susfs_create_kind kind, bool link_old,
+			     const char *name)
+{
+	memset(v, 0, sizeof(*v));
+	v->kind = kind;
+	v->state = SUSFS_CREATE_ST_EXISTS;
+	v->link_old = link_old;
+	v->ino = inode->i_ino;
+	v->s_dev = inode->i_sb->s_dev;
+	v->i_uid = inode->i_uid.val;
+	v->sb_magic = inode->i_sb->s_magic;
+	v->caller_uid = current_uid().val;
+	v->caller_is_app = susfs_is_current_proc_umounted_app();
+	v->caller_is_su = susfs_control_visible();
+	v->control_visible = susfs_control_visible();
+	v->hide_from_apps = sus_path_hide_from_apps();
+	if (name)
+		strscpy(v->name, name, sizeof(v->name));
+}
+
+static int create_view_decide(struct susfs_create_view *v,
+			      struct susfs_create_decision *d)
+{
+	struct sus_path_match m;
+	int rc;
+
+	rc = sus_path_rule_match(v, &m);
+	if (rc)
+		return rc;
+	v->rule_matched = m.rule_matched;
+	v->ordinary_rule = m.ordinary_rule;
+	v->self_protect = m.self_protect;
+	v->pending = m.pending;
+	*d = susfs_create_decide_core(v);
+	return 0;
+}
+
 bool susfs_create_name_hidden(int dfd, const char __user *path,
 			      enum susfs_create_kind kind, bool link_old)
 {
 	struct susfs_create_view v;
 	struct susfs_create_decision d;
 	struct susfs_create_view *vp = &v;
-	struct sus_path_match m;
 	struct inode *inode;
 	struct filename *name;
 	struct path p;
@@ -51,33 +88,14 @@ bool susfs_create_name_hidden(int dfd, const char __user *path,
 		susfs_create_vfs_path_put(&p);
 		return false;
 	}
-	memset(vp, 0, sizeof(*vp));
-	vp->kind = kind;
-	vp->state = SUSFS_CREATE_ST_EXISTS;
-	vp->link_old = link_old;
-	vp->ino = inode->i_ino;
-	vp->s_dev = inode->i_sb->s_dev;
-	vp->i_uid = inode->i_uid.val;
-	vp->sb_magic = inode->i_sb->s_magic;
-	vp->caller_uid = current_uid().val;
-	vp->caller_is_app = susfs_is_current_proc_umounted_app();
-	vp->caller_is_su = susfs_control_visible();
-	vp->control_visible = susfs_control_visible();
-	vp->hide_from_apps = sus_path_hide_from_apps();
-	strscpy(vp->name, name->name, sizeof(vp->name));
+	create_view_fill(vp, inode, kind, link_old, name->name);
 	susfs_create_vfs_putname_after_lookup(name);
 
-	rc = sus_path_rule_match(vp, &m);
+	rc = create_view_decide(vp, &d);
 	if (rc) {
 		susfs_create_vfs_path_put(&p);
 		return false;
 	}
-	vp->rule_matched = m.rule_matched;
-	vp->ordinary_rule = m.ordinary_rule;
-	vp->self_protect = m.self_protect;
-	vp->pending = m.pending;
-
-	d = susfs_create_decide_core(vp);
 	if (d.need_parent_permission)
 		susfs_create_vfs_parent_permission(d_inode(p.dentry->d_parent));
 	susfs_create_vfs_path_put(&p);
@@ -89,5 +107,13 @@ bool susfs_create_name_hidden(int dfd, const char __user *path,
 
 int susfs_create_existing_answer(struct inode *inode)
 {
-	return sus_path_inode_hidden_public(inode) ? -EACCES : -EEXIST;
+	struct susfs_create_view v;
+	struct susfs_create_decision d;
+
+	if (!inode)
+		return -EEXIST;
+	create_view_fill(&v, inode, SUSFS_CREATE_VIEW_MKDIRAT, false, NULL);
+	if (create_view_decide(&v, &d))
+		return -EEXIST;
+	return d.action == SUSFS_CREATE_HIDE ? -EACCES : -EEXIST;
 }
