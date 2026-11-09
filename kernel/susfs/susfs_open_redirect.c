@@ -313,6 +313,7 @@ static struct sus_or_entry *or_find_by_inode(unsigned long ino, dev_t dev, unsig
 {
 	struct sus_or_entry *e;
 	u32 h = or_hash_key(ino, dev);
+	int best = -1;
 	int i;
 
 	for (i = smp_load_acquire(&or_buckets[h]); i >= 0; i = smp_load_acquire(&or_entries[i].next)) {
@@ -324,10 +325,11 @@ static struct sus_or_entry *or_find_by_inode(unsigned long ino, dev_t dev, unsig
 		smp_rmb();
 		if (e->target_ino == ino &&
 		    e->target_dev == dev &&
-		    e->target_igen == gen)
-			return e;
+		    e->target_igen == gen &&
+		    (best < 0 || i < best))
+			best = i;
 	}
-	return NULL;
+	return best < 0 ? NULL : &or_entries[best];
 }
 
 /* The name-layer entry hook asks this one, with the path the caller is about to open: true when a live
@@ -365,6 +367,7 @@ static struct sus_or_entry *or_find_by_redirected_inode(unsigned long ino, dev_t
 {
 	struct sus_or_entry *e;
 	u32 h = or_hash_key(ino, dev);
+	int best = -1;
 	int i;
 
 	for (i = smp_load_acquire(&or_rev_buckets[h]); i >= 0; i = smp_load_acquire(&or_entries[i].rnext)) {
@@ -374,10 +377,11 @@ static struct sus_or_entry *or_find_by_redirected_inode(unsigned long ino, dev_t
 		smp_rmb();
 		if (e->redirected_ino == ino &&
 		    e->redirected_dev == dev &&
-		    e->redirected_igen == gen)
-			return e;
+		    e->redirected_igen == gen &&
+		    (best < 0 || i < best))
+			best = i;
 	}
-	return NULL;
+	return best < 0 ? NULL : &or_entries[best];
 }
 
 /* Reverse direction for the one caller that has only numbers: /proc/<pid>/fdinfo/N prints "mnt_id:\t<i>" and "ino:\t<j>"
