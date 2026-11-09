@@ -25,6 +25,7 @@
 #include "symbol_resolver.h"
 #include "susfs_log.h"
 #include "susfs_create_vfs.h"
+#include "susfs_create_op.h"
 #include "susfs_create_view.h"
 
 static struct filename *(*create_getname_fn)(const char __user *name, int flags, int *empty);
