@@ -65,9 +65,17 @@ static __nocfi noinline long create_wrap_mkdirat(const struct pt_regs *regs)
 {
 	susfs_syscall_fn_t orig = create_orig(SUSFS_CREATE_MKDIRAT);
 	long ret;
+	int handled;
 
 	if (!orig)
 		return -ENOSYS;
+	if (susfs_create_commit_enabled()) {
+		ret = susfs_create_mkdirat_commit((int)regs->regs[0],
+						  (const char __user *)regs->regs[1],
+						  (umode_t)regs->regs[2], &handled);
+		if (handled)
+			return ret;
+	}
 	/* Let the kernel answer first.  Only a successful "it already exists"
 	 * needs the hidden-name translation; absent names, ".", ".." and
 	 * trailing non-name components keep the kernel's own answer. */

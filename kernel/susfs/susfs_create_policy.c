@@ -18,6 +18,16 @@
 #include "ksu_umount_gate.h"
 #include "ksu_allow_gate.h"
 
+/* P2d opt-in: take the absent mkdir through the op commit instead of the
+ * kernel entry.  Default off until the hidden-absent rules are defined. */
+static int create_commit;
+module_param(create_commit, int, 0644);
+
+bool susfs_create_commit_enabled(void)
+{
+	return READ_ONCE(create_commit);
+}
+
 static void create_view_fill_caller(struct susfs_create_view *v)
 {
 	v->caller_uid = current_uid().val;
@@ -42,6 +52,42 @@ static int create_view_decide(struct susfs_create_view *v,
 	v->pending = m.pending;
 	*d = susfs_create_decide_core(v);
 	return 0;
+}
+
+int susfs_create_mkdirat_commit(int dfd, const char __user *path, umode_t mode,
+				 int *handled)
+{
+	struct susfs_create_op *op;
+	struct susfs_create_view v;
+	int rc;
+
+	*handled = 0;
+	op = susfs_create_vfs_begin(dfd, path, &rc);
+	if (!op)
+		return 0;
+	if (!susfs_create_vfs_is_name(op)) {
+		susfs_create_vfs_end(op);
+		return 0;
+	}
+	rc = susfs_create_vfs_lock(op);
+	if (rc) {
+		susfs_create_vfs_end(op);
+		return 0;
+	}
+	rc = susfs_create_vfs_status(op, &v);
+	if (rc != 0) {
+		/* Positive dentry: the caller's existing-name path handles it. */
+		susfs_create_vfs_end(op);
+		return 0;
+	}
+	rc = susfs_create_vfs_commit(op, mode);
+	if (rc == -EOPNOTSUPP) {
+		susfs_create_vfs_end(op);
+		return 0;
+	}
+	*handled = 1;
+	susfs_create_vfs_end(op);
+	return rc;
 }
 
 bool susfs_create_name_hidden(int dfd, const char __user *path,
