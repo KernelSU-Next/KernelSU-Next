@@ -8,6 +8,7 @@
 #include <linux/err.h>
 #include <linux/cred.h>
 #include <linux/string.h>
+#include <linux/module.h>
 
 #include "susfs.h"
 #include "susfs_create_vfs.h"
@@ -16,6 +17,11 @@
 #include "sus_path_match.h"
 #include "ksu_umount_gate.h"
 #include "ksu_allow_gate.h"
+
+/* P2a rollback switch: 0 keeps the pre-view decision, 1 uses the D facts/L
+ * decision.  P2b flips the default. */
+static int create_view;
+module_param(create_view, int, 0644);
 
 static void create_view_fill(struct susfs_create_view *v, struct inode *inode,
 			     enum susfs_create_kind kind, bool link_old,
@@ -96,6 +102,13 @@ bool susfs_create_name_hidden(int dfd, const char __user *path,
 	v.link_old = link_old;
 	create_view_fill_caller(&v);
 
+	if (!READ_ONCE(create_view)) {
+		struct inode *inode = susfs_create_vfs_inode(op);
+
+		hidden = inode && sus_path_inode_hidden_public(inode);
+		goto out;
+	}
+
 	rc = create_view_decide(&v, &d);
 	if (rc)
 		goto out;
@@ -117,6 +130,8 @@ int susfs_create_existing_answer(struct inode *inode)
 
 	if (!inode)
 		return -EEXIST;
+	if (!READ_ONCE(create_view))
+		return sus_path_inode_hidden_public(inode) ? -EACCES : -EEXIST;
 	create_view_fill(&v, inode, SUSFS_CREATE_VIEW_MKDIRAT, false, NULL);
 	if (create_view_decide(&v, &d))
 		return -EEXIST;
