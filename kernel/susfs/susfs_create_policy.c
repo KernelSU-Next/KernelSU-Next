@@ -11,7 +11,7 @@
 #include <linux/module.h>
 
 #include "susfs.h"
-#include "susfs_create_vfs.h"
+#include "susfs_create_op.h"
 #include "susfs_create_policy.h"
 #include "susfs_create_view.h"
 #include "sus_path_match.h"
