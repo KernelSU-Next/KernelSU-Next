@@ -15,8 +15,21 @@
 #include <linux/path.h>
 #include <linux/dcache.h>
 
+struct susfs_create_op;
+struct susfs_create_view;
+
 int susfs_create_vfs_init(void);
 bool susfs_create_vfs_takeover_ready(void);
+
+/* P-owned lifecycle for resolving one create target.  begin() returns an op even
+ * when the lookup misses (status() then returns 0); NULL means begin itself
+ * failed and *err carries the reason.  end() is called exactly once. */
+struct susfs_create_op *susfs_create_vfs_begin(int dfd, const char __user *path,
+					       int *err);
+int susfs_create_vfs_status(struct susfs_create_op *op,
+			    struct susfs_create_view *view);
+void susfs_create_vfs_parent_permission_op(struct susfs_create_op *op);
+void susfs_create_vfs_end(struct susfs_create_op *op);
 
 struct filename *susfs_create_vfs_getname(const char __user *name);
 int susfs_create_vfs_lookup(int dfd, struct filename *name, struct path *path);
