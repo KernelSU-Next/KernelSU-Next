@@ -6,9 +6,6 @@
 #include <linux/kernel.h>
 #include <linux/fs.h>
 #include <linux/err.h>
-#include <linux/namei.h>
-#include <linux/dcache.h>
-#include <linux/path.h>
 #include <linux/cred.h>
 #include <linux/string.h>
 
@@ -41,6 +38,15 @@ static void create_view_fill(struct susfs_create_view *v, struct inode *inode,
 		strscpy(v->name, name, sizeof(v->name));
 }
 
+static void create_view_fill_caller(struct susfs_create_view *v)
+{
+	v->caller_uid = current_uid().val;
+	v->caller_is_app = susfs_is_current_proc_umounted_app();
+	v->caller_is_su = susfs_control_visible();
+	v->control_visible = susfs_control_visible();
+	v->hide_from_apps = sus_path_hide_from_apps();
+}
+
 static int create_view_decide(struct susfs_create_view *v,
 			      struct susfs_create_decision *d)
 {
@@ -63,46 +69,38 @@ bool susfs_create_name_hidden(int dfd, const char __user *path,
 {
 	struct susfs_create_view v;
 	struct susfs_create_decision d;
-	struct susfs_create_view *vp = &v;
-	struct inode *inode;
-	struct filename *name;
-	struct path p;
+	struct susfs_create_op *op;
+	bool hidden = false;
 	int rc;
 
 	if (!sus_path_user_rules_present())
 		return false;
 
-	name = susfs_create_vfs_getname(path);
-	if (IS_ERR(name))
+	op = susfs_create_vfs_begin(dfd, path, &rc);
+	if (!op)
 		return false;
 
-	rc = susfs_create_vfs_lookup(dfd, name, &p);
-	if (rc) {
-		susfs_create_vfs_putname_after_lookup(name);
-		return false;		/* absent: the kernel's own answer */
-	}
+	memset(&v, 0, sizeof(v));
+	rc = susfs_create_vfs_status(op, &v);
+	if (rc <= 0)
+		goto out;
 
-	inode = d_inode(p.dentry);
-	if (!inode) {
-		susfs_create_vfs_putname_after_lookup(name);
-		susfs_create_vfs_path_put(&p);
-		return false;
-	}
-	create_view_fill(vp, inode, kind, link_old, name->name);
-	susfs_create_vfs_putname_after_lookup(name);
+	v.kind = kind;
+	v.link_old = link_old;
+	create_view_fill_caller(&v);
 
-	rc = create_view_decide(vp, &d);
-	if (rc) {
-		susfs_create_vfs_path_put(&p);
-		return false;
-	}
+	rc = create_view_decide(&v, &d);
+	if (rc)
+		goto out;
 	if (d.need_parent_permission)
-		susfs_create_vfs_parent_permission(d_inode(p.dentry->d_parent));
-	susfs_create_vfs_path_put(&p);
+		susfs_create_vfs_parent_permission_op(op);
 
-	return d.action == SUSFS_CREATE_HIDE ||
-	       d.action == SUSFS_CREATE_HIDE_OLD ||
-	       d.action == SUSFS_CREATE_HIDE_NEW;
+	hidden = d.action == SUSFS_CREATE_HIDE ||
+		 d.action == SUSFS_CREATE_HIDE_OLD ||
+		 d.action == SUSFS_CREATE_HIDE_NEW;
+out:
+	susfs_create_vfs_end(op);
+	return hidden;
 }
 
 int susfs_create_existing_answer(struct inode *inode)

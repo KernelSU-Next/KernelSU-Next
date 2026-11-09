@@ -25,6 +25,7 @@
 #include "symbol_resolver.h"
 #include "susfs_log.h"
 #include "susfs_create_vfs.h"
+#include "susfs_create_view.h"
 
 static struct filename *(*create_getname_fn)(const char __user *name, int flags, int *empty);
 static int (*create_filename_lookup_fn)(int dfd, struct filename *name, unsigned flags,
@@ -140,6 +141,103 @@ void susfs_create_vfs_parent_permission(struct inode *dir)
 #else
 	(void)inode_permission(dir, MAY_WRITE | MAY_EXEC);
 #endif
+}
+
+enum susfs_create_op_state {
+	CREATE_OP_NEW,
+	CREATE_OP_GETNAME,
+	CREATE_OP_EXISTS,
+	CREATE_OP_ABSENT,
+	CREATE_OP_ERROR,
+};
+
+struct susfs_create_op {
+	struct filename *name;
+	struct path path;
+	enum susfs_create_op_state state;
+	int err;
+};
+
+struct susfs_create_op *susfs_create_vfs_begin(int dfd, const char __user *path,
+					       int *err)
+{
+	struct susfs_create_op *op;
+
+	if (err)
+		*err = 0;
+	op = kzalloc(sizeof(*op), GFP_KERNEL);
+	if (!op) {
+		if (err)
+			*err = -ENOMEM;
+		return NULL;
+	}
+	op->state = CREATE_OP_NEW;
+	op->name = create_getname(path);
+	if (IS_ERR(op->name)) {
+		int rc = PTR_ERR(op->name);
+
+		op->name = NULL;
+		kfree(op);
+		if (err)
+			*err = rc;
+		return NULL;
+	}
+	op->state = CREATE_OP_GETNAME;
+
+	op->err = create_lookup(dfd, op->name, &op->path);
+	if (!op->err) {
+		op->state = CREATE_OP_EXISTS;
+	} else if (op->err == -ENOENT) {
+		op->state = CREATE_OP_ABSENT;
+	} else {
+		op->state = CREATE_OP_ERROR;
+	}
+	if (err)
+		*err = op->err;
+	return op;
+}
+
+int susfs_create_vfs_status(struct susfs_create_op *op,
+			    struct susfs_create_view *view)
+{
+	struct inode *inode;
+
+	if (!op || !view)
+		return -EINVAL;
+	if (op->state == CREATE_OP_ABSENT)
+		return 0;
+	if (op->state != CREATE_OP_EXISTS)
+		return op->err ? op->err : -EIO;
+
+	inode = d_inode(op->path.dentry);
+	if (!inode)
+		return 0;
+	memset(view, 0, sizeof(*view));
+	view->state = SUSFS_CREATE_ST_EXISTS;
+	view->ino = inode->i_ino;
+	view->s_dev = inode->i_sb->s_dev;
+	view->i_uid = inode->i_uid.val;
+	view->sb_magic = inode->i_sb->s_magic;
+	strscpy(view->name, op->path.dentry->d_name.name, sizeof(view->name));
+	return 1;
+}
+
+void susfs_create_vfs_parent_permission_op(struct susfs_create_op *op)
+{
+	if (!op || op->state != CREATE_OP_EXISTS)
+		return;
+	susfs_create_vfs_parent_permission(d_inode(op->path.dentry->d_parent));
+}
+
+void susfs_create_vfs_end(struct susfs_create_op *op)
+{
+	if (!op)
+		return;
+	if (op->state == CREATE_OP_EXISTS)
+		path_put(&op->path);
+	if (op->name)
+		susfs_create_vfs_putname_after_lookup(op->name);
+	kfree(op);
 }
 
 static umode_t create_strip_umask(struct inode *dir, umode_t mode)
