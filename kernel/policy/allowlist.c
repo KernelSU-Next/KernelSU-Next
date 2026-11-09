@@ -12,7 +12,10 @@
 #include <linux/printk.h>
 #include <linux/slab.h>
 #include <linux/types.h>
+#include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 #include <linux/compiler_types.h>
+#endif
 #include <linux/hashtable.h>
 #include <linux/kref.h>
 #include <linux/namei.h>
@@ -24,6 +27,7 @@
 #include "runtime/ksud_boot.h"
 #include "selinux/selinux.h"
 #include "policy/allowlist.h"
+#include "feature/shell_su_adb_only.h"
 #include "manager/manager_identity.h"
 #include "infra/su_mount_ns.h"
 
@@ -287,13 +291,21 @@ bool __ksu_is_allow_uid(uid_t uid)
 	return false;
 }
 
-bool __ksu_is_allow_uid_for_current(uid_t uid)
+bool ksu_is_uid_granted_root(uid_t uid)
 {
 	if (unlikely(uid == 0)) {
 		// already root, but only allow our domain.
 		return is_ksu_domain();
 	}
 	return __ksu_is_allow_uid(uid);
+}
+
+bool __ksu_is_allow_uid_for_current(uid_t uid)
+{
+	if (unlikely(uid == SHELL_UID) && !ksu_shell_su_allowed_for_current()) {
+		return false;
+	}
+	return ksu_is_uid_granted_root(uid);
 }
 
 bool ksu_uid_should_umount(uid_t uid)
@@ -451,12 +463,14 @@ static void do_persistent_allow_list(struct callback_head *_cb)
     }
 
 	// store magic and version
-	if (kernel_write(fp, &magic, sizeof(magic), &off) != sizeof(magic)) {
+	if (ksu_kernel_write_compat(fp, &magic, sizeof(magic), &off) !=
+	    sizeof(magic)) {
 		pr_err("save_allow_list write magic failed.\n");
 		goto close_file;
 	}
 
-	if (kernel_write(fp, &version, sizeof(version), &off) != sizeof(version)) {
+	if (ksu_kernel_write_compat(fp, &version, sizeof(version), &off) !=
+	    sizeof(version)) {
 		pr_err("save_allow_list write version failed.\n");
 		goto close_file;
 	}
@@ -472,7 +486,7 @@ static void do_persistent_allow_list(struct callback_head *_cb)
          * happily parses - silently dropping every profile after the failure
          * point. Bail out and unlink instead of persisting a partial list.
          */
-        if (kernel_write(fp, &p->profile, sizeof(p->profile), &off) !=
+        if (ksu_kernel_write_compat(fp, &p->profile, sizeof(p->profile), &off) !=
             sizeof(p->profile)) {
             pr_err("save_allow_list write profile failed, list truncated\n");
             mutex_unlock(&allowlist_mutex);

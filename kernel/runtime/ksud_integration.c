@@ -43,6 +43,7 @@
 #include "ksud_boot.h"
 #include "feature/selinux_hide.h"
 #include "selinux/selinux.h"
+#include "policy/feature.h"
 #include "compat/kernel_compat.h"
 
 static const char KERNEL_SU_RC[] =
@@ -269,6 +270,7 @@ static void ksu_initialize_selinux_tw_func(struct callback_head *cb)
 {
 	ksu_selinux_hide_handle_second_stage();
 	apply_kernelsu_rules();
+	ksu_feature_apply_forced();
 	cache_sid();
 	setup_ksu_cred();
 	kfree(cb);

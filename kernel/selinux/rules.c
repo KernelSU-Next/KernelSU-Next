@@ -58,16 +58,24 @@ extern int avc_ss_reset(struct selinux_avc *avc, u32 seqno);
 // reset avc cache table, otherwise the new rules will not take effect if already denied
 static void reset_avc_cache()
 {
+	#if defined(KSU_COMPAT_USE_SELINUX_STATE)
+	u32 seqno = selinux_state.ss ? ++selinux_state.ss->latest_granting : 1;
+	#else
+	/* 4.9: no selinux_state; use a monotonic local seqno for AVC/policyload notifications */
+	static u32 ksu_avc_seqno = 1;
+	u32 seqno = ++ksu_avc_seqno;
+	#endif
+
 #if ((!defined(KSU_COMPAT_USE_SELINUX_STATE)) || \
 	LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0))
-    avc_ss_reset(0);
-    selnl_notify_policyload(0);
-    selinux_status_update_policyload(0);
+    avc_ss_reset(seqno);
+    selnl_notify_policyload(seqno);
+    selinux_status_update_policyload(seqno);
 #else
     struct selinux_avc *avc = selinux_state.avc;
-    avc_ss_reset(avc, 0);
-    selnl_notify_policyload(0);
-    selinux_status_update_policyload(&selinux_state, 0);
+    avc_ss_reset(avc, seqno);
+    selnl_notify_policyload(seqno);
+    selinux_status_update_policyload(&selinux_state, seqno);
 #endif
     selinux_xfrm_notify_policyload();
 }
@@ -256,8 +264,9 @@ out_unlock:
 
 do_stop_machine:
 	stop_machine(apply_kernelsu_rules_fn, (void *)db, NULL);
+	ksu_policydb_fixup_len(db, "apply_kernelsu_rules");
 
-out_flush:
+out_reset_avc:
 	smp_mb();
 	reset_avc_cache();
 #endif
@@ -695,6 +704,8 @@ static int handle_sepolicy_fn(void *data)
 			success_cmd_count++;
 		}
 
+		ret = 0;
+
 		cmd_index++;
 	}
 
@@ -755,6 +766,7 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 
 do_stop_machine:
 	ret = stop_machine(handle_sepolicy_fn, (void *)&ctx, NULL);
+	ksu_policydb_fixup_len(get_policydb(), "handle_sepolicy");
 
 out_done:
 	smp_mb();

@@ -26,4 +26,13 @@ void ksu_feature_init(void);
 
 void ksu_feature_exit(void);
 
+// Whether the feature is forced by the force_feature module param, in which
+// case ksu_set_feature() refuses to change it.
+bool ksu_feature_is_forced(u32 feature_id);
+
+// Apply forced feature values not applied yet. Called at several boot stages
+// since some handlers can only succeed late (e.g. selinux_hide needs the
+// sepolicy backup).
+void ksu_feature_apply_forced(void);
+
 #endif // __KSU_H_FEATURE

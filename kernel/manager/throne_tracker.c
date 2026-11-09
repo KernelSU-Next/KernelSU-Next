@@ -23,6 +23,7 @@ uid_t ksu_manager_appid = KSU_INVALID_APPID;
 #define DATA_PATH_LEN 384 // 384 is enough for /data/app/<package>/base.apk
 
 static char cached_manager_apk_path[DATA_PATH_LEN];
+static char manager_pkg[KSU_MAX_PACKAGE_NAME];
 
 #define SYSTEM_PACKAGES_LIST_PATH "/data/system/packages.list"
 
@@ -61,6 +62,7 @@ static void crown_manager(const char *apk, struct list_head *uid_data)
 	list_for_each_entry (np, list, list) {
 		if (strncmp(np->package, target_pkg, KSU_MAX_PACKAGE_NAME) == 0) {
 			pr_info("Crowning manager: %s(uid=%d)\n", target_pkg, np->uid);
+			strscpy(manager_pkg, target_pkg, sizeof(manager_pkg));
 			ksu_set_manager_appid(np->uid);
 			break;
 		}
@@ -353,7 +355,7 @@ void track_throne(bool prune_only)
 			break;
 		}
 #else
-		if (np->uid == ksu_get_manager_appid()) {
+		if (manager_pkg[0] && !strncmp(np->package, manager_pkg, KSU_MAX_PACKAGE_NAME)) {
 			manager_package_uid = np->uid;
 			break;
 		}

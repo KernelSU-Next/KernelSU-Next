@@ -5,6 +5,10 @@
 
 #include "ss/policydb.h"
 
+// Keep policydb.len in step with what the policy actually serializes to.
+// Best effort: on failure policydb.len is padded instead.
+int ksu_policydb_fixup_len(struct policydb *db, const char *tag);
+
 // Operation on types
 bool ksu_type(struct policydb *db, const char *name, const char *attr);
 bool ksu_attribute(struct policydb *db, const char *name);

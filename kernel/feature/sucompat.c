@@ -12,6 +12,7 @@
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0)
 #include <linux/compiler_types.h>
+#else
 #include <linux/compiler.h>
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0)
@@ -35,6 +36,7 @@
 #include "policy/app_profile.h"
 #include "selinux/selinux.h"
 #include "sulog/event.h"
+#include "util.h"
 
 #define SU_PATH "/system/bin/su"
 #define SH_PATH "/system/bin/sh"
@@ -61,19 +63,6 @@ static const struct ksu_feature_handler su_compat_handler = {
 	.get_handler = su_compat_feature_get,
 	.set_handler = su_compat_feature_set,
 };
-
-static void __user *userspace_stack_buffer(const void *d, size_t len)
-{
-	// Stack Pointer must be 16-byte aligned.
-	// We also subtract a safe margin (256 bytes) 
-	// to avoid corrupting local variables or smth
-	unsigned long sp = current_user_stack_pointer();
-	sp = (sp - len - 256) & ~0xFUL; // Align downwards to nearest 16 bytes
-
-	char __user *p = (char __user *)sp;
-
-	return copy_to_user(p, d, len) ? NULL : p;
-}
 
 static char __user *sh_user_path(void)
 {
@@ -169,7 +158,7 @@ static long ksu_handle_execve_sucompat_common(const char __user **filename_user,
 	if (!ksu_is_allow_uid_for_current(current_uid().val))
 		goto do_orig_execve;
 
-	addr = untagged_addr((unsigned long)*filename_user);
+	addr = untagged_addr((unsigned long)READ_ONCE(*filename_user));
 	fn = (const char __user *)addr;
 	memset(path, 0, sizeof(path));
 
@@ -250,6 +239,8 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 	struct filename *filename;
 	const char su[] = SU_PATH;
 	static const char ksud_path[] = KSUD_PATH;
+	struct ksu_sulog_pending_event *pending_root = NULL;
+	const char *const *sucompat_argv = (const char *const *)__never_use_argv;
 
 	if (unlikely(!filename_ptr))
 		return 0;
@@ -268,9 +259,13 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
 		return 0;
 
 	pr_info("do_execveat_common su found\n");
+
+	pending_root = ksu_sulog_capture_root_execve_kern(filename->name, sucompat_argv, GFP_KERNEL);
+
 	memcpy((void *)filename->name, ksud_path, sizeof(ksud_path));
 
 	escape_with_root_profile();
+	ksu_sulog_emit_pending(pending_root, 0, GFP_KERNEL);
 
 	return 0;
 }

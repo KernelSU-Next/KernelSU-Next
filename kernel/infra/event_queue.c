@@ -361,6 +361,10 @@ ssize_t ksu_event_queue_read(struct ksu_event_queue *queue, char __user *buf, si
         ret = ksu_event_queue_read_node(queue, buf, count);
         if (ret < 0) {
             if (!copied) {
+                if (ret == -EMSGSIZE) {
+                    copied = 0;
+                    break;
+                }
                 copied = ret;
             }
             break;
