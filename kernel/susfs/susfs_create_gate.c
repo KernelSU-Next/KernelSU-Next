@@ -46,10 +46,10 @@
 /* The AArch32 table numbers (arch/arm/tools/syscall.tbl); the native ones come
  * from __NR_*.  Kept spelled out for the same reason susfs_fp_hook.h spells the
  * compat indexes out: the two tables do not share a numbering. */
-#define COMPAT_MKNODAT_NR	33
-#define COMPAT_MKDIRAT_NR	34
-#define COMPAT_SYMLINKAT_NR	36
-#define COMPAT_LINKAT_NR	37
+#define COMPAT_MKNODAT_NR	324
+#define COMPAT_MKDIRAT_NR	323
+#define COMPAT_SYMLINKAT_NR	331
+#define COMPAT_LINKAT_NR	330
 
 static susfs_syscall_fn_t create_orig(enum susfs_create_syscall id)
 {
