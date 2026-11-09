@@ -20,6 +20,19 @@
 
 #define KSU_SUPPORT_ADD_TYPE
 
+/*
+ * Allocation flags for policydb mutation. Below 5.10 the live policydb is
+ * edited in place under write_lock(policy_rwlock) or stop_machine(), where
+ * sleeping is forbidden, so GFP_ATOMIC is mandatory. From 5.10 a private copy
+ * is edited under policy_mutex in process context: GFP_KERNEL is correct, and
+ * the large type arrays are far likelier to succeed with it.
+ */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 0)
+#define KSU_SEPOL_GFP GFP_KERNEL
+#else
+#define KSU_SEPOL_GFP GFP_ATOMIC
+#endif
+
 //////////////////////////////////////////////////////
 // Declaration
 //////////////////////////////////////////////////////
@@ -649,18 +662,18 @@ static bool add_filename_trans(struct policydb *db, const char *s,
 
     if (trans == NULL) {
         trans = (struct filename_trans_datum *)kcalloc(1, sizeof(*trans),
-                                                       GFP_ATOMIC);
+                                                       KSU_SEPOL_GFP);
         if (!trans) {
             pr_err("add_filename_trans: alloc filename_trans_datum failed\n");
             goto out;
         }
-        new_key = kzalloc(sizeof(*new_key), GFP_ATOMIC);
+        new_key = kzalloc(sizeof(*new_key), KSU_SEPOL_GFP);
         if (!new_key) {
             pr_err("add_filename_trans: alloc filename_trans_key failed\n");
             goto free_trans;
         }
         *new_key = key;
-        new_key->name = kstrdup(key.name, GFP_ATOMIC);
+        new_key->name = kstrdup(key.name, KSU_SEPOL_GFP);
         if (!new_key->name) {
             pr_err("add_filename_trans: kstrdup name failed\n");
             goto free_key;
@@ -742,10 +755,10 @@ static bool add_genfscon(struct policydb *db, const char *fs_name,
 
 // https://github.com/torvalds/linux/commit/590b9d576caec6b4c46bba49ed36223a399c3fc5#diff-cc9aa90e094e6e0f47bd7300db4f33cf4366b98b55d8753744f31eb69c691016R844-R845
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
-#define ksu_kvrealloc(p, new_size, _old_size) kvrealloc(p, new_size, GFP_ATOMIC)
+#define ksu_kvrealloc(p, new_size, _old_size) kvrealloc(p, new_size, KSU_SEPOL_GFP)
 #else
 #define ksu_kvrealloc(p, new_size, old_size)                                   \
-	ksu_compat_kvrealloc(p, old_size, new_size, GFP_ATOMIC)
+	ksu_compat_kvrealloc(p, old_size, new_size, KSU_SEPOL_GFP)
 #endif
 
 static bool add_type(struct policydb *db, const char *type_name, bool attr)
@@ -758,7 +771,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
 
     u32 value = db->p_types.nprim + 1;
 
-    type = (struct type_datum *)kzalloc(sizeof(struct type_datum), GFP_ATOMIC);
+    type = (struct type_datum *)kzalloc(sizeof(struct type_datum), KSU_SEPOL_GFP);
     if (!type) {
         pr_err("add_type: alloc type_datum failed.\n");
         return false;
@@ -768,12 +781,53 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
     type->value = value;
     type->attribute = attr;
 
-    char *key = kstrdup(type_name, GFP_ATOMIC);
+    char *key = kstrdup(type_name, KSU_SEPOL_GFP);
     if (!key) {
         pr_err("add_type: alloc key failed.\n");
         kfree(type);
         return false;
     }
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
+    /*
+     * Grow the arrays before touching the symtab or nprim. kvrealloc() frees
+     * the old block on success, so store each pointer in db right away: a
+     * later failure then never leaves db pointing at freed memory, and the
+     * (harmlessly larger) arrays still match an unchanged nprim.
+     */
+    struct ebitmap *new_type_attr_map_array =
+        ksu_kvrealloc(db->type_attr_map_array, value * sizeof(struct ebitmap),
+                    (value - 1) * sizeof(struct ebitmap));
+    if (!new_type_attr_map_array) {
+        pr_err("add_type: alloc type_attr_map_array failed\n");
+        kfree(key);
+        kfree(type);
+        return false;
+    }
+    db->type_attr_map_array = new_type_attr_map_array;
+
+    struct type_datum **new_type_val_to_struct =
+        ksu_kvrealloc(db->type_val_to_struct,
+                    sizeof(*db->type_val_to_struct) * value,
+                    sizeof(*db->type_val_to_struct) * (value - 1));
+    if (!new_type_val_to_struct) {
+        pr_err("add_type: alloc type_val_to_struct failed\n");
+        kfree(key);
+        kfree(type);
+        return false;
+    }
+    db->type_val_to_struct = new_type_val_to_struct;
+
+    char **new_val_to_name_types =
+        ksu_kvrealloc(db->sym_val_to_name[SYM_TYPES], sizeof(char *) * value,
+                    sizeof(char *) * (value - 1));
+    if (!new_val_to_name_types) {
+        pr_err("add_type: alloc val_to_name failed\n");
+        kfree(key);
+        kfree(type);
+        return false;
+    }
+    db->sym_val_to_name[SYM_TYPES] = new_val_to_name_types;
+#endif
 
     if (symtab_insert(&db->p_types, key, type)) {
         pr_err("add_type: insert symtab failed.\n");
@@ -785,41 +839,11 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
     db->p_types.nprim = value;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
-    struct ebitmap *new_type_attr_map_array =
-        ksu_kvrealloc(db->type_attr_map_array, value * sizeof(struct ebitmap),
-                    (value - 1) * sizeof(struct ebitmap));
-
-    if (!new_type_attr_map_array) {
-        pr_err("add_type: alloc type_attr_map_array failed\n");
-        return false;
-    }
-
-    struct type_datum **new_type_val_to_struct =
-        ksu_kvrealloc(db->type_val_to_struct,
-                    sizeof(*db->type_val_to_struct) * value,
-                    sizeof(*db->type_val_to_struct) * (value - 1));
-
-    if (!new_type_val_to_struct) {
-        pr_err("add_type: alloc type_val_to_struct failed\n");
-        return false;
-    }
-
-    char **new_val_to_name_types =
-        ksu_kvrealloc(db->sym_val_to_name[SYM_TYPES], sizeof(char *) * value,
-                    sizeof(char *) * (value - 1));
-    if (!new_val_to_name_types) {
-        pr_err("add_type: alloc val_to_name failed\n");
-        return false;
-    }
-
-    db->type_attr_map_array = new_type_attr_map_array;
     ebitmap_init(&db->type_attr_map_array[value - 1]);
     ebitmap_set_bit(&db->type_attr_map_array[value - 1], value - 1, 1);
 
-    db->type_val_to_struct = new_type_val_to_struct;
     db->type_val_to_struct[value - 1] = type;
 
-    db->sym_val_to_name[SYM_TYPES] = new_val_to_name_types;
     db->sym_val_to_name[SYM_TYPES][value - 1] = key;
 
     int i;
@@ -1308,13 +1332,13 @@ copy_class_datum_partially_callback(struct hashtab_node *new_node,
     struct constraint_node *oldn, *n, *nprev = NULL;
     struct constraint_expr *olde, *e, *eprev;
     new_node->key = old_node->key;
-    new_cls = kmemdup(cls, sizeof(struct class_datum), GFP_ATOMIC);
+    new_cls = kmemdup(cls, sizeof(struct class_datum), GFP_KERNEL);
     if (!new_cls)
         return -ENOMEM;
     new_node->datum = new_cls;
     new_cls->constraints = NULL;
     for (oldn = cls->constraints; oldn; oldn = oldn->next) {
-        n = kmemdup(oldn, sizeof(struct constraint_node), GFP_ATOMIC);
+        n = kmemdup(oldn, sizeof(struct constraint_node), GFP_KERNEL);
         if (!n)
             goto out_nomem;
         if (nprev) {
@@ -1325,7 +1349,7 @@ copy_class_datum_partially_callback(struct hashtab_node *new_node,
         eprev = NULL;
         n->expr = NULL;
         for (olde = oldn->expr; olde; olde = olde->next) {
-            e = kmemdup(olde, sizeof(struct constraint_expr), GFP_ATOMIC);
+            e = kmemdup(olde, sizeof(struct constraint_expr), GFP_KERNEL);
             if (!e) {
                 goto out_nomem;
             }
@@ -1401,7 +1425,7 @@ static int copy_class_datum_partially(struct policydb *new_db,
     memset(&new_db->p_classes.table, 0, sizeof(new_db->p_classes.table));
 
     new_class_val_to_struct =
-        kcalloc(n, sizeof(struct class_datum *), GFP_ATOMIC);
+        kcalloc(n, sizeof(struct class_datum *), GFP_KERNEL);
     if (!new_class_val_to_struct) {
         ret = -ENOMEM;
         goto exit;
@@ -1464,7 +1488,7 @@ copy_role_datum_partially_callback(struct hashtab_node *new_node,
     int ret = 0;
     struct policydb *db = data;
     struct role_datum *role = old_node->datum, *new_role;
-    new_role = kmemdup(role, sizeof(struct role_datum), GFP_ATOMIC);
+    new_role = kmemdup(role, sizeof(struct role_datum), GFP_KERNEL);
     if (!new_role) {
         ret = -ENOMEM;
         goto out;
@@ -1516,7 +1540,7 @@ static int copy_role_datum_partially(struct policydb *new_db,
     memset(&new_db->p_roles.table, 0, sizeof(new_db->p_roles.table));
 
     new_role_val_to_struct =
-        kcalloc(n, sizeof(*new_db->role_val_to_struct), GFP_ATOMIC);
+        kcalloc(n, sizeof(*new_db->role_val_to_struct), GFP_KERNEL);
     if (!new_role_val_to_struct) {
         ret = -ENOMEM;
         goto out_free;
@@ -1576,7 +1600,7 @@ static int copy_type_datum_partially(struct policydb *new_db,
 
     // ======== type_attr_map_array ========
 
-    new_type_attr_map_array = kvcalloc(sz, sizeof(struct ebitmap), GFP_ATOMIC);
+    new_type_attr_map_array = kvcalloc(sz, sizeof(struct ebitmap), GFP_KERNEL);
 
     if (!new_type_attr_map_array) {
         goto out;
@@ -1594,7 +1618,7 @@ static int copy_type_datum_partially(struct policydb *new_db,
     ret = -ENOMEM;
 
     new_type_val_to_struct =
-        kvcalloc(sz, sizeof(*new_db->type_val_to_struct), GFP_ATOMIC);
+        kvcalloc(sz, sizeof(*new_db->type_val_to_struct), GFP_KERNEL);
     if (!new_type_val_to_struct) {
         goto out;
     }
@@ -1605,7 +1629,7 @@ static int copy_type_datum_partially(struct policydb *new_db,
     // ======== sym_val_to_name[SYM_TYPES] ========
 
     new_sym_val_to_name_types =
-        kvcalloc(sz, sizeof(*new_db->sym_val_to_name[SYM_TYPES]), GFP_ATOMIC);
+        kvcalloc(sz, sizeof(*new_db->sym_val_to_name[SYM_TYPES]), GFP_KERNEL);
     if (!new_sym_val_to_name_types)
         goto out;
     new_db->sym_val_to_name[SYM_TYPES] = new_sym_val_to_name_types;
@@ -1680,7 +1704,7 @@ struct selinux_policy *ksu_dup_sepolicy(struct selinux_policy *old_pol)
 {
     int ret;
     struct selinux_policy *new_pol =
-        kmemdup(old_pol, sizeof(*old_pol), GFP_ATOMIC);
+        kmemdup(old_pol, sizeof(*old_pol), GFP_KERNEL);
     if (!new_pol) {
         return NULL;
     }

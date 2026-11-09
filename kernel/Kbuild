@@ -86,9 +86,18 @@ ifneq ($(shell [ -f $(srctree)/include/uapi/linux/sched.h ] && grep -q "struct c
 KSU_RUNNER_CFLAGS += -DKSU_HAS_NO_CLONE_ARGS
 endif
 
+# The runner is exec'd by PID 1, so it has to load on every page size a
+# target can use: the kernel rejects a PT_LOAD whose p_offset and p_vaddr
+# disagree modulo PAGE_SIZE (elf_map() computes p_offset - ELF_PAGEOFFSET()
+# and vm_mmap() returns -EINVAL for an unaligned offset). ld.lld defaults to
+# 4K on x86_64 and 64K on arm64, so pin the maximum and lay the segments out
+# contiguously instead of relying on the emulation's default.
+KSU_RUNNER_LDFLAGS := -static -nostdlib -e _start --gc-sections -s \
+	-z max-page-size=0x10000 -z noseparate-code
+
 quiet_cmd_ksu_runner = RUNNER  $@
       cmd_ksu_runner = $(CC) $(KSU_RUNNER_CFLAGS) -c -o $@.o $< && \
-		$(LD) -static -nostdlib -e _start --gc-sections -s -o $@ $@.o && \
+		$(LD) $(KSU_RUNNER_LDFLAGS) -o $@ $@.o && \
 		rm -f $@.o
 
 $(obj)/preinit/runner.elf: $(KSU_KERNEL_DIR)/preinit/runner/runner.c \
@@ -258,35 +267,40 @@ endif
 
 ifneq ($(shell grep -q "atomic_t filter_count;" $(srctree)/include/linux/seccomp.h; echo $$?),0)
 $(info -- KSU_NEXT: patching struct seccomp for filter_count)
-$(shell sed -i '/int mode;/a\	atomic_t filter_count;' $(srctree)/include/linux/seccomp.h)
-$(shell sed -i '/#include <linux\/thread_info.h>/a\#include <linux/atomic.h>' $(srctree)/include/linux/seccomp.h)
+$(shell sed -i \
+        -e '/int mode;/a\	atomic_t filter_count;' \
+        -e '/#include <linux\/thread_info.h>/a\#include <linux/atomic.h>' \
+$(srctree)/include/linux/seccomp.h)
 endif
 
 # security/selinux backports
 ifneq ($(shell grep -q "selinux_inode(inode)" $(srctree)/security/selinux/hooks.c; echo $$?),0)
 $(info -- KSU_NEXT: patching selinux/hooks.c for selinux_inode)
-$(shell sed -i 's/struct inode_security_struct \*isec = inode->i_security/struct inode_security_struct *isec = selinux_inode(inode)/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/return inode->i_security/return selinux_inode(inode)/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/return inode->i_security/return selinux_inode(inode)/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/\bisec = inode->i_security;/isec = selinux_inode(inode);/' $(srctree)/security/selinux/hooks.c)
+$(shell sed -i \
+        -e 's/struct inode_security_struct \*isec = inode->i_security/struct inode_security_struct *isec = selinux_inode(inode)/g' \
+        -e 's/return inode->i_security/return selinux_inode(inode)/g' \
+        -e 's/\bisec = inode->i_security;/isec = selinux_inode(inode);/' \
+$(srctree)/security/selinux/hooks.c)
 endif
 
 ifneq ($(shell grep -Eq 'selinux_cred\(.*\)' $(srctree)/security/selinux/hooks.c; echo $$?),0)
 $(info -- KSU_NEXT: patching selinux/hooks.c for selinux_cred)
-$(shell sed -i 's/tsec = cred->security;/tsec = selinux_cred(cred);/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/const struct task_security_struct \*tsec = cred->security;/const struct task_security_struct *tsec = selinux_cred(cred);/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/const struct task_security_struct \*tsec = current_security();/const struct task_security_struct *tsec = selinux_cred(current_cred());/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/old_tsec = current_security();/old_tsec = selinux_cred(current_cred());/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/new_tsec = bprm->cred->security;/new_tsec = selinux_cred(bprm->cred);/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/tsec = new->security;/tsec = selinux_cred(new);/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/tsec = new_creds->security;/tsec = selinux_cred(new_creds);/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/old_tsec = old->security;/old_tsec = selinux_cred(old);/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/const struct task_security_struct \*old_tsec = old->security;/const struct task_security_struct *old_tsec = selinux_cred(old);/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/struct task_security_struct \*tsec = new->security;/struct task_security_struct *tsec = selinux_cred(new);/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/__tsec = current_security();/__tsec = selinux_cred(current_cred());/' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/__tsec = __task_cred(p)->security;/__tsec = selinux_cred(__task_cred(p));/' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/current_security()/selinux_cred(current_cred())/g' $(srctree)/security/selinux/hooks.c)
-$(shell sed -i 's/old->security/selinux_cred(old)/g' $(srctree)/security/selinux/hooks.c)
+$(shell sed -i \
+        -e 's/tsec = cred->security;/tsec = selinux_cred(cred);/g' \
+        -e 's/const struct task_security_struct \*tsec = cred->security;/const struct task_security_struct *tsec = selinux_cred(cred);/g' \
+        -e 's/const struct task_security_struct \*tsec = current_security();/const struct task_security_struct *tsec = selinux_cred(current_cred());/g' \
+        -e 's/old_tsec = current_security();/old_tsec = selinux_cred(current_cred());/g' \
+        -e 's/new_tsec = bprm->cred->security;/new_tsec = selinux_cred(bprm->cred);/g' \
+        -e 's/tsec = new->security;/tsec = selinux_cred(new);/g' \
+        -e 's/tsec = new_creds->security;/tsec = selinux_cred(new_creds);/g' \
+        -e 's/old_tsec = old->security;/old_tsec = selinux_cred(old);/g' \
+        -e 's/const struct task_security_struct \*old_tsec = old->security;/const struct task_security_struct *old_tsec = selinux_cred(old);/g' \
+        -e 's/struct task_security_struct \*tsec = new->security;/struct task_security_struct *tsec = selinux_cred(new);/g' \
+        -e 's/__tsec = current_security();/__tsec = selinux_cred(current_cred());/' \
+        -e 's/__tsec = __task_cred(p)->security;/__tsec = selinux_cred(__task_cred(p));/' \
+        -e 's/current_security()/selinux_cred(current_cred())/g' \
+        -e 's/old->security/selinux_cred(old)/g' \
+$(srctree)/security/selinux/hooks.c)
 endif
 
 ifneq ($(shell grep -q "selinux_inode(inode)" $(srctree)/security/selinux/selinuxfs.c; echo $$?),0)
