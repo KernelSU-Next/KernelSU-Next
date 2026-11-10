@@ -68,7 +68,6 @@ int susfs_create_vfs_init(void)
 		create_filename_parentat_fn = (void *)find_kernel_symbol_exact("__filename_parentat");
 	create_lookup_one_qstr_excl_fn = (void *)find_kernel_symbol_exact("lookup_one_qstr_excl");
 	create_d_path_fn = (void *)find_kernel_symbol_exact("d_path");
-	pr_info("create_gate: d_path=%px\n", create_d_path_fn);
 	create_security_path_mkdir_fn = (void *)find_kernel_symbol_exact("security_path_mkdir");
 	create_done_path_create_fn = (void *)find_kernel_symbol_exact("done_path_create");
 	create_vfs_mkdir_fn = (void *)find_kernel_symbol_exact("vfs_mkdir");
@@ -293,20 +292,15 @@ int susfs_create_vfs_path(struct susfs_create_op *op, char *buf, size_t len)
 	char *p;
 	size_t n;
 
-	if (!op || !buf || !len || !create_d_path_fn) {
-		pr_info("create_gate: path helper unavailable op=%px buf=%px d_path=%px\n",
-			op, buf, create_d_path_fn);
+	if (!op || !buf || !len || !create_d_path_fn)
 		return -EOPNOTSUPP;
-	}
 	if (op->state != CREATE_OP_PARENTAT && op->state != CREATE_OP_LOCKED)
 		return -EINVAL;
 	if (len > sizeof(tmp))
 		len = sizeof(tmp);
 	p = create_d_path(&op->parent, tmp, (int)len);
-	if (IS_ERR_OR_NULL(p)) {
-		pr_info("create_gate: d_path failed %ld\n", PTR_ERR(p));
+	if (IS_ERR_OR_NULL(p))
 		return -EIO;
-	}
 	if (p != tmp) {
 		n = strlen(p);
 		if (n + 1 > sizeof(tmp))
