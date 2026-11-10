@@ -115,7 +115,7 @@ bool susfs_create_name_hidden(int dfd, const char __user *path,
 	if (rc)
 		goto out;
 	rc = susfs_create_vfs_status(op, &v);
-	if (rc <= 0)
+	if (rc < 0)
 		goto out;
 
 	v.kind = kind;
