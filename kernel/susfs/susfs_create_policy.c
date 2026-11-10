@@ -124,7 +124,7 @@ bool susfs_create_name_hidden(int dfd, const char __user *path,
 	{
 		int prc = susfs_create_vfs_path(op, v.path, sizeof(v.path));
 		if (prc)
-			SUSFS_LOGI("create_gate: path helper rc=%d
+			pr_info("create_gate: path helper rc=%d
 ", prc);
 	}
 
