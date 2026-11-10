@@ -21,6 +21,7 @@ typedef uint32_t uid_t;
 #endif
 
 #define SUSFS_CREATE_NAME_MAX 256
+#define SUSFS_CREATE_PATH_MAX 512
 
 enum susfs_create_kind {
 	SUSFS_CREATE_VIEW_MKDIRAT,
@@ -55,6 +56,7 @@ struct susfs_create_view {
 	u32 sb_magic;
 
 	char name[SUSFS_CREATE_NAME_MAX];
+	char path[SUSFS_CREATE_PATH_MAX];
 	bool link_old;
 
 	uid_t caller_uid;
@@ -88,7 +90,20 @@ susfs_create_decide_core(const struct susfs_create_view *v)
 
 	switch (v->state) {
 	case SUSFS_CREATE_ST_ABSENT:
+		/* A pending path rule blocks the create.  There is no inode owner to
+		 * exempt, so the ordinary gate is app-only (or everyone with
+		 * hide_from_apps=0); self-protect entries follow control_visible. */
 		d.action = SUSFS_CREATE_PASS;
+		if (v->rule_matched && v->pending) {
+			bool hidden = false;
+
+			if (v->self_protect)
+				hidden = !v->control_visible;
+			else if (v->ordinary_rule)
+				hidden = !v->hide_from_apps || v->caller_is_app;
+			if (hidden)
+				d.action = SUSFS_CREATE_HIDE;
+		}
 		return d;
 	case SUSFS_CREATE_ST_NOT_NAME:
 		d.action = SUSFS_CREATE_NOT_NAME;
