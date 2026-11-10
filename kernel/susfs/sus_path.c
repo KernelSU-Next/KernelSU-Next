@@ -1279,7 +1279,11 @@ bool sus_path_rules_present(void)
  * lookup. */
 bool sus_path_user_rules_present(void)
 {
-    return READ_ONCE(sus_path_user_count) > 0;
+    /* A pending rule has no inode yet, but it must still arm the create
+     * gate: the absent-name match in sus_path_rule_match() is what turns it
+     * into EACCES. */
+    return READ_ONCE(sus_path_user_count) > 0 ||
+           atomic_read(&sus_path_n_pending) > 0;
 }
 
 static int sus_path_inode_getattr(const struct path *path)
