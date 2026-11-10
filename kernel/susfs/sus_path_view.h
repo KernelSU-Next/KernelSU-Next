@@ -63,8 +63,8 @@ sus_path_decide_core(const struct sus_path_view *v)
 	if (!v->rule_matched)
 		return SUS_PATH_PASS;
 
-	if (v->self_protect)
-		return v->control_visible ? SUS_PATH_PASS : SUS_PATH_HIDE;
+	if (v->self_protect && !v->control_visible)
+		return SUS_PATH_HIDE;
 
 	if (!v->user_rule)
 		return SUS_PATH_PASS;

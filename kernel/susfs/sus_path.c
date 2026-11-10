@@ -53,6 +53,8 @@
 #include "susfs_abi.h"
 #include "susfs_log.h"
 #include "sus_path_match.h"
+#include "sus_path_data.h"
+#include "sus_path_view.h"
 #include "susfs_create_view.h"
 #include "susfs.h"	/* susfs_abi_path_ok */
 #include "symbol_resolver.h"	/* find_kernel_symbol_exact, for optional compat probes */
@@ -467,39 +469,31 @@ static inline bool sus_path_entry_gate(const struct sus_path_entry *e,
     return sus_path_gate(inode);
 }
 
+static void sus_path_view_fill(struct sus_path_view *v, enum sus_path_face face,
+                               u64 ino, u64 dev, uid_t uid, u32 magic,
+                               const char *name,
+                               const struct sus_path_rule_facts *f);
+int sus_path_rule_facts_dirent(u64 ino, const char *name,
+                               struct sus_path_rule_facts *facts);
+
 static bool sus_path_is_hidden(u64 ino, const char *name)
 {
-    struct sus_path_entry *e;
+    struct sus_path_rule_facts f;
+    struct sus_path_view v;
     bool hidden = false;
 
     /* The one resolving task is never answered "hidden": its own walk would be
      * refused by this very table (see the block above sus_path_resolver). */
-    if (sus_path_is_resolver())
+    if (sus_path_is_resolver() || !name)
         return false;
 
-    /* A dirent is identified by (d_ino, name) and nothing else here - the filter never sees the fd
-     * or the superblock, so unlike the LSM layer (the ihold'ed inode pointer, then (dev, i_ino)) it
-     * cannot tell one filesystem from another.  The two layers therefore disagree about one object
-     * in a narrow case: a same-named entry that reuses the same d_ino on ANOTHER filesystem is
-     * dropped from the listing - the rule's dev is not consulted - while its stat/open still work,
-     * because the LSM layer rejects that (dev, i_ino) pair.  The collision is not exotic - most
-     * filesystems number inodes from low values, so a common basename is enough - but the direction
-     * is the safe one: a listing that hides more than the file layer does never leaks a registered
-     * name.  The alternative is not free either: matching the name alone would hide unrelated
-     * entries, which is exactly why the only name-only mode in this file is the explicit opt-in
-     * debug parameter hide_name.  A rule whose inode reports 0 has no identity to match, and
-     * d_ino 0 is what some filesystems use for "unknown", so such a rule is hidden by the
-     * by-inode layers only (sus_path_supercall()). */
     if (ino) {
-        spin_lock(&sus_path_lock);
-        list_for_each_entry(e, &sus_path_list, list) {
-            if (e->ino && e->ino == ino && !strcmp(e->name, name) &&
-                sus_path_entry_gate(e, NULL)) {
-                hidden = true;
-                break;
-            }
+        sus_path_rule_facts_dirent(ino, name, &f);
+        if (f.matched) {
+            sus_path_view_fill(&v, SUS_PATH_FACE_DIRENT, ino, 0, 0, 0,
+                               name, &f);
+            hidden = sus_path_decide_core(&v) == SUS_PATH_HIDE;
         }
-        spin_unlock(&sus_path_lock);
     }
 
     if (!hidden && hide_name[0])
@@ -1138,11 +1132,106 @@ static void sus_path_entry_set_path(struct sus_path_entry *e, const char *path)
  * type the same number can stand for two different files. */
 static atomic_t n_identity_hits = ATOMIC_INIT(0);
 
-static bool sus_path_inode_hidden(struct inode *inode)
+static void sus_path_view_fill(struct sus_path_view *v, enum sus_path_face face,
+                               u64 ino, u64 dev, uid_t uid, u32 magic,
+                               const char *name,
+                               const struct sus_path_rule_facts *f)
+{
+    memset(v, 0, sizeof(*v));
+    v->face = face;
+    v->ino = ino;
+    v->s_dev = dev;
+    v->i_uid = uid;
+    v->sb_magic = magic;
+    if (name)
+        strscpy(v->name, name, sizeof(v->name));
+    v->pending = f->pending;
+    v->user_rules_present = READ_ONCE(sus_path_user_count) > 0;
+    v->rule_matched = f->matched;
+    v->self_protect = f->self_protect;
+    v->user_rule = f->user_rule;
+    v->caller_uid = current_uid().val;
+    v->caller_is_app = susfs_is_current_proc_umounted_app();
+    v->caller_is_su = susfs_control_visible();
+    v->hide_from_apps = sus_path_hide_from_apps();
+    v->control_visible = susfs_control_visible();
+}
+
+int sus_path_rule_facts_inode(struct inode *inode,
+                              struct sus_path_rule_facts *facts)
 {
     struct sus_path_entry *e;
-    bool hidden = false, by_identity = false;
     u64 dev;
+
+    if (!facts)
+        return -EINVAL;
+    memset(facts, 0, sizeof(*facts));
+    if (!inode || !READ_ONCE(sus_path_count))
+        return 0;
+    dev = (u64)inode->i_sb->s_dev;
+
+    spin_lock(&sus_path_lock);
+    list_for_each_entry(e, &sus_path_list, list) {
+        bool hit = false, identity = false;
+
+        if (e->inode == inode) {
+            hit = true;
+        } else if (e->ino && e->ino == (u64)inode->i_ino) {
+            if (e->dev == dev) {
+                hit = true;
+                identity = true;
+            } else if (e->self_protect && e->inode &&
+                       e->inode->i_sb->s_type == inode->i_sb->s_type) {
+                hit = true;
+                identity = true;
+            }
+        }
+        if (!hit)
+            continue;
+        facts->matched = true;
+        facts->by_identity |= identity;
+        if (e->self_protect)
+            facts->self_protect = true;
+        else
+            facts->user_rule = true;
+        if (!e->inode)
+            facts->pending = true;
+    }
+    spin_unlock(&sus_path_lock);
+    return 0;
+}
+
+int sus_path_rule_facts_dirent(u64 ino, const char *name,
+                               struct sus_path_rule_facts *facts)
+{
+    struct sus_path_entry *e;
+
+    if (!facts)
+        return -EINVAL;
+    memset(facts, 0, sizeof(*facts));
+    if (!ino || !name || !READ_ONCE(sus_path_count))
+        return 0;
+
+    spin_lock(&sus_path_lock);
+    list_for_each_entry(e, &sus_path_list, list) {
+        if (!e->ino || e->ino != ino || strcmp(e->name, name))
+            continue;
+        facts->matched = true;
+        if (e->self_protect)
+            facts->self_protect = true;
+        else
+            facts->user_rule = true;
+        if (!e->inode)
+            facts->pending = true;
+    }
+    spin_unlock(&sus_path_lock);
+    return 0;
+}
+
+static bool sus_path_inode_hidden(struct inode *inode)
+{
+    struct sus_path_rule_facts f;
+    struct sus_path_view v;
 
     if (!inode || !READ_ONCE(sus_path_count))
         return false;
@@ -1152,46 +1241,16 @@ static bool sus_path_inode_hidden(struct inode *inode)
     if (sus_path_is_resolver())
         return false;
 
-    dev = (u64)inode->i_sb->s_dev;
-
-    spin_lock(&sus_path_lock);
-    list_for_each_entry(e, &sus_path_list, list) {
-        /* Fast path: the exact object the rule resolved. */
-        if (e->inode == inode) {
-            if (sus_path_entry_gate(e, inode)) {
-                hidden = true;
-                break;
-            }
-            continue;
-        }
-        /* Pending rules have no identity yet (ino == 0) and are the LSM layer's blind
-         * spot by construction: nothing exists at their path to be accessed. */
-        if (!e->ino || e->ino != (u64)inode->i_ino)
-            continue;
-        if (e->dev == dev) {
-            by_identity = true;
-            if (sus_path_entry_gate(e, inode)) {
-                hidden = true;
-                break;
-            }
-            continue;
-        }
-        /* Another instance of the same filesystem: control nodes only, see above. */
-        if (e->self_protect && e->inode &&
-            e->inode->i_sb->s_type == inode->i_sb->s_type) {
-            by_identity = true;
-            if (sus_path_entry_gate(e, inode)) {
-                hidden = true;
-                break;
-            }
-        }
-    }
-    spin_unlock(&sus_path_lock);
-
-    if (by_identity)
+    sus_path_rule_facts_inode(inode, &f);
+    if (!f.matched)
+        return false;
+    if (f.by_identity)
         atomic_inc(&n_identity_hits);
 
-    return hidden;
+    sus_path_view_fill(&v, SUS_PATH_FACE_INODE, (u64)inode->i_ino,
+                       (u64)inode->i_sb->s_dev, inode->i_uid.val,
+                       inode->i_sb->s_magic, NULL, &f);
+    return sus_path_decide_core(&v) == SUS_PATH_HIDE;
 }
 
 /* The same decision, published for the layers that hold the inode the kernel resolved instead
