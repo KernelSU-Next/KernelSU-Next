@@ -125,6 +125,9 @@ bool susfs_create_name_hidden(int dfd, const char __user *path,
 		int prc = susfs_create_vfs_path(op, v.path, sizeof(v.path));
 		if (prc)
 			pr_info("create_gate: path helper rc=%d\n", prc);
+		else
+			pr_info("create_gate: view path [%s] ino=%llu state=%d\n",
+				v.path, (unsigned long long)v.ino, (int)v.state);
 	}
 
 	rc = create_view_decide(&v, &d);
