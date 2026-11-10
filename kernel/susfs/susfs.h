@@ -242,6 +242,7 @@ bool susfs_open_redirect_spoof_ids(unsigned long ino, unsigned long *out_ino, un
  * recycled now (a deleted rule's slot is handed out again once a grace period has passed), so
  * nothing inside an entry may be read after the lookup returns. */
 bool susfs_open_redirect_match_path(const struct path *path, char *buf, size_t buflen);
+bool susfs_open_redirect_in_su_domain(void);
 
 /* How many rules are live right now.  The name-layer hook runs for every open() on the system, so it
  * tests this before it resolves anything - a table with no live rule costs one load instead of a path

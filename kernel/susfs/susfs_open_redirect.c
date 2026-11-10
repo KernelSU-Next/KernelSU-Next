@@ -16,7 +16,7 @@
  * reverse redirected) keep the open/inode lookups O(1) average; the slot array itself stays the stable storage.  susfs_open_redirect_rules counts live rules, so
  * the name layer stops paying a lookup once the last rule is gone.
  * uid_scheme: enum UID_SCHEME (susfs_abi.h:67-73), all five values with upstream's predicates (susfs.c:941-964); two of
- * the five need state an LKM cannot read - see or_uid_matches() / or_in_su_domain().
+ * the five need state an LKM cannot read - see the open view / or_in_su_domain().
  * Reverse disguise: upstream registers TWO hash entries per rule (susfs.c:844-863), the second with
  * reversed_lookup_only = true and the two pathnames swapped, and every "where did this file come from" reporter answers
  * from it - vfs_readlink() patch:510-548, do_proc_readlink() (/proc/<pid>/fd/N, exe, cwd, root) patch:1062-1083, fdinfo
@@ -63,6 +63,7 @@
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 #include "susfs_kprobe.h"
 #include "susfs_or_entry.h"	/* susfs_or_entry_armed(): the forward direction lives there now */
+#include "susfs_open_data.h"
 
 #define SUS_OR_MAX 512
 #define OR_HASH_BITS 10
@@ -224,33 +225,6 @@ static bool or_reverse_visible(void)
 }
 
 /* uid_scheme decision, mirroring upstream's switch in susfs_open_redirect_spoof_do_sys_openat() (susfs.c:941-964). */
-static bool or_uid_matches(int scheme)
-{
-	switch (scheme) {
-	case UID_NON_APP_PROC:			/* susfs.c:942-945 */
-		return current_uid().val % 100000 < 10000;
-	case UID_ROOT_PROC_EXCEPT_SU_PROC:	/* susfs.c:946-949 */
-		return current_uid().val == 0 && !or_in_su_domain();
-	case UID_NON_SU_PROC:			/* susfs.c:950-953 */
-		return !or_in_su_domain();
-	case UID_UMOUNTED_APP_PROC:		/* susfs.c:954-957 */
-		/* Upstream: TIF_PROC_UMOUNTED && uid >= 10000 (susfs_def.h:122-125).  The flag is set
-		 * by the SUSFS-patched KernelSU and this kernel has no such patch, so the same
-		 * question is put to KernelSU by uid instead (ksu_umount_gate.h, issue #34).  What
-		 * that substitution cannot reproduce is the flag's per-THREAD grain: a process of an
-		 * umounted uid that was not forked from zygote answers yes here and no upstream. */
-		return susfs_is_current_proc_umounted_app();
-	case UID_UMOUNTED_PROC:			/* susfs.c:958-961 */
-		/* Upstream: TIF_PROC_UMOUNTED alone, with no uid condition at all - which is how it
-		 * covers init-derived processes.  Same substitution as above, and the uid half is
-		 * deliberately NOT added here: that is the whole difference between this scheme and
-		 * the one above. */
-		return susfs_is_current_proc_umounted();
-	default:				/* susfs.c:962-963 */
-		return false;
-	}
-}
-
 static struct sus_or_entry *or_find_by_path(const char *target)
 {
 	int i;
@@ -446,25 +420,44 @@ static struct sus_or_entry *or_find_by_inode(unsigned long ino, dev_t dev, unsig
  * counts as "no rule" - the caller then runs the original syscall, which is always correct.
  * The table read is lockless for the same reason the probes' is: `dead` is cleared LAST by the
  * writer, so a non-dead entry has complete fields. */
-bool susfs_open_redirect_match_path(const struct path *path, char *buf, size_t buflen)
+bool susfs_open_redirect_in_su_domain(void)
+{
+	return or_in_su_domain();
+}
+
+int susfs_open_rule_facts_path(const struct path *path,
+			       struct susfs_open_rule_facts *facts)
 {
 	struct inode *inode;
 	struct sus_or_entry *e;
-	bool hit = false;
 
-	if (!READ_ONCE(nor) || !path->dentry)
-		return false;
+	if (!facts)
+		return -EINVAL;
+	memset(facts, 0, sizeof(*facts));
+	if (!READ_ONCE(nor) || !path || !path->dentry)
+		return 0;
 	inode = d_inode(path->dentry);
 	if (!inode)
-		return false;
+		return 0;
 
 	rcu_read_lock();
 	e = or_find_by_inode(inode->i_ino, inode->i_sb->s_dev, inode->i_generation);
-	if (e && or_uid_matches(e->uid_scheme) && e->redirected_pathname[0] &&
-	    strscpy(buf, e->redirected_pathname, buflen) >= 0)
-		hit = true;
+	if (e && e->redirected_pathname[0]) {
+		facts->matched = true;
+		facts->uid_scheme = e->uid_scheme;
+		strscpy(facts->redirected, e->redirected_pathname,
+			sizeof(facts->redirected));
+	}
 	rcu_read_unlock();
-	return hit;
+	return 0;
+}
+
+bool susfs_open_redirect_match_path(const struct path *path, char *buf, size_t buflen)
+{
+	struct susfs_open_rule_facts f;
+
+	susfs_open_rule_facts_path(path, &f);
+	return f.matched && strscpy(buf, f.redirected, buflen) >= 0;
 }
 
 /* Reverse direction: keyed on the redirected (really opened) inode, published like or_find_by_inode(). */
