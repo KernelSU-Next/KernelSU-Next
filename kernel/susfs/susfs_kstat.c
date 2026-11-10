@@ -187,7 +187,7 @@ static bool susfs_kstat_gate_ok(void)
 		.caller_is_umounted_app = susfs_is_current_proc_umounted_app(),
 	};
 
-	return susfs_kstat_decide_core(&v) == SUSFS_KSTAT_LOOKUP;
+	return susfs_kstat_gate_allowed(&v);
 }
 
 /* ---- table access ----
@@ -626,6 +626,18 @@ static bool susfs_kstat_spoof_statbuf(struct kstat_call_state *st, unsigned long
 	if (!susfs_kstat_lookup(ino, dev, &snap)) {
 		atomic_inc(&st->cnt->miss_lookup);
 		return false;
+	}
+	{
+		struct susfs_kstat_view v = {
+			.table_empty = false,
+			.caller_is_umounted_app = true,
+			.rule_matched = true,
+			.buffer_ok = true,
+			.spoof_flags = snap.flags,
+		};
+
+		if (susfs_kstat_decide_core(&v) != SUSFS_KSTAT_LOOKUP)
+			return false;
 	}
 
 	if (e->flags & KSTAT_SPOOF_INO) {
