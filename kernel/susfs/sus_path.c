@@ -1282,8 +1282,7 @@ bool sus_path_user_rules_present(void)
     bool present = READ_ONCE(sus_path_user_count) > 0 ||
                    atomic_read(&sus_path_n_pending) > 0;
 
-    pr_info("sus_path: user_rules_present user=%u pending=%d -> %d
-",
+    pr_info("sus_path: user_rules_present user=%u pending=%d -> %d\n",
             READ_ONCE(sus_path_user_count),
             atomic_read(&sus_path_n_pending), present);
     return present;
