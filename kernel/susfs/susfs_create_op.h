@@ -21,6 +21,7 @@ int susfs_create_vfs_lock(struct susfs_create_op *op);
 int susfs_create_vfs_status(struct susfs_create_op *op,
 			    struct susfs_create_view *view);
 int susfs_create_vfs_commit(struct susfs_create_op *op, umode_t mode);
+int susfs_create_vfs_path(struct susfs_create_op *op, char *buf, size_t len);
 void susfs_create_vfs_parent_permission_op(struct susfs_create_op *op);
 void susfs_create_vfs_end(struct susfs_create_op *op);
 

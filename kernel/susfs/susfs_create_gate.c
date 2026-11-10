@@ -69,6 +69,10 @@ static __nocfi noinline long create_wrap_mkdirat(const struct pt_regs *regs)
 
 	if (!orig)
 		return -ENOSYS;
+	if (susfs_create_name_hidden((int)regs->regs[0],
+				     (const char __user *)regs->regs[1],
+				     SUSFS_CREATE_VIEW_MKDIRAT, false))
+		return -EACCES;
 	if (susfs_create_commit_enabled()) {
 		ret = susfs_create_mkdirat_commit((int)regs->regs[0],
 						  (const char __user *)regs->regs[1],
@@ -76,15 +80,7 @@ static __nocfi noinline long create_wrap_mkdirat(const struct pt_regs *regs)
 		if (handled)
 			return ret;
 	}
-	/* Let the kernel answer first.  Only a successful "it already exists"
-	 * needs the hidden-name translation; absent names, ".", ".." and
-	 * trailing non-name components keep the kernel's own answer. */
-	ret = orig(regs);
-	if (ret == -EEXIST &&
-	    susfs_create_name_hidden((int)regs->regs[0],
-				     (const char __user *)regs->regs[1], SUSFS_CREATE_VIEW_MKDIRAT, false))
-		return -EACCES;
-	return ret;
+	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_mknodat(const struct pt_regs *regs)
@@ -134,6 +130,10 @@ static __nocfi noinline long create_wrap_compat_mkdirat(const struct pt_regs *re
 
 	if (!orig)
 		return -ENOSYS;
+	if (susfs_create_name_hidden((int)regs->regs[0],
+				     (const char __user *)regs->regs[1],
+				     SUSFS_CREATE_VIEW_MKDIRAT, false))
+		return -EACCES;
 	if (susfs_create_commit_enabled()) {
 		ret = susfs_create_mkdirat_commit((int)regs->regs[0],
 						  (const char __user *)regs->regs[1],
@@ -141,12 +141,7 @@ static __nocfi noinline long create_wrap_compat_mkdirat(const struct pt_regs *re
 		if (handled)
 			return ret;
 	}
-	ret = orig(regs);
-	if (ret == -EEXIST &&
-	    susfs_create_name_hidden((int)regs->regs[0],
-				     (const char __user *)regs->regs[1], SUSFS_CREATE_VIEW_MKDIRAT, false))
-		return -EACCES;
-	return ret;
+	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_compat_mknodat(const struct pt_regs *regs)

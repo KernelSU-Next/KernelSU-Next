@@ -1225,10 +1225,31 @@ int sus_path_rule_match(const struct susfs_create_view *v,
     if (!v || !out)
         return -EINVAL;
     memset(out, 0, sizeof(*out));
-    if (!v->ino || !v->s_dev || !READ_ONCE(sus_path_count))
+    if (!READ_ONCE(sus_path_count))
         return 0;
 
     spin_lock(&sus_path_lock);
+    if (!v->ino || !v->s_dev) {
+        /* An absent target has no inode; only pending path rules can answer.
+         * Match the full path so a same-named file in another directory cannot
+         * inherit the rule. */
+        if (!v->path[0]) {
+            spin_unlock(&sus_path_lock);
+            return 0;
+        }
+        list_for_each_entry(e, &sus_path_list, list) {
+            if (e->inode || !e->path[0] || strcmp(e->path, v->path))
+                continue;
+            out->rule_matched = true;
+            out->pending = true;
+            if (e->self_protect)
+                out->self_protect = true;
+            else
+                out->ordinary_rule = true;
+        }
+        spin_unlock(&sus_path_lock);
+        return 0;
+    }
     list_for_each_entry(e, &sus_path_list, list) {
         if (!e->inode || !e->ino)
             continue;

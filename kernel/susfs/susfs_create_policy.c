@@ -121,6 +121,7 @@ bool susfs_create_name_hidden(int dfd, const char __user *path,
 	v.kind = kind;
 	v.link_old = link_old;
 	create_view_fill_caller(&v);
+	susfs_create_vfs_path(op, v.path, sizeof(v.path));
 
 	rc = create_view_decide(&v, &d);
 	if (rc)

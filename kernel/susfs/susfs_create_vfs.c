@@ -37,6 +37,7 @@ static int (*create_filename_parentat_fn)(int dfd, struct filename *name,
 static struct dentry *(*create_lookup_one_qstr_excl_fn)(const struct qstr *name,
                                                         struct dentry *base,
                                                         unsigned int flags);
+static char *(*create_d_path_fn)(const struct path *path, char *buf, int buflen);
 static int (*create_security_path_mkdir_fn)(const struct path *path,
                                             struct dentry *dentry, umode_t mode);
 static void (*create_done_path_create_fn)(struct path *path, struct dentry *dentry);
@@ -66,6 +67,7 @@ int susfs_create_vfs_init(void)
 	if (!create_filename_parentat_fn)
 		create_filename_parentat_fn = (void *)find_kernel_symbol_exact("__filename_parentat");
 	create_lookup_one_qstr_excl_fn = (void *)find_kernel_symbol_exact("lookup_one_qstr_excl");
+	create_d_path_fn = (void *)find_kernel_symbol_exact("d_path");
 	create_security_path_mkdir_fn = (void *)find_kernel_symbol_exact("security_path_mkdir");
 	create_done_path_create_fn = (void *)find_kernel_symbol_exact("done_path_create");
 	create_vfs_mkdir_fn = (void *)find_kernel_symbol_exact("vfs_mkdir");
@@ -276,6 +278,50 @@ void susfs_create_vfs_parent_permission_op(struct susfs_create_op *op)
 	if (!op || !op->parent_held)
 		return;
 	susfs_create_vfs_parent_permission(d_inode(op->parent.dentry));
+}
+
+static __nocfi noinline char *create_d_path(const struct path *path, char *buf,
+					   int buflen)
+{
+	return create_d_path_fn(path, buf, buflen);
+}
+
+int susfs_create_vfs_path(struct susfs_create_op *op, char *buf, size_t len)
+{
+	char tmp[SUSFS_CREATE_PATH_MAX];
+	char *p;
+	size_t n;
+
+	if (!op || !buf || !len || !create_d_path_fn)
+		return -EOPNOTSUPP;
+	if (op->state != CREATE_OP_PARENTAT && op->state != CREATE_OP_LOCKED)
+		return -EINVAL;
+	if (len > sizeof(tmp))
+		len = sizeof(tmp);
+	p = create_d_path(&op->parent, tmp, (int)len);
+	if (IS_ERR_OR_NULL(p))
+		return -EIO;
+	if (p != tmp) {
+		n = strlen(p);
+		if (n + 1 > sizeof(tmp))
+			return -ENAMETOOLONG;
+		memmove(tmp, p, n + 1);
+	}
+	n = strlen(tmp);
+	if (n && tmp[n - 1] != '/') {
+		if (n + 1 >= sizeof(tmp))
+			return -ENAMETOOLONG;
+		tmp[n++] = '/';
+	}
+	if (n + op->last.len >= sizeof(tmp))
+		return -ENAMETOOLONG;
+	memcpy(tmp + n, op->last.name, op->last.len);
+	n += op->last.len;
+	tmp[n] = 0;
+	if (n >= len)
+		return -ENAMETOOLONG;
+	memcpy(buf, tmp, n + 1);
+	return 0;
 }
 
 void susfs_create_vfs_end(struct susfs_create_op *op)
