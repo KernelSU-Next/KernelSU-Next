@@ -66,10 +66,12 @@ void ksu_unmark_all_process(void)
 static void ksu_mark_running_process_locked()
 {
 	struct task_struct *p, *t;
+	unsigned int marked = 0, unmarked = 0;
+
 	read_lock(&tasklist_lock);
 	for_each_process_thread (p, t) {
 		if (t->pid != 1 && !t->mm) {
-            // skip kernel threads, but always allow pid 1
+			// skip kernel threads, but always allow pid 1
 			continue;
 		}
 		int uid = task_uid(t).val;
@@ -80,19 +82,23 @@ static void ksu_mark_running_process_locked()
 		bool is_shell = uid == 2000;
 		// before boot completed, we shall mark init for marking zygote
 		bool is_init = t->pid == 1;
-		if (ksu_root_process || is_zygote_process  || is_shell || is_init
+		if (ksu_root_process || is_zygote_process || is_shell || is_init
 			|| ksu_is_allow_uid(uid)) {
 			ksu_set_task_tracepoint_flag(t);
-			pr_info("hook_manager: mark process: pid:%d, uid: %d, comm:%s\n",
-					t->pid, uid, t->comm);
+			marked++;
 		} else {
 			ksu_clear_task_tracepoint_flag(t);
-			pr_info("hook_manager: unmark process: pid:%d, uid: %d, comm:%s\n",
-					t->pid, uid, t->comm);
+			unmarked++;
 		}
 		put_cred(cred);
 	}
 	read_unlock(&tasklist_lock);
+
+	// Never log per task here: with a high console loglevel each pr_info()
+	// is written synchronously to the console, which on a device with a few
+	// thousand threads turns a profile update into a multi-second stall.
+	ksu_dbg("hook_manager: marked: %u, unmarked: %u processes\n",
+            marked, unmarked);
 }
 
 void ksu_mark_running_process()
