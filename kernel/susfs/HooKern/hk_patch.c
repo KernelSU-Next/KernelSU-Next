@@ -580,7 +580,7 @@ struct hk_patch_job {
  * per physical page and dropped again. the caller holds g_patch_lock, so the
  * slot is not shared and neither is the kernel patch slot
  */
-static int hk_patch_slot_run(unsigned long addr, const void *src, size_t len,
+static __nocfi int hk_patch_slot_run(unsigned long addr, const void *src, size_t len,
 			     int flags, int idx, unsigned long caller,
 			     unsigned long (*to_pa)(unsigned long va),
 			     bool nofault)
@@ -967,7 +967,7 @@ static void hk_flush_tlb_page(unsigned long addr)
  * back, so the dirty and young bits the store sets are kept. a platform that
  * watches fixmap use sees nothing here, which is what this route is for
  */
-static int hk_own_run(void *dst, const void *src, size_t len,
+static __nocfi int hk_own_run(void *dst, const void *src, size_t len,
 		      const struct hk_write *w,
 		      int (*fn)(void *ctx, void *addr, size_t len), void *ctx)
 {
@@ -1052,7 +1052,7 @@ int hk_write_window(void *dst, const void *src, size_t len,
 	return ret;
 }
 
-int hk_write_run(void *dst, const void *src, size_t len,
+int __nocfi hk_write_run(void *dst, const void *src, size_t len,
 		 const struct hk_write *w)
 {
 	struct hk_write o = { };
@@ -1244,7 +1244,7 @@ int hk_write_direct(void *dst, const void *src, size_t len)
 	return call_clean_inval((unsigned long)dst, (unsigned long)dst + len);
 }
 
-int hk_write_text(void *dst, const void *src, size_t len)
+int __nocfi hk_write_text(void *dst, const void *src, size_t len)
 {
 	if (g_write)
 		return g_write(dst, src, len);
@@ -1260,7 +1260,7 @@ void hk_patch_set_write(int (*write)(void *dst, const void *src, size_t len))
 	g_write = write;
 }
 
-int hk_patch_write(void *dst, unsigned long val)
+int __nocfi hk_patch_write(void *dst, unsigned long val)
 {
 	return hk_write_text(dst, &val, sizeof(val));
 }
@@ -1324,7 +1324,7 @@ int hk_patch_prepare(struct hk_patch_set *set, struct hk_patch_hook *hook)
  * changed. a write that fails after that point puts the sites already written
  * back and reports the failure, so a set is either all in or all out
  */
-int hk_patch_commit(struct hk_patch_set *set)
+int __nocfi hk_patch_commit(struct hk_patch_set *set)
 {
 	struct hk_patch_hook *hook;
 	struct hk_patch_hook *failed = NULL;
@@ -1374,7 +1374,7 @@ int hk_patch_commit(struct hk_patch_set *set)
 	return ret;
 }
 
-int hk_patch_rollback(struct hk_patch_set *set)
+int __nocfi hk_patch_rollback(struct hk_patch_set *set)
 {
 	struct hk_patch_hook *hook;
 	int first = 0;

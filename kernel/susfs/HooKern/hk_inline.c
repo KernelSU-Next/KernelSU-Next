@@ -499,7 +499,7 @@ static __nocfi int hk_relo_inst(struct hk_relo_ctx *c, u32 insn)
 }
 
 /* one class, one swing at the emitters: the api note is in the header */
-int hk_relo_check(void)
+int __nocfi hk_relo_check(void)
 {
 	u32 dst[HK_INLINE_ENTRY_MAX * 8];
 	u32 window[HK_INLINE_ENTRY_MAX];
@@ -632,7 +632,7 @@ static void hk_inline_report(const char *what, const char *sym,
  * vmalloc_to_page predates leaf handling the kernel primitive cannot reach it, and
  * the configured path is therefore only taken where the kernel can take it
  */
-static int hk_engine_write(void *dst, const void *src, size_t len)
+static __nocfi int hk_engine_write(void *dst, const void *src, size_t len)
 {
 	if (!hk_patch_kernel_primitive_ok((unsigned long)dst))
 		return hk_write_fixmap(dst, src, len);
@@ -1011,7 +1011,7 @@ __nocfi int hk_inline_hook(struct hk_inline *h, const char *sym,
 	return ret;
 }
 
-int hk_inline_disable(struct hk_inline *h)
+int __nocfi hk_inline_disable(struct hk_inline *h)
 {
 	/* the restore is a text write too, keep it off a concurrent install */
 	mutex_lock(&g_inline_lock);
@@ -1040,7 +1040,7 @@ int hk_inline_disable(struct hk_inline *h)
  * guarded pages go back to what they were. a hook that never reached disable is
  * refused, its detour is still the entry
  */
-void hk_inline_free(struct hk_inline *h)
+void __nocfi hk_inline_free(struct hk_inline *h)
 {
 	mutex_lock(&g_inline_lock);
 	if (!h) {

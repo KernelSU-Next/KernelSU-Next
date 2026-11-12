@@ -616,14 +616,14 @@ static bool hide_m_should_hide(struct seq_file *m, void *p)
 	return true;
 }
 
-int hide_syms_s_show_wrap(struct seq_file *m, void *p)
+int __nocfi hide_syms_s_show_wrap(struct seq_file *m, void *p)
 {
 	if (hide_s_should_hide(m))
 		return 0;
 	return hide_s_orig ? hide_s_orig(m, p) : 0;
 }
 
-int hide_syms_m_show_wrap(struct seq_file *m, void *p)
+int __nocfi hide_syms_m_show_wrap(struct seq_file *m, void *p)
 {
 	if (hide_m_should_hide(m, p))
 		return 0;

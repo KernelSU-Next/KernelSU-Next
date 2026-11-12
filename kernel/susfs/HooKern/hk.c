@@ -173,7 +173,7 @@ void hk_notice_set(hk_notify_fn fn)
 	WRITE_ONCE(g_notify, fn);
 }
 
-void hk_notice(enum hk_notice what, const char *detail)
+void __nocfi hk_notice(enum hk_notice what, const char *detail)
 {
 	hk_notify_fn fn = READ_ONCE(g_notify);
 
