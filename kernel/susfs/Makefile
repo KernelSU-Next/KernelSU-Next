@@ -30,10 +30,10 @@ ccflags-y += -DHK_NO_KPROBE -DHK_NO_KRETPROBE -DHK_NO_PTR -DHK_NO_SIGHOOK -DHK_N
 # HooKern resolves and calls its own function pointers at run time; KCFI cannot
 # type-check those intentionally raw calls.  Keep the module-local wrappers
 # __nocfi and build only the third-party engine objects without KCFI.
-CFLAGS_HooKern/hk.o := -fno-sanitize=kcfi
-CFLAGS_HooKern/hk_ksym.o := -fno-sanitize=kcfi
-CFLAGS_HooKern/hk_patch.o := -fno-sanitize=kcfi
-CFLAGS_HooKern/hk_inline.o := -fno-sanitize=kcfi
+CFLAGS_HooKern/hk.o := -fno-sanitize=cfi
+CFLAGS_HooKern/hk_ksym.o := -fno-sanitize=cfi
+CFLAGS_HooKern/hk_patch.o := -fno-sanitize=cfi
+CFLAGS_HooKern/hk_inline.o := -fno-sanitize=cfi
 
 # The dcache/icache flush helper is NOT picked at build time any more: which spelling a kernel
 # carries is not decided by its version number (a vendor kernel can keep the pre-5.14 name, measured
