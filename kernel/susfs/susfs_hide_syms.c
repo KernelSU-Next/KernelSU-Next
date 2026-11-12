@@ -581,6 +581,8 @@ static hide_syms_show_fn hide_s_orig;
 static hide_syms_show_fn hide_m_orig;
 static struct hk_inline hide_s_hook;
 static struct hk_inline hide_m_hook;
+static unsigned long hide_s_addr;
+static unsigned long hide_m_addr;
 
 static bool hide_s_should_hide(struct seq_file *m)
 {
@@ -636,10 +638,10 @@ static unsigned long hide_syms_hk_resolve(const char *name)
 		return (unsigned long)hide_syms_s_show_wrap;
 	if (!strcmp(name, "hide_syms_m_show_wrap"))
 		return (unsigned long)hide_syms_m_show_wrap;
-	if (kallsyms_op_target && !strcmp(name, "s_show"))
-		return (unsigned long)kallsyms_op_target->show;
-	if (modules_op_target && !strcmp(name, "m_show"))
-		return (unsigned long)modules_op_target->show;
+	if (hide_s_addr && !strcmp(name, "s_show"))
+		return hide_s_addr;
+	if (hide_m_addr && !strcmp(name, "m_show"))
+		return hide_m_addr;
 	return find_kernel_symbol_exact(name);
 }
 /* s_show(m, p): m is arg #1 (x0), read through the same accessor the m_show handler below uses
@@ -868,6 +870,7 @@ int susfs_hide_syms_init(void)
 			pr_warn("susfs_hide_syms: HooKern init failed %d - inline hooks not armed\n", rc);
 			return rc;
 		}
+		hide_s_addr = (unsigned long)kp_s_show.addr;
 		rc = hk_inline_hook(&hide_s_hook, "s_show", "hide_syms_s_show_wrap");
 		if (rc) {
 			pr_warn("susfs_hide_syms: HooKern inline s_show failed %d\n", rc);
@@ -891,6 +894,7 @@ int susfs_hide_syms_init(void)
 		SUSFS_LOGI("susfs_hide_syms: modules_op.show could not be validated (%d) - NOT arming m_show; /proc/modules keeps listing the hidden modules\n",
 				rc);
 	} else {
+		hide_m_addr = (unsigned long)kp_m_show.addr;
 		rc = hk_inline_hook(&hide_m_hook, "m_show", "hide_syms_m_show_wrap");
 		if (rc) {
 			pr_warn("susfs_hide_syms: HooKern inline m_show failed %d\n", rc);
