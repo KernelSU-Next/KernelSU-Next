@@ -20,7 +20,8 @@ susfs_guard_lkm-objs := susfs_main.o patch_memory.o symbol_resolver.o lsm_hook.o
 susfs_guard_lkm-objs += kallrecon/lib/core.o kallrecon/lib/access.o kallrecon/lib/discover.o \
               kallrecon/lib/symbol.o kallrecon/lib/slide.o kallrecon/lib/fastboot.o \
               kallrecon/lib/hint.o kallrecon/lib/variant.o kallrecon/lib/anchor.o
-              HooKern/hk.o HooKern/hk_ksym.o HooKern/hk_patch.o HooKern/hk_flush.o \
+
+susfs_guard_lkm-objs += HooKern/hk.o HooKern/hk_ksym.o HooKern/hk_patch.o HooKern/hk_flush.o \
               HooKern/hk_inline.o
 
 # HooKern hook engine (patch + inline for the s_show/m_show experiment).
