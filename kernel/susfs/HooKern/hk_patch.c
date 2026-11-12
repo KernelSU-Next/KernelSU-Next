@@ -580,7 +580,7 @@ struct hk_patch_job {
  * per physical page and dropped again. the caller holds g_patch_lock, so the
  * slot is not shared and neither is the kernel patch slot
  */
-static __nocfi int hk_patch_slot_run(unsigned long addr, const void *src, size_t len,
+static __nocfi noinline int hk_patch_slot_run(unsigned long addr, const void *src, size_t len,
 			     int flags, int idx, unsigned long caller,
 			     unsigned long (*to_pa)(unsigned long va),
 			     bool nofault)
@@ -967,7 +967,7 @@ static void hk_flush_tlb_page(unsigned long addr)
  * back, so the dirty and young bits the store sets are kept. a platform that
  * watches fixmap use sees nothing here, which is what this route is for
  */
-static __nocfi int hk_own_run(void *dst, const void *src, size_t len,
+static __nocfi noinline int hk_own_run(void *dst, const void *src, size_t len,
 		      const struct hk_write *w,
 		      int (*fn)(void *ctx, void *addr, size_t len), void *ctx)
 {
@@ -1052,7 +1052,7 @@ int hk_write_window(void *dst, const void *src, size_t len,
 	return ret;
 }
 
-int __nocfi hk_write_run(void *dst, const void *src, size_t len,
+int __nocfi noinline hk_write_run(void *dst, const void *src, size_t len,
 		 const struct hk_write *w)
 {
 	struct hk_write o = { };
