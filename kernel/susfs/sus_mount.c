@@ -2164,16 +2164,16 @@ int susfs_sus_mount_init(void)
     return 0;
 }
 
-#define SM_SHOW_HOOK(idx, tgt, nm) \
-    static const struct susfs_hook_probe sm_show_probe_##idx = { .kp = sus_mount_show_probes[idx] }; \
+#define SM_SHOW_HOOK(idx, kp_, tgt, nm) \
+    static const struct susfs_hook_probe sm_show_probe_##idx = { .kp = kp_ }; \
     static struct susfs_hook sm_show_hook_##idx = { \
         .owner = "sus_mount", .name = nm, .target = tgt, \
         .probes = &sm_show_probe_##idx, .nprobes = 1, \
     }
 
-SM_SHOW_HOOK(0, SUSFS_HOOK_TARGET_SHOW_VFSSTAT, "show_vfsstat");
-SM_SHOW_HOOK(1, SUSFS_HOOK_TARGET_SHOW_MOUNTINFO, "show_mountinfo");
-SM_SHOW_HOOK(2, SUSFS_HOOK_TARGET_SHOW_VFSMNT, "show_vfsmnt");
+SM_SHOW_HOOK(0, &kp_vfsstat, SUSFS_HOOK_TARGET_SHOW_VFSSTAT, "show_vfsstat");
+SM_SHOW_HOOK(1, &kp_mountinfo, SUSFS_HOOK_TARGET_SHOW_MOUNTINFO, "show_mountinfo");
+SM_SHOW_HOOK(2, &kp_vfsmnt, SUSFS_HOOK_TARGET_SHOW_VFSMNT, "show_vfsmnt");
 
 static struct susfs_hook *const sm_show_hooks[SUS_MOUNT_SHOW_N] = {
     &sm_show_hook_0, &sm_show_hook_1, &sm_show_hook_2,

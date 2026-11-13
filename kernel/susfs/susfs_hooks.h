@@ -21,10 +21,12 @@
 #define SUSFS_HOOK_FALLBACK		1
 #define SUSFS_HOOK_INSTALL_FAILED	(-225)
 
-/* Backends.  AUTO is only valid for susfs_hook_register(): it picks the best
- * backend for the target and reports FALLBACK when it had to use another one. */
+/* Backends.  NONE is the "not installed" state a hook starts in; AUTO is only
+ * valid for susfs_hook_register(): it picks the best backend for the target and
+ * reports FALLBACK when it had to use another one. */
 enum susfs_hook_backend {
-	SUSFS_HOOK_BACKEND_AUTO = 0,	/* only register(): prefer FP/INLINE, fall back */
+	SUSFS_HOOK_BACKEND_NONE = 0,
+	SUSFS_HOOK_BACKEND_AUTO,
 	SUSFS_HOOK_BACKEND_FP,
 	SUSFS_HOOK_BACKEND_KPROBE,
 	SUSFS_HOOK_BACKEND_INLINE,
