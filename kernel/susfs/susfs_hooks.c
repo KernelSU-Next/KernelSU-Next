@@ -388,6 +388,13 @@ int susfs_hook_register(struct susfs_hook *hook)
 	if (!hook || (unsigned int)hook->target >= SUSFS_HOOK_TARGET_COUNT)
 		return SUSFS_HOOK_INSTALL_FAILED;
 
+	/* Idempotent for an already installed raw hook: do not touch the live
+	 * probe set, just report which backend it ended up on. */
+	if (hook->backend == SUSFS_HOOK_BACKEND_FP)
+		return SUSFS_HOOK_OK;
+	if (hook->backend == SUSFS_HOOK_BACKEND_KPROBE)
+		return SUSFS_HOOK_FALLBACK;
+
 	hook->installed = false;
 	hook->probe_mask = 0;
 	hook->backend = SUSFS_HOOK_BACKEND_NONE;
@@ -397,11 +404,7 @@ int susfs_hook_register(struct susfs_hook *hook)
 		if (!raw_hook(hook))
 			return SUSFS_HOOK_INSTALL_FAILED;
 		mutex_lock(&susfs_hooks_lock);
-		if (hook->backend != SUSFS_HOOK_BACKEND_NONE) {
-			rc = SUSFS_HOOK_FALLBACK;
-		} else {
-			rc = raw_install_auto(hook);
-		}
+		rc = raw_install_auto(hook);
 		mutex_unlock(&susfs_hooks_lock);
 		return rc;
 	}
@@ -442,6 +445,10 @@ int susfs_hook_register_assign(struct susfs_hook *hook,
 	    backend == SUSFS_HOOK_BACKEND_AUTO)
 		return SUSFS_HOOK_INSTALL_FAILED;
 
+	if (hook->backend != SUSFS_HOOK_BACKEND_NONE)
+		return hook->backend == backend ? SUSFS_HOOK_OK
+						: SUSFS_HOOK_INSTALL_FAILED;
+
 	hook->installed = false;
 	hook->probe_mask = 0;
 	hook->backend = SUSFS_HOOK_BACKEND_NONE;
@@ -451,12 +458,6 @@ int susfs_hook_register_assign(struct susfs_hook *hook,
 		if (!raw_hook(hook))
 			return SUSFS_HOOK_INSTALL_FAILED;
 		mutex_lock(&susfs_hooks_lock);
-		if (hook->backend != SUSFS_HOOK_BACKEND_NONE) {
-			rc = hook->backend == backend ? SUSFS_HOOK_OK
-						      : SUSFS_HOOK_INSTALL_FAILED;
-			mutex_unlock(&susfs_hooks_lock);
-			return rc;
-		}
 		switch (backend) {
 		case SUSFS_HOOK_BACKEND_FP:
 			rc = raw_fp_install(hook);
