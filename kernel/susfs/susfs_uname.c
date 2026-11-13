@@ -139,13 +139,11 @@ static int uname_register(void)
             uname_inline = true;
             uname_registered = true;
             mutex_unlock(&uname_ctl_lock);
-            SUSFS_LOGI("uname spoof armed inline: release=%s version=%s
-",
+            SUSFS_LOGI("uname spoof armed inline: release=%s version=%s\n",
                     fake_release, fake_version);
             return 0;
         }
-        pr_warn("uname spoof: inline __arm64_sys_newuname failed %d - kretprobe fallback
-",
+        pr_warn("uname spoof: inline __arm64_sys_newuname failed %d - kretprobe fallback\n",
                 rc);
     }
 
