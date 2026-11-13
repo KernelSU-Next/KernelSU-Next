@@ -23,6 +23,12 @@
 #include "susfs.h"
 #include "susfs_opath.h"	/* SUSFS_OPATH_NODE + the layer's init/exit */
 #include "susfs_fp_hook.h"	/* susfs_fp_init: the sys_call_table cache every fp layer installs through */
+#include "susfs_hook_map.h"	/* the loader-patched inline capability map */
+
+/* Default-0 capability map.  The user-space loader writes the probed bits and
+ * ready last; ksud leaves ready 0, so every slot keeps the current fallback. */
+struct susfs_hook_map susfs_hook_map
+	__section(SUSFS_HOOK_MAP_SECTION) __aligned(8) __used = { };
 
 /* The module's own name lives in susfs.h (SUSFS_LKM_MODULE_NAME / SUSFS_LKM_SYSFS_DIR):
  * /sys/module's directory and the rules that hide it (susfs_hide_syms.c) must agree, and the
