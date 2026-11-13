@@ -18,12 +18,45 @@
 #include "susfs_log.h"
 #include "susfs.h"	/* susfs_abi_path_ok */
 #include "susfs_kprobe.h"
+#include "susfs_hook_engine.h"
+#include "hk.h"
+#include "hk_inline.h"
 
 #define SUSFS_UNAME_LEN (__NEW_UTS_LEN + 1)
 
 static char fake_release[SUSFS_UNAME_LEN];
 static char fake_version[SUSFS_UNAME_LEN];
 static bool uname_spoof_enabled;
+
+/* Inline route for map bit ARM64_SYS_NEWUNAME.  It uses the same user pointer
+ * extraction as the kretprobe entry: on this GKI shape the syscall wrapper's
+ * pt_regs->regs[0] is the struct pt_regs* of the user call. */
+static struct hk_inline uname_hook;
+static long (*uname_orig)(const struct pt_regs *);
+static bool uname_inline;
+
+static long __visible __nocfi noinline
+susfs_uname_wrap(const struct pt_regs *regs)
+{
+	long ret;
+	struct pt_regs *user;
+
+	if (!uname_orig)
+		return -ENOSYS;
+	ret = uname_orig(regs);
+	if (ret || !uname_spoof_enabled)
+		return ret;
+	user = (struct pt_regs *)regs->regs[0];
+	if (!user)
+		return ret;
+	(void)copy_to_user((char __user *)user->regs[0] +
+				offsetof(struct new_utsname, release),
+			   fake_release, SUSFS_UNAME_LEN);
+	(void)copy_to_user((char __user *)user->regs[0] +
+				offsetof(struct new_utsname, version),
+			   fake_version, SUSFS_UNAME_LEN);
+	return ret;
+}
 
 /* optional insmod-time override; supercall is the primary interface */
 module_param_string(release, fake_release, sizeof(fake_release), 0644);
@@ -95,6 +128,27 @@ static int uname_register(void)
         mutex_unlock(&uname_ctl_lock);
         return 0;
     }
+    if (susfs_hook_engine_active() &&
+        susfs_hook_slot_enabled(SUSFS_HOOK_ARM64_SYS_NEWUNAME)) {
+        susfs_hook_override("susfs_uname_wrap",
+                            (unsigned long)susfs_uname_wrap);
+        rc = hk_inline_hook(&uname_hook, "__arm64_sys_newuname",
+                            "susfs_uname_wrap");
+        if (!rc) {
+            uname_orig = (long (*)(const struct pt_regs *))uname_hook.orig;
+            uname_inline = true;
+            uname_registered = true;
+            mutex_unlock(&uname_ctl_lock);
+            SUSFS_LOGI("uname spoof armed inline: release=%s version=%s
+",
+                    fake_release, fake_version);
+            return 0;
+        }
+        pr_warn("uname spoof: inline __arm64_sys_newuname failed %d - kretprobe fallback
+",
+                rc);
+    }
+
     rc = register_kretprobe(&krp);
     if (rc) {
         /* CMD_SUSFS_SET_UNAME can be sent again after a failure, and the address the kernel
@@ -115,6 +169,14 @@ static void uname_unregister(void)
 {
     mutex_lock(&uname_ctl_lock);
     if (!uname_registered) {
+        mutex_unlock(&uname_ctl_lock);
+        return;
+    }
+    if (uname_inline) {
+        hk_inline_unhook(&uname_hook);
+        uname_orig = NULL;
+        uname_inline = false;
+        uname_registered = false;
         mutex_unlock(&uname_ctl_lock);
         return;
     }

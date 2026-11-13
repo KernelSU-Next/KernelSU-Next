@@ -452,6 +452,12 @@ static int __init susfs_init(void)
     if (ksu_patch_memory_init())
         pr_warn("susfs_guard_lkm: patching unavailable on this kernel (see patch_memory.c)\n");
 
+    /* One HooKern lifetime, before any layer: uname inline can arm from its own
+     * init, not only from a later supercall.  Failure is not fatal. */
+    if (susfs_hook_engine_init())
+        pr_warn("susfs_guard_lkm: inline engine unavailable - consumers fall back
+");
+
     BUILD_BUG_ON(ARRAY_SIZE(susfs_layers) != SUSFS_L_COUNT);
     BUILD_BUG_ON(ARRAY_SIZE(susfs_load_plan) != SUSFS_L_COUNT);
     for (i = 0; i < (int)ARRAY_SIZE(susfs_load_plan); i++) {
@@ -504,6 +510,7 @@ static int __init susfs_init(void)
 static void __exit susfs_exit(void)
 {
     susfs_layers_down((int)ARRAY_SIZE(susfs_layers) - 1);
+    susfs_hook_engine_exit();
     SUSFS_LOGI("susfs_guard_lkm: exit\n");
 }
 
