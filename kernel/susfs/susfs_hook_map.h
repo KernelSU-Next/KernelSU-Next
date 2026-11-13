@@ -44,6 +44,10 @@ struct susfs_hook_map {
 	u32 bits[SUSFS_HOOK_WORDS];	/* default 0; 1 means out-of-line observed */
 };
 
+#ifdef __KERNEL__
+extern struct susfs_hook_map susfs_hook_map;
+#endif
+
 #ifndef __KERNEL__
 #define SUSFS_HOOK_MAP_SECTION	".data.susfs_hook_map"
 #else

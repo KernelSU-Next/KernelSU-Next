@@ -24,6 +24,7 @@
 #include "susfs_opath.h"	/* SUSFS_OPATH_NODE + the layer's init/exit */
 #include "susfs_fp_hook.h"	/* susfs_fp_init: the sys_call_table cache every fp layer installs through */
 #include "susfs_hook_map.h"	/* the loader-patched inline capability map */
+#include "susfs_hook_engine.h"
 
 /* Default-0 capability map.  The user-space loader writes the probed bits and
  * ready last; ksud leaves ready 0, so every slot keeps the current fallback. */
@@ -470,6 +471,8 @@ static int __init susfs_init(void)
             return ret;
         }
     }
+
+    susfs_hook_map_report();
 
     /* Registered last and undone implicitly: these are entries in sus_path's table, which
      * sus_path_exit() empties while its LSM layer still answers ENOENT for the nodes. */
