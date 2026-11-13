@@ -455,8 +455,7 @@ static int __init susfs_init(void)
     /* One HooKern lifetime, before any layer: uname inline can arm from its own
      * init, not only from a later supercall.  Failure is not fatal. */
     if (susfs_hook_engine_init())
-        pr_warn("susfs_guard_lkm: inline engine unavailable - consumers fall back
-");
+        pr_warn("susfs_guard_lkm: inline engine unavailable - consumers fall back\n");
 
     BUILD_BUG_ON(ARRAY_SIZE(susfs_layers) != SUSFS_L_COUNT);
     BUILD_BUG_ON(ARRAY_SIZE(susfs_load_plan) != SUSFS_L_COUNT);

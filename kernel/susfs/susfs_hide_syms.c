@@ -858,8 +858,7 @@ int susfs_hide_syms_init(void)
 				    (unsigned long)hide_syms_s_show_wrap);
 		rc = hk_inline_hook(&hide_s_hook, "s_show", "hide_syms_s_show_wrap");
 		if (rc) {
-			pr_warn("susfs_hide_syms: HooKern inline s_show failed %d
-", rc);
+			pr_warn("susfs_hide_syms: HooKern inline s_show failed %d\n", rc);
 			return rc;
 		}
 		
