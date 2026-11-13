@@ -10,6 +10,7 @@
 #define _SUSFS_HOOKS_H
 
 #include <linux/types.h>
+#include <linux/version.h>
 
 /* Negative results: the caller can use the usual `if (ret) fail` shape.
  * FALLBACK is not an installation failure: the hook is installed, but on the
@@ -52,6 +53,31 @@ enum susfs_hook_target {
 	SUSFS_HOOK_TARGET_COUNT
 };
 
+/* Target-specific contexts.  The centre builds these from the original call
+ * arguments (inline) or from pt_regs (kprobe), so feature layers only see the
+ * kernel objects they care about. */
+struct seq_file;
+struct vm_area_struct;
+
+struct susfs_avc_ctx {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)
+	void *state;
+#endif
+	u32 ssid;
+	u32 tsid;
+	u16 tclass;
+	u32 requested;
+	u32 audited;
+	u32 denied;
+	int result;
+	void *a;
+};
+
+struct susfs_show_map_ctx {
+	struct seq_file *m;
+	struct vm_area_struct *vma;
+};
+
 struct susfs_hook {
 	const char *owner;		/* layer name, diagnostics and teardown */
 	const char *name;		/* consumer name, diagnostics */
@@ -79,6 +105,9 @@ struct susfs_hook {
  * Both are idempotent for an already-installed target with the same consumer:
  * the duplicate registration returns the status of the existing install.
  */
+int susfs_hooks_init(void);
+void susfs_hooks_exit(void);
+
 int susfs_hook_register(struct susfs_hook *hook);
 int susfs_hook_register_assign(struct susfs_hook *hook,
 			       enum susfs_hook_backend backend);
