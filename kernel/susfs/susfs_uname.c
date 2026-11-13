@@ -39,20 +39,24 @@ static long __visible __nocfi noinline
 susfs_uname_wrap(const struct pt_regs *regs)
 {
 	long ret;
-	struct pt_regs *user;
+	void __user *name;
 
 	if (!uname_orig)
 		return -ENOSYS;
 	ret = uname_orig(regs);
 	if (ret || !uname_spoof_enabled)
 		return ret;
-	user = (struct pt_regs *)regs->regs[0];
-	if (!user)
+	/* HooKern enters the wrapper with the target's own argument in x0, i.e.
+	 * the syscall wrapper's `struct pt_regs *`.  Its regs[0] is the user
+	 * buffer; the kretprobe handler has one extra level because its pt_regs
+	 * are the target entry registers, not this argument. */
+	name = (void __user *)regs->regs[0];
+	if (!name)
 		return ret;
-	(void)copy_to_user((char __user *)user->regs[0] +
+	(void)copy_to_user((char __user *)name +
 				offsetof(struct new_utsname, release),
 			   fake_release, SUSFS_UNAME_LEN);
-	(void)copy_to_user((char __user *)user->regs[0] +
+	(void)copy_to_user((char __user *)name +
 				offsetof(struct new_utsname, version),
 			   fake_version, SUSFS_UNAME_LEN);
 	return ret;
@@ -128,9 +132,7 @@ static int uname_register(void)
         mutex_unlock(&uname_ctl_lock);
         return 0;
     }
-    /* Disabled after the 2026-11-13 device panic; the kretprobe is the known
-     * good path until the inline call/return shape is validated again. */
-    if (0 && susfs_hook_engine_active() &&
+    if (susfs_hook_engine_active() &&
         susfs_hook_slot_enabled(SUSFS_HOOK_ARM64_SYS_NEWUNAME)) {
         susfs_hook_override("susfs_uname_wrap",
                             (unsigned long)susfs_uname_wrap);
