@@ -24,6 +24,7 @@
 #include "susfs_kprobe.h"	/* susfs_kp_forget_addr: a probe struct must be usable twice */
 #include "hk.h"
 #include "hk_inline.h"
+#include "susfs_hook_engine.h"
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 
 /* ---- hide_modules: filter other kernel modules out of /proc/modules ----
@@ -632,18 +633,6 @@ int __nocfi hide_syms_m_show_wrap(struct seq_file *m, void *p)
 	return hide_m_orig ? hide_m_orig(m, p) : 0;
 }
 
-static unsigned long hide_syms_hk_resolve(const char *name)
-{
-	if (!strcmp(name, "hide_syms_s_show_wrap"))
-		return (unsigned long)hide_syms_s_show_wrap;
-	if (!strcmp(name, "hide_syms_m_show_wrap"))
-		return (unsigned long)hide_syms_m_show_wrap;
-	if (hide_s_addr && !strcmp(name, "s_show"))
-		return hide_s_addr;
-	if (hide_m_addr && !strcmp(name, "m_show"))
-		return hide_m_addr;
-	return find_kernel_symbol_exact(name);
-}
 /* s_show(m, p): m is arg #1 (x0), read through the same accessor the m_show handler below uses
  * (on arm64 regs_get_kernel_argument(regs, n) is regs->regs[n] - the two spellings are the same
  * register, this one is just harder to get wrong if the prototype ever changes). */
@@ -863,20 +852,17 @@ int susfs_hide_syms_init(void)
 		kp_s_show.symbol_name = "s_show";
 	}
 	{
-		struct hk_cfg cfg = { .resolve = hide_syms_hk_resolve };
-
-		rc = hk_init(&cfg);
-		if (rc) {
-			pr_warn("susfs_hide_syms: HooKern init failed %d - inline hooks not armed\n", rc);
-			return rc;
-		}
 		hide_s_addr = (unsigned long)kp_s_show.addr;
+		susfs_hook_override("s_show", hide_s_addr);
+		susfs_hook_override("hide_syms_s_show_wrap",
+				    (unsigned long)hide_syms_s_show_wrap);
 		rc = hk_inline_hook(&hide_s_hook, "s_show", "hide_syms_s_show_wrap");
 		if (rc) {
-			pr_warn("susfs_hide_syms: HooKern inline s_show failed %d\n", rc);
-			hk_exit();
+			pr_warn("susfs_hide_syms: HooKern inline s_show failed %d
+", rc);
 			return rc;
 		}
+		
 		hide_s_orig = (hide_syms_show_fn)hide_s_hook.orig;
 		hide_registered = true;
 		SUSFS_LOGI("susfs_hide_syms: s_show inline at %px (%s)\n",
@@ -895,6 +881,9 @@ int susfs_hide_syms_init(void)
 				rc);
 	} else {
 		hide_m_addr = (unsigned long)kp_m_show.addr;
+		susfs_hook_override("m_show", hide_m_addr);
+		susfs_hook_override("hide_syms_m_show_wrap",
+				    (unsigned long)hide_syms_m_show_wrap);
 		rc = hk_inline_hook(&hide_m_hook, "m_show", "hide_syms_m_show_wrap");
 		if (rc) {
 			pr_warn("susfs_hide_syms: HooKern inline m_show failed %d\n", rc);
@@ -959,7 +948,6 @@ void susfs_hide_syms_exit(void)
 		hide_s_orig = NULL;
 		hide_registered = false;
 	}
-	hk_exit();
 	modules_op_target = NULL;
 	kallsyms_op_target = NULL;
 	/* The /sys/module rules are ours: drop them here, not in sus_path's teardown - this layer cleans up what it registered. */
