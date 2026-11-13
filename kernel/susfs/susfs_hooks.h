@@ -11,11 +11,12 @@
 
 #include <linux/types.h>
 
-/* Positive results, not negative errno: the two interfaces have different
- * meanings and the caller must be able to distinguish them. */
+/* Negative results: the caller can use the usual `if (ret) fail` shape.
+ * FALLBACK is not an installation failure: the hook is installed, but on the
+ * non-preferred backend (for example map bit cleared -> kprobe instead of inline). */
 #define SUSFS_HOOK_OK			0
-#define SUSFS_HOOK_FALLBACK		1
-#define SUSFS_HOOK_INSTALL_FAILED	225
+#define SUSFS_HOOK_FALLBACK		(-1)
+#define SUSFS_HOOK_INSTALL_FAILED	(-225)
 
 enum susfs_hook_backend {
 	SUSFS_HOOK_BACKEND_AUTO = 0,	/* only register(): prefer FP/INLINE, fall back */
@@ -67,13 +68,13 @@ struct susfs_hook {
  *   - chooses the normal backend for the target (FP for syscall targets,
  *     INLINE when the map bit is set, KPROBE otherwise);
  *   - a target is installed once, later consumers only join its dispatch list;
- *   - returns SUSFS_HOOK_OK (0)      installed with the preferred backend;
- *   - returns SUSFS_HOOK_FALLBACK (1) installed, but a fallback backend was used;
- *   - returns SUSFS_HOOK_INSTALL_FAILED (225) nothing installed.
+ *   - returns SUSFS_HOOK_OK (0)       installed with the preferred backend;
+ *   - returns SUSFS_HOOK_FALLBACK (-1) installed, but a fallback backend was used;
+ *   - returns SUSFS_HOOK_INSTALL_FAILED (-225) nothing installed.
  *
  * susfs_hook_register_assign():
  *   - uses exactly the requested backend, never falls back;
- *   - returns SUSFS_HOOK_OK (0) or SUSFS_HOOK_INSTALL_FAILED (225).
+ *   - returns SUSFS_HOOK_OK (0) or SUSFS_HOOK_INSTALL_FAILED (-225).
  *
  * Both are idempotent for an already-installed target with the same consumer:
  * the duplicate registration returns the status of the existing install.
