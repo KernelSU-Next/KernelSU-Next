@@ -20,6 +20,7 @@
 #include "susfs_log.h"
 #include "susfs.h"	/* susfs_expose_proc */
 #include "susfs_kprobe.h"
+#include "susfs_hooks.h"
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 
 /* module_param overrides for the two domains: the default su domain is the SukiSU variant ("ksu"), stock
@@ -109,6 +110,33 @@ static DEFINE_MUTEX(avc_ctl_lock);
  * would then point into a module that is about to be freed. */
 static bool avc_exiting;
 
+static int avc_pre_consumer(void *ctx)
+{
+	struct susfs_avc_ctx *c = ctx;
+	bool hit = false;
+
+	if (!avc_su_sid || !avc_priv_app_sid)
+		return 0;
+	if (c->ssid == avc_su_sid) {
+		c->ssid = avc_priv_app_sid;
+		hit = true;
+	}
+	if (c->tsid == avc_su_sid) {
+		c->tsid = avc_priv_app_sid;
+		hit = true;
+	}
+	if (hit)
+		atomic_inc(&avc_hit_count);
+	return 0;
+}
+
+static struct susfs_hook avc_hook = {
+	.owner = "avc_spoof",
+	.name = "slow_avc_audit",
+	.target = SUSFS_HOOK_TARGET_AVC_AUDIT,
+	.pre = avc_pre_consumer,
+};
+
 static int avc_register(void)
 {
 	int rc;
@@ -130,19 +158,17 @@ static int avc_register(void)
 			avc_su_sid, avc_priv_app_sid);
 		return -EOPNOTSUPP;
 	}
-	rc = register_kprobe(&kp_avc);
-	if (rc) {
-		/* The failure that matters is reported to the caller, but the address the kernel
-		 * resolved is already in the struct: without this the retry a later enable makes
-		 * would be refused with -EINVAL (see susfs_kprobe.h).  Safe under the lock - no
-		 * other task can be holding a successful registration of this probe. */
-		susfs_kp_forget_addr(&kp_avc);
+	rc = susfs_hook_register(&avc_hook);
+	if (rc < 0) {
 		mutex_unlock(&avc_ctl_lock);
 		return rc;
 	}
 	avc_registered = true;
 	mutex_unlock(&avc_ctl_lock);
-	SUSFS_LOGI("susfs_avc_spoof: hook installed (slow_avc_audit)\n");
+	if (rc == SUSFS_HOOK_FALLBACK)
+		SUSFS_LOGI("susfs_avc_spoof: slow_avc_audit installed on fallback backend\n");
+	else
+		SUSFS_LOGI("susfs_avc_spoof: slow_avc_audit installed inline\n");
 	return 0;
 }
 
@@ -153,11 +179,7 @@ static void avc_unregister_locked(void)
 {
 	if (!avc_registered)
 		return;
-	unregister_kprobe(&kp_avc);
-	/* A successful unregister leaves .addr set (only a probe that was never on a list gets it
-	 * cleared), so "disarmed" has to mean it here too: writing 0 and then 1 is the documented
-	 * way to restart the spoof, and it used to end with the hook permanently gone. */
-	susfs_kp_forget_addr(&kp_avc);
+	susfs_hook_unregister(&avc_hook);
 	avc_registered = false;
 	/* Reported only for a real disarm: writing '0' when nothing was armed (or a second disable)
 	 * used to be silent and must stay silent. */

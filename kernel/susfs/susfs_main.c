@@ -25,6 +25,7 @@
 #include "susfs_fp_hook.h"	/* susfs_fp_init: the sys_call_table cache every fp layer installs through */
 #include "susfs_hook_map.h"	/* the loader-patched inline capability map */
 #include "susfs_hook_engine.h"
+#include "susfs_hooks.h"
 
 /* Default-0 capability map.  The user-space loader writes the probed bits and
  * ready last; ksud leaves ready 0, so every slot keeps the current fallback. */
@@ -253,6 +254,7 @@ static int layer_lsm_hook_init(void)
  * the same order. */
 enum susfs_layer_id {
     SUSFS_L_FP_HOOK = 0,
+    SUSFS_L_HOOKS,
     SUSFS_L_KSU_UMOUNT_GATE,
     SUSFS_L_KSU_ALLOW_GATE,
     SUSFS_L_LSM_HOOK,
@@ -288,6 +290,7 @@ static struct susfs_layer {
      * (the later layers' own susfs_fp_init() calls are no-ops once the cache is set), and
      * there is no exit: only the pointer is cached, the entries are restored by their owner. */
     { "fp_hook",	susfs_fp_init,			NULL,			false, -1 },
+    { "hooks",		susfs_hooks_init,		susfs_hooks_exit,		false, -1 },
     /* NOT fatal: this layer only decides whether KernelSU's predicate was found at load.
      * When it was not, the gates answer the pre-#34 way and every other layer still works - so a
      * failure here is a degradation, not a reason to refuse the module.  Skipping this init entirely
@@ -363,6 +366,7 @@ static const struct {
     bool fatal;
 } susfs_load_plan[] = {
     { SUSFS_L_FP_HOOK, true },
+    { SUSFS_L_HOOKS, false },
     { SUSFS_L_KSU_UMOUNT_GATE, false },
     { SUSFS_L_KSU_ALLOW_GATE, false },
     { SUSFS_L_LSM_HOOK, true },
