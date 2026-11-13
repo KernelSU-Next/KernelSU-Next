@@ -27,6 +27,7 @@
 #include "susfs_log.h"
 #include "susfs.h"
 #include "susfs_fp_hook.h"
+#include "susfs_hooks.h"
 
 struct susfs_tw {
 	struct callback_head cb;
@@ -413,6 +414,20 @@ static struct kprobe reboot_kp = {
 	.pre_handler = reboot_pre,
 };
 
+static const struct susfs_hook_probe reboot_probe = { .kp = &reboot_kp };
+
+/* sys_call_table is the preferred backend; the kprobe is the documented fallback
+ * for kernels that EL2-protect the table (see reboot_kp above).  register()
+ * reports which one won through hook.backend. */
+static struct susfs_hook reboot_sc_hook = {
+	.owner = "supercall",
+	.name = "reboot",
+	.target = SUSFS_HOOK_TARGET_ARM64_SYS_REBOOT,
+	.fp = &reboot_hook,
+	.probes = &reboot_probe,
+	.nprobes = 1,
+};
+
 static bool sc_registered;	/* sys_call_table path armed */
 static bool sc_kp_registered;	/* kprobe fallback armed */
 
@@ -468,23 +483,19 @@ int susfs_supercall_init(void)
 
 	susfs_abi_layout_check();
 
-	rc = susfs_fp_install(&reboot_hook);
-	if (!rc) {
-		sc_registered = true;
-		SUSFS_LOGI("susfs supercall: armed via sys_call_table (reboot ABI, version " SUSFS_VERSION_STR ")\n");
-		return 0;
-	}
-
-	/* The table could not be hooked (pKVM EL2-protected sys_call_table: no landing pad).  Fall
-	 * back to the kprobe, which does not touch the table.  See reboot_kp above. */
-	pr_warn("susfs supercall: sys_call_table reboot hook failed %d, trying kprobe fallback\n", rc);
-	rc = register_kprobe(&reboot_kp);
-	if (rc) {
-		pr_warn("susfs supercall: register_kprobe(reboot) failed %d\n", rc);
+	rc = susfs_hook_register(&reboot_sc_hook);
+	if (rc < 0) {
+		pr_warn("susfs supercall: no reboot backend could be installed (%d)\n", rc);
 		return rc;
 	}
-	sc_kp_registered = true;
-	SUSFS_LOGI("susfs supercall: armed via kprobe (reboot ABI, version " SUSFS_VERSION_STR ")\n");
+	if (reboot_sc_hook.backend == SUSFS_HOOK_BACKEND_FP) {
+		sc_registered = true;
+		SUSFS_LOGI("susfs supercall: armed via sys_call_table (reboot ABI, version " SUSFS_VERSION_STR ")\n");
+	} else {
+		sc_kp_registered = true;
+		pr_warn("susfs supercall: sys_call_table reboot hook unavailable, using kprobe fallback\n");
+		SUSFS_LOGI("susfs supercall: armed via kprobe (reboot ABI, version " SUSFS_VERSION_STR ")\n");
+	}
 	return 0;
 }
 
@@ -495,13 +506,10 @@ bool susfs_supercall_kprobe_active(void)
 
 void susfs_supercall_exit(void)
 {
+	susfs_hook_unregister(&reboot_sc_hook);
 	if (sc_registered) {
-		susfs_fp_remove(&reboot_hook);
 		susfs_fp_drain();
 		sc_registered = false;
 	}
-	if (sc_kp_registered) {
-		unregister_kprobe(&reboot_kp);
-		sc_kp_registered = false;
-	}
+	sc_kp_registered = false;
 }

@@ -126,7 +126,7 @@ static int avc_register(void)
 		return -EOPNOTSUPP;
 	}
 	rc = susfs_hook_register(&avc_hook);
-	if (rc < 0 && rc != SUSFS_HOOK_FALLBACK) {
+	if (rc < 0) {
 		mutex_unlock(&avc_ctl_lock);
 		return rc;
 	}

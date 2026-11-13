@@ -62,6 +62,7 @@
 #include "ksu_umount_gate.h"	/* susfs_is_current_proc_umounted_app (issue #34) */
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 #include "susfs_kprobe.h"
+#include "susfs_hooks.h"
 #include "susfs_or_entry.h"	/* susfs_or_entry_armed(): the forward direction lives there now */
 #include "susfs_open_data.h"
 
@@ -830,6 +831,29 @@ static struct kretprobe kr_or_maps = {
 	.data_size = sizeof(struct or_maps_args),
 	.maxactive = 16,
 };
+
+/* The three reverse faces are best-effort: the forward redirect is already live
+ * and each probe only closes one report path, so their installation is allowed
+ * to degrade (the centre reports which one failed and keeps the rest). */
+static const struct susfs_hook_probe or_dpath_probe = { .kr = &kr_or_dpath };
+static const struct susfs_hook_probe or_statfs_probe = { .kr = &kr_or_vfs_statfs };
+static const struct susfs_hook_probe or_maps_probe = { .kr = &kr_or_maps };
+
+static struct susfs_hook or_dpath_hook = {
+	.owner = "open_redirect", .name = "d_path",
+	.target = SUSFS_HOOK_TARGET_D_PATH,
+	.probes = &or_dpath_probe, .nprobes = 1,
+};
+static struct susfs_hook or_statfs_hook = {
+	.owner = "open_redirect", .name = "vfs_statfs",
+	.target = SUSFS_HOOK_TARGET_VFS_STATFS,
+	.probes = &or_statfs_probe, .nprobes = 1,
+};
+static struct susfs_hook or_maps_hook = {
+	.owner = "open_redirect", .name = "show_map_vma",
+	.target = SUSFS_HOOK_TARGET_SHOW_MAP_VMA,
+	.probes = &or_maps_probe, .nprobes = 1,
+};
 static bool or_maps_registered;
 
 /* ---- reverse face 4: /proc/<pid>/fdinfo/N ----
@@ -972,6 +996,22 @@ static int or_fdinfo_ret(struct kretprobe_instance *ri, struct pt_regs *regs)
 static struct kretprobe kr_or_fdinfo[OR_FDINFO_MAX];
 static int n_or_fdinfo_probes;
 
+#define OR_FDINFO_HOOK(idx) \
+	static const struct susfs_hook_probe or_fdinfo_probe_##idx = { .kr = &kr_or_fdinfo[idx] }; \
+	static struct susfs_hook or_fdinfo_hook_##idx = { \
+		.owner = "open_redirect", .name = "seq_show/fdinfo", \
+		.target = SUSFS_HOOK_TARGET_SEQ_SHOW, \
+		.probes = &or_fdinfo_probe_##idx, .nprobes = 1, \
+	}
+
+OR_FDINFO_HOOK(0); OR_FDINFO_HOOK(1); OR_FDINFO_HOOK(2); OR_FDINFO_HOOK(3);
+OR_FDINFO_HOOK(4); OR_FDINFO_HOOK(5); OR_FDINFO_HOOK(6); OR_FDINFO_HOOK(7);
+
+static struct susfs_hook *const or_fdinfo_hooks[OR_FDINFO_MAX] = {
+	&or_fdinfo_hook_0, &or_fdinfo_hook_1, &or_fdinfo_hook_2, &or_fdinfo_hook_3,
+	&or_fdinfo_hook_4, &or_fdinfo_hook_5, &or_fdinfo_hook_6, &or_fdinfo_hook_7,
+};
+
 static bool or_registered;
 static bool or_dpath_registered;
 static bool or_statfs_registered;
@@ -1011,10 +1051,9 @@ static void or_register_reverse(void)
 		return;
 
 	if (!or_dpath_registered) {
-		rc = register_kretprobe(&kr_or_dpath);
-		if (rc) {
-			susfs_krp_forget_addr(&kr_or_dpath);
-			pr_warn("open_redirect: register_kretprobe(d_path) failed %d - readlink not disguised (or already inlined)\n",
+		rc = susfs_hook_register(&or_dpath_hook);
+		if (rc < 0) {
+			pr_warn("open_redirect: hook_register(d_path) failed %d - readlink not disguised (or already inlined)\n",
 				rc);
 		} else {
 			or_dpath_registered = true;
@@ -1023,10 +1062,9 @@ static void or_register_reverse(void)
 	}
 
 	if (!or_statfs_registered) {
-		rc = register_kretprobe(&kr_or_vfs_statfs);
-		if (rc) {
-			susfs_krp_forget_addr(&kr_or_vfs_statfs);
-			pr_warn("open_redirect: register_kretprobe(vfs_statfs) failed %d - statfs not disguised (or already inlined)\n",
+		rc = susfs_hook_register(&or_statfs_hook);
+		if (rc < 0) {
+			pr_warn("open_redirect: hook_register(vfs_statfs) failed %d - statfs not disguised (or already inlined)\n",
 				rc);
 		} else {
 			or_statfs_registered = true;
@@ -1034,10 +1072,9 @@ static void or_register_reverse(void)
 		}
 	}
 	if (!or_maps_registered) {
-		rc = register_kretprobe(&kr_or_maps);
-		if (rc) {
-			susfs_krp_forget_addr(&kr_or_maps);
-			pr_warn("open_redirect: register_kretprobe(show_map_vma) failed %d - the maps dev:ino stays the redirected file's\n",
+		rc = susfs_hook_register(&or_maps_hook);
+		if (rc < 0) {
+			pr_warn("open_redirect: hook_register(show_map_vma) failed %d - the maps dev:ino stays the redirected file's\n",
 				rc);
 		} else {
 			or_maps_registered = true;
@@ -1060,11 +1097,10 @@ static void or_register_reverse(void)
 			kr->handler = or_fdinfo_ret;
 			kr->data_size = sizeof(struct seq_file *);
 			kr->maxactive = 16;
-			rc = register_kretprobe(kr);
-			if (rc) {
-				pr_warn("open_redirect: register_kretprobe(seq_show @%px) failed %d\n",
+			rc = susfs_hook_register(or_fdinfo_hooks[i]);
+			if (rc < 0) {
+				pr_warn("open_redirect: hook_register(seq_show @%px) failed %d\n",
 					(void *)addrs[i], rc);
-				susfs_krp_forget_addr(kr);
 				continue;
 			}
 			n_or_fdinfo_probes++;
@@ -1086,27 +1122,20 @@ static void or_unregister(void)
 	{
 		int i;
 
-		for (i = 0; i < OR_FDINFO_MAX; i++) {
-			if (!kr_or_fdinfo[i].kp.addr)
-				continue;
-			unregister_kretprobe(&kr_or_fdinfo[i]);
-			susfs_krp_forget_addr(&kr_or_fdinfo[i]);
-		}
+		for (i = 0; i < OR_FDINFO_MAX; i++)
+			susfs_hook_unregister(or_fdinfo_hooks[i]);
 		n_or_fdinfo_probes = 0;
 	}
 	if (or_maps_registered) {
-		unregister_kretprobe(&kr_or_maps);
-		susfs_krp_forget_addr(&kr_or_maps);
+		susfs_hook_unregister(&or_maps_hook);
 		or_maps_registered = false;
 	}
 	if (or_statfs_registered) {
-		unregister_kretprobe(&kr_or_vfs_statfs);
-		susfs_krp_forget_addr(&kr_or_vfs_statfs);
+		susfs_hook_unregister(&or_statfs_hook);
 		or_statfs_registered = false;
 	}
 	if (or_dpath_registered) {
-		unregister_kretprobe(&kr_or_dpath);
-		susfs_krp_forget_addr(&kr_or_dpath);
+		susfs_hook_unregister(&or_dpath_hook);
 		or_dpath_registered = false;
 	}
 
