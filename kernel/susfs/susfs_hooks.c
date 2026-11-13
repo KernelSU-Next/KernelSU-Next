@@ -267,7 +267,7 @@ int susfs_hook_register(struct susfs_hook *hook)
 	struct hook_target *t;
 	int rc;
 
-	if (!hook || !hook->target)
+	if (!hook || (unsigned int)hook->target >= SUSFS_HOOK_TARGET_COUNT)
 		return SUSFS_HOOK_INSTALL_FAILED;
 	t = target_of(hook->target);
 	if (!t)
@@ -298,7 +298,8 @@ int susfs_hook_register_assign(struct susfs_hook *hook,
 	struct hook_target *t;
 	int rc;
 
-	if (!hook || !hook->target || backend == SUSFS_HOOK_BACKEND_AUTO)
+	if (!hook || (unsigned int)hook->target >= SUSFS_HOOK_TARGET_COUNT ||
+	    backend == SUSFS_HOOK_BACKEND_AUTO)
 		return SUSFS_HOOK_INSTALL_FAILED;
 	t = target_of(hook->target);
 	if (!t)
@@ -327,7 +328,7 @@ void susfs_hook_unregister(struct susfs_hook *hook)
 {
 	struct hook_target *t;
 
-	if (!hook || !hook->target)
+	if (!hook || (unsigned int)hook->target >= SUSFS_HOOK_TARGET_COUNT)
 		return;
 	t = target_of(hook->target);
 	if (!t)
