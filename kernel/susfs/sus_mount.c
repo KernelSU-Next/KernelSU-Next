@@ -159,6 +159,7 @@ static atomic_t n_keep_rescans = ATOMIC_INIT(0);
 #include "sus_mount_ns_iter.h"
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 #include "susfs_kprobe.h"
+#include "susfs_hooks.h"
 
 /* ---- the "which mounts are ours" prefix list: state ----
  * Up here, not next to the control surface further down, because mount_stat() between
@@ -949,6 +950,22 @@ static struct kretprobe kr_fdinfo[SUS_MOUNT_FDINFO_MAX];
 static int n_fdinfo_probes;
 static bool kr_fdinfo_ok;
 
+#define SM_FDINFO_HOOK(idx) \
+    static const struct susfs_hook_probe sm_fdinfo_probe_##idx = { .kr = &kr_fdinfo[idx] }; \
+    static struct susfs_hook sm_fdinfo_hook_##idx = { \
+        .owner = "sus_mount", .name = "seq_show/fdinfo", \
+        .target = SUSFS_HOOK_TARGET_SEQ_SHOW, \
+        .probes = &sm_fdinfo_probe_##idx, .nprobes = 1, \
+    }
+
+SM_FDINFO_HOOK(0); SM_FDINFO_HOOK(1); SM_FDINFO_HOOK(2); SM_FDINFO_HOOK(3);
+SM_FDINFO_HOOK(4); SM_FDINFO_HOOK(5); SM_FDINFO_HOOK(6); SM_FDINFO_HOOK(7);
+
+static struct susfs_hook *const sm_fdinfo_hooks[SUS_MOUNT_FDINFO_MAX] = {
+    &sm_fdinfo_hook_0, &sm_fdinfo_hook_1, &sm_fdinfo_hook_2, &sm_fdinfo_hook_3,
+    &sm_fdinfo_hook_4, &sm_fdinfo_hook_5, &sm_fdinfo_hook_6, &sm_fdinfo_hook_7,
+};
+
 static int sus_mount_fdinfo_arm(void)
 {
     unsigned long addrs[SUS_MOUNT_FDINFO_MAX];
@@ -968,10 +985,9 @@ static int sus_mount_fdinfo_arm(void)
         kr->handler = sus_mount_fdinfo_ret;
         kr->data_size = sizeof(struct sus_mount_kretprobe_state);
         kr->maxactive = 16;
-        rc = register_kretprobe(kr);
-        if (rc) {
-            pr_warn("sus_mount: register_kretprobe(seq_show @%px) failed %d\n", (void *)addrs[i], rc);
-            susfs_krp_forget_addr(kr);
+        rc = susfs_hook_register(sm_fdinfo_hooks[i]);
+        if (rc < 0) {
+            pr_warn("sus_mount: hook_register(seq_show @%px) failed %d\n", (void *)addrs[i], rc);
             continue;
         }
         n_fdinfo_probes++;
@@ -987,12 +1003,8 @@ static void sus_mount_fdinfo_disarm(void)
 {
     int i;
 
-    for (i = 0; i < SUS_MOUNT_FDINFO_MAX; i++) {
-        if (!kr_fdinfo[i].kp.addr)
-            continue;
-        unregister_kretprobe(&kr_fdinfo[i]);
-        susfs_krp_forget_addr(&kr_fdinfo[i]);
-    }
+    for (i = 0; i < SUS_MOUNT_FDINFO_MAX; i++)
+        susfs_hook_unregister(sm_fdinfo_hooks[i]);
     n_fdinfo_probes = 0;
     kr_fdinfo_ok = false;
 }
@@ -2152,6 +2164,52 @@ int susfs_sus_mount_init(void)
     return 0;
 }
 
+#define SM_SHOW_HOOK(idx, tgt, nm) \
+    static const struct susfs_hook_probe sm_show_probe_##idx = { .kp = sus_mount_show_probes[idx] }; \
+    static struct susfs_hook sm_show_hook_##idx = { \
+        .owner = "sus_mount", .name = nm, .target = tgt, \
+        .probes = &sm_show_probe_##idx, .nprobes = 1, \
+    }
+
+SM_SHOW_HOOK(0, SUSFS_HOOK_TARGET_SHOW_VFSSTAT, "show_vfsstat");
+SM_SHOW_HOOK(1, SUSFS_HOOK_TARGET_SHOW_MOUNTINFO, "show_mountinfo");
+SM_SHOW_HOOK(2, SUSFS_HOOK_TARGET_SHOW_VFSMNT, "show_vfsmnt");
+
+static struct susfs_hook *const sm_show_hooks[SUS_MOUNT_SHOW_N] = {
+    &sm_show_hook_0, &sm_show_hook_1, &sm_show_hook_2,
+};
+
+static const struct susfs_hook_probe sm_statx_probe = { .kr = &kr_statx };
+static struct susfs_hook sm_statx_hook = {
+    .owner = "sus_mount", .name = "__arm64_sys_statx",
+    .target = SUSFS_HOOK_TARGET_ARM64_SYS_STATX,
+    .probes = &sm_statx_probe, .nprobes = 1,
+};
+static const struct susfs_hook_probe sm_statx_do_probe = { .kr = &kr_statx_do };
+static struct susfs_hook sm_statx_do_hook = {
+    .owner = "sus_mount", .name = "do_statx",
+    .target = SUSFS_HOOK_TARGET_DO_STATX,
+    .probes = &sm_statx_do_probe, .nprobes = 1,
+};
+static const struct susfs_hook_probe sm_sb_down_probe = { .kp = &kp_sb_down };
+static struct susfs_hook sm_sb_down_hook = {
+    .owner = "sus_mount", .name = "generic_shutdown_super",
+    .target = SUSFS_HOOK_TARGET_GENERIC_SHUTDOWN_SUPER,
+    .probes = &sm_sb_down_probe, .nprobes = 1,
+};
+static const struct susfs_hook_probe sm_clone_ns_probe = { .kr = &kr_clone_ns };
+static struct susfs_hook sm_clone_ns_hook = {
+    .owner = "sus_mount", .name = "copy_mnt_ns",
+    .target = SUSFS_HOOK_TARGET_COPY_MNT_NS,
+    .probes = &sm_clone_ns_probe, .nprobes = 1,
+};
+static const struct susfs_hook_probe sm_newmnt_probe = { .kr = &kr_newmnt };
+static struct susfs_hook sm_newmnt_hook = {
+    .owner = "sus_mount", .name = "attach_recursive_mnt",
+    .target = SUSFS_HOOK_TARGET_ATTACH_RECURSIVE_MNT,
+    .probes = &sm_newmnt_probe, .nprobes = 1,
+};
+
 /* One unregister path for both callers (module exit and the disable supercall):
  * two copies drifted apart once already in this project, leaving a hook armed
  * after "disabled". */
@@ -2171,41 +2229,30 @@ static void sus_mount_unregister(void)
     for (i = 0; i < SUS_MOUNT_SHOW_N; i++) {
         if (!sus_mount_show_armed[i])
             continue;
-        unregister_kprobe(sus_mount_show_probes[i]);
-        /* Hand the struct back before the flag says it is disarmed: it was registered by
-         * .symbol_name, and the address the kernel resolved survives a successful
-         * unregister, so the next enable would be refused with -EINVAL - see
-         * susfs_kprobe.h.  This is the one path that made "hide, unhide, hide again" a
-         * one-way switch: the second hide armed nothing and reported -EINVAL. */
-        susfs_kp_forget_addr(sus_mount_show_probes[i]);
+        susfs_hook_unregister(sm_show_hooks[i]);
         sus_mount_show_armed[i] = false;
     }
     n_show_probes = 0;
     if (kr_fdinfo_ok)
         sus_mount_fdinfo_disarm();
     if (kr_statx_ok) {
-        unregister_kretprobe(&kr_statx);
-        susfs_krp_forget_addr(&kr_statx);
+        susfs_hook_unregister(&sm_statx_hook);
         kr_statx_ok = false;
     }
     if (kr_statx_do_ok) {
-        unregister_kretprobe(&kr_statx_do);
-        susfs_krp_forget_addr(&kr_statx_do);
+        susfs_hook_unregister(&sm_statx_do_hook);
         kr_statx_do_ok = false;
     }
     if (kp_sb_down_ok) {
-        unregister_kprobe(&kp_sb_down);
-        susfs_kp_forget_addr(&kp_sb_down);
+        susfs_hook_unregister(&sm_sb_down_hook);
         kp_sb_down_ok = false;
     }
     if (kr_clone_ns_ok) {
-        unregister_kretprobe(&kr_clone_ns);
-        susfs_krp_forget_addr(&kr_clone_ns);
+        susfs_hook_unregister(&sm_clone_ns_hook);
         kr_clone_ns_ok = false;
     }
     if (kr_newmnt_ok) {
-        unregister_kretprobe(&kr_newmnt);
-        susfs_krp_forget_addr(&kr_newmnt);
+        susfs_hook_unregister(&sm_newmnt_hook);
         kr_newmnt_ok = false;
     }
     mount_registered = false;
@@ -2262,14 +2309,10 @@ static int sus_mount_register(void)
      * armed is on mount_stat as `show_probes=<n>/3`, which makes a partial hide visible instead
      * of silently smaller.  Only "none of the three" is fatal. */
     for (i = 0; i < SUS_MOUNT_SHOW_N; i++) {
-        rc = register_kprobe(sus_mount_show_probes[i]);
-        if (rc) {
-            pr_warn("sus_mount: register_kprobe(%s) failed %d - that file keeps showing our mounts\n",
+        rc = susfs_hook_register(sm_show_hooks[i]);
+        if (rc < 0) {
+            pr_warn("sus_mount: hook_register(%s) failed %d - that file keeps showing our mounts\n",
                     sus_mount_show_names[i], rc);
-            /* A failure after address resolution leaves .addr set, so the retry a later enable
-             * performs has to find the struct clear or it is refused with -EINVAL without
-             * ever reaching the symbol again - see susfs_kprobe.h. */
-            susfs_kp_forget_addr(sus_mount_show_probes[i]);
             continue;
         }
         sus_mount_show_armed[i] = true;
@@ -2287,17 +2330,15 @@ static int sus_mount_register(void)
     rc = sus_mount_fdinfo_arm();
     if (rc)
         pr_warn("sus_mount: the fdinfo probe could not be armed %d - /proc/<pid>/fdinfo keeps printing the real mnt_id\n", rc);
-    rc = register_kretprobe(&kr_statx);
-    if (rc) {
-        susfs_krp_forget_addr(&kr_statx);
-        pr_warn("sus_mount: register_kretprobe(__arm64_sys_statx) failed %d - statx keeps returning the real stx_mnt_id\n", rc);
+    rc = susfs_hook_register(&sm_statx_hook);
+    if (rc < 0) {
+        pr_warn("sus_mount: hook_register(__arm64_sys_statx) failed %d - statx keeps returning the real stx_mnt_id\n", rc);
     } else {
         kr_statx_ok = true;
     }
-    rc = register_kretprobe(&kr_statx_do);
-    if (rc) {
-        susfs_krp_forget_addr(&kr_statx_do);
-        pr_warn("sus_mount: register_kretprobe(do_statx) failed %d - the second statx landing point is not armed\n", rc);
+    rc = susfs_hook_register(&sm_statx_do_hook);
+    if (rc < 0) {
+        pr_warn("sus_mount: hook_register(do_statx) failed %d - the second statx landing point is not armed\n", rc);
     } else {
         kr_statx_do_ok = true;
     }
@@ -2305,10 +2346,9 @@ static int sus_mount_register(void)
      * filesystem is unmounted, and the numbers the records are keyed by do get
      * reused (measured).  A missing symbol means records can outlive their fs and
      * falsely match another one, so say so instead of quietly degrading. */
-    rc = register_kprobe(&kp_sb_down);
-    if (rc) {
-        susfs_kp_forget_addr(&kp_sb_down);
-        pr_warn("sus_mount: register_kprobe(generic_shutdown_super) failed %d - records are NOT dropped when their filesystem is unmounted, a reused s_dev can match an unrelated mount\n",
+    rc = susfs_hook_register(&sm_sb_down_hook);
+    if (rc < 0) {
+        pr_warn("sus_mount: hook_register(generic_shutdown_super) failed %d - records are NOT dropped when their filesystem is unmounted, a reused s_dev can match an unrelated mount\n",
                 rc);
     } else {
         kp_sb_down_ok = true;
@@ -2316,10 +2356,9 @@ static int sus_mount_register(void)
     /* Optional as well: without it a namespace copied after the enable keeps
      * working for the mount TABLE (identity hides the lines) but fdinfo/statx stay
      * inconsistent until somebody reads a mount table in that namespace. */
-    rc = register_kretprobe(&kr_clone_ns);
-    if (rc) {
-        susfs_krp_forget_addr(&kr_clone_ns);
-        pr_warn("sus_mount: register_kretprobe(copy_mnt_ns) failed %d - ids of mounts in a namespace copied later are only learned when its mount table is read\n",
+    rc = susfs_hook_register(&sm_clone_ns_hook);
+    if (rc < 0) {
+        pr_warn("sus_mount: hook_register(copy_mnt_ns) failed %d - ids of mounts in a namespace copied later are only learned when its mount table is read\n",
                 rc);
     } else {
         kr_clone_ns_ok = true;
@@ -2328,10 +2367,9 @@ static int sus_mount_register(void)
      * the module is already up (see the note above kr_newmnt).  Also optional in the
      * sense that hiding keeps working for everything the scan saw - but without it a
      * mount that appears later is not hidden anywhere, so a failure is reported. */
-    rc = register_kretprobe(&kr_newmnt);
-    if (rc) {
-        susfs_krp_forget_addr(&kr_newmnt);
-        pr_warn("sus_mount: register_kretprobe(attach_recursive_mnt) failed %d - a mount created after the enable is NOT hidden (not marked, no identity recorded)\n",
+    rc = susfs_hook_register(&sm_newmnt_hook);
+    if (rc < 0) {
+        pr_warn("sus_mount: hook_register(attach_recursive_mnt) failed %d - a mount created after the enable is NOT hidden (not marked, no identity recorded)\n",
                 rc);
     } else {
         kr_newmnt_ok = true;

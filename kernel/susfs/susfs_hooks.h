@@ -12,13 +12,17 @@
 #include <linux/types.h>
 #include <linux/version.h>
 
-/* Negative results: the caller can use the usual `if (ret) fail` shape.
- * FALLBACK is not an installation failure: the hook is installed, but on the
- * non-preferred backend (for example map bit cleared -> kprobe instead of inline). */
+/* Installation failures are negative, so `if (ret < 0) fail` is the shape.
+ * FALLBACK is a POSITIVE result and NOT an installation failure: the hook is
+ * installed, but on the non-preferred backend (map bit cleared -> kprobe
+ * instead of inline).  It must be reported to the caller so it can log the
+ * degraded mode, but the hook is live. */
 #define SUSFS_HOOK_OK			0
-#define SUSFS_HOOK_FALLBACK		(-1)
+#define SUSFS_HOOK_FALLBACK		1
 #define SUSFS_HOOK_INSTALL_FAILED	(-225)
 
+/* Backends.  AUTO is only valid for susfs_hook_register(): it picks the best
+ * backend for the target and reports FALLBACK when it had to use another one. */
 enum susfs_hook_backend {
 	SUSFS_HOOK_BACKEND_AUTO = 0,	/* only register(): prefer FP/INLINE, fall back */
 	SUSFS_HOOK_BACKEND_FP,
@@ -50,6 +54,8 @@ enum susfs_hook_target {
 	SUSFS_HOOK_TARGET_ARM64_SYS_NEWUNAME,
 	SUSFS_HOOK_TARGET_VFS_OPEN,
 	SUSFS_HOOK_TARGET_PATH_OPENAT,
+	SUSFS_HOOK_TARGET_ARM64_SYS_REBOOT,
+	SUSFS_HOOK_TARGET_SEQ_SHOW,
 	SUSFS_HOOK_TARGET_COUNT
 };
 
@@ -78,15 +84,40 @@ struct susfs_show_map_ctx {
 	struct vm_area_struct *vma;
 };
 
+struct susfs_fp_hook;
+struct kprobe;
+struct kretprobe;
+
+/* One probe owned by a feature layer.  The centre installs and removes it; the
+ * handler stays in the feature.  Exactly one of kp/kr is set.  A probe that is
+ * not `required` only degrades the target: its own failure is reported by the
+ * feature's handler (the arm called the centre once for the whole set) and the
+ * remaining probes keep working. */
+struct susfs_hook_probe {
+	struct kprobe *kp;
+	struct kretprobe *kr;
+	bool required;
+};
+
 struct susfs_hook {
 	const char *owner;		/* layer name, diagnostics and teardown */
 	const char *name;		/* consumer name, diagnostics */
 	enum susfs_hook_target target;
 	enum susfs_hook_backend assign;	/* ignored by register() */
-	/* Target-specific context; the centre supplies the typed adapter. */
+	/* Structured consumers: the centre owns the wrapper and builds the typed
+	 * context, so these receive a target-specific struct. */
 	int  (*pre)(void *ctx);		/* 0 = run original, 1 = skip it */
 	void (*post)(void *ctx);
 	void *priv;
+	/* Raw consumers: the feature owns the handler and, for a kretprobe, the
+	 * instance data layout; the centre owns registration. */
+	struct susfs_fp_hook *fp;
+	const struct susfs_hook_probe *probes;
+	unsigned int nprobes;
+	/* Filled by the centre. */
+	enum susfs_hook_backend backend;
+	bool installed;
+	u64 probe_mask;
 };
 
 /*
@@ -95,7 +126,7 @@ struct susfs_hook {
  *     INLINE when the map bit is set, KPROBE otherwise);
  *   - a target is installed once, later consumers only join its dispatch list;
  *   - returns SUSFS_HOOK_OK (0)       installed with the preferred backend;
- *   - returns SUSFS_HOOK_FALLBACK (-1) installed, but a fallback backend was used;
+ *   - returns SUSFS_HOOK_FALLBACK (1) installed, but a fallback backend was used;
  *   - returns SUSFS_HOOK_INSTALL_FAILED (-225) nothing installed.
  *
  * susfs_hook_register_assign():

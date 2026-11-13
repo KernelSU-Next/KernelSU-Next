@@ -57,6 +57,7 @@
 #include "ksu_umount_gate.h"	/* susfs_is_current_proc_umounted_app (issue #34) */
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 #include "susfs_kprobe.h"
+#include "susfs_hooks.h"
 #include "susfs_kstat_view.h"
 
 /* KSTAT_SPOOF_* bits live in susfs_abi.h (upstream declares them in susfs.h next to struct
@@ -453,6 +454,19 @@ static struct kretprobe krp_kstat_map_vma = {
 	.maxactive = 16,
 };
 
+static const struct susfs_hook_probe kstat_map_probe = {
+	.kr = &krp_kstat_map_vma,
+	.required = true,
+};
+
+static struct susfs_hook kstat_map_hook = {
+	.owner = "kstat",
+	.name = "maps-dev-ino",
+	.target = SUSFS_HOOK_TARGET_SHOW_MAP_VMA,
+	.probes = &kstat_map_probe,
+	.nprobes = 1,
+};
+
 static bool kstat_maps_registered;
 
 /* Registering sleeps, so this runs from the rule-management paths (process context).  It is NOT
@@ -482,16 +496,13 @@ static void kstat_maps_arm(void)
 		mutex_unlock(&kstat_maps_ctl_lock);
 		return;
 	}
-	rc = register_kretprobe(&krp_kstat_map_vma);
-	if (rc) {
+	rc = susfs_hook_register(&kstat_map_hook);
+	if (rc < 0) {
 		/* Every later rule operation retries this arming (kstat_maps_arm() is called from
-		 * the add/update/clear paths and from the supercall), so the struct has to come back
-		 * clear: a failure that happened after the symbol was resolved leaves .addr set, and
-		 * the retry would be refused with -EINVAL instead of trying again - see
-		 * susfs_kprobe.h.  Safe under the lock. */
-		susfs_krp_forget_addr(&krp_kstat_map_vma);
+		 * the add/update/clear paths and from the supercall), so the probes have to come
+		 * back clear: the centre already forgets the resolved address on failure. */
 		mutex_unlock(&kstat_maps_ctl_lock);
-		pr_warn("susfs_kstat: register_kretprobe(show_map_vma) failed %d - maps keeps printing the real dev:ino\n",
+		pr_warn("susfs_kstat: hook_register(show_map_vma) failed %d - maps keeps printing the real dev:ino\n",
 			rc);
 	} else {
 		kstat_maps_registered = true;
@@ -513,10 +524,8 @@ static void kstat_maps_disarm(void)
 		mutex_unlock(&kstat_maps_ctl_lock);
 		return;
 	}
-	unregister_kretprobe(&krp_kstat_map_vma);
-	susfs_krp_forget_addr(&krp_kstat_map_vma);
-	kstat_maps_registered = false;
-	mutex_unlock(&kstat_maps_ctl_lock);
+	susfs_hook_unregister(&kstat_map_hook);
+	kstat_maps_registered = false;	mutex_unlock(&kstat_maps_ctl_lock);
 }
 
 /* Why the vfs_getattr fallback is not here any more (it stood exactly where these counters now

@@ -34,6 +34,7 @@
 #include "ksu_umount_gate.h"	/* susfs_is_current_proc_umounted_app (issue #34) */
 #include "ksu_allow_gate.h"	/* susfs_control_visible(): the node gate is su's own */
 #include "susfs_kprobe.h"
+#include "susfs_hooks.h"
 #include "patch_memory.h"
 #include "susfs_fp_hook.h"	/* susfs_fp_drain: wait out in-flight wrappers */
 
@@ -790,12 +791,48 @@ static struct kretprobe kr_map_files = {
 };
 static bool kr_map_files_ok;
 
+static const struct susfs_hook_probe map_files_probe = { .kr = &kr_map_files };
+static struct susfs_hook map_files_hook = {
+    .owner = "sus_map", .name = "map_files_get_link",
+    .target = SUSFS_HOOK_TARGET_MAP_FILES_GET_LINK,
+    .probes = &map_files_probe, .nprobes = 1,
+};
+
 /* Kept in one table so init and exit cannot drift apart. */
 static struct kprobe *const map_probes[] = {
     &kp_map, &kp_map_smap, &kp_map_outer, &kp_map_walk, &kp_map_walk_vma,
     &kp_gup_remote, &kp_gup_remote_inner,
 };
 #define N_MAP_PROBES ARRAY_SIZE(map_probes)
+
+static const struct susfs_hook_probe map_hook_probes[] = {
+    { .kp = &kp_map },
+    { .kp = &kp_map_smap },
+    { .kp = &kp_map_outer },
+    { .kp = &kp_map_walk },
+    { .kp = &kp_map_walk_vma },
+    { .kp = &kp_gup_remote },
+    { .kp = &kp_gup_remote_inner },
+};
+
+#define SUS_MAP_HOOK_DEF(idx, tgt, nm) \
+    static struct susfs_hook map_hook_##idx = { \
+        .owner = "sus_map", .name = nm, .target = tgt, \
+        .probes = &map_hook_probes[idx], .nprobes = 1, \
+    }
+
+SUS_MAP_HOOK_DEF(0, SUSFS_HOOK_TARGET_SHOW_MAP_VMA, "show_map_vma");
+SUS_MAP_HOOK_DEF(1, SUSFS_HOOK_TARGET_SHOW_SMAP, "show_smap");
+SUS_MAP_HOOK_DEF(2, SUSFS_HOOK_TARGET_SHOW_MAP, "show_map");
+SUS_MAP_HOOK_DEF(3, SUSFS_HOOK_TARGET_WALK_PAGE_RANGE, "walk_page_range");
+SUS_MAP_HOOK_DEF(4, SUSFS_HOOK_TARGET_WALK_PAGE_VMA, "walk_page_vma");
+SUS_MAP_HOOK_DEF(5, SUSFS_HOOK_TARGET_GET_USER_PAGES_REMOTE, "get_user_pages_remote");
+SUS_MAP_HOOK_DEF(6, SUSFS_HOOK_TARGET_GET_USER_PAGES_REMOTE_INNER, "__get_user_pages_remote");
+
+static struct susfs_hook *const map_hooks[] = {
+    &map_hook_0, &map_hook_1, &map_hook_2, &map_hook_3,
+    &map_hook_4, &map_hook_5, &map_hook_6,
+};
 static bool map_registered;
 static bool map_probe_armed[N_MAP_PROBES];
 
@@ -938,15 +975,12 @@ static int sus_map_register_probes(void)
          * sus_map_arm_show_wrappers() above instead. */
         if (map_probes[i] == &kp_map_smap || map_probes[i] == &kp_map_outer)
             continue;
-        rc = register_kprobe(map_probes[i]);
-        if (rc) {
-            pr_warn("sus_map: register_kprobe(%s) failed %d - that listing is not filtered\n",
+        rc = susfs_hook_register(map_hooks[i]);
+        if (rc < 0) {
+            pr_warn("sus_map: hook_register(%s) failed %d - that listing is not filtered\n",
                     map_probes[i]->symbol_name, rc);
-            /* This function is retried from the supercall that adds a rule (and it skips the
-             * probes that did arm), so the struct has to be clear for the retry to reach the
-             * symbol again: a failure after address resolution leaves .addr set - see
-             * susfs_kprobe.h. */
-            susfs_kp_forget_addr(map_probes[i]);
+            /* The centre already clears the resolved address on failure, so the retry
+             * from the supercall can reach the symbol again - see susfs_kprobe.h. */
             if (!first_err)
                 first_err = rc;
             continue;
@@ -962,11 +996,10 @@ static int sus_map_register_probes(void)
     /* The map_files hook is a kretprobe, so it lives outside map_probes[] (which
      * holds struct kprobe *) and is tracked on its own; optional like the rest. */
     if (!kr_map_files_ok) {
-        int rc = register_kretprobe(&kr_map_files);
+        int rc = susfs_hook_register(&map_files_hook);
 
-        if (rc) {
-            susfs_krp_forget_addr(&kr_map_files);
-            pr_warn("sus_map: register_kretprobe(proc_map_files_get_link) failed %d - readlink on a hidden mapping still names the file\n",
+        if (rc < 0) {
+            pr_warn("sus_map: hook_register(proc_map_files_get_link) failed %d - readlink on a hidden mapping still names the file\n",
                     rc);
         } else {
             kr_map_files_ok = true;
@@ -1200,13 +1233,11 @@ void susfs_sus_map_exit(void)
     for (i = 0; i < (int)N_MAP_PROBES; i++) {
         if (!map_probe_armed[i])
             continue;
-        unregister_kprobe(map_probes[i]);
-        susfs_kp_forget_addr(map_probes[i]);
+        susfs_hook_unregister(map_hooks[i]);
         map_probe_armed[i] = false;
     }
     if (kr_map_files_ok) {
-        unregister_kretprobe(&kr_map_files);
-        susfs_krp_forget_addr(&kr_map_files);
+        susfs_hook_unregister(&map_files_hook);
         kr_map_files_ok = false;
     }
     if (sus_map_show_armed) {
