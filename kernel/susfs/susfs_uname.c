@@ -128,7 +128,9 @@ static int uname_register(void)
         mutex_unlock(&uname_ctl_lock);
         return 0;
     }
-    if (susfs_hook_engine_active() &&
+    /* Disabled after the 2026-11-13 device panic; the kretprobe is the known
+     * good path until the inline call/return shape is validated again. */
+    if (0 && susfs_hook_engine_active() &&
         susfs_hook_slot_enabled(SUSFS_HOOK_ARM64_SYS_NEWUNAME)) {
         susfs_hook_override("susfs_uname_wrap",
                             (unsigned long)susfs_uname_wrap);
