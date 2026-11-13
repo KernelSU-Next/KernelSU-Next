@@ -72,7 +72,7 @@ avc_wrapper(u32 ssid, u32 tsid, u16 tclass, u32 requested, u32 audited,
 			 ctx.audited, ctx.denied, ctx.result, ctx.a);
 }
 
-static int avc_kprobe_pre(struct kprobe *p, struct pt_regs *regs)
+static int __nocfi avc_kprobe_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct susfs_avc_ctx ctx = {
 		.ssid = (u32)regs->regs[0], .tsid = (u32)regs->regs[1],
@@ -123,7 +123,7 @@ avc_wrapper(void *state, u32 ssid, u32 tsid, u16 tclass, u32 requested,
 			 ctx.audited, ctx.denied, ctx.result, ctx.a);
 }
 
-static int avc_kprobe_pre(struct kprobe *p, struct pt_regs *regs)
+static int __nocfi avc_kprobe_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct susfs_avc_ctx ctx = {
 		.state = (void *)regs->regs[0], .ssid = (u32)regs->regs[1],
