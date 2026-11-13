@@ -60,40 +60,6 @@ static atomic_t avc_enter_count = ATOMIC_INIT(0);
 #define AVC_TSID_REG	2
 #endif
 
-static int avc_audit_post_pre(struct kprobe *kp, struct pt_regs *regs)
-{
-	bool hit = false;
-
-	atomic_inc(&avc_enter_count);
-
-	/* Either sid unresolved means no spoofing at all: a 0 must not match (it is a real sid
-	 * value here), and writing 0 over a real one makes security_sid_to_context() fail, so
-	 * audit prints "scontext=???" - louder than the domain name being hidden. */
-	if (!avc_su_sid || !avc_priv_app_sid)
-		return 0;
-
-	/* BOTH ends.  The records a root detector greps for are the ones the su domain CAUSES -
-	 * "avc: denied ... scontext=u:r:ksu:s0" - and there the su sid is the SOURCE; rewriting
-	 * tsid alone left every one of those lines intact. */
-	if ((u32)regs->regs[AVC_SSID_REG] == avc_su_sid) {
-		regs->regs[AVC_SSID_REG] = avc_priv_app_sid;
-		hit = true;
-	}
-	if ((u32)regs->regs[AVC_TSID_REG] == avc_su_sid) {
-		regs->regs[AVC_TSID_REG] = avc_priv_app_sid;
-		hit = true;
-	}
-
-	if (hit)
-		atomic_inc(&avc_hit_count);
-	return 0;
-}
-
-static struct kprobe kp_avc = {
-	.symbol_name = "slow_avc_audit",
-	.pre_handler = avc_audit_post_pre,
-};
-
 /* Serialises the arm/disarm pair.  register_kprobe() resolves .symbol_name only while .addr is
  * NULL and answers -EINVAL once both are set, so a *successful* registration by another task
  * makes this task's register_kprobe() fail - and the failure branch below clears .addr.  Without
@@ -115,6 +81,7 @@ static int avc_pre_consumer(void *ctx)
 	struct susfs_avc_ctx *c = ctx;
 	bool hit = false;
 
+	atomic_inc(&avc_enter_count);
 	if (!avc_su_sid || !avc_priv_app_sid)
 		return 0;
 	if (c->ssid == avc_su_sid) {
@@ -159,7 +126,7 @@ static int avc_register(void)
 		return -EOPNOTSUPP;
 	}
 	rc = susfs_hook_register(&avc_hook);
-	if (rc < 0) {
+	if (rc < 0 && rc != SUSFS_HOOK_FALLBACK) {
 		mutex_unlock(&avc_ctl_lock);
 		return rc;
 	}
