@@ -2146,6 +2146,9 @@ static struct proc_dir_entry *kstat_proc_entry;
  * above says why and what it cost. */
 static int kstat_hooks_armed;
 
+/* One centre registration per table entry; the table itself stays here. */
+static struct susfs_hook kstat_reg[ARRAY_SIZE(kstat_hooks)];
+
 int susfs_kstat_init(void)
 {
 	int rc;
@@ -2164,8 +2167,12 @@ int susfs_kstat_init(void)
 	for (i = 0; i < (int)ARRAY_SIZE(kstat_hooks); i++) {
 		struct susfs_fp_hook *h = &kstat_hooks[i];
 
-		rc = susfs_fp_install(h);
-		if (rc) {
+		kstat_reg[i].owner = "kstat";
+		kstat_reg[i].name = h->name;
+		kstat_reg[i].target = SUSFS_HOOK_TARGET_FP;
+		kstat_reg[i].fp = h;
+		rc = susfs_hook_register(&kstat_reg[i]);
+		if (rc < 0) {
 			pr_warn("kstat: %s not installed (%d) - that entry answers the kernel's own way\n",
 				h->name, rc);
 			continue;
@@ -2215,11 +2222,9 @@ void susfs_kstat_exit(void)
 	 * (guarded on `installed` and on the count), because this runs both for the rollback of a
 	 * failed load and for the unload of a loaded module. */
 	for (i = 0; i < (int)ARRAY_SIZE(kstat_hooks); i++) {
-		struct susfs_fp_hook *h = &kstat_hooks[i];
-
-		if (!h->installed)
+		if (kstat_reg[i].backend == SUSFS_HOOK_BACKEND_NONE)
 			continue;
-		susfs_fp_remove(h);
+		susfs_hook_unregister(&kstat_reg[i]);
 	}
 	if (kstat_hooks_armed) {
 		susfs_fp_drain();

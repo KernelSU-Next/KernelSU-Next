@@ -69,6 +69,7 @@
 #include "susfs.h"		/* susfs_control_node_allowed(), sus_path_inode_hidden_public() */
 #include "susfs_opath.h"
 #include "susfs_fp_hook.h"
+#include "susfs_hooks.h"
 #include "susfs_or_entry.h"	/* open_redirect's name layer shares exactly these five entries */
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 
@@ -494,6 +495,8 @@ static struct susfs_fp_hook opath_hooks[] = {
 	},
 };
 
+static struct susfs_hook opath_reg[ARRAY_SIZE(opath_hooks)];
+
 /* Whether the entries open_redirect's name layer needs actually carry this layer's wrapper.  "The
  * layer is armed" has to mean those entries and not "the module came up": opath_dump=1 installs
  * nothing at all, and opath_test=N installs at most the one entry it selects, while both report
@@ -685,8 +688,12 @@ int susfs_opath_init(void)
 		/* One entry at a time and never fatal for the others: the remaining entries
 		 * still answer the kernel's own way, which is what makes a first bring-up
 		 * readable instead of all-or-nothing. */
-		err = susfs_fp_install(h);
-		if (err) {
+		opath_reg[i].owner = "opath";
+		opath_reg[i].name = h->name;
+		opath_reg[i].target = SUSFS_HOOK_TARGET_FP;
+		opath_reg[i].fp = h;
+		err = susfs_hook_register(&opath_reg[i]);
+		if (err < 0) {
 			pr_warn("opath: [%d] %s not installed (%d) - that ABI stays visible\n",
 				i + 1, h->name, err);
 			continue;
@@ -752,8 +759,11 @@ void susfs_opath_exit(void)
 	 * moment, and susfs_or_entry_exit() (called from open_redirect's exit, which runs first because
 	 * the layer table is torn down in reverse) has already cleared its hook pointer. */
 
-	for (i = 0; i < (int)ARRAY_SIZE(opath_hooks); i++)
-		susfs_fp_remove(&opath_hooks[i]);
+	for (i = 0; i < (int)ARRAY_SIZE(opath_hooks); i++) {
+		if (opath_reg[i].backend == SUSFS_HOOK_BACKEND_NONE)
+			continue;
+		susfs_hook_unregister(&opath_reg[i]);
+	}
 
 	/* AFTER every entry is restored, never before: this waits until no CPU can still be
 	 * inside a wrapper, and an entry that still pointed at one of them would send the next

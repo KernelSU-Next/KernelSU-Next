@@ -709,6 +709,7 @@ static const struct target_desc target_desc[SUSFS_HOOK_TARGET_COUNT] = {
 	[SUSFS_HOOK_TARGET_ARM64_SYS_REBOOT]		= { "__arm64_sys_reboot", -1, NULL },
 	[SUSFS_HOOK_TARGET_SEQ_SHOW]			= { "seq_show", -1, NULL },
 	[SUSFS_HOOK_TARGET_LSM]				= { NULL, -1, NULL },
+	[SUSFS_HOOK_TARGET_FP]				= { NULL, -1, NULL },
 	[SUSFS_HOOK_TARGET_INODE_PERMISSION]		= { "inode_permission", 24, "susfs_inode_perm_wrapper" },
 };
 

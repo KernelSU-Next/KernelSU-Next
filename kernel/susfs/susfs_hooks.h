@@ -60,6 +60,7 @@ enum susfs_hook_target {
 	SUSFS_HOOK_TARGET_ARM64_SYS_REBOOT,
 	SUSFS_HOOK_TARGET_SEQ_SHOW,
 	SUSFS_HOOK_TARGET_LSM,		/* security_hook_list, one per hook */
+	SUSFS_HOOK_TARGET_FP,		/* sys_call_table replacement, one per entry */
 	SUSFS_HOOK_TARGET_INODE_PERMISSION,	/* VFS: sus_path inline face */
 	SUSFS_HOOK_TARGET_COUNT
 };
