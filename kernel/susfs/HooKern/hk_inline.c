@@ -973,8 +973,12 @@ static __nocfi int hk_inline_apply(struct hk_inline *h, const char *sym,
 	 * trampoline address it will load must be live *before* the write.  A
 	 * stub that reads a zero here would jump to address 0.
 	 */
-	if (tramp_out)
+	if (tramp_out) {
 		*tramp_out = h->orig;
+		/* the stub may load this from another CPU the instant the
+		 * detour lands; publish it before the entry write */
+		smp_wmb();
+	}
 
 	/*
 	 * the detour is written in one call, so a multi instruction window goes

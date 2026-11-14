@@ -7,27 +7,49 @@
  * LR, and the autiasp later in the body then authenticates the wrong frame
  * (measured: "Oops - FPAC" at vfs_open+0x664).
  *
- * This stub is entered with the target's own SP and LR.  It saves both, calls
- * the C decision function, restores them, and only then either returns the
- * hidden answer or jumps to the trampoline - so the trampoline's paciasp runs
- * exactly as it would on a real call.
+ * This stub is entered with the target's own SP and LR.  It saves every
+ * caller-saved register (x0-x18) as well as x29/x30: the C decision is free to
+ * clobber all of them, and the trampoline then replays the original prologue
+ * and falls into the rest of vfs_open, which expects its argument registers
+ * intact.  Missing that save is what made the first IH attempt panic.
  *
  * The allow path leaves with `ret x16`, exempt from the BTI check.
  */
+
+#define SUSFS_SAVE_REGS()					\
+	sub	sp, sp, #160;					\
+	stp	x0,  x1,  [sp, #0];				\
+	stp	x2,  x3,  [sp, #16];				\
+	stp	x4,  x5,  [sp, #32];				\
+	stp	x6,  x7,  [sp, #48];				\
+	stp	x8,  x9,  [sp, #64];				\
+	stp	x10, x11, [sp, #80];				\
+	stp	x12, x13, [sp, #96];				\
+	stp	x14, x15, [sp, #112];				\
+	stp	x16, x17, [sp, #128];				\
+	stp	x18, x30, [sp, #144]
+
+#define SUSFS_RESTORE_REGS()					\
+	ldp	x0,  x1,  [sp, #0];				\
+	ldp	x2,  x3,  [sp, #16];				\
+	ldp	x4,  x5,  [sp, #32];				\
+	ldp	x6,  x7,  [sp, #48];				\
+	ldp	x8,  x9,  [sp, #64];				\
+	ldp	x10, x11, [sp, #80];				\
+	ldp	x12, x13, [sp, #96];				\
+	ldp	x14, x15, [sp, #112];				\
+	ldp	x16, x17, [sp, #128];				\
+	ldp	x18, x30, [sp, #144];				\
+	add	sp, sp, #160
 
 	.text
 
 	.globl	susfs_vfs_open_stub
 	.type	susfs_vfs_open_stub, %function
 susfs_vfs_open_stub:
-	/* 32 bytes keeps SP 16-byte aligned; x0/x1 are the target's arguments */
-	sub	sp, sp, #32
-	stp	x0, x1, [sp, #0]
-	stp	x29, x30, [sp, #16]
+	SUSFS_SAVE_REGS()
 	bl	susfs_vfs_open_decide
-	ldp	x29, x30, [sp, #16]
-	ldp	x0, x1, [sp, #0]
-	add	sp, sp, #32
+	SUSFS_RESTORE_REGS()
 	cbnz	w0, .Lhide
 	ldr	x16, =susfs_vfs_open_tramp
 	ldr	x16, [x16]
