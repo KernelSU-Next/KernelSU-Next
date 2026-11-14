@@ -2722,7 +2722,7 @@ static int sus_path_vfs_perm_pre(void *p)
 {
 	struct susfs_inode_ctx *ctx = p;
 
-	if (ctx->inode && susfs_is_inode_sus_path(ctx->inode)) {
+	if (ctx->inode && sus_path_inode_hidden(ctx->inode)) {
 		ctx->ret = -ENOENT;
 		return 1;
 	}
