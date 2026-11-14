@@ -319,7 +319,8 @@ static int install_inline(struct hook_target *t, struct susfs_hook *h)
 	t->hook = h;
 	/* The table-identity callbacks have no map slot: their symbol is resolved
 	 * by the feature and installed through the PAC-safe stub form. */
-	if (t->slot == SUSFS_HOOK_S_SHOW || t->slot == SUSFS_HOOK_M_SHOW) {
+	if (h->target == SUSFS_HOOK_TARGET_S_SHOW ||
+	    h->target == SUSFS_HOOK_TARGET_M_SHOW) {
 		if (!h->stub || !h->tramp)
 			return SUSFS_HOOK_INSTALL_FAILED;
 		rc = hk_inline_hook_stub(&t->inline_hook, t->symbol,
