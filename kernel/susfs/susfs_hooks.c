@@ -265,27 +265,20 @@ extern unsigned long susfs_path_lookupat_tramp;
 extern void susfs_filename_lookup_stub(void);
 extern unsigned long susfs_filename_lookup_tramp;
 
-static atomic_t n_lookup_decide = ATOMIC_INIT(0);
-
 static long __nocfi
 susfs_lookup_decide(struct path *path, long ret,
 		    enum susfs_hook_target target)
 {
 	struct susfs_inode_ctx ctx = { .inode = NULL, .ret = 0 };
-	unsigned int i;
+	unsigned int i, n = READ_ONCE(targets[target].nconsumers);
 	int skip = 0;
 
-	if (atomic_inc_return(&n_lookup_decide) <= 10)
-		pr_info("susfs_lookup: target=%d ret=%ld ino=%lu dev=%u\n",
-			(int)target, ret,
-			(path && path->dentry && d_inode(path->dentry)) ?
-				(unsigned long)d_inode(path->dentry)->i_ino : 0UL,
-			(path && path->dentry && d_inode(path->dentry)) ?
-				(unsigned int)d_inode(path->dentry)->i_sb->s_dev : 0U);
-	if (ret || !path || !path->dentry)
+	/* Common case: no rule layer is armed, so the inline face costs the stub
+	 * call and nothing else. */
+	if (ret || !path || !path->dentry || !n)
 		return ret;
 	ctx.inode = d_inode(path->dentry);
-	for (i = 0; i < CONSUMERS_MAX; i++) {
+	for (i = 0; i < n; i++) {
 		struct susfs_hook *c = READ_ONCE(targets[target].consumers[i]);
 
 		if (c && c->pre)
@@ -319,13 +312,13 @@ long __nocfi susfs_path_openat_decide(unsigned long *saved)
 {
 	struct file *file = (struct file *)saved[20];
 	struct susfs_inode_ctx ctx = { .inode = NULL, .ret = 0 };
-	unsigned int i;
+	unsigned int i, n = READ_ONCE(targets[SUSFS_HOOK_TARGET_PATH_OPENAT].nconsumers);
 	int skip = 0;
 
-	if (IS_ERR_OR_NULL(file))
+	if (IS_ERR_OR_NULL(file) || !n)
 		return (long)file;
 	ctx.inode = file_inode(file);
-	for (i = 0; i < CONSUMERS_MAX; i++) {
+	for (i = 0; i < n; i++) {
 		struct susfs_hook *c = READ_ONCE(targets[SUSFS_HOOK_TARGET_PATH_OPENAT].consumers[i]);
 
 		if (c && c->pre)
