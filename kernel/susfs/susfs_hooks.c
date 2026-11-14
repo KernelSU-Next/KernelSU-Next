@@ -21,6 +21,8 @@
  */
 #include <linux/kernel.h>
 #include <linux/bits.h>
+#include <linux/dcache.h>
+#include <linux/fs.h>
 #include <linux/kprobes.h>
 #include <linux/mutex.h>
 #include <linux/string.h>
@@ -215,6 +217,32 @@ inode_perm_wrapper(struct inode *inode, int mask)
 }
 #endif
 
+/* ---- structured target: VFS vfs_open (sus_path) ---- */
+
+typedef int (*vfs_open_fn_t)(const struct path *path, struct file *file);
+static vfs_open_fn_t vfs_open_orig;
+
+static int __visible __nocfi noinline
+vfs_open_wrapper(const struct path *path, struct file *file)
+{
+	struct susfs_inode_ctx ctx = {
+		.inode = (path && path->dentry) ? d_inode(path->dentry) : NULL,
+		.ret = 0,
+	};
+	unsigned int i;
+	int skip = 0;
+
+	for (i = 0; i < CONSUMERS_MAX; i++) {
+		struct susfs_hook *c = READ_ONCE(targets[SUSFS_HOOK_TARGET_VFS_OPEN].consumers[i]);
+
+		if (c && c->pre)
+			skip |= c->pre(&ctx);
+	}
+	if (skip)
+		return (int)ctx.ret;
+	return vfs_open_orig ? vfs_open_orig(path, file) : 0;
+}
+
 /* Only a target with a centre-owned wrapper can be inline-hooked and can carry
  * more than one consumer.  Raw targets are installed per consumer. */
 static struct hook_target *target_of(enum susfs_hook_target target)
@@ -222,7 +250,8 @@ static struct hook_target *target_of(enum susfs_hook_target target)
 	if ((unsigned int)target >= SUSFS_HOOK_TARGET_COUNT)
 		return NULL;
 	if (!target_is_avc(target) &&
-	    target != SUSFS_HOOK_TARGET_INODE_PERMISSION)
+	    target != SUSFS_HOOK_TARGET_INODE_PERMISSION &&
+	    target != SUSFS_HOOK_TARGET_VFS_OPEN)
 		return NULL;
 	return &targets[target];
 }
@@ -277,6 +306,8 @@ static int install_inline(struct hook_target *t)
 		susfs_hook_override(t->wrapper, (unsigned long)avc_wrapper);
 	else if (t->slot == SUSFS_HOOK_INODE_PERMISSION)
 		susfs_hook_override(t->wrapper, (unsigned long)inode_perm_wrapper);
+	else if (t->slot == SUSFS_HOOK_VFS_OPEN)
+		susfs_hook_override(t->wrapper, (unsigned long)vfs_open_wrapper);
 	rc = hk_inline_hook(&t->inline_hook, t->symbol, t->wrapper);
 	if (rc)
 		return SUSFS_HOOK_INSTALL_FAILED;
@@ -284,6 +315,8 @@ static int install_inline(struct hook_target *t)
 		avc_orig = (avc_fn_t)t->inline_hook.orig;
 	else if (t->slot == SUSFS_HOOK_INODE_PERMISSION)
 		inode_perm_orig = (inode_perm_fn_t)t->inline_hook.orig;
+	else if (t->slot == SUSFS_HOOK_VFS_OPEN)
+		vfs_open_orig = (vfs_open_fn_t)t->inline_hook.orig;
 	t->backend = BACKEND_INLINE;
 	t->installed = true;
 	return SUSFS_HOOK_OK;
@@ -633,7 +666,7 @@ static const struct target_desc target_desc[SUSFS_HOOK_TARGET_COUNT] = {
 	[SUSFS_HOOK_TARGET_COPY_MNT_NS]			= { "copy_mnt_ns", 20, NULL },
 	[SUSFS_HOOK_TARGET_ATTACH_RECURSIVE_MNT]	= { "attach_recursive_mnt", 21, NULL },
 	[SUSFS_HOOK_TARGET_ARM64_SYS_NEWUNAME]		= { "__arm64_sys_newuname", 3, NULL },
-	[SUSFS_HOOK_TARGET_VFS_OPEN]			= { "vfs_open", 0, NULL },
+	[SUSFS_HOOK_TARGET_VFS_OPEN]			= { "vfs_open", 0, "susfs_vfs_open_wrapper" },
 	[SUSFS_HOOK_TARGET_PATH_OPENAT]			= { "path_openat", 1, NULL },
 	[SUSFS_HOOK_TARGET_ARM64_SYS_REBOOT]		= { "__arm64_sys_reboot", -1, NULL },
 	[SUSFS_HOOK_TARGET_SEQ_SHOW]			= { "seq_show", -1, NULL },
