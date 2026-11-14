@@ -3,6 +3,12 @@
  * Copyright (C) 2026 dere3046
  */
 
+/* Keep the engine's messages under the module's own prefix, so a dmesg line
+ * reads "susfs_guard_lkm: [lkmhook] ..." like every other layer's log. */
+#ifndef pr_fmt
+#define pr_fmt(fmt) "susfs_guard_lkm: " fmt
+#endif
+
 #include <linux/errno.h>
 #include <linux/list.h>
 #include <asm/tlbflush.h>

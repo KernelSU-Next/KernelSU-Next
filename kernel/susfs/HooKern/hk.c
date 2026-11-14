@@ -3,6 +3,11 @@
  * Copyright (C) 2026 dere3046
  */
 
+/* Keep the engine's messages under the module's own prefix. */
+#ifndef pr_fmt
+#define pr_fmt(fmt) "susfs_guard_lkm: " fmt
+#endif
+
 #include <linux/delay.h>
 #include <linux/errno.h>
 #include <linux/module.h>
