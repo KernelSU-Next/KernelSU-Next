@@ -49,14 +49,18 @@
 susfs_vfs_open_stub:
 	SUSFS_SAVE_REGS()
 	bl	susfs_vfs_open_decide
+	/* test the decision BEFORE restoring: x0 is reloaded with the target's
+	 * path argument by the restore, so a cbnz after it would test the
+	 * pointer and hide every open. */
+	cbz	w0, .Lallow
 	SUSFS_RESTORE_REGS()
-	cbnz	w0, .Lhide
+	mov	x0, #-2			/* -ENOENT */
+	ret
+.Lallow:
+	SUSFS_RESTORE_REGS()
 	ldr	x16, =susfs_vfs_open_tramp
 	ldr	x16, [x16]
 	ret	x16
-.Lhide:
-	mov	x0, #-2			/* -ENOENT */
-	ret
 	.size	susfs_vfs_open_stub, . - susfs_vfs_open_stub
 
 	.bss
