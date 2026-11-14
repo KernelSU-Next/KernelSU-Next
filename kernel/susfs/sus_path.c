@@ -62,6 +62,7 @@
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 
 #include "lsm_hook.h"
+#include "susfs_hooks.h"
 #include "fsnotify_lifetime.h"
 
 /* Bounce buffer for the dirent rewrite: one record at a time, so only a single
@@ -2686,6 +2687,31 @@ int sus_path_add_hidden(const char *path)
 	return sus_path_add_hidden_ex(path, false);
 }
 
+/* Registration wrappers: sus_path is the LSM backend's first consumer, so the
+ * centre owns the ksu_register_lsm_hook()/unregister pair just like it owns
+ * probe installation for the other layers. */
+#define SUS_PATH_REG(var, nm) \
+	static struct susfs_hook sus_path_reg_##var = { \
+		.owner = "sus_path", .name = nm, \
+		.target = SUSFS_HOOK_TARGET_LSM, \
+		.lsm = &sus_path_##var, \
+	}
+
+SUS_PATH_REG(getattr_hook, "inode_getattr");
+SUS_PATH_REG(perm_hook, "inode_permission");
+SUS_PATH_REG(unlink_hook, "inode_unlink");
+SUS_PATH_REG(rmdir_hook, "inode_rmdir");
+SUS_PATH_REG(rename_hook, "inode_rename");
+SUS_PATH_REG(link_hook, "inode_link");
+SUS_PATH_REG(statfs_hook, "sb_statfs");
+SUS_PATH_REG(setattr_hook, "inode_setattr");
+SUS_PATH_REG(getxattr_hook, "inode_getxattr");
+SUS_PATH_REG(listxattr_hook, "inode_listxattr");
+SUS_PATH_REG(setxattr_hook, "inode_setxattr");
+SUS_PATH_REG(removexattr_hook, "inode_removexattr");
+SUS_PATH_REG(notify_hook, "path_notify");
+SUS_PATH_REG(readlink_hook, "inode_readlink");
+
 /* Whether the path-based layer actually installed: both hooks must be patched, or stat and open
  * would disagree with each other. */
 bool sus_path_lsm_active(void)
@@ -2731,8 +2757,8 @@ int sus_path_init(void)
      * mechanism - a registered path is hidden only because this layer answers ENOENT.  A failure
      * here used to be a warning with a zero return, so add_sus_path() reported success while
      * nothing was hidden; loading now fails instead. */
-    rc = ksu_register_lsm_hook(&sus_path_getattr_hook);
-    if (rc) {
+    rc = susfs_hook_register(&sus_path_reg_getattr_hook);
+    if (rc < 0) {
         pr_err("sus_path: getattr hook failed %d - nothing would be hidden, refusing to load\n", rc);
         /* The scratch buffer is already allocated; the caller is about to fail the load, and a
          * vmalloc'd buffer is not part of the module's own memory, so nobody else would free it. */
@@ -2743,10 +2769,10 @@ int sus_path_init(void)
     SUSFS_LOGI("sus_path: getattr hook inserted ahead of the chain (node %px)\n",
             (void *)sus_path_getattr_hook.entry);
 
-    rc = ksu_register_lsm_hook(&sus_path_perm_hook);
-    if (rc) {
+    rc = susfs_hook_register(&sus_path_reg_perm_hook);
+    if (rc < 0) {
         pr_err("sus_path: perm hook failed %d - nothing would be hidden, refusing to load\n", rc);
-        ksu_unregister_lsm_hook(&sus_path_getattr_hook);
+        susfs_hook_unregister(&sus_path_reg_getattr_hook);
         kvfree(dirent_tmp);
         dirent_tmp = NULL;
         return rc;
@@ -2758,31 +2784,31 @@ int sus_path_init(void)
      * can delete or rename a hidden file, and a hidden file can still be probed or modified through
      * statfs/xattr/inotify - or answered with EPERM/EACCES, which says it exists. */
     {
-        struct ksu_lsm_hook *extra[] = {
-            &sus_path_unlink_hook, &sus_path_rmdir_hook,
-            &sus_path_rename_hook, &sus_path_link_hook,
-            &sus_path_statfs_hook, &sus_path_setattr_hook,
-            &sus_path_getxattr_hook, &sus_path_listxattr_hook,
-            &sus_path_setxattr_hook, &sus_path_removexattr_hook,
-            &sus_path_notify_hook,
-            &sus_path_readlink_hook,
+        struct susfs_hook *extra[] = {
+            &sus_path_reg_unlink_hook, &sus_path_reg_rmdir_hook,
+            &sus_path_reg_rename_hook, &sus_path_reg_link_hook,
+            &sus_path_reg_statfs_hook, &sus_path_reg_setattr_hook,
+            &sus_path_reg_getxattr_hook, &sus_path_reg_listxattr_hook,
+            &sus_path_reg_setxattr_hook, &sus_path_reg_removexattr_hook,
+            &sus_path_reg_notify_hook,
+            &sus_path_reg_readlink_hook,
         };
         int i;
 
         for (i = 0; i < (int)ARRAY_SIZE(extra); i++) {
-            rc = ksu_register_lsm_hook(extra[i]);
-            if (rc) {
+            rc = susfs_hook_register(extra[i]);
+            if (rc < 0) {
                 /* Not fatal - the core two hooks are up, so a hidden path is still hidden -
                  * but one class of operation is NOT covered, so it is counted and named in
                  * hide_list rather than only logged. */
                 if (!n_lsm_ext_fail)
-                    first_lsm_ext_fail = extra[i]->head_name;
+                    first_lsm_ext_fail = extra[i]->name;
                 n_lsm_ext_fail++;
                 pr_warn("sus_path: %s hook failed %d - that operation will not be covered\n",
-                        extra[i]->head_name, rc);
+                        extra[i]->name, rc);
             } else {
                 SUSFS_LOGI("sus_path: %s hook inserted ahead of the chain (node %px)\n",
-                        extra[i]->head_name, (void *)extra[i]->entry);
+                        extra[i]->name, (void *)extra[i]->lsm->entry);
             }
         }
         if (n_lsm_ext_fail)
@@ -2870,26 +2896,26 @@ void sus_path_exit(void)
     /* No walk can be in flight now, so the borrowed creds are ours to release. */
     sus_path_drop_caller_cred();
     if (sus_path_perm_hook.entry)
-        ksu_unregister_lsm_hook(&sus_path_perm_hook);
+        susfs_hook_unregister(&sus_path_reg_perm_hook);
     {
-        struct ksu_lsm_hook *extra[] = {
-            &sus_path_unlink_hook, &sus_path_rmdir_hook,
-            &sus_path_rename_hook, &sus_path_link_hook,
-            &sus_path_statfs_hook, &sus_path_setattr_hook,
-            &sus_path_getxattr_hook, &sus_path_listxattr_hook,
-            &sus_path_setxattr_hook, &sus_path_removexattr_hook,
-            &sus_path_notify_hook,
-            &sus_path_readlink_hook,
+        struct susfs_hook *extra[] = {
+            &sus_path_reg_unlink_hook, &sus_path_reg_rmdir_hook,
+            &sus_path_reg_rename_hook, &sus_path_reg_link_hook,
+            &sus_path_reg_statfs_hook, &sus_path_reg_setattr_hook,
+            &sus_path_reg_getxattr_hook, &sus_path_reg_listxattr_hook,
+            &sus_path_reg_setxattr_hook, &sus_path_reg_removexattr_hook,
+            &sus_path_reg_notify_hook,
+            &sus_path_reg_readlink_hook,
         };
         int i;
 
         for (i = 0; i < (int)ARRAY_SIZE(extra); i++) {
-            if (extra[i]->entry)
-                ksu_unregister_lsm_hook(extra[i]);
+            if (extra[i]->lsm->entry)
+                susfs_hook_unregister(extra[i]);
         }
     }
     if (sus_path_getattr_hook.entry)
-        ksu_unregister_lsm_hook(&sus_path_getattr_hook);
+        susfs_hook_unregister(&sus_path_reg_getattr_hook);
 
     kvfree(dirent_tmp);
     dirent_tmp = NULL;
