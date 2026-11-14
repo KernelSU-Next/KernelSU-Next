@@ -2839,29 +2839,32 @@ int sus_path_init(void)
     SUSFS_LOGI("sus_path: dirent rewrite rides the stat layer's table entries (no probe of its own)\n");
 
 
-    /* Priority: filename_lookup > path_lookupat > vfs_open > LSM.  Only the
-     * first face that installs is armed; the lower ones are skipped, so the
-     * cost is paid once and the LSM chain is only used when no inline is
-     * available at all.  Every face answers ENOENT for a hidden inode. */
+    /* Lookup layer first: filename_lookup > path_lookupat > vfs_open > LSM.
+     * The two lookup faces are BOTH tried and both kept, because their call
+     * sets are not identical on every tree (measured on 5.15: filename_lookup's
+     * probe fires for statx, while the stat path still goes through
+     * path_lookupat).  vfs_open and the LSM set are only used when neither
+     * lookup face could be armed.  Every face answers ENOENT for a hidden
+     * inode. */
     if (vfs_inline) {
         sus_path_lookup_file_hooked =
             !susfs_hook_register_assign(&sus_path_lookup_file,
                                         SUSFS_HOOK_BACKEND_INLINE);
-        if (sus_path_lookup_file_hooked) {
+        if (sus_path_lookup_file_hooked)
             SUSFS_LOGI("sus_path: filename_lookup answered at the VFS layer (inline)\n");
-        } else {
-            sus_path_lookup_hooked =
-                !susfs_hook_register_assign(&sus_path_lookup_vfs,
+
+        sus_path_lookup_hooked =
+            !susfs_hook_register_assign(&sus_path_lookup_vfs,
+                                        SUSFS_HOOK_BACKEND_INLINE);
+        if (sus_path_lookup_hooked)
+            SUSFS_LOGI("sus_path: path_lookupat answered at the VFS layer (inline)\n");
+
+        if (!sus_path_lookup_file_hooked && !sus_path_lookup_hooked) {
+            sus_path_open_hooked =
+                !susfs_hook_register_assign(&sus_path_open_vfs,
                                             SUSFS_HOOK_BACKEND_INLINE);
-            if (sus_path_lookup_hooked) {
-                SUSFS_LOGI("sus_path: path_lookupat answered at the VFS layer (inline)\n");
-            } else {
-                sus_path_open_hooked =
-                    !susfs_hook_register_assign(&sus_path_open_vfs,
-                                                SUSFS_HOOK_BACKEND_INLINE);
-                if (sus_path_open_hooked)
-                    SUSFS_LOGI("sus_path: vfs_open answered at the VFS layer (inline)\n");
-            }
+            if (sus_path_open_hooked)
+                SUSFS_LOGI("sus_path: vfs_open answered at the VFS layer (inline)\n");
         }
     }
     if (!sus_path_lookup_file_hooked && !sus_path_lookup_hooked &&
