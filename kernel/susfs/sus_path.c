@@ -2759,6 +2759,8 @@ static struct susfs_hook sus_path_open_vfs = {
 static bool sus_path_lookup_hooked;
 static atomic_t n_lookup_enter = ATOMIC_INIT(0);
 
+static atomic_t n_lookup_hidden = ATOMIC_INIT(0);
+
 static int sus_path_lookup_pre(void *p)
 {
 	struct susfs_inode_ctx *ctx = p;
@@ -2769,6 +2771,10 @@ static int sus_path_lookup_pre(void *p)
 			ctx->inode ? (unsigned long)ctx->inode->i_ino : 0UL,
 			ctx->inode ? (unsigned int)ctx->inode->i_sb->s_dev : 0U);
 	if (ctx->inode && sus_path_inode_hidden(ctx->inode)) {
+		if (atomic_inc_return(&n_lookup_hidden) <= 5)
+			pr_info("sus_path: lookup hidden ino=%lu dev=%u\n",
+				(unsigned long)ctx->inode->i_ino,
+				(unsigned int)ctx->inode->i_sb->s_dev);
 		atomic_inc(&n_enoent_perm);
 		ctx->ret = -ENOENT;
 		return 1;
