@@ -310,6 +310,33 @@ long __nocfi susfs_filename_lookup_decide(unsigned long *saved)
 				   SUSFS_HOOK_TARGET_FILENAME_LOOKUP);
 }
 
+/* path_openat returns struct file *, not a path: the decision runs after the
+ * body returned, so it can fput a hidden file and hand back ERR_PTR(-ENOENT). */
+extern void susfs_path_openat_stub(void);
+extern unsigned long susfs_path_openat_tramp;
+
+long __nocfi susfs_path_openat_decide(unsigned long *saved)
+{
+	struct file *file = (struct file *)saved[20];
+	struct susfs_inode_ctx ctx = { .inode = NULL, .ret = 0 };
+	unsigned int i;
+	int skip = 0;
+
+	if (IS_ERR_OR_NULL(file))
+		return (long)file;
+	ctx.inode = file_inode(file);
+	for (i = 0; i < CONSUMERS_MAX; i++) {
+		struct susfs_hook *c = READ_ONCE(targets[SUSFS_HOOK_TARGET_PATH_OPENAT].consumers[i]);
+
+		if (c && c->pre)
+			skip |= c->pre(&ctx);
+	}
+	if (!skip)
+		return (long)file;
+	fput(file);
+	return (long)ERR_PTR(-ENOENT);
+}
+
 /* Only a target with a centre-owned wrapper can be inline-hooked and can carry
  * more than one consumer.  Raw targets are installed per consumer. */
 static struct hook_target *target_of(enum susfs_hook_target target)
@@ -324,6 +351,7 @@ static struct hook_target *target_of(enum susfs_hook_target target)
 	    target != SUSFS_HOOK_TARGET_M_SHOW &&
 	    target != SUSFS_HOOK_TARGET_PATH_LOOKUPAT &&
 	    target != SUSFS_HOOK_TARGET_FILENAME_LOOKUP &&
+	    target != SUSFS_HOOK_TARGET_PATH_OPENAT &&
 	    target != SUSFS_HOOK_TARGET_SHOW_MAP &&
 	    target != SUSFS_HOOK_TARGET_SHOW_SMAP)
 		return NULL;
@@ -420,6 +448,16 @@ static int install_inline(struct hook_target *t, struct susfs_hook *h)
 		rc = hk_inline_hook_stub(&t->inline_hook, t->symbol,
 					 (unsigned long)susfs_filename_lookup_stub,
 					 &susfs_filename_lookup_tramp);
+		if (rc)
+			return SUSFS_HOOK_INSTALL_FAILED;
+		t->backend = BACKEND_INLINE;
+		t->installed = true;
+		return SUSFS_HOOK_OK;
+	}
+	if (t->slot == SUSFS_HOOK_PATH_OPENAT) {
+		rc = hk_inline_hook_stub(&t->inline_hook, t->symbol,
+					 (unsigned long)susfs_path_openat_stub,
+					 &susfs_path_openat_tramp);
 		if (rc)
 			return SUSFS_HOOK_INSTALL_FAILED;
 		t->backend = BACKEND_INLINE;
