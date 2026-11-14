@@ -2839,13 +2839,14 @@ int sus_path_init(void)
     SUSFS_LOGI("sus_path: dirent rewrite rides the stat layer's table entries (no probe of its own)\n");
 
 
-    /* Lookup layer first: filename_lookup > path_lookupat > vfs_open > LSM.
-     * The two lookup faces are BOTH tried and both kept, because their call
-     * sets are not identical on every tree (measured on 5.15: filename_lookup's
-     * probe fires for statx, while the stat path still goes through
-     * path_lookupat).  vfs_open and the LSM set are only used when neither
-     * lookup face could be armed.  Every face answers ENOENT for a hidden
-     * inode. */
+    /* Priority: filename_lookup > path_lookupat > vfs_* > LSM, with one
+     * measured caveat: open() does NOT go through filename_lookup or
+     * path_lookupat on this tree - it has its own do_filp_open/path_openat
+     * entry - so the lookup faces alone leave open() uncovered.  The lookup
+     * faces are therefore both armed (for stat/access/unlink/rename/xattr/
+     * readlink) AND vfs_open is armed for open(); the LSM set is only used
+     * when no inline face is available at all.  Every face answers ENOENT
+     * for a hidden inode. */
     if (vfs_inline) {
         sus_path_lookup_file_hooked =
             !susfs_hook_register_assign(&sus_path_lookup_file,
@@ -2859,13 +2860,11 @@ int sus_path_init(void)
         if (sus_path_lookup_hooked)
             SUSFS_LOGI("sus_path: path_lookupat answered at the VFS layer (inline)\n");
 
-        if (!sus_path_lookup_file_hooked && !sus_path_lookup_hooked) {
-            sus_path_open_hooked =
-                !susfs_hook_register_assign(&sus_path_open_vfs,
-                                            SUSFS_HOOK_BACKEND_INLINE);
-            if (sus_path_open_hooked)
-                SUSFS_LOGI("sus_path: vfs_open answered at the VFS layer (inline)\n");
-        }
+        sus_path_open_hooked =
+            !susfs_hook_register_assign(&sus_path_open_vfs,
+                                        SUSFS_HOOK_BACKEND_INLINE);
+        if (sus_path_open_hooked)
+            SUSFS_LOGI("sus_path: vfs_open answered at the VFS layer (inline)\n");
     }
     if (!sus_path_lookup_file_hooked && !sus_path_lookup_hooked &&
         !sus_path_open_hooked) {
