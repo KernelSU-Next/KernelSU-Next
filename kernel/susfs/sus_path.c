@@ -2728,7 +2728,11 @@ static atomic_t n_vfs_open_hidden = ATOMIC_INIT(0);
 static int sus_path_vfs_open_pre(void *p)
 {
 	struct susfs_inode_ctx *ctx = p;
-	int n = atomic_inc_return(&n_vfs_open_enter);
+	int n;
+
+	if (!READ_ONCE(sus_path_count))
+		return 0;
+	n = atomic_inc_return(&n_vfs_open_enter);
 
 	if (n <= 8)
 		pr_info("sus_path: vfs open enter #%d ino=%lu dev=%u\n", n,
@@ -2765,7 +2769,13 @@ static atomic_t n_lookup_hidden = ATOMIC_INIT(0);
 static int sus_path_lookup_pre(void *p)
 {
 	struct susfs_inode_ctx *ctx = p;
-	int n = atomic_inc_return(&n_lookup_enter);
+	int n;
+
+	/* Sparse case: with no rule the inline face must cost almost nothing, so
+	 * the count is checked before any counter or hash work. */
+	if (!READ_ONCE(sus_path_count))
+		return 0;
+	n = atomic_inc_return(&n_lookup_enter);
 
 	if (n <= 8)
 		pr_info("sus_path: path_lookupat enter #%d ino=%lu dev=%u\n", n,
