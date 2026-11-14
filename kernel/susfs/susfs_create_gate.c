@@ -38,6 +38,7 @@
 
 #include "susfs.h"
 #include "susfs_fp_hook.h"
+#include "susfs_hooks.h"
 #include "susfs_create_data.h"
 #include "susfs_create_policy.h"
 #include "susfs_create_vfs.h"
@@ -194,6 +195,8 @@ static struct susfs_fp_hook create_hooks[] = {
 	  .wrapper = create_wrap_linkat, .wrapper_compat = create_wrap_compat_linkat },
 };
 
+static struct susfs_hook create_reg[ARRAY_SIZE(create_hooks)];
+
 int susfs_create_gate_init(void)
 {
 	int installed = 0;
@@ -218,8 +221,12 @@ int susfs_create_gate_init(void)
 	for (i = 0; i < (int)ARRAY_SIZE(create_hooks); i++) {
 		struct susfs_fp_hook *h = &create_hooks[i];
 
-		rc = susfs_fp_install(h);
-		if (rc) {
+		create_reg[i].owner = "create_gate";
+		create_reg[i].name = h->name;
+		create_reg[i].target = SUSFS_HOOK_TARGET_FP;
+		create_reg[i].fp = h;
+		rc = susfs_hook_register(&create_reg[i]);
+		if (rc < 0) {
 			pr_warn("create_gate: %s not installed (%d) - that syscall answers the kernel's own way\n",
 				h->name, rc);
 			continue;
@@ -246,11 +253,9 @@ void susfs_create_gate_exit(void)
 	int i;
 
 	for (i = 0; i < (int)ARRAY_SIZE(create_hooks); i++) {
-		struct susfs_fp_hook *h = &create_hooks[i];
-
-		if (!h->installed)
+		if (create_reg[i].backend == SUSFS_HOOK_BACKEND_NONE)
 			continue;
-		susfs_fp_remove(h);
+		susfs_hook_unregister(&create_reg[i]);
 		armed++;
 	}
 	if (armed)
