@@ -541,6 +541,7 @@ static bool samsung_context_registered;
 static bool samsung_access_registered;
 static bool samsung_status_registered;
 static bool samsung_setprocattr_registered;
+static bool samsung_inode_setxattr_registered;
 
 static bool samsung_selinux_is_bypassed(void)
 {
@@ -559,21 +560,58 @@ static bool samsung_selinux_is_bypassed(void)
     return found;
 }
 
+static void samsung_selinux_bypass_push(struct samsung_selinux_bypass *bypass)
+{
+    unsigned long flags;
+
+    bypass->task = current;
+    spin_lock_irqsave(&samsung_selinux_bypass_lock, flags);
+    hash_add(samsung_selinux_bypass_tasks, &bypass->node, (unsigned long)current);
+    spin_unlock_irqrestore(&samsung_selinux_bypass_lock, flags);
+}
+
+static void samsung_selinux_bypass_pop(struct samsung_selinux_bypass *bypass)
+{
+    unsigned long flags;
+
+    spin_lock_irqsave(&samsung_selinux_bypass_lock, flags);
+    hash_del(&bypass->node);
+    spin_unlock_irqrestore(&samsung_selinux_bypass_lock, flags);
+}
+
 static int samsung_setprocattr(const char *name, void *value, size_t size)
 {
-    struct samsung_selinux_bypass bypass = { .task = current };
-    unsigned long flags;
+    struct samsung_selinux_bypass bypass;
     int ret;
 
-    spin_lock_irqsave(&samsung_selinux_bypass_lock, flags);
-    hash_add(samsung_selinux_bypass_tasks, &bypass.node, (unsigned long)current);
-    spin_unlock_irqrestore(&samsung_selinux_bypass_lock, flags);
-
+    samsung_selinux_bypass_push(&bypass);
     ret = my_setprocattr(name, value, size);
+    samsung_selinux_bypass_pop(&bypass);
+    return ret;
+}
 
-    spin_lock_irqsave(&samsung_selinux_bypass_lock, flags);
-    hash_del(&bypass.node);
-    spin_unlock_irqrestore(&samsung_selinux_bypass_lock, flags);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+static int samsung_inode_setxattr(struct mnt_idmap *idmap, struct dentry *dentry, const char *name,
+                                  const void *value, size_t size, int flags)
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
+static int samsung_inode_setxattr(struct user_namespace *mnt_userns, struct dentry *dentry, const char *name,
+                                  const void *value, size_t size, int flags)
+#else
+static int samsung_inode_setxattr(struct dentry *dentry, const char *name, const void *value, size_t size, int flags)
+#endif
+{
+    struct samsung_selinux_bypass bypass;
+    int ret;
+
+    samsung_selinux_bypass_push(&bypass);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
+    ret = my_inode_setxattr(idmap, dentry, name, value, size, flags);
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
+    ret = my_inode_setxattr(mnt_userns, dentry, name, value, size, flags);
+#else
+    ret = my_inode_setxattr(dentry, name, value, size, flags);
+#endif
+    samsung_selinux_bypass_pop(&bypass);
     return ret;
 }
 
@@ -613,10 +651,20 @@ static int samsung_setprocattr_pre(struct kprobe *probe, struct pt_regs *regs)
     return 1;
 }
 
+static int samsung_inode_setxattr_pre(struct kprobe *probe, struct pt_regs *regs)
+{
+    (void)probe;
+    if (current_uid().val < 10000 || samsung_selinux_is_bypassed())
+        return 0;
+    instruction_pointer_set(regs, (unsigned long)samsung_inode_setxattr);
+    return 1;
+}
+
 static struct kprobe samsung_context_kprobe = { .pre_handler = samsung_context_pre };
 static struct kprobe samsung_access_kprobe = { .pre_handler = samsung_access_pre };
 static struct kprobe samsung_status_kprobe = { .pre_handler = samsung_status_pre };
 static struct kprobe samsung_setprocattr_kprobe = { .pre_handler = samsung_setprocattr_pre };
+static struct kprobe samsung_inode_setxattr_kprobe = { .pre_handler = samsung_inode_setxattr_pre };
 
 static int samsung_register_kprobe(struct kprobe *probe, void *target, bool *registered)
 {
@@ -737,7 +785,20 @@ static int ksu_selinux_hide_enable()
         goto unhook;
     }
 
+#if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(CONFIG_KRETPROBES) && \
+    defined(__aarch64__)
+    if (ksu_samsung_device_detected()) {
+        void *target = (void *)find_kernel_symbol_exact("selinux_inode_setxattr");
+        ret = samsung_register_kprobe(
+            &samsung_inode_setxattr_kprobe,
+            target ?: selinux_inode_setxattr_hook.original,
+            &samsung_inode_setxattr_registered);
+    } else {
+        ret = ksu_lsm_hook(&selinux_inode_setxattr_hook);
+    }
+#else
     ret = ksu_lsm_hook(&selinux_inode_setxattr_hook);
+#endif
     if (ret) {
         pr_err("selinux_hide: init: selinux_inode_setxattr_hook err: %d\n", ret);
         goto unhook;
@@ -755,6 +816,8 @@ static void ksu_selinux_hide_unhook()
 #if defined(CONFIG_KSU_SAMSUNG_RKP) && defined(CONFIG_KRETPROBES) && \
     defined(__aarch64__)
     if (ksu_samsung_device_detected()) {
+        samsung_unregister_kprobe(&samsung_inode_setxattr_kprobe,
+                      &samsung_inode_setxattr_registered);
         samsung_unregister_kprobe(&samsung_setprocattr_kprobe,
                       &samsung_setprocattr_registered);
         samsung_unregister_kprobe(&samsung_access_kprobe,
@@ -763,6 +826,7 @@ static void ksu_selinux_hide_unhook()
                       &samsung_context_registered);
         samsung_unregister_kprobe(&samsung_status_kprobe,
                       &samsung_status_registered);
+        selinux_inode_setxattr_hook.original = NULL;
         selinux_setprocattr_hook.original = NULL;
         orig_access_write = NULL;
         orig_context_write = NULL;
