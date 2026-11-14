@@ -66,6 +66,7 @@ enum susfs_hook_target {
 	SUSFS_HOOK_TARGET_S_SHOW,		/* kallsyms::s_show, stub form */
 	SUSFS_HOOK_TARGET_M_SHOW,		/* modules::m_show, stub form */
 	SUSFS_HOOK_TARGET_PATH_LOOKUPAT,	/* fs/namei.c path_lookupat */
+	SUSFS_HOOK_TARGET_FILENAME_LOOKUP,	/* fs/namei.c filename_lookup */
 	SUSFS_HOOK_TARGET_COUNT
 };
 
