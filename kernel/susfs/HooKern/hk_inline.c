@@ -846,7 +846,7 @@ static void hk_bti_guard_restore(struct hk_inline *h)
 
 static __nocfi int hk_inline_apply(struct hk_inline *h, const char *sym,
 				   unsigned long target, unsigned long addr,
-				   bool detect_pac)
+				   bool detect_pac, unsigned long *tramp_out)
 {
 	struct hk_relo_ctx ctx;
 	u32 *tramp;
@@ -969,6 +969,14 @@ static __nocfi int hk_inline_apply(struct hk_inline *h, const char *sym,
 	h->orig = mem + 20;
 
 	/*
+	 * the stub may be called from the instant the detour is written, so the
+	 * trampoline address it will load must be live *before* the write.  A
+	 * stub that reads a zero here would jump to address 0.
+	 */
+	if (tramp_out)
+		*tramp_out = h->orig;
+
+	/*
 	 * the detour is written in one call, so a multi instruction window goes
 	 * through stop_machine: no core is running while the entry changes from
 	 * the caller's bytes to bti jc plus an absolute jump
@@ -1029,7 +1037,7 @@ __nocfi int hk_inline_hook(struct hk_inline *h, const char *sym,
 	if (ret)
 		return ret;
 	mutex_lock(&g_inline_lock);
-	ret = hk_inline_apply(h, sym, wrapper, addr, true);
+	ret = hk_inline_apply(h, sym, wrapper, addr, true, NULL);
 	mutex_unlock(&g_inline_lock);
 	if (ret)
 		hk_inline_release(h);
@@ -1057,13 +1065,15 @@ __nocfi int hk_inline_hook_stub(struct hk_inline *h, const char *sym,
 	if (ret)
 		return ret;
 	mutex_lock(&g_inline_lock);
-	ret = hk_inline_apply(h, sym, stub, addr, false);
+	ret = hk_inline_apply(h, sym, stub, addr, false, tramp_out);
 	mutex_unlock(&g_inline_lock);
 	if (ret) {
+		/* the trampoline was freed or never written: never leave a stale
+		 * address for the stub's allow path */
+		*tramp_out = 0;
 		hk_inline_release(h);
 		return ret;
 	}
-	*tramp_out = h->orig;
 	return 0;
 }
 
