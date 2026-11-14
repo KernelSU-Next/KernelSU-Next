@@ -2717,7 +2717,7 @@ SUS_PATH_REG(readlink_hook, "inode_readlink");
  * inode.  Experimental: the device check has not produced a confirmed hidden
  * open yet, so it is OFF unless the parameter asks for it and the LSM hooks
  * remain the only mechanism by default. */
-static bool sus_path_open_inline;
+static bool sus_path_open_hooked;
 static int vfs_inline;
 module_param(vfs_inline, int, 0644);
 static atomic_t n_vfs_open_enter = ATOMIC_INIT(0);

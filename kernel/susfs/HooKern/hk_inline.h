@@ -59,6 +59,18 @@ struct hk_inline {
  */
 int hk_inline_hook(struct hk_inline *h, const char *sym,
 		   const char *wrapper_sym);
+
+/*
+ * entry-stub form: the detour jumps to a caller-supplied assembly stub instead of a
+ * C wrapper, and *tramp_out receives the trampoline address the stub must jump to on
+ * its allow path.  The stub runs with the target's SP and LR untouched, so a target
+ * whose prologue signs its return address (paciasp) still works: the stub restores
+ * SP/LR before jumping to the trampoline, which replays the paciasp exactly as the
+ * real entry would.  This is the PAC-safe form; hk_inline_hook() refuses such an
+ * entry because its C wrapper would sign the wrong frame.
+ */
+int hk_inline_hook_stub(struct hk_inline *h, const char *sym,
+			unsigned long stub, unsigned long *tramp_out);
 /* restore the entry, -EIO when the write fails and the hook stays live. the
  * window is released with the restore, a later install may take it */
 int hk_inline_disable(struct hk_inline *h);
