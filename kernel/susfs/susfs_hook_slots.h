@@ -45,6 +45,11 @@
 	X(VFS_LISTXATTR,		vfs_listxattr)		\
 	X(VFS_SETXATTR,			vfs_setxattr)		\
 	X(VFS_REMOVEXATTR,		vfs_removexattr)	\
-	X(VFS_READLINK,			vfs_readlink)
+	X(VFS_READLINK,			vfs_readlink)		\
+	/* __get_user_pages_remote exists only before v6.2; from there the gup \
+	 * family goes through the exported get_user_pages_remote/ \
+	 * pin_user_pages_remote entries.  Both slots are probed; the one that is \
+	 * absent on a given kernel simply stays 0. */ \
+	X(PIN_USER_PAGES_REMOTE,	pin_user_pages_remote)
 
 #endif /* _SUSFS_HOOK_SLOTS_H */
