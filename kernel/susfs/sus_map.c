@@ -646,10 +646,21 @@ static struct kprobe kp_gup_remote = {
     .pre_handler = sus_map_vm_access_pre,
 };
 
-static struct kprobe kp_gup_remote_inner = {
+/* Before v6.2 both wrappers end in __get_user_pages_remote; from v6.2 that
+ * symbol is gone and the exported pin_user_pages_remote is the second landing
+ * pad (process_vm_readv reaches it).  One probe slot, two names, chosen by the
+ * kernel this module is built for. */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 2, 0)
+static struct kprobe kp_gup_inner = {
+    .symbol_name = "pin_user_pages_remote",
+    .pre_handler = sus_map_vm_access_pre,
+};
+#else
+static struct kprobe kp_gup_inner = {
     .symbol_name = "__get_user_pages_remote",
     .pre_handler = sus_map_vm_access_pre,
 };
+#endif
 
 static int sus_map_vm_access_pre(struct kprobe *kp, struct pt_regs *regs)
 {
@@ -665,7 +676,7 @@ static int sus_map_vm_access_pre(struct kprobe *kp, struct pt_regs *regs)
     if (!mm || !addr)
         return 0;
 
-    atomic_inc(kp == &kp_gup_remote_inner ? &n_gup_inner_calls : &n_gup_calls);
+    atomic_inc(kp == &kp_gup_inner ? &n_gup_inner_calls : &n_gup_calls);
 
     /* both callers hold mmap_read_lock: the *_remote contract of this primitive */
     vma = find_vma(mm, addr);
@@ -814,7 +825,7 @@ static struct susfs_hook map_files_hook = {
 /* Kept in one table so init and exit cannot drift apart. */
 static struct kprobe *const map_probes[] = {
     &kp_map, &kp_map_smap, &kp_map_outer, &kp_map_walk, &kp_map_walk_vma,
-    &kp_gup_remote, &kp_gup_remote_inner,
+    &kp_gup_remote, &kp_gup_inner,
 };
 #define N_MAP_PROBES ARRAY_SIZE(map_probes)
 
@@ -825,7 +836,7 @@ static const struct susfs_hook_probe map_hook_probes[] = {
     { .kp = &kp_map_walk },
     { .kp = &kp_map_walk_vma },
     { .kp = &kp_gup_remote },
-    { .kp = &kp_gup_remote_inner },
+    { .kp = &kp_gup_inner },
 };
 
 #define SUS_MAP_HOOK_DEF(idx, tgt, nm) \
@@ -834,13 +845,21 @@ static const struct susfs_hook_probe map_hook_probes[] = {
         .probes = &map_hook_probes[idx], .nprobes = 1, \
     }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 2, 0)
+#define SUS_MAP_GUP_INNER_TGT	SUSFS_HOOK_TARGET_PIN_USER_PAGES_REMOTE
+#define SUS_MAP_GUP_INNER_NAME	"pin_user_pages_remote"
+#else
+#define SUS_MAP_GUP_INNER_TGT	SUSFS_HOOK_TARGET_GET_USER_PAGES_REMOTE_INNER
+#define SUS_MAP_GUP_INNER_NAME	"__get_user_pages_remote"
+#endif
+
 SUS_MAP_HOOK_DEF(0, SUSFS_HOOK_TARGET_SHOW_MAP_VMA, "show_map_vma");
 SUS_MAP_HOOK_DEF(1, SUSFS_HOOK_TARGET_SHOW_SMAP, "show_smap");
 SUS_MAP_HOOK_DEF(2, SUSFS_HOOK_TARGET_SHOW_MAP, "show_map");
 SUS_MAP_HOOK_DEF(3, SUSFS_HOOK_TARGET_WALK_PAGE_RANGE, "walk_page_range");
 SUS_MAP_HOOK_DEF(4, SUSFS_HOOK_TARGET_WALK_PAGE_VMA, "walk_page_vma");
 SUS_MAP_HOOK_DEF(5, SUSFS_HOOK_TARGET_GET_USER_PAGES_REMOTE, "get_user_pages_remote");
-SUS_MAP_HOOK_DEF(6, SUSFS_HOOK_TARGET_GET_USER_PAGES_REMOTE_INNER, "__get_user_pages_remote");
+SUS_MAP_HOOK_DEF(6, SUS_MAP_GUP_INNER_TGT, SUS_MAP_GUP_INNER_NAME);
 
 static struct susfs_hook *const map_hooks[] = {
     &map_hook_0, &map_hook_1, &map_hook_2, &map_hook_3,

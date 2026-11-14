@@ -775,6 +775,7 @@ static const struct target_desc target_desc[SUSFS_HOOK_TARGET_COUNT] = {
 	[SUSFS_HOOK_TARGET_WALK_PAGE_VMA]		= { "walk_page_vma", 8, NULL },
 	[SUSFS_HOOK_TARGET_GET_USER_PAGES_REMOTE]	= { "get_user_pages_remote", 9, NULL },
 	[SUSFS_HOOK_TARGET_GET_USER_PAGES_REMOTE_INNER]	= { "__get_user_pages_remote", 10, NULL },
+	[SUSFS_HOOK_TARGET_PIN_USER_PAGES_REMOTE]	= { "pin_user_pages_remote", 35, NULL },
 	[SUSFS_HOOK_TARGET_MAP_FILES_GET_LINK]		= { "map_files_get_link", 11, NULL },
 	[SUSFS_HOOK_TARGET_D_PATH]			= { "d_path", 12, NULL },
 	[SUSFS_HOOK_TARGET_VFS_STATFS]			= { "vfs_statfs", 13, NULL },
