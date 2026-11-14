@@ -24,6 +24,7 @@
 #include <linux/dcache.h>
 #include <linux/fs.h>
 #include <linux/kprobes.h>
+#include <linux/seq_file.h>
 #include <linux/mutex.h>
 #include <linux/string.h>
 #include "susfs_hooks.h"
@@ -31,6 +32,7 @@
 #include "susfs_fp_hook.h"
 #include "susfs_kprobe.h"
 #include "susfs_log.h"
+#include "patch_memory.h"
 #include "lsm_hook.h"
 #include "hk.h"
 #include "hk_inline.h"
@@ -43,6 +45,7 @@ enum hook_backend {
 	BACKEND_INLINE,
 	BACKEND_KPROBE,
 	BACKEND_FP,
+	BACKEND_TABLE,
 };
 
 struct hook_target {
@@ -55,6 +58,7 @@ struct hook_target {
 	unsigned int nconsumers;
 	struct hk_inline inline_hook;
 	struct kprobe kp;
+	struct susfs_hook *hook;		/* first consumer, for raw fallback */
 };
 
 static struct hook_target targets[SUSFS_HOOK_TARGET_COUNT];
@@ -254,7 +258,12 @@ static struct hook_target *target_of(enum susfs_hook_target target)
 		return NULL;
 	if (!target_is_avc(target) &&
 	    target != SUSFS_HOOK_TARGET_INODE_PERMISSION &&
-	    target != SUSFS_HOOK_TARGET_VFS_OPEN)
+	    target != SUSFS_HOOK_TARGET_VFS_OPEN &&
+	    target != SUSFS_HOOK_TARGET_ARM64_SYS_NEWUNAME &&
+	    target != SUSFS_HOOK_TARGET_S_SHOW &&
+	    target != SUSFS_HOOK_TARGET_M_SHOW &&
+	    target != SUSFS_HOOK_TARGET_SHOW_MAP &&
+	    target != SUSFS_HOOK_TARGET_SHOW_SMAP)
 		return NULL;
 	return &targets[target];
 }
@@ -298,10 +307,29 @@ static void remove_consumer(struct hook_target *t, struct susfs_hook *hook)
 	}
 }
 
-static int install_inline(struct hook_target *t)
+/* The uname layer keeps its wrapper and orig pointer here so this file does not
+ * need the feature's internals: install_inline() hands the trampoline over. */
+extern long susfs_uname_wrap(const struct pt_regs *regs);
+extern long (*susfs_uname_orig)(const struct pt_regs *regs);
+
+static int install_inline(struct hook_target *t, struct susfs_hook *h)
 {
 	int rc;
 
+	t->hook = h;
+	/* The table-identity callbacks have no map slot: their symbol is resolved
+	 * by the feature and installed through the PAC-safe stub form. */
+	if (t->slot == SUSFS_HOOK_S_SHOW || t->slot == SUSFS_HOOK_M_SHOW) {
+		if (!h->stub || !h->tramp)
+			return SUSFS_HOOK_INSTALL_FAILED;
+		rc = hk_inline_hook_stub(&t->inline_hook, t->symbol,
+					 (unsigned long)h->stub, h->tramp);
+		if (rc)
+			return SUSFS_HOOK_INSTALL_FAILED;
+		t->backend = BACKEND_INLINE;
+		t->installed = true;
+		return SUSFS_HOOK_OK;
+	}
 	if (!susfs_hook_engine_active() || t->slot < 0 ||
 	    !susfs_hook_slot_enabled((enum susfs_hook_slot)t->slot))
 		return SUSFS_HOOK_INSTALL_FAILED;
@@ -319,6 +347,8 @@ static int install_inline(struct hook_target *t)
 		susfs_hook_override(t->wrapper, (unsigned long)avc_wrapper);
 	else if (t->slot == SUSFS_HOOK_INODE_PERMISSION)
 		susfs_hook_override(t->wrapper, (unsigned long)inode_perm_wrapper);
+	else if (t->slot == SUSFS_HOOK_ARM64_SYS_NEWUNAME)
+		susfs_hook_override(t->wrapper, (unsigned long)susfs_uname_wrap);
 	rc = hk_inline_hook(&t->inline_hook, t->symbol, t->wrapper);
 	if (rc)
 		return SUSFS_HOOK_INSTALL_FAILED;
@@ -326,6 +356,8 @@ static int install_inline(struct hook_target *t)
 		avc_orig = (avc_fn_t)t->inline_hook.orig;
 	else if (t->slot == SUSFS_HOOK_INODE_PERMISSION)
 		inode_perm_orig = (inode_perm_fn_t)t->inline_hook.orig;
+	else if (t->slot == SUSFS_HOOK_ARM64_SYS_NEWUNAME)
+		susfs_uname_orig = (long (*)(const struct pt_regs *))t->inline_hook.orig;
 	t->backend = BACKEND_INLINE;
 	t->installed = true;
 	return SUSFS_HOOK_OK;
@@ -355,8 +387,42 @@ static int __nocfi vfs_open_kprobe_pre(struct kprobe *p, struct pt_regs *regs)
 	return 1;
 }
 
-static int install_kprobe(struct hook_target *t)
+static int raw_probes_install(struct susfs_hook *h);
+static void raw_probes_uninstall(struct susfs_hook *h);
+
+static int install_table(struct hook_target *t, struct susfs_hook *h)
 {
+	struct seq_operations *op = h->seq_op;
+
+	t->hook = h;
+	if (!op || !h->seq_wrap)
+		return SUSFS_HOOK_INSTALL_FAILED;
+	h->seq_orig = (void *)READ_ONCE(op->show);
+	if (!h->seq_orig)
+		return SUSFS_HOOK_INSTALL_FAILED;
+	if (ksu_patch_text((void *)&op->show, &h->seq_wrap,
+			   sizeof(h->seq_wrap), KSU_PATCH_TEXT_FLUSH_DCACHE))
+		return SUSFS_HOOK_INSTALL_FAILED;
+	t->backend = BACKEND_TABLE;
+	t->installed = true;
+	return SUSFS_HOOK_OK;
+}
+
+static int install_kprobe(struct hook_target *t, struct susfs_hook *h)
+{
+	int rc;
+
+	t->hook = h;
+	/* A structured target may still fall back to the feature's own probe set
+	 * (uname's kretprobe): the centre installs it, the handler stays there. */
+	if (h->probes && h->nprobes) {
+		rc = raw_probes_install(h);
+		if (rc != SUSFS_HOOK_OK && rc != SUSFS_HOOK_FALLBACK)
+			return SUSFS_HOOK_INSTALL_FAILED;
+		t->backend = BACKEND_KPROBE;
+		t->installed = true;
+		return SUSFS_HOOK_OK;
+	}
 	t->kp.symbol_name = t->symbol;
 	if (t->slot == SUSFS_HOOK_SLOW_AVC_AUDIT)
 		t->kp.pre_handler = avc_kprobe_pre;
@@ -379,8 +445,21 @@ static void uninstall_target(struct hook_target *t)
 		return;
 	if (t->backend == BACKEND_INLINE)
 		hk_inline_unhook(&t->inline_hook);
-	else if (t->backend == BACKEND_KPROBE)
-		unregister_kprobe(&t->kp);
+	else if (t->backend == BACKEND_KPROBE) {
+		if (t->hook && t->hook->probes && t->hook->nprobes)
+			raw_probes_uninstall(t->hook);
+		else
+			unregister_kprobe(&t->kp);
+	} else if (t->backend == BACKEND_TABLE) {
+		struct susfs_hook *h = t->hook;
+
+		if (h && h->seq_op && h->seq_orig &&
+		    ksu_patch_text((void *)&h->seq_op->show, &h->seq_orig,
+				   sizeof(h->seq_orig),
+				   KSU_PATCH_TEXT_FLUSH_DCACHE))
+			pr_warn("susfs_hooks: %s table restore failed\n",
+				h->name);
+	}
 	t->backend = BACKEND_NONE;
 	t->installed = false;
 }
@@ -568,12 +647,12 @@ int susfs_hook_register(struct susfs_hook *hook)
 		mutex_unlock(&susfs_hooks_lock);
 		return rc;
 	}
-	rc = install_inline(t);
+	rc = install_inline(t, hook);
 	if (rc == SUSFS_HOOK_OK) {
 		mutex_unlock(&susfs_hooks_lock);
 		return rc;
 	}
-	rc = install_kprobe(t);
+	rc = install_kprobe(t, hook);
 	mutex_unlock(&susfs_hooks_lock);
 	if (rc == SUSFS_HOOK_OK)
 		return SUSFS_HOOK_FALLBACK;
@@ -627,7 +706,8 @@ int susfs_hook_register_assign(struct susfs_hook *hook,
 	mutex_lock(&susfs_hooks_lock);
 	if (t->installed) {
 		int same = (backend == SUSFS_HOOK_BACKEND_INLINE && t->backend == BACKEND_INLINE) ||
-			   (backend == SUSFS_HOOK_BACKEND_KPROBE && t->backend == BACKEND_KPROBE);
+			   (backend == SUSFS_HOOK_BACKEND_KPROBE && t->backend == BACKEND_KPROBE) ||
+			   (backend == SUSFS_HOOK_BACKEND_TABLE && t->backend == BACKEND_TABLE);
 		rc = same ? add_consumer(t, hook) : SUSFS_HOOK_INSTALL_FAILED;
 		mutex_unlock(&susfs_hooks_lock);
 		return rc;
@@ -638,9 +718,11 @@ int susfs_hook_register_assign(struct susfs_hook *hook,
 		return rc;
 	}
 	if (backend == SUSFS_HOOK_BACKEND_INLINE)
-		rc = install_inline(t);
+		rc = install_inline(t, hook);
 	else if (backend == SUSFS_HOOK_BACKEND_KPROBE)
-		rc = install_kprobe(t);
+		rc = install_kprobe(t, hook);
+	else if (backend == SUSFS_HOOK_BACKEND_TABLE)
+		rc = install_table(t, hook);
 	else
 		rc = SUSFS_HOOK_INSTALL_FAILED;
 	mutex_unlock(&susfs_hooks_lock);
@@ -703,7 +785,7 @@ static const struct target_desc target_desc[SUSFS_HOOK_TARGET_COUNT] = {
 	[SUSFS_HOOK_TARGET_GENERIC_SHUTDOWN_SUPER]	= { "generic_shutdown_super", 19, NULL },
 	[SUSFS_HOOK_TARGET_COPY_MNT_NS]			= { "copy_mnt_ns", 20, NULL },
 	[SUSFS_HOOK_TARGET_ATTACH_RECURSIVE_MNT]	= { "attach_recursive_mnt", 21, NULL },
-	[SUSFS_HOOK_TARGET_ARM64_SYS_NEWUNAME]		= { "__arm64_sys_newuname", 3, NULL },
+	[SUSFS_HOOK_TARGET_ARM64_SYS_NEWUNAME]		= { "__arm64_sys_newuname", 3, "susfs_uname_wrap" },
 	[SUSFS_HOOK_TARGET_VFS_OPEN]			= { "vfs_open", 0, NULL },
 	[SUSFS_HOOK_TARGET_PATH_OPENAT]			= { "path_openat", 1, NULL },
 	[SUSFS_HOOK_TARGET_ARM64_SYS_REBOOT]		= { "__arm64_sys_reboot", -1, NULL },
@@ -711,6 +793,8 @@ static const struct target_desc target_desc[SUSFS_HOOK_TARGET_COUNT] = {
 	[SUSFS_HOOK_TARGET_LSM]				= { NULL, -1, NULL },
 	[SUSFS_HOOK_TARGET_FP]				= { NULL, -1, NULL },
 	[SUSFS_HOOK_TARGET_INODE_PERMISSION]		= { "inode_permission", 24, "susfs_inode_perm_wrapper" },
+	[SUSFS_HOOK_TARGET_S_SHOW]			= { "s_show", -1, NULL },
+	[SUSFS_HOOK_TARGET_M_SHOW]			= { "m_show", -1, NULL },
 };
 
 int susfs_hooks_init(void)

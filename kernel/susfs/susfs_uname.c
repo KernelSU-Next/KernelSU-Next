@@ -19,6 +19,7 @@
 #include "susfs.h"	/* susfs_abi_path_ok */
 #include "susfs_kprobe.h"
 #include "susfs_hook_engine.h"
+#include "susfs_hooks.h"
 #include "hk.h"
 #include "hk_inline.h"
 
@@ -30,9 +31,9 @@ static bool uname_spoof_enabled;
 
 /* Inline route for map bit ARM64_SYS_NEWUNAME.  It uses the same user pointer
  * extraction as the kretprobe entry: on this GKI shape the syscall wrapper's
- * pt_regs->regs[0] is the struct pt_regs* of the user call. */
-static struct hk_inline uname_hook;
-static long (*uname_orig)(const struct pt_regs *);
+ * pt_regs->regs[0] is the struct pt_regs* of the user call.  The trampoline is
+ * published by the centre, which owns the installation. */
+long (*susfs_uname_orig)(const struct pt_regs *);
 static bool uname_inline;
 
 static long __visible __nocfi noinline
@@ -41,9 +42,9 @@ susfs_uname_wrap(const struct pt_regs *regs)
 	long ret;
 	void __user *name;
 
-	if (!uname_orig)
+	if (!susfs_uname_orig)
 		return -ENOSYS;
-	ret = uname_orig(regs);
+	ret = susfs_uname_orig(regs);
 	if (ret || !uname_spoof_enabled)
 		return ret;
 	/* HooKern enters the wrapper with the target's own argument in x0, i.e.
@@ -116,6 +117,15 @@ static struct kretprobe krp = {
 
 static bool uname_registered;
 
+static const struct susfs_hook_probe uname_probe = { .kr = &krp };
+static struct susfs_hook uname_hook = {
+	.owner = "uname",
+	.name = "newuname",
+	.target = SUSFS_HOOK_TARGET_ARM64_SYS_NEWUNAME,
+	.probes = &uname_probe,
+	.nprobes = 1,
+};
+
 /* Serialises the arm/disarm pair - the full reasoning is in susfs_avc_spoof.c's avc_ctl_lock:
  * register_kprobe() answers -EINVAL once another task has resolved .addr, and the failure branch
  * below clears .addr - which, without this lock, disarms a probe that is LIVE without ever
@@ -132,38 +142,20 @@ static int uname_register(void)
         mutex_unlock(&uname_ctl_lock);
         return 0;
     }
-    if (susfs_hook_engine_active() &&
-        susfs_hook_slot_enabled(SUSFS_HOOK_ARM64_SYS_NEWUNAME)) {
-        susfs_hook_override("susfs_uname_wrap",
-                            (unsigned long)susfs_uname_wrap);
-        rc = hk_inline_hook(&uname_hook, "__arm64_sys_newuname",
-                            "susfs_uname_wrap");
-        if (!rc) {
-            uname_orig = (long (*)(const struct pt_regs *))uname_hook.orig;
-            uname_inline = true;
-            uname_registered = true;
-            mutex_unlock(&uname_ctl_lock);
-            SUSFS_LOGI("uname spoof armed inline: release=%s version=%s\n",
-                    fake_release, fake_version);
-            return 0;
-        }
-        pr_warn("uname spoof: inline __arm64_sys_newuname failed %d - kretprobe fallback\n",
-                rc);
-    }
-
-    rc = register_kretprobe(&krp);
-    if (rc) {
-        /* CMD_SUSFS_SET_UNAME can be sent again after a failure, and the address the kernel
-         * resolved is already in the struct: without this the retry is refused with -EINVAL
-         * and the spoof can never be turned on - see susfs_kprobe.h.  Safe under the lock. */
-        susfs_krp_forget_addr(&krp);
+    rc = susfs_hook_register(&uname_hook);
+    if (rc < 0) {
         mutex_unlock(&uname_ctl_lock);
         return rc;
     }
     uname_registered = true;
+    uname_inline = (uname_hook.backend == SUSFS_HOOK_BACKEND_INLINE);
     mutex_unlock(&uname_ctl_lock);
-    SUSFS_LOGI("uname spoof armed: release=%s version=%s\n",
-            fake_release, fake_version);
+    if (uname_inline)
+        SUSFS_LOGI("uname spoof armed inline: release=%s version=%s\n",
+                fake_release, fake_version);
+    else
+        SUSFS_LOGI("uname spoof armed: release=%s version=%s\n",
+                fake_release, fake_version);
     return 0;
 }
 
@@ -174,17 +166,9 @@ static void uname_unregister(void)
         mutex_unlock(&uname_ctl_lock);
         return;
     }
-    if (uname_inline) {
-        hk_inline_unhook(&uname_hook);
-        uname_orig = NULL;
-        uname_inline = false;
-        uname_registered = false;
-        mutex_unlock(&uname_ctl_lock);
-        return;
-    }
-    unregister_kretprobe(&krp);
-    susfs_krp_forget_addr(&krp);
+    susfs_hook_unregister(&uname_hook);
     uname_registered = false;
+    uname_inline = false;
     mutex_unlock(&uname_ctl_lock);
 }
 
@@ -208,7 +192,7 @@ int susfs_uname_init(void)
         int rc = uname_register();
 
         if (rc)
-            pr_warn("register_kretprobe(newuname) failed %d\n", rc);
+            pr_warn("uname: hook registration failed %d\n", rc);
     } else {
         SUSFS_LOGI("uname spoof: disabled (enable via CMD_SUSFS_SET_UNAME)\n");
     }
