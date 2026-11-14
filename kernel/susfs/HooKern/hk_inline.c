@@ -894,6 +894,21 @@ static __nocfi int hk_inline_apply(struct hk_inline *h, const char *sym,
 		goto err_free;
 	}
 
+	/*
+	 * A body that signs its own return address cannot be entered through the
+	 * detour: the trampoline executes the original paciasp/pacibsp with the
+	 * wrapper's LR, and the autiasp later in the body authenticates a frame
+	 * the trampoline did not create - measured on 5.15 as
+	 * "Oops - FPAC" at vfs_open+0x664 (the autiasp).  Refuse instead of
+	 * arming a hook that panics on the first call.
+	 */
+	if (saved[0] == 0xD503233F || saved[0] == 0xD503237F ||
+	    saved[1] == 0xD503233F || saved[1] == 0xD503237F) {
+		pr_warn("[lkmhook] inline %s has a PAC prologue, refusing\n", sym);
+		ret = -EOPNOTSUPP;
+		goto err_free;
+	}
+
 	mem = (unsigned long)hk_exec_alloc(HK_TRAMP_SIZE);
 	if (!mem) {
 		pr_warn("[lkmhook] inline exec alloc %s failed\n", sym);
