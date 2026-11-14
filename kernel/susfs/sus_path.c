@@ -2824,10 +2824,10 @@ int sus_path_init(void)
             (void *)sus_path_perm_hook.entry);
 
     if (vfs_inline) {
-        sus_path_open_inline =
+        sus_path_open_hooked =
             !susfs_hook_register_assign(&sus_path_open_vfs,
                                         SUSFS_HOOK_BACKEND_INLINE);
-        if (sus_path_open_inline)
+        if (sus_path_open_hooked)
             SUSFS_LOGI("sus_path: vfs_open answered at the VFS layer (inline)\n");
         else
             pr_warn("sus_path: vfs_open inline unavailable - open still hidden through the LSM hooks\n");
@@ -2950,9 +2950,9 @@ void sus_path_exit(void)
     mutex_unlock(&sus_path_pending_lock);
     /* No walk can be in flight now, so the borrowed creds are ours to release. */
     sus_path_drop_caller_cred();
-    if (sus_path_open_inline) {
+    if (sus_path_open_hooked) {
         susfs_hook_unregister(&sus_path_open_vfs);
-        sus_path_open_inline = false;
+        sus_path_open_hooked = false;
     }
     if (sus_path_perm_hook.entry)
         susfs_hook_unregister(&sus_path_reg_perm_hook);
