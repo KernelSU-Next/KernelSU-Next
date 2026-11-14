@@ -2722,9 +2722,12 @@ static atomic_t n_vfs_perm_enter = ATOMIC_INIT(0);
 static int sus_path_vfs_perm_pre(void *p)
 {
 	struct susfs_inode_ctx *ctx = p;
+	int n = atomic_inc_return(&n_vfs_perm_enter);
 
-	if (atomic_inc_return(&n_vfs_perm_enter) == 1)
-		pr_info("sus_path: vfs inode_permission consumer entered\n");
+	if (n <= 3)
+		pr_info("sus_path: vfs perm enter #%d ino=%lu dev=%u\n", n,
+			ctx->inode ? (unsigned long)ctx->inode->i_ino : 0UL,
+			ctx->inode ? (unsigned int)ctx->inode->i_sb->s_dev : 0U);
 	if (ctx->inode && sus_path_inode_hidden(ctx->inode)) {
 		atomic_inc(&n_enoent_perm);
 		ctx->ret = -ENOENT;
