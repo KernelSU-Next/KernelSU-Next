@@ -1,26 +1,4 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/*
- * susfs_lookup_stub.S - return hooks for the fs/namei.c lookup faces.
- *
- * Both stubs are detour targets.  Each:
- *   1. saves x0-x18 and x30 on its own frame (176 bytes: the 160-byte argument
- *      window, the real return value at +160, and padding);
- *   2. calls its trampoline, which replays the overwritten prologue and falls
- *      into the rest of the body; the body returns to the instruction after
- *      the blr, because its epilogue restores the LR the stub's call left in
- *      x30;
- *   3. stores the real return value in the window and calls the C decision,
- *      which may replace it (ENOENT) after releasing the resolved path;
- *   4. restores the caller's LR and returns the decision's value.
- *
- * PAC/BTI: the trampoline replays paciasp with this stub's SP and LR, and the
- * body's autiasp authenticates exactly that pair - the same property that
- * makes the vfs_open/hide_syms stubs safe.  The saved window lives above the
- * body's frame (the body allocates below the stub's SP), so it stays intact.
- *
- * filename_lookup() and path_lookupat() differ only in which argument holds
- * the struct path *: x3 and x2 respectively, which the two C decisions know.
- */
 
 	.macro	SUSFS_SAVE_ARGS
 	sub	sp, sp, #176
