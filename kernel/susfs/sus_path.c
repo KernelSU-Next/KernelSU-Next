@@ -2718,7 +2718,7 @@ SUS_PATH_REG(readlink_hook, "inode_readlink");
  * open yet, so it is OFF unless the parameter asks for it and the LSM hooks
  * remain the only mechanism by default. */
 static bool sus_path_open_hooked;
-static int vfs_inline;
+static int vfs_inline = 1;
 module_param(vfs_inline, int, 0644);
 static atomic_t n_vfs_open_enter = ATOMIC_INIT(0);
 static atomic_t n_vfs_open_hidden = ATOMIC_INIT(0);
