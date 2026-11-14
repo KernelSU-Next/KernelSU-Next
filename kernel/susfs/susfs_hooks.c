@@ -29,6 +29,7 @@
 #include "susfs_fp_hook.h"
 #include "susfs_kprobe.h"
 #include "susfs_log.h"
+#include "lsm_hook.h"
 #include "hk.h"
 #include "hk_inline.h"
 
@@ -266,7 +267,7 @@ static void uninstall_target(struct hook_target *t)
 
 static bool raw_hook(const struct susfs_hook *h)
 {
-	return h->fp || h->probes;
+	return h->fp || h->probes || h->lsm;
 }
 
 static void raw_probes_rollback(struct susfs_hook *h, unsigned int upto)
@@ -359,6 +360,27 @@ static void raw_fp_uninstall(struct susfs_hook *h)
 	h->backend = SUSFS_HOOK_BACKEND_NONE;
 }
 
+static int raw_lsm_install(struct susfs_hook *h)
+{
+	int rc;
+
+	if (!h->lsm)
+		return SUSFS_HOOK_INSTALL_FAILED;
+	rc = ksu_register_lsm_hook(h->lsm);
+	if (rc)
+		return SUSFS_HOOK_INSTALL_FAILED;
+	h->installed = true;
+	h->backend = SUSFS_HOOK_BACKEND_LSM;
+	return SUSFS_HOOK_OK;
+}
+
+static void raw_lsm_uninstall(struct susfs_hook *h)
+{
+	ksu_unregister_lsm_hook(h->lsm);
+	h->installed = false;
+	h->backend = SUSFS_HOOK_BACKEND_NONE;
+}
+
 static int raw_install_auto(struct susfs_hook *h)
 {
 	int rc;
@@ -375,6 +397,8 @@ static int raw_install_auto(struct susfs_hook *h)
 		rc = raw_probes_install(h);
 		return rc == SUSFS_HOOK_OK ? SUSFS_HOOK_FALLBACK : rc;
 	}
+	if (h->lsm)
+		return raw_lsm_install(h);
 	return raw_probes_install(h);
 }
 
@@ -467,6 +491,9 @@ int susfs_hook_register_assign(struct susfs_hook *hook,
 			if (rc == SUSFS_HOOK_FALLBACK)
 				rc = SUSFS_HOOK_OK;
 			break;
+		case SUSFS_HOOK_BACKEND_LSM:
+			rc = raw_lsm_install(hook);
+			break;
 		default:
 			rc = SUSFS_HOOK_INSTALL_FAILED;
 			break;
@@ -514,6 +541,8 @@ void susfs_hook_unregister(struct susfs_hook *hook)
 				raw_fp_uninstall(hook);
 			else if (hook->backend == SUSFS_HOOK_BACKEND_KPROBE)
 				raw_probes_uninstall(hook);
+			else if (hook->backend == SUSFS_HOOK_BACKEND_LSM)
+				raw_lsm_uninstall(hook);
 		}
 		mutex_unlock(&susfs_hooks_lock);
 		return;
@@ -557,6 +586,7 @@ static const struct target_desc target_desc[SUSFS_HOOK_TARGET_COUNT] = {
 	[SUSFS_HOOK_TARGET_PATH_OPENAT]			= { "path_openat", 1, NULL },
 	[SUSFS_HOOK_TARGET_ARM64_SYS_REBOOT]		= { "__arm64_sys_reboot", -1, NULL },
 	[SUSFS_HOOK_TARGET_SEQ_SHOW]			= { "seq_show", -1, NULL },
+	[SUSFS_HOOK_TARGET_LSM]				= { NULL, -1, NULL },
 };
 
 int susfs_hooks_init(void)

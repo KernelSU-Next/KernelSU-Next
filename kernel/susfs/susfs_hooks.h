@@ -30,6 +30,7 @@ enum susfs_hook_backend {
 	SUSFS_HOOK_BACKEND_FP,
 	SUSFS_HOOK_BACKEND_KPROBE,
 	SUSFS_HOOK_BACKEND_INLINE,
+	SUSFS_HOOK_BACKEND_LSM,		/* security_hook_list insertion */
 	SUSFS_HOOK_BACKEND_TABLE,	/* seq_operations-style table replacement */
 };
 
@@ -58,6 +59,7 @@ enum susfs_hook_target {
 	SUSFS_HOOK_TARGET_PATH_OPENAT,
 	SUSFS_HOOK_TARGET_ARM64_SYS_REBOOT,
 	SUSFS_HOOK_TARGET_SEQ_SHOW,
+	SUSFS_HOOK_TARGET_LSM,		/* security_hook_list, one per hook */
 	SUSFS_HOOK_TARGET_COUNT
 };
 
@@ -89,6 +91,7 @@ struct susfs_show_map_ctx {
 struct susfs_fp_hook;
 struct kprobe;
 struct kretprobe;
+struct ksu_lsm_hook;
 
 /* One probe owned by a feature layer.  The centre installs and removes it; the
  * handler stays in the feature.  Exactly one of kp/kr is set.  A probe that is
@@ -116,6 +119,7 @@ struct susfs_hook {
 	struct susfs_fp_hook *fp;
 	const struct susfs_hook_probe *probes;
 	unsigned int nprobes;
+	struct ksu_lsm_hook *lsm;
 	/* Filled by the centre. */
 	enum susfs_hook_backend backend;
 	bool installed;
