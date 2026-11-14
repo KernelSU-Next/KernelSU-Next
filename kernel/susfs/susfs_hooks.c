@@ -169,13 +169,60 @@ static bool target_is_avc(enum susfs_hook_target target)
 	return target == SUSFS_HOOK_TARGET_AVC_AUDIT;
 }
 
+/* ---- structured target: VFS inode_permission (sus_path) ---- */
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
+typedef int (*inode_perm_fn_t)(void *idmap, struct inode *inode, int mask);
+static inode_perm_fn_t inode_perm_orig;
+
+static int __visible __nocfi noinline
+inode_perm_wrapper(void *idmap, struct inode *inode, int mask)
+{
+	struct susfs_inode_ctx ctx = { .inode = inode, .mask = mask, .ret = 0 };
+	unsigned int i;
+	int skip = 0;
+
+	for (i = 0; i < CONSUMERS_MAX; i++) {
+		struct susfs_hook *c = READ_ONCE(targets[SUSFS_HOOK_TARGET_INODE_PERMISSION].consumers[i]);
+
+		if (c && c->pre)
+			skip |= c->pre(&ctx);
+	}
+	if (skip)
+		return (int)ctx.ret;
+	return inode_perm_orig ? inode_perm_orig(idmap, inode, mask) : 0;
+}
+#else
+typedef int (*inode_perm_fn_t)(struct inode *inode, int mask);
+static inode_perm_fn_t inode_perm_orig;
+
+static int __visible __nocfi noinline
+inode_perm_wrapper(struct inode *inode, int mask)
+{
+	struct susfs_inode_ctx ctx = { .inode = inode, .mask = mask, .ret = 0 };
+	unsigned int i;
+	int skip = 0;
+
+	for (i = 0; i < CONSUMERS_MAX; i++) {
+		struct susfs_hook *c = READ_ONCE(targets[SUSFS_HOOK_TARGET_INODE_PERMISSION].consumers[i]);
+
+		if (c && c->pre)
+			skip |= c->pre(&ctx);
+	}
+	if (skip)
+		return (int)ctx.ret;
+	return inode_perm_orig ? inode_perm_orig(inode, mask) : 0;
+}
+#endif
+
 /* Only a target with a centre-owned wrapper can be inline-hooked and can carry
  * more than one consumer.  Raw targets are installed per consumer. */
 static struct hook_target *target_of(enum susfs_hook_target target)
 {
 	if ((unsigned int)target >= SUSFS_HOOK_TARGET_COUNT)
 		return NULL;
-	if (!target_is_avc(target))
+	if (!target_is_avc(target) &&
+	    target != SUSFS_HOOK_TARGET_INODE_PERMISSION)
 		return NULL;
 	return &targets[target];
 }
@@ -228,11 +275,15 @@ static int install_inline(struct hook_target *t)
 		return SUSFS_HOOK_INSTALL_FAILED;
 	if (t->slot == SUSFS_HOOK_SLOW_AVC_AUDIT)
 		susfs_hook_override(t->wrapper, (unsigned long)avc_wrapper);
+	else if (t->slot == SUSFS_HOOK_INODE_PERMISSION)
+		susfs_hook_override(t->wrapper, (unsigned long)inode_perm_wrapper);
 	rc = hk_inline_hook(&t->inline_hook, t->symbol, t->wrapper);
 	if (rc)
 		return SUSFS_HOOK_INSTALL_FAILED;
 	if (t->slot == SUSFS_HOOK_SLOW_AVC_AUDIT)
 		avc_orig = (avc_fn_t)t->inline_hook.orig;
+	else if (t->slot == SUSFS_HOOK_INODE_PERMISSION)
+		inode_perm_orig = (inode_perm_fn_t)t->inline_hook.orig;
 	t->backend = BACKEND_INLINE;
 	t->installed = true;
 	return SUSFS_HOOK_OK;
@@ -587,6 +638,7 @@ static const struct target_desc target_desc[SUSFS_HOOK_TARGET_COUNT] = {
 	[SUSFS_HOOK_TARGET_ARM64_SYS_REBOOT]		= { "__arm64_sys_reboot", -1, NULL },
 	[SUSFS_HOOK_TARGET_SEQ_SHOW]			= { "seq_show", -1, NULL },
 	[SUSFS_HOOK_TARGET_LSM]				= { NULL, -1, NULL },
+	[SUSFS_HOOK_TARGET_INODE_PERMISSION]		= { "inode_permission", 24, "susfs_inode_perm_wrapper" },
 };
 
 int susfs_hooks_init(void)

@@ -60,6 +60,7 @@ enum susfs_hook_target {
 	SUSFS_HOOK_TARGET_ARM64_SYS_REBOOT,
 	SUSFS_HOOK_TARGET_SEQ_SHOW,
 	SUSFS_HOOK_TARGET_LSM,		/* security_hook_list, one per hook */
+	SUSFS_HOOK_TARGET_INODE_PERMISSION,	/* VFS: sus_path inline face */
 	SUSFS_HOOK_TARGET_COUNT
 };
 
@@ -68,6 +69,7 @@ enum susfs_hook_target {
  * kernel objects they care about. */
 struct seq_file;
 struct vm_area_struct;
+struct inode;
 
 struct susfs_avc_ctx {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)
@@ -86,6 +88,14 @@ struct susfs_avc_ctx {
 struct susfs_show_map_ctx {
 	struct seq_file *m;
 	struct vm_area_struct *vma;
+};
+
+/* VFS inode_permission: sus_path answers ENOENT for a hidden inode before the
+ * LSM chain runs.  ret is what the wrapper returns when pre() asked to skip. */
+struct susfs_inode_ctx {
+	struct inode *inode;
+	int mask;
+	long ret;
 };
 
 struct susfs_fp_hook;
