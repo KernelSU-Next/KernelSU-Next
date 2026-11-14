@@ -2719,6 +2719,7 @@ SUS_PATH_REG(readlink_hook, "inode_readlink");
  * remain the only mechanism by default. */
 static bool sus_path_open_hooked;
 static bool sus_path_lookup_file_hooked;
+static bool sus_path_openat_hooked;
 static int vfs_inline = 1;
 module_param(vfs_inline, int, 0644);
 static atomic_t n_vfs_open_enter = ATOMIC_INIT(0);
@@ -2796,12 +2797,19 @@ static struct susfs_hook sus_path_lookup_file = {
 	.pre = sus_path_lookup_pre,
 };
 
+static struct susfs_hook sus_path_openat_vfs = {
+	.owner = "sus_path",
+	.name = "fs:path_openat",
+	.target = SUSFS_HOOK_TARGET_PATH_OPENAT,
+	.pre = sus_path_lookup_pre,
+};
+
 /* Whether the path-based layer actually hides: the first inline face that
  * installed, or the LSM pair when no inline is available. */
 bool sus_path_lsm_active(void)
 {
 	return sus_path_lookup_file_hooked || sus_path_lookup_hooked ||
-	       sus_path_open_hooked ||
+	       sus_path_openat_hooked || sus_path_open_hooked ||
 	       (sus_path_getattr_hook.entry && sus_path_perm_hook.entry);
 }
 
@@ -2860,14 +2868,22 @@ int sus_path_init(void)
         if (sus_path_lookup_hooked)
             SUSFS_LOGI("sus_path: path_lookupat answered at the VFS layer (inline)\n");
 
-        sus_path_open_hooked =
-            !susfs_hook_register_assign(&sus_path_open_vfs,
+        sus_path_openat_hooked =
+            !susfs_hook_register_assign(&sus_path_openat_vfs,
                                         SUSFS_HOOK_BACKEND_INLINE);
-        if (sus_path_open_hooked)
-            SUSFS_LOGI("sus_path: vfs_open answered at the VFS layer (inline)\n");
+        if (sus_path_openat_hooked)
+            SUSFS_LOGI("sus_path: path_openat answered at the VFS layer (inline)\n");
+
+        if (!sus_path_openat_hooked) {
+            sus_path_open_hooked =
+                !susfs_hook_register_assign(&sus_path_open_vfs,
+                                            SUSFS_HOOK_BACKEND_INLINE);
+            if (sus_path_open_hooked)
+                SUSFS_LOGI("sus_path: vfs_open answered at the VFS layer (inline)\n");
+        }
     }
     if (!sus_path_lookup_file_hooked && !sus_path_lookup_hooked &&
-        !sus_path_open_hooked) {
+        !sus_path_openat_hooked && !sus_path_open_hooked) {
         /* No inline is usable: the LSM hooks ARE the mechanism.  A failure of
          * the two core ones used to be a warning with a zero return, so
          * add_sus_path() reported success while nothing was hidden; loading
@@ -3018,6 +3034,10 @@ void sus_path_exit(void)
     if (sus_path_lookup_hooked) {
         susfs_hook_unregister(&sus_path_lookup_vfs);
         sus_path_lookup_hooked = false;
+    }
+    if (sus_path_openat_hooked) {
+        susfs_hook_unregister(&sus_path_openat_vfs);
+        sus_path_openat_hooked = false;
     }
     if (sus_path_open_hooked) {
         susfs_hook_unregister(&sus_path_open_vfs);
