@@ -56,6 +56,19 @@ static susfs_show_fn_t sus_map_orig_smap;
 static bool sus_map_show_armed;
 static bool sus_map_smap_armed;
 
+/* The two seq_operations replacements are registered through the centre; their
+ * op/wrap fields are filled from the resolved table address below. */
+static struct susfs_hook sus_map_show_map_reg = {
+    .owner = "sus_map",
+    .name = "show_map",
+    .target = SUSFS_HOOK_TARGET_SHOW_MAP,
+};
+static struct susfs_hook sus_map_show_smap_reg = {
+    .owner = "sus_map",
+    .name = "show_smap",
+    .target = SUSFS_HOOK_TARGET_SHOW_SMAP,
+};
+
 
 /* Serialises rule PUBLICATION only; the reader stays lock-free: a slot is published by
  * writing target_dev first and target_ino last with release semantics (0 = free), and nmap
@@ -899,7 +912,7 @@ static DEFINE_MUTEX(map_ctl_lock);
 static void sus_map_arm_show_wrappers(void)
 {
 	const struct seq_operations *op;
-	susfs_show_fn_t orig, wrap;
+	susfs_show_fn_t orig;
 	unsigned long addr;
 
 	if (!sus_map_show_armed) {
@@ -909,12 +922,12 @@ static void sus_map_arm_show_wrappers(void)
 		} else {
 			op = (const struct seq_operations *)addr;
 			orig = READ_ONCE(op->show);
-			wrap = sus_map_show_map_wrap;
 			sus_map_maps_op = op;
 			sus_map_orig_show = orig;
-			smp_wmb();
-			if (!ksu_patch_text((void *)&op->show, &wrap, sizeof(wrap),
-					    KSU_PATCH_TEXT_FLUSH_DCACHE)) {
+			sus_map_show_map_reg.seq_op = (struct seq_operations *)op;
+			sus_map_show_map_reg.seq_wrap = (void *)sus_map_show_map_wrap;
+			if (!susfs_hook_register_assign(&sus_map_show_map_reg,
+						    SUSFS_HOOK_BACKEND_TABLE)) {
 				sus_map_show_armed = true;
 				SUSFS_LOGI("sus_map: show_map replaced at %px (original %px)\n",
 					   (void *)&op->show, (void *)orig);
@@ -933,12 +946,12 @@ static void sus_map_arm_show_wrappers(void)
 		} else {
 			op = (const struct seq_operations *)addr;
 			orig = READ_ONCE(op->show);
-			wrap = sus_map_show_smap_wrap;
 			sus_map_smaps_op = op;
 			sus_map_orig_smap = orig;
-			smp_wmb();
-			if (!ksu_patch_text((void *)&op->show, &wrap, sizeof(wrap),
-					    KSU_PATCH_TEXT_FLUSH_DCACHE)) {
+			sus_map_show_smap_reg.seq_op = (struct seq_operations *)op;
+			sus_map_show_smap_reg.seq_wrap = (void *)sus_map_show_smap_wrap;
+			if (!susfs_hook_register_assign(&sus_map_show_smap_reg,
+						    SUSFS_HOOK_BACKEND_TABLE)) {
 				sus_map_smap_armed = true;
 				SUSFS_LOGI("sus_map: show_smap replaced at %px (original %px)\n",
 					   (void *)&op->show, (void *)orig);
@@ -1241,21 +1254,11 @@ void susfs_sus_map_exit(void)
         kr_map_files_ok = false;
     }
     if (sus_map_show_armed) {
-        susfs_show_fn_t orig = sus_map_orig_show;
-
-        if (!sus_map_maps_op || !orig ||
-            ksu_patch_text((void *)&sus_map_maps_op->show, &orig, sizeof(orig),
-                           KSU_PATCH_TEXT_FLUSH_DCACHE))
-            pr_warn("sus_map: show_map restore failed\n");
+        susfs_hook_unregister(&sus_map_show_map_reg);
         sus_map_show_armed = false;
     }
     if (sus_map_smap_armed) {
-        susfs_show_fn_t orig = sus_map_orig_smap;
-
-        if (!sus_map_smaps_op || !orig ||
-            ksu_patch_text((void *)&sus_map_smaps_op->show, &orig, sizeof(orig),
-                           KSU_PATCH_TEXT_FLUSH_DCACHE))
-            pr_warn("sus_map: show_smap restore failed\n");
+        susfs_hook_unregister(&sus_map_show_smap_reg);
         sus_map_smap_armed = false;
     }
     /* A caller can still be inside a wrapper after its entry is restored: wait

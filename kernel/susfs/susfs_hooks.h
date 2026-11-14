@@ -62,6 +62,8 @@ enum susfs_hook_target {
 	SUSFS_HOOK_TARGET_LSM,		/* security_hook_list, one per hook */
 	SUSFS_HOOK_TARGET_FP,		/* sys_call_table replacement, one per entry */
 	SUSFS_HOOK_TARGET_INODE_PERMISSION,	/* VFS: sus_path inline face */
+	SUSFS_HOOK_TARGET_S_SHOW,		/* kallsyms::s_show, stub form */
+	SUSFS_HOOK_TARGET_M_SHOW,		/* modules::m_show, stub form */
 	SUSFS_HOOK_TARGET_COUNT
 };
 
@@ -71,6 +73,7 @@ enum susfs_hook_target {
 struct seq_file;
 struct vm_area_struct;
 struct inode;
+struct seq_operations;
 
 struct susfs_avc_ctx {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 4, 0)
@@ -131,6 +134,15 @@ struct susfs_hook {
 	const struct susfs_hook_probe *probes;
 	unsigned int nprobes;
 	struct ksu_lsm_hook *lsm;
+	/* PAC-safe entry stub form: the centre patches the entry to jump to
+	 * stub() and publishes the trampoline address into *tramp. */
+	void (*stub)(void);
+	unsigned long *tramp;
+	/* TABLE form: replace one seq_operations callback (sus_map's outer
+	 * show wrappers); the centre patches and restores it. */
+	struct seq_operations *seq_op;
+	void *seq_wrap;
+	void *seq_orig;
 	/* Filled by the centre. */
 	enum susfs_hook_backend backend;
 	bool installed;

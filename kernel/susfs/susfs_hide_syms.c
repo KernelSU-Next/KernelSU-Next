@@ -25,6 +25,7 @@
 #include "hk.h"
 #include "hk_inline.h"
 #include "susfs_hook_engine.h"
+#include "susfs_hooks.h"
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 
 /* ---- hide_modules: filter other kernel modules out of /proc/modules ----
@@ -584,8 +585,20 @@ extern void susfs_hide_m_stub(void);
 extern unsigned long susfs_hide_s_tramp;
 extern unsigned long susfs_hide_m_tramp;
 
-static struct hk_inline hide_s_hook;
-static struct hk_inline hide_m_hook;
+static struct susfs_hook hide_s_reg = {
+	.owner = "hide_syms",
+	.name = "s_show",
+	.target = SUSFS_HOOK_TARGET_S_SHOW,
+	.stub = susfs_hide_s_stub,
+	.tramp = &susfs_hide_s_tramp,
+};
+static struct susfs_hook hide_m_reg = {
+	.owner = "hide_syms",
+	.name = "m_show",
+	.target = SUSFS_HOOK_TARGET_M_SHOW,
+	.stub = susfs_hide_m_stub,
+	.tramp = &susfs_hide_m_tramp,
+};
 static unsigned long hide_s_addr;
 static unsigned long hide_m_addr;
 
@@ -854,16 +867,15 @@ int susfs_hide_syms_init(void)
 	{
 		hide_s_addr = (unsigned long)kp_s_show.addr;
 		susfs_hook_override("s_show", hide_s_addr);
-		rc = hk_inline_hook_stub(&hide_s_hook, "s_show",
-					 (unsigned long)susfs_hide_s_stub,
-					 &susfs_hide_s_tramp);
-		if (rc) {
-			pr_warn("susfs_hide_syms: HooKern inline s_show failed %d\n", rc);
+		rc = susfs_hook_register_assign(&hide_s_reg,
+						SUSFS_HOOK_BACKEND_INLINE);
+		if (rc < 0) {
+			pr_warn("susfs_hide_syms: s_show inline failed %d\n", rc);
 			return rc;
 		}
 		hide_registered = true;
 		SUSFS_LOGI("susfs_hide_syms: s_show inline at %px (%s)\n",
-				(void *)hide_s_hook.addr,
+				(void *)hide_s_addr,
 				kallsyms_op_target ? "by table identity" : "BY NAME");
 	}
 	/* Separate probe, separate failure: hiding symbol names and hiding module entries are independent. */
@@ -879,14 +891,13 @@ int susfs_hide_syms_init(void)
 	} else {
 		hide_m_addr = (unsigned long)kp_m_show.addr;
 		susfs_hook_override("m_show", hide_m_addr);
-		rc = hk_inline_hook_stub(&hide_m_hook, "m_show",
-					 (unsigned long)susfs_hide_m_stub,
-					 &susfs_hide_m_tramp);
-		if (rc) {
-			pr_warn("susfs_hide_syms: HooKern inline m_show failed %d\n", rc);
+		rc = susfs_hook_register_assign(&hide_m_reg,
+						SUSFS_HOOK_BACKEND_INLINE);
+		if (rc < 0) {
+			pr_warn("susfs_hide_syms: m_show inline failed %d\n", rc);
 		} else {
 			m_show_registered = true;
-			SUSFS_LOGI("susfs_hide_syms: m_show inline at %px\n", (void *)hide_m_hook.addr);
+			SUSFS_LOGI("susfs_hide_syms: m_show inline at %px\n", (void *)hide_m_addr);
 		}
 	}
 	/* hide_modules starts with just this module in its list: a built-in SUSFS has no module entry, so leaving ours visible
@@ -935,11 +946,11 @@ void susfs_hide_syms_exit(void)
 		hide_modules_entry = NULL;
 	}
 	if (m_show_registered) {
-		hk_inline_unhook(&hide_m_hook);
+		susfs_hook_unregister(&hide_m_reg);
 		m_show_registered = false;
 	}
 	if (hide_registered) {
-		hk_inline_unhook(&hide_s_hook);
+		susfs_hook_unregister(&hide_s_reg);
 		hide_registered = false;
 	}
 	modules_op_target = NULL;
