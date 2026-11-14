@@ -984,12 +984,13 @@ err_free:
 __nocfi int hk_inline_hook(struct hk_inline *h, const char *sym,
 			   const char *wrapper_sym)
 {
-	unsigned long addr = 0;
+	unsigned long addr = 0, raw;
 	int ret;
 
 	if (!h || !sym || !wrapper_sym)
 		return -EINVAL;
 
+	raw = hk_resolve(sym);
 	/*
 	 * one lock across trampoline allocation, relocation and both text
 	 * writes, so two installs cannot interleave their trampolines or their
@@ -1000,6 +1001,7 @@ __nocfi int hk_inline_hook(struct hk_inline *h, const char *sym,
 		pr_warn("[lkmhook] inline resolve %s failed %d\n", sym, ret);
 		return -ENODATA;
 	}
+	pr_info("[lkmhook] inline %s raw=0x%lx resolved=0x%lx\n", sym, raw, addr);
 	ret = hk_inline_own(h, sym, addr, HK_INLINE_PATCH_LEN);
 	if (ret)
 		return ret;
