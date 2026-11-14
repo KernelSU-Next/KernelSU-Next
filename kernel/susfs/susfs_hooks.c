@@ -250,22 +250,25 @@ int __nocfi susfs_vfs_open_decide(const struct path *path, struct file *file)
 	return skip ? (int)ctx.ret : 0;
 }
 
-/* ---- structured target: fs/namei.c path_lookupat (sus_path lookup face) ----
+/* ---- structured targets: fs/namei.c lookup faces (sus_path) ----
  *
- * A return hook: the entry stub runs the trampoline (which replays the
+ * Return hooks: the entry stub runs the trampoline (which replays the
  * overwritten prologue and falls into the body), the body returns to the stub,
  * and the stub hands the saved argument window plus the real return value to
- * this function.  That way the answer can be replaced after the body ran,
- * which a plain entry hook could not do.  Only armed when the loader proved
- * path_lookupat is out of line (map slot PATH_LOOKUPAT).
+ * one of these decisions.  That way the answer can be replaced after the body
+ * ran, which a plain entry hook could not do.  filename_lookup is preferred
+ * over path_lookupat; each is armed only when the loader proved it out of
+ * line (map slots FILENAME_LOOKUP/PATH_LOOKUPAT).
  */
 extern void susfs_path_lookupat_stub(void);
 extern unsigned long susfs_path_lookupat_tramp;
+extern void susfs_filename_lookup_stub(void);
+extern unsigned long susfs_filename_lookup_tramp;
 
-long __nocfi susfs_path_lookupat_decide(unsigned long *saved)
+static long __nocfi
+susfs_lookup_decide(struct path *path, long ret,
+		    enum susfs_hook_target target)
 {
-	struct path *path = (struct path *)saved[2];
-	long ret = (long)saved[20];
 	struct susfs_inode_ctx ctx = { .inode = NULL, .ret = 0 };
 	unsigned int i;
 	int skip = 0;
@@ -274,7 +277,7 @@ long __nocfi susfs_path_lookupat_decide(unsigned long *saved)
 		return ret;
 	ctx.inode = d_inode(path->dentry);
 	for (i = 0; i < CONSUMERS_MAX; i++) {
-		struct susfs_hook *c = READ_ONCE(targets[SUSFS_HOOK_TARGET_PATH_LOOKUPAT].consumers[i]);
+		struct susfs_hook *c = READ_ONCE(targets[target].consumers[i]);
 
 		if (c && c->pre)
 			skip |= c->pre(&ctx);
@@ -284,6 +287,18 @@ long __nocfi susfs_path_lookupat_decide(unsigned long *saved)
 	/* The caller does not put a failed lookup: drop the reference here. */
 	path_put(path);
 	return ctx.ret;
+}
+
+long __nocfi susfs_path_lookupat_decide(unsigned long *saved)
+{
+	return susfs_lookup_decide((struct path *)saved[2], (long)saved[20],
+				   SUSFS_HOOK_TARGET_PATH_LOOKUPAT);
+}
+
+long __nocfi susfs_filename_lookup_decide(unsigned long *saved)
+{
+	return susfs_lookup_decide((struct path *)saved[3], (long)saved[20],
+				   SUSFS_HOOK_TARGET_FILENAME_LOOKUP);
 }
 
 /* Only a target with a centre-owned wrapper can be inline-hooked and can carry
@@ -299,6 +314,7 @@ static struct hook_target *target_of(enum susfs_hook_target target)
 	    target != SUSFS_HOOK_TARGET_S_SHOW &&
 	    target != SUSFS_HOOK_TARGET_M_SHOW &&
 	    target != SUSFS_HOOK_TARGET_PATH_LOOKUPAT &&
+	    target != SUSFS_HOOK_TARGET_FILENAME_LOOKUP &&
 	    target != SUSFS_HOOK_TARGET_SHOW_MAP &&
 	    target != SUSFS_HOOK_TARGET_SHOW_SMAP)
 		return NULL;
@@ -385,6 +401,16 @@ static int install_inline(struct hook_target *t, struct susfs_hook *h)
 		rc = hk_inline_hook_stub(&t->inline_hook, t->symbol,
 					 (unsigned long)susfs_path_lookupat_stub,
 					 &susfs_path_lookupat_tramp);
+		if (rc)
+			return SUSFS_HOOK_INSTALL_FAILED;
+		t->backend = BACKEND_INLINE;
+		t->installed = true;
+		return SUSFS_HOOK_OK;
+	}
+	if (t->slot == SUSFS_HOOK_FILENAME_LOOKUP) {
+		rc = hk_inline_hook_stub(&t->inline_hook, t->symbol,
+					 (unsigned long)susfs_filename_lookup_stub,
+					 &susfs_filename_lookup_tramp);
 		if (rc)
 			return SUSFS_HOOK_INSTALL_FAILED;
 		t->backend = BACKEND_INLINE;
@@ -844,7 +870,8 @@ static const struct target_desc target_desc[SUSFS_HOOK_TARGET_COUNT] = {
 	[SUSFS_HOOK_TARGET_INODE_PERMISSION]		= { "inode_permission", 24, "susfs_inode_perm_wrapper" },
 	[SUSFS_HOOK_TARGET_S_SHOW]			= { "s_show", -1, NULL },
 	[SUSFS_HOOK_TARGET_M_SHOW]			= { "m_show", -1, NULL },
-	[SUSFS_HOOK_TARGET_PATH_LOOKUPAT]		= { "path_lookupat", 36, NULL },
+	[SUSFS_HOOK_TARGET_PATH_LOOKUPAT]		= { "path_lookupat", 37, NULL },
+	[SUSFS_HOOK_TARGET_FILENAME_LOOKUP]		= { "filename_lookup", 36, NULL },
 };
 
 int susfs_hooks_init(void)

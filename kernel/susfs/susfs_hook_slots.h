@@ -51,10 +51,11 @@
 	 * pin_user_pages_remote entries.  Both slots are probed; the one that is \
 	 * absent on a given kernel simply stays 0. */ \
 	X(PIN_USER_PAGES_REMOTE,	pin_user_pages_remote)	\
-	/* The path-lookup landing pad: one inline there covers every \
-	 * path-based operation (open/stat/access/unlink/rename/xattr), unlike \
-	 * one VFS wrapper per operation.  Enabled only when the probe proves \
-	 * the function is out of line. */ \
+	/* The path-lookup landing pads, outermost first: filename_lookup wraps \
+	 * every path resolution (kern_path included); path_lookupat is the \
+	 * inner walker.  Either one covers every path-based operation, so the \
+	 * first that the probe proves out-of-line is the one to arm. */ \
+	X(FILENAME_LOOKUP,		filename_lookup)	\
 	X(PATH_LOOKUPAT,		path_lookupat)
 
 #endif /* _SUSFS_HOOK_SLOTS_H */
