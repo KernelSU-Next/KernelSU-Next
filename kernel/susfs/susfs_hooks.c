@@ -250,6 +250,42 @@ int __nocfi susfs_vfs_open_decide(const struct path *path, struct file *file)
 	return skip ? (int)ctx.ret : 0;
 }
 
+/* ---- structured target: fs/namei.c path_lookupat (sus_path lookup face) ----
+ *
+ * One landing pad for every path-based operation: the wrapper runs the real
+ * lookup, then asks the consumers about the resolved inode and answers ENOENT
+ * with the path reference released.  Only armed when the loader proved the
+ * function is out of line (map slot PATH_LOOKUPAT).
+ */
+typedef int (*path_lookupat_fn_t)(struct nameidata *nd, unsigned int flags,
+				  struct path *path);
+static path_lookupat_fn_t path_lookupat_orig;
+
+static int __visible __nocfi noinline
+path_lookupat_wrapper(struct nameidata *nd, unsigned int flags,
+		      struct path *path)
+{
+	struct susfs_inode_ctx ctx = { .inode = NULL, .ret = 0 };
+	unsigned int i;
+	int ret, skip = 0;
+
+	ret = path_lookupat_orig ? path_lookupat_orig(nd, flags, path) : -ENOSYS;
+	if (ret || !path || !path->dentry)
+		return ret;
+	ctx.inode = d_inode(path->dentry);
+	for (i = 0; i < CONSUMERS_MAX; i++) {
+		struct susfs_hook *c = READ_ONCE(targets[SUSFS_HOOK_TARGET_PATH_LOOKUPAT].consumers[i]);
+
+		if (c && c->pre)
+			skip |= c->pre(&ctx);
+	}
+	if (!skip)
+		return ret;
+	/* The caller does not put a failed lookup: drop the reference here. */
+	path_put(path);
+	return (int)ctx.ret;
+}
+
 /* Only a target with a centre-owned wrapper can be inline-hooked and can carry
  * more than one consumer.  Raw targets are installed per consumer. */
 static struct hook_target *target_of(enum susfs_hook_target target)
@@ -262,6 +298,7 @@ static struct hook_target *target_of(enum susfs_hook_target target)
 	    target != SUSFS_HOOK_TARGET_ARM64_SYS_NEWUNAME &&
 	    target != SUSFS_HOOK_TARGET_S_SHOW &&
 	    target != SUSFS_HOOK_TARGET_M_SHOW &&
+	    target != SUSFS_HOOK_TARGET_PATH_LOOKUPAT &&
 	    target != SUSFS_HOOK_TARGET_SHOW_MAP &&
 	    target != SUSFS_HOOK_TARGET_SHOW_SMAP)
 		return NULL;
@@ -350,6 +387,8 @@ static int install_inline(struct hook_target *t, struct susfs_hook *h)
 		susfs_hook_override(t->wrapper, (unsigned long)inode_perm_wrapper);
 	else if (t->slot == SUSFS_HOOK_ARM64_SYS_NEWUNAME)
 		susfs_hook_override(t->wrapper, (unsigned long)susfs_uname_wrap);
+	else if (t->slot == SUSFS_HOOK_PATH_LOOKUPAT)
+		susfs_hook_override(t->wrapper, (unsigned long)path_lookupat_wrapper);
 	rc = hk_inline_hook(&t->inline_hook, t->symbol, t->wrapper);
 	if (rc)
 		return SUSFS_HOOK_INSTALL_FAILED;
@@ -359,6 +398,8 @@ static int install_inline(struct hook_target *t, struct susfs_hook *h)
 		inode_perm_orig = (inode_perm_fn_t)t->inline_hook.orig;
 	else if (t->slot == SUSFS_HOOK_ARM64_SYS_NEWUNAME)
 		susfs_uname_orig = (long (*)(const struct pt_regs *))t->inline_hook.orig;
+	else if (t->slot == SUSFS_HOOK_PATH_LOOKUPAT)
+		path_lookupat_orig = (path_lookupat_fn_t)t->inline_hook.orig;
 	t->backend = BACKEND_INLINE;
 	t->installed = true;
 	return SUSFS_HOOK_OK;
@@ -797,6 +838,7 @@ static const struct target_desc target_desc[SUSFS_HOOK_TARGET_COUNT] = {
 	[SUSFS_HOOK_TARGET_INODE_PERMISSION]		= { "inode_permission", 24, "susfs_inode_perm_wrapper" },
 	[SUSFS_HOOK_TARGET_S_SHOW]			= { "s_show", -1, NULL },
 	[SUSFS_HOOK_TARGET_M_SHOW]			= { "m_show", -1, NULL },
+	[SUSFS_HOOK_TARGET_PATH_LOOKUPAT]		= { "path_lookupat", 36, "susfs_path_lookupat_wrapper" },
 };
 
 int susfs_hooks_init(void)

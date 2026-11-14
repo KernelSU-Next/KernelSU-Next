@@ -50,6 +50,11 @@
 	 * family goes through the exported get_user_pages_remote/ \
 	 * pin_user_pages_remote entries.  Both slots are probed; the one that is \
 	 * absent on a given kernel simply stays 0. */ \
-	X(PIN_USER_PAGES_REMOTE,	pin_user_pages_remote)
+	X(PIN_USER_PAGES_REMOTE,	pin_user_pages_remote)	\
+	/* The path-lookup landing pad: one inline there covers every \
+	 * path-based operation (open/stat/access/unlink/rename/xattr), unlike \
+	 * one VFS wrapper per operation.  Enabled only when the probe proves \
+	 * the function is out of line. */ \
+	X(PATH_LOOKUPAT,		path_lookupat)
 
 #endif /* _SUSFS_HOOK_SLOTS_H */

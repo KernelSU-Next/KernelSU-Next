@@ -2751,6 +2751,37 @@ static struct susfs_hook sus_path_open_vfs = {
 	.pre = sus_path_vfs_open_pre,
 };
 
+/* The lookup face: one landing pad in fs/namei.c covers every path-based
+ * operation (open/stat/access/unlink/rename/xattr), so it is preferred over
+ * the per-operation VFS hooks.  It is only armed when the loader proved
+ * path_lookupat is out of line (map bit PATH_LOOKUPAT). */
+static bool sus_path_lookup_hooked;
+static atomic_t n_lookup_enter = ATOMIC_INIT(0);
+
+static int sus_path_lookup_pre(void *p)
+{
+	struct susfs_inode_ctx *ctx = p;
+	int n = atomic_inc_return(&n_lookup_enter);
+
+	if (n <= 8)
+		pr_info("sus_path: path_lookupat enter #%d ino=%lu dev=%u\n", n,
+			ctx->inode ? (unsigned long)ctx->inode->i_ino : 0UL,
+			ctx->inode ? (unsigned int)ctx->inode->i_sb->s_dev : 0U);
+	if (ctx->inode && sus_path_inode_hidden(ctx->inode)) {
+		atomic_inc(&n_enoent_perm);
+		ctx->ret = -ENOENT;
+		return 1;
+	}
+	return 0;
+}
+
+static struct susfs_hook sus_path_lookup_vfs = {
+	.owner = "sus_path",
+	.name = "fs:path_lookupat",
+	.target = SUSFS_HOOK_TARGET_PATH_LOOKUPAT,
+	.pre = sus_path_lookup_pre,
+};
+
 /* Whether the path-based layer actually installed: stat and open must agree. */
 bool sus_path_lsm_active(void)
 {
@@ -2824,6 +2855,14 @@ int sus_path_init(void)
             (void *)sus_path_perm_hook.entry);
 
     if (vfs_inline) {
+        sus_path_lookup_hooked =
+            !susfs_hook_register_assign(&sus_path_lookup_vfs,
+                                        SUSFS_HOOK_BACKEND_INLINE);
+        if (sus_path_lookup_hooked)
+            SUSFS_LOGI("sus_path: path_lookupat answered at the VFS layer (inline)\n");
+        else
+            pr_warn("sus_path: path_lookupat inline unavailable (not out of line or patch failed)\n");
+
         sus_path_open_hooked =
             !susfs_hook_register_assign(&sus_path_open_vfs,
                                         SUSFS_HOOK_BACKEND_INLINE);
@@ -2950,6 +2989,10 @@ void sus_path_exit(void)
     mutex_unlock(&sus_path_pending_lock);
     /* No walk can be in flight now, so the borrowed creds are ours to release. */
     sus_path_drop_caller_cred();
+    if (sus_path_lookup_hooked) {
+        susfs_hook_unregister(&sus_path_lookup_vfs);
+        sus_path_lookup_hooked = false;
+    }
     if (sus_path_open_hooked) {
         susfs_hook_unregister(&sus_path_open_vfs);
         sus_path_open_hooked = false;

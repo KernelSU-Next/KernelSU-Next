@@ -65,6 +65,7 @@ enum susfs_hook_target {
 	SUSFS_HOOK_TARGET_INODE_PERMISSION,	/* VFS: sus_path inline face */
 	SUSFS_HOOK_TARGET_S_SHOW,		/* kallsyms::s_show, stub form */
 	SUSFS_HOOK_TARGET_M_SHOW,		/* modules::m_show, stub form */
+	SUSFS_HOOK_TARGET_PATH_LOOKUPAT,	/* fs/namei.c path_lookupat */
 	SUSFS_HOOK_TARGET_COUNT
 };
 
