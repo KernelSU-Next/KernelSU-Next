@@ -36,7 +36,7 @@ static bool uname_spoof_enabled;
 long (*susfs_uname_orig)(const struct pt_regs *);
 static bool uname_inline;
 
-static long __visible __nocfi noinline
+long __visible __nocfi noinline
 susfs_uname_wrap(const struct pt_regs *regs)
 {
 	long ret;
