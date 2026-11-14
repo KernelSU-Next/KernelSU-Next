@@ -265,6 +265,8 @@ extern unsigned long susfs_path_lookupat_tramp;
 extern void susfs_filename_lookup_stub(void);
 extern unsigned long susfs_filename_lookup_tramp;
 
+static atomic_t n_lookup_decide = ATOMIC_INIT(0);
+
 static long __nocfi
 susfs_lookup_decide(struct path *path, long ret,
 		    enum susfs_hook_target target)
@@ -273,6 +275,13 @@ susfs_lookup_decide(struct path *path, long ret,
 	unsigned int i;
 	int skip = 0;
 
+	if (atomic_inc_return(&n_lookup_decide) <= 10)
+		pr_info("susfs_lookup: target=%d ret=%ld ino=%lu dev=%u\n",
+			(int)target, ret,
+			(path && path->dentry && d_inode(path->dentry)) ?
+				(unsigned long)d_inode(path->dentry)->i_ino : 0UL,
+			(path && path->dentry && d_inode(path->dentry)) ?
+				(unsigned int)d_inode(path->dentry)->i_sb->s_dev : 0U);
 	if (ret || !path || !path->dentry)
 		return ret;
 	ctx.inode = d_inode(path->dentry);
