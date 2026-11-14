@@ -2712,20 +2712,20 @@ SUS_PATH_REG(removexattr_hook, "inode_removexattr");
 SUS_PATH_REG(notify_hook, "path_notify");
 SUS_PATH_REG(readlink_hook, "inode_readlink");
 
-/* VFS fast face: inode_permission is on every path walk, so answering ENOENT
- * there avoids the LSM dispatch the hook above pays.  It is used when the map
- * bit for the slot is set and the inline install succeeds; the LSM hook above
- * stays the fallback for every kernel where either is not true. */
-static bool sus_path_perm_inline;
-static atomic_t n_vfs_perm_enter = ATOMIC_INIT(0);
+/* VFS fast face for open: vfs_open is called for every successful path walk, so
+ * answering ENOENT there ends the open before permission/LSM work for a hidden
+ * inode.  It is used when the map bit is set and the patch succeeds; the LSM
+ * hooks above remain the fallback and still cover access/chmod/unlink/... */
+static bool sus_path_open_inline;
+static atomic_t n_vfs_open_enter = ATOMIC_INIT(0);
 
-static int sus_path_vfs_perm_pre(void *p)
+static int sus_path_vfs_open_pre(void *p)
 {
 	struct susfs_inode_ctx *ctx = p;
-	int n = atomic_inc_return(&n_vfs_perm_enter);
+	int n = atomic_inc_return(&n_vfs_open_enter);
 
 	if (n <= 3)
-		pr_info("sus_path: vfs perm enter #%d ino=%lu dev=%u\n", n,
+		pr_info("sus_path: vfs open enter #%d ino=%lu dev=%u\n", n,
 			ctx->inode ? (unsigned long)ctx->inode->i_ino : 0UL,
 			ctx->inode ? (unsigned int)ctx->inode->i_sb->s_dev : 0U);
 	if (ctx->inode && sus_path_inode_hidden(ctx->inode)) {
@@ -2736,19 +2736,17 @@ static int sus_path_vfs_perm_pre(void *p)
 	return 0;
 }
 
-static struct susfs_hook sus_path_perm_vfs = {
+static struct susfs_hook sus_path_open_vfs = {
 	.owner = "sus_path",
-	.name = "vfs:inode_permission",
-	.target = SUSFS_HOOK_TARGET_INODE_PERMISSION,
-	.pre = sus_path_vfs_perm_pre,
+	.name = "vfs:vfs_open",
+	.target = SUSFS_HOOK_TARGET_VFS_OPEN,
+	.pre = sus_path_vfs_open_pre,
 };
 
-/* Whether the path-based layer actually installed: stat and open must agree,
- * and the open face is either the inline permission wrapper or its LSM hook. */
+/* Whether the path-based layer actually installed: stat and open must agree. */
 bool sus_path_lsm_active(void)
 {
-	return sus_path_getattr_hook.entry &&
-	       (sus_path_perm_inline || sus_path_perm_hook.entry);
+	return sus_path_getattr_hook.entry && sus_path_perm_hook.entry;
 }
 
 int sus_path_init(void)
@@ -2801,25 +2799,28 @@ int sus_path_init(void)
     SUSFS_LOGI("sus_path: getattr hook inserted ahead of the chain (node %px)\n",
             (void *)sus_path_getattr_hook.entry);
 
-    /* Open/access first tries the VFS inline face: same answer, no LSM dispatch.
-     * Only when that slot is not in the map (or cannot be patched) is the LSM
-     * hook installed, so one of the two is always the mechanism. */
-    sus_path_perm_inline = !susfs_hook_register_assign(&sus_path_perm_vfs,
-                                                       SUSFS_HOOK_BACKEND_INLINE);
-    if (sus_path_perm_inline) {
-        SUSFS_LOGI("sus_path: inode_permission answered at the VFS layer (inline)\n");
-    } else {
-        rc = susfs_hook_register(&sus_path_reg_perm_hook);
-        if (rc < 0) {
-            pr_err("sus_path: perm hook failed %d - nothing would be hidden, refusing to load\n", rc);
-            susfs_hook_unregister(&sus_path_reg_getattr_hook);
-            kvfree(dirent_tmp);
-            dirent_tmp = NULL;
-            return rc;
-        }
-        SUSFS_LOGI("sus_path: perm hook inserted ahead of the chain (node %px)\n",
-                (void *)sus_path_perm_hook.entry);
+    /* The LSM permission hook is always the mechanism for access/chmod/unlink:
+     * the inode_permission inline face only catches the callers that reach the
+     * out-of-line copy, so it is not the primary path.  vfs_open is a complete
+     * open-path landing pad, so it is installed as the fast face when its map
+     * bit is set; failure is named and the LSM hooks still hide the file. */
+    rc = susfs_hook_register(&sus_path_reg_perm_hook);
+    if (rc < 0) {
+        pr_err("sus_path: perm hook failed %d - nothing would be hidden, refusing to load\n", rc);
+        susfs_hook_unregister(&sus_path_reg_getattr_hook);
+        kvfree(dirent_tmp);
+        dirent_tmp = NULL;
+        return rc;
     }
+    SUSFS_LOGI("sus_path: perm hook inserted ahead of the chain (node %px)\n",
+            (void *)sus_path_perm_hook.entry);
+
+    sus_path_open_inline = !susfs_hook_register_assign(&sus_path_open_vfs,
+                                                       SUSFS_HOOK_BACKEND_INLINE);
+    if (sus_path_open_inline)
+        SUSFS_LOGI("sus_path: vfs_open answered at the VFS layer (inline)\n");
+    else
+        pr_warn("sus_path: vfs_open inline unavailable - open still hidden through the LSM hooks\n");
 
     /* Name-based and metadata operations: without these an app that can write the parent directory
      * can delete or rename a hidden file, and a hidden file can still be probed or modified through
@@ -2936,9 +2937,9 @@ void sus_path_exit(void)
     mutex_unlock(&sus_path_pending_lock);
     /* No walk can be in flight now, so the borrowed creds are ours to release. */
     sus_path_drop_caller_cred();
-    if (sus_path_perm_inline) {
-        susfs_hook_unregister(&sus_path_perm_vfs);
-        sus_path_perm_inline = false;
+    if (sus_path_open_inline) {
+        susfs_hook_unregister(&sus_path_open_vfs);
+        sus_path_open_inline = false;
     }
     if (sus_path_perm_hook.entry)
         susfs_hook_unregister(&sus_path_reg_perm_hook);
