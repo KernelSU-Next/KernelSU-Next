@@ -2714,9 +2714,12 @@ SUS_PATH_REG(readlink_hook, "inode_readlink");
 
 /* VFS fast face for open: vfs_open is called for every successful path walk, so
  * answering ENOENT there ends the open before permission/LSM work for a hidden
- * inode.  It is used when the map bit is set and the patch succeeds; the LSM
- * hooks above remain the fallback and still cover access/chmod/unlink/... */
+ * inode.  Experimental: the device check has not produced a confirmed hidden
+ * open yet, so it is OFF unless the parameter asks for it and the LSM hooks
+ * remain the only mechanism by default. */
 static bool sus_path_open_inline;
+static int vfs_inline;
+module_param(vfs_inline, int, 0644);
 static atomic_t n_vfs_open_enter = ATOMIC_INIT(0);
 static atomic_t n_vfs_open_hidden = ATOMIC_INIT(0);
 
@@ -2725,7 +2728,7 @@ static int sus_path_vfs_open_pre(void *p)
 	struct susfs_inode_ctx *ctx = p;
 	int n = atomic_inc_return(&n_vfs_open_enter);
 
-	if (n <= 50)
+	if (n <= 8)
 		pr_info("sus_path: vfs open enter #%d ino=%lu dev=%u\n", n,
 			ctx->inode ? (unsigned long)ctx->inode->i_ino : 0UL,
 			ctx->inode ? (unsigned int)ctx->inode->i_sb->s_dev : 0U);
@@ -2820,12 +2823,17 @@ int sus_path_init(void)
     SUSFS_LOGI("sus_path: perm hook inserted ahead of the chain (node %px)\n",
             (void *)sus_path_perm_hook.entry);
 
-    sus_path_open_inline = !susfs_hook_register_assign(&sus_path_open_vfs,
-                                                       SUSFS_HOOK_BACKEND_INLINE);
-    if (sus_path_open_inline)
-        SUSFS_LOGI("sus_path: vfs_open answered at the VFS layer (inline)\n");
-    else
-        pr_warn("sus_path: vfs_open inline unavailable - open still hidden through the LSM hooks\n");
+    if (vfs_inline) {
+        sus_path_open_inline =
+            !susfs_hook_register_assign(&sus_path_open_vfs,
+                                        SUSFS_HOOK_BACKEND_INLINE);
+        if (sus_path_open_inline)
+            SUSFS_LOGI("sus_path: vfs_open answered at the VFS layer (inline)\n");
+        else
+            pr_warn("sus_path: vfs_open inline unavailable - open still hidden through the LSM hooks\n");
+    } else {
+        SUSFS_LOGI("sus_path: vfs_open inline off (vfs_inline=0); LSM hooks are the mechanism\n");
+    }
 
     /* Name-based and metadata operations: without these an app that can write the parent directory
      * can delete or rename a hidden file, and a hidden file can still be probed or modified through
