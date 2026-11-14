@@ -574,12 +574,16 @@ static bool hide_syms_iter_plausible(const struct kallsym_iter_local *it)
 	return strnlen(it->module_name, sizeof(it->module_name)) < sizeof(it->module_name);
 }
 
-/* Branch experiment: HooKern inline wrappers replace the kprobe pair for s_show/m_show.
- * The detour enters the wrapper before the target's paciasp; a hidden call simply
- * returns, a visible one calls h->orig (the relocated window) and returns its result. */
-typedef int (*hide_syms_show_fn)(struct seq_file *, void *);
-static hide_syms_show_fn hide_s_orig;
-static hide_syms_show_fn hide_m_orig;
+/* Branch experiment: HooKern inline replaces the kprobe pair for s_show/m_show.
+ * Both bodies start with a PAC prologue, so the detour is an entry stub rather
+ * than a C wrapper: the stub runs with the target's SP/LR, asks the decision,
+ * and either returns 0 (hidden) or restores the frame and jumps to the
+ * trampoline's replay of the original window. */
+extern void susfs_hide_s_stub(void);
+extern void susfs_hide_m_stub(void);
+extern unsigned long susfs_hide_s_tramp;
+extern unsigned long susfs_hide_m_tramp;
+
 static struct hk_inline hide_s_hook;
 static struct hk_inline hide_m_hook;
 static unsigned long hide_s_addr;
@@ -619,18 +623,14 @@ static bool hide_m_should_hide(struct seq_file *m, void *p)
 	return true;
 }
 
-int __nocfi hide_syms_s_show_wrap(struct seq_file *m, void *p)
+int __nocfi hide_syms_s_show_decide(struct seq_file *m, void *p)
 {
-	if (hide_s_should_hide(m))
-		return 0;
-	return hide_s_orig ? hide_s_orig(m, p) : 0;
+	return hide_s_should_hide(m) ? 1 : 0;
 }
 
-int __nocfi hide_syms_m_show_wrap(struct seq_file *m, void *p)
+int __nocfi hide_syms_m_show_decide(struct seq_file *m, void *p)
 {
-	if (hide_m_should_hide(m, p))
-		return 0;
-	return hide_m_orig ? hide_m_orig(m, p) : 0;
+	return hide_m_should_hide(m, p) ? 1 : 0;
 }
 
 /* s_show(m, p): m is arg #1 (x0), read through the same accessor the m_show handler below uses
@@ -854,15 +854,13 @@ int susfs_hide_syms_init(void)
 	{
 		hide_s_addr = (unsigned long)kp_s_show.addr;
 		susfs_hook_override("s_show", hide_s_addr);
-		susfs_hook_override("hide_syms_s_show_wrap",
-				    (unsigned long)hide_syms_s_show_wrap);
-		rc = hk_inline_hook(&hide_s_hook, "s_show", "hide_syms_s_show_wrap");
+		rc = hk_inline_hook_stub(&hide_s_hook, "s_show",
+					 (unsigned long)susfs_hide_s_stub,
+					 &susfs_hide_s_tramp);
 		if (rc) {
 			pr_warn("susfs_hide_syms: HooKern inline s_show failed %d\n", rc);
 			return rc;
 		}
-		
-		hide_s_orig = (hide_syms_show_fn)hide_s_hook.orig;
 		hide_registered = true;
 		SUSFS_LOGI("susfs_hide_syms: s_show inline at %px (%s)\n",
 				(void *)hide_s_hook.addr,
@@ -881,13 +879,12 @@ int susfs_hide_syms_init(void)
 	} else {
 		hide_m_addr = (unsigned long)kp_m_show.addr;
 		susfs_hook_override("m_show", hide_m_addr);
-		susfs_hook_override("hide_syms_m_show_wrap",
-				    (unsigned long)hide_syms_m_show_wrap);
-		rc = hk_inline_hook(&hide_m_hook, "m_show", "hide_syms_m_show_wrap");
+		rc = hk_inline_hook_stub(&hide_m_hook, "m_show",
+					 (unsigned long)susfs_hide_m_stub,
+					 &susfs_hide_m_tramp);
 		if (rc) {
 			pr_warn("susfs_hide_syms: HooKern inline m_show failed %d\n", rc);
 		} else {
-			hide_m_orig = (hide_syms_show_fn)hide_m_hook.orig;
 			m_show_registered = true;
 			SUSFS_LOGI("susfs_hide_syms: m_show inline at %px\n", (void *)hide_m_hook.addr);
 		}
@@ -939,12 +936,10 @@ void susfs_hide_syms_exit(void)
 	}
 	if (m_show_registered) {
 		hk_inline_unhook(&hide_m_hook);
-		hide_m_orig = NULL;
 		m_show_registered = false;
 	}
 	if (hide_registered) {
 		hk_inline_unhook(&hide_s_hook);
-		hide_s_orig = NULL;
 		hide_registered = false;
 	}
 	modules_op_target = NULL;
