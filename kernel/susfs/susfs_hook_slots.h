@@ -29,6 +29,22 @@
 	X(DO_STATX,			do_statx)		\
 	X(GENERIC_SHUTDOWN_SUPER,	generic_shutdown_super)	\
 	X(COPY_MNT_NS,			copy_mnt_ns)		\
-	X(ATTACH_RECURSIVE_MNT,		attach_recursive_mnt)
+	X(ATTACH_RECURSIVE_MNT,		attach_recursive_mnt)	\
+	/* sus_path: the VFS-layer landing pads upstream patches into fs/namei.c, \
+	 * fs/stat.c, fs/xattr.c and fs/attr.c.  One slot per operation so a slot \
+	 * that cannot be armed only costs that operation its inline path. */ \
+	X(VFS_GETATTR,			vfs_getattr)		\
+	X(VFS_GETATTR_NOSEC,		vfs_getattr_nosec)	\
+	X(INODE_PERMISSION,		inode_permission)	\
+	X(VFS_UNLINK,			vfs_unlink)		\
+	X(VFS_RMDIR,			vfs_rmdir)		\
+	X(VFS_RENAME,			vfs_rename)		\
+	X(VFS_LINK,			vfs_link)		\
+	X(NOTIFY_CHANGE,		notify_change)		\
+	X(VFS_GETXATTR,			vfs_getxattr)		\
+	X(VFS_LISTXATTR,		vfs_listxattr)		\
+	X(VFS_SETXATTR,			vfs_setxattr)		\
+	X(VFS_REMOVEXATTR,		vfs_removexattr)	\
+	X(VFS_READLINK,			vfs_readlink)
 
 #endif /* _SUSFS_HOOK_SLOTS_H */
