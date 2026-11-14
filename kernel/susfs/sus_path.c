@@ -2725,7 +2725,7 @@ static int sus_path_vfs_open_pre(void *p)
 	struct susfs_inode_ctx *ctx = p;
 	int n = atomic_inc_return(&n_vfs_open_enter);
 
-	if (n <= 3)
+	if (n <= 50)
 		pr_info("sus_path: vfs open enter #%d ino=%lu dev=%u\n", n,
 			ctx->inode ? (unsigned long)ctx->inode->i_ino : 0UL,
 			ctx->inode ? (unsigned int)ctx->inode->i_sb->s_dev : 0U);
