@@ -2718,6 +2718,7 @@ SUS_PATH_REG(readlink_hook, "inode_readlink");
  * hooks above remain the fallback and still cover access/chmod/unlink/... */
 static bool sus_path_open_inline;
 static atomic_t n_vfs_open_enter = ATOMIC_INIT(0);
+static atomic_t n_vfs_open_hidden = ATOMIC_INIT(0);
 
 static int sus_path_vfs_open_pre(void *p)
 {
@@ -2729,6 +2730,10 @@ static int sus_path_vfs_open_pre(void *p)
 			ctx->inode ? (unsigned long)ctx->inode->i_ino : 0UL,
 			ctx->inode ? (unsigned int)ctx->inode->i_sb->s_dev : 0U);
 	if (ctx->inode && sus_path_inode_hidden(ctx->inode)) {
+		if (atomic_inc_return(&n_vfs_open_hidden) <= 5)
+			pr_info("sus_path: vfs_open hidden ino=%lu dev=%u\n",
+				(unsigned long)ctx->inode->i_ino,
+				(unsigned int)ctx->inode->i_sb->s_dev);
 		atomic_inc(&n_enoent_perm);
 		ctx->ret = -ENOENT;
 		return 1;
