@@ -2717,12 +2717,16 @@ SUS_PATH_REG(readlink_hook, "inode_readlink");
  * bit for the slot is set and the inline install succeeds; the LSM hook above
  * stays the fallback for every kernel where either is not true. */
 static bool sus_path_perm_inline;
+static atomic_t n_vfs_perm_enter = ATOMIC_INIT(0);
 
 static int sus_path_vfs_perm_pre(void *p)
 {
 	struct susfs_inode_ctx *ctx = p;
 
+	if (atomic_inc_return(&n_vfs_perm_enter) == 1)
+		pr_info("sus_path: vfs inode_permission consumer entered\n");
 	if (ctx->inode && sus_path_inode_hidden(ctx->inode)) {
+		atomic_inc(&n_enoent_perm);
 		ctx->ret = -ENOENT;
 		return 1;
 	}
