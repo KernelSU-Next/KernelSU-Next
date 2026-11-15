@@ -1,172 +1,47 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * susfs_avc_spoof.c - hide the KernelSU su domain from SELinux AVC audit logs (SUSFS AVC_LOG_SPOOFING), LKM port: upstream
- * prints a priv_app context in place of the su domain, hiding the "denied { ... } tcontext=u:r:su:s0" lines that root-hiding
- * detectors grep for.  Rewriting tsid in place makes the hooked function's own security_sid_to_context() emit the priv_app
- * context - equivalent to upstream's string swap.  The sids are resolved at init time (process context) via EXPORT_SYMBOL
- * security_secctx_to_secid(), with module_param overrides; interface is /proc/susfs_avc_spoof (write "1"/"0", read to query).
+ * susfs_avc_spoof.c - hide the KernelSU su domain from SELinux AVC audit logs
+ * (SUSFS AVC_LOG_SPOOFING), LKM port.  This file is the F layer: it owns the
+ * hook object, the /proc interface and the supercall, and drives the policy
+ * layer for arm/disarm.  The decision itself lives in susfs_avc_policy.c, the
+ * state in susfs_avc_data.c.
  */
 #include <linux/module.h>
-#include <linux/kprobes.h>
 #include <linux/security.h>
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/uaccess.h>
 #include <linux/string.h>
 #include <linux/cred.h>	/* current_uid(), control-node gate */
-#include <linux/mutex.h>	/* avc_ctl_lock: serialises the arm/disarm pair */
 #include <linux/version.h>	/* LINUX_VERSION_CODE: slow_avc_audit() lost its leading `state` in 6.4 */
 #include "susfs_abi.h"
 #include "susfs_log.h"
 #include "sus_path.h"
 #include "susfs_avc_spoof.h"
+#include "susfs_avc_data.h"
+#include "susfs_avc_policy.h"
 #include "susfs_control.h"
-#include "susfs_kprobe.h"
 #include "susfs_hooks.h"
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 
-/* module_param overrides for the two domains: the default su domain is the SukiSU variant ("ksu"), stock
- * KernelSU uses "su".  The sid is resolved at init time via security_secctx_to_secid(). */
-static char avc_su_ctx[128] = "u:r:ksu:s0";
-static char avc_priv_app_ctx[128] = "u:r:priv_app:s0:c512,c768";
-module_param_string(avc_su_ctx, avc_su_ctx, sizeof(avc_su_ctx), 0644);
-module_param_string(avc_priv_app_ctx, avc_priv_app_ctx, sizeof(avc_priv_app_ctx), 0644);
+module_param_string(avc_su_ctx, susfs_avc_su_ctx, sizeof(susfs_avc_su_ctx), 0644);
+module_param_string(avc_priv_app_ctx, susfs_avc_priv_app_ctx,
+		    sizeof(susfs_avc_priv_app_ctx), 0644);
 
-static u32 avc_su_sid;
-static u32 avc_priv_app_sid;
-static bool avc_spoof_enabled;
-static bool avc_registered;
-
-/* slow_avc_audit(ssid, tsid, tclass, requested, audited, denied, result, a) - tsid is arg #2
- * (regs->regs[1]), a u32 in the low bits.
- *
- * UP TO v6.3 the prototype had a leading `struct selinux_state *state`, so tsid sat in arg #3
- * (regs->regs[2]).  v6.4 dropped that argument and everything shifted down by one: reading
- * regs->regs[2] on 6.4+ would read **tclass** (a small 1..~100 class number) instead of the
- * target sid, so no audit ever matched and the spoof silently did nothing - and in the one
- * case where a tclass could equal the su sid, the write-back below would clobber the tclass
- * argument instead, which audit then indexes secclass_map[] with.  Gate on the version, and
- * read and write the SAME argument.
- *
- * avc_audit_post_callback is static and LTO-inlined into
- * slow_avc_audit (noinline), so its kallsyms symbol is a leftover; slow_avc_audit has a real out-of-line copy.
- * This handler runs in interrupt context (no sleep), so it only rewrites the register. */
-static atomic_t avc_hit_count = ATOMIC_INIT(0);
-static atomic_t avc_enter_count = ATOMIC_INIT(0);
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0)
-#define AVC_SSID_REG	0
-#define AVC_TSID_REG	1
-#else
-#define AVC_SSID_REG	1
-#define AVC_TSID_REG	2
-#endif
-
-/* Serialises the arm/disarm pair.  register_kprobe() resolves .symbol_name only while .addr is
- * NULL and answers -EINVAL once both are set, so a *successful* registration by another task
- * makes this task's register_kprobe() fail - and the failure branch below clears .addr.  Without
- * this lock that clears the address of a probe that is LIVE: unregister_kprobes() only runs a
- * probe's bottom half `if (kps[i]->addr)`, so the breakpoint then survives the unload with its
- * handler pointing into freed module text.  Two independent entries reach avc_register()
- * (/proc/susfs_avc_spoof and the supercall, which runs in each caller's task_work), which is the
- * same shape sus_mount_ctl_lock and or_lock were added for. */
-static DEFINE_MUTEX(avc_ctl_lock);
-
-/* Set by susfs_avc_spoof_exit() while it holds the lock; registration refuses afterwards.  The
- * /proc node holds no module reference, so a write already inside avc_proc_write() can reach
- * avc_register() during teardown and install the probe again after it was disarmed - its handler
- * would then point into a module that is about to be freed. */
-static bool avc_exiting;
-
-static int avc_pre_consumer(void *ctx)
-{
-	struct susfs_avc_ctx *c = ctx;
-	bool hit = false;
-
-	atomic_inc(&avc_enter_count);
-	if (!avc_su_sid || !avc_priv_app_sid)
-		return 0;
-	if (c->ssid == avc_su_sid) {
-		c->ssid = avc_priv_app_sid;
-		hit = true;
-	}
-	if (c->tsid == avc_su_sid) {
-		c->tsid = avc_priv_app_sid;
-		hit = true;
-	}
-	if (hit)
-		atomic_inc(&avc_hit_count);
-	return 0;
-}
-
-static struct susfs_hook avc_hook = {
+struct susfs_hook susfs_avc_hook = {
 	.owner = "avc_spoof",
 	.name = "slow_avc_audit",
 	.target = SUSFS_HOOK_TARGET_AVC_AUDIT,
-	.pre = avc_pre_consumer,
+	.pre = susfs_avc_pre_consumer,
 };
-
-static int avc_register(void)
-{
-	int rc;
-
-	mutex_lock(&avc_ctl_lock);
-	if (avc_exiting) {
-		mutex_unlock(&avc_ctl_lock);
-		return -ENODEV;
-	}
-	if (avc_registered) {
-		mutex_unlock(&avc_ctl_lock);
-		return 0;
-	}
-	/* The handler would bail out on every call, so report it here instead of arming a probe
-	 * that can never spoof anything. */
-	if (!avc_su_sid || !avc_priv_app_sid) {
-		mutex_unlock(&avc_ctl_lock);
-		pr_warn("avc_spoof: su_sid=%u priv_app_sid=%u - both contexts must resolve against this device's policy (override with avc_su_ctx=/avc_priv_app_ctx=)\n",
-			avc_su_sid, avc_priv_app_sid);
-		return -EOPNOTSUPP;
-	}
-	rc = susfs_hook_register(&avc_hook);
-	if (rc < 0) {
-		mutex_unlock(&avc_ctl_lock);
-		return rc;
-	}
-	avc_registered = true;
-	mutex_unlock(&avc_ctl_lock);
-	if (rc == SUSFS_HOOK_FALLBACK)
-		SUSFS_LOGI("susfs_avc_spoof: slow_avc_audit installed on fallback backend\n");
-	else
-		SUSFS_LOGI("susfs_avc_spoof: slow_avc_audit installed inline\n");
-	return 0;
-}
-
-/* Caller must hold avc_ctl_lock.  Kept separate from avc_unregister() because the exit path has to
- * do the disarm and "refuse further registration" in ONE critical section - something the /proc
- * write path (which also disarms, but must stay re-enablable) must not do. */
-static void avc_unregister_locked(void)
-{
-	if (!avc_registered)
-		return;
-	susfs_hook_unregister(&avc_hook);
-	avc_registered = false;
-	/* Reported only for a real disarm: writing '0' when nothing was armed (or a second disable)
-	 * used to be silent and must stay silent. */
-	SUSFS_LOGI("susfs_avc_spoof: hook removed\n");
-}
-
-static void avc_unregister(void)
-{
-	mutex_lock(&avc_ctl_lock);
-	avc_unregister_locked();
-	mutex_unlock(&avc_ctl_lock);
-}
 
 static int avc_proc_show(struct seq_file *m, void *v)
 {
 	seq_printf(m, "%d (su_sid=%u priv_app_sid=%u enter=%d hits=%d)\n",
-		   avc_spoof_enabled ? 1 : 0, avc_su_sid, avc_priv_app_sid,
-		   atomic_read(&avc_enter_count), atomic_read(&avc_hit_count));
+		   susfs_avc_spoof_enabled ? 1 : 0, susfs_avc_su_sid,
+		   susfs_avc_priv_app_sid,
+		   atomic_read(&susfs_avc_enter_count),
+		   atomic_read(&susfs_avc_hit_count));
 	return 0;
 }
 
@@ -192,14 +67,14 @@ static ssize_t avc_proc_write(struct file *file, const char __user *buf,
 		return -EFAULT;
 
 	if (c == '1') {
-		if (!avc_spoof_enabled) {
-			rc = avc_register();
+		if (!susfs_avc_spoof_enabled) {
+			rc = susfs_avc_register(&susfs_avc_hook);
 			if (!rc)
-				avc_spoof_enabled = true;
+				susfs_avc_spoof_enabled = true;
 		}
 	} else if (c == '0') {
-		avc_unregister();
-		avc_spoof_enabled = false;
+		susfs_avc_unregister(&susfs_avc_hook);
+		susfs_avc_spoof_enabled = false;
 	} else {
 		/* Only '0' and '1' are the protocol. */
 		return -EINVAL;
@@ -229,23 +104,29 @@ int susfs_avc_spoof_init(void)
 {
 	int err;
 
-	err = security_secctx_to_secid(avc_su_ctx, strlen(avc_su_ctx), &avc_su_sid);
-	if (err) {
-		pr_warn("avc_spoof: secctx_to_secid(%s) failed %d\n", avc_su_ctx, err);
-		avc_su_sid = 0;
-	}
-	err = security_secctx_to_secid(avc_priv_app_ctx, strlen(avc_priv_app_ctx),
-				       &avc_priv_app_sid);
+	susfs_avc_data_init();
+
+	err = security_secctx_to_secid(susfs_avc_su_ctx, strlen(susfs_avc_su_ctx),
+				       &susfs_avc_su_sid);
 	if (err) {
 		pr_warn("avc_spoof: secctx_to_secid(%s) failed %d\n",
-			avc_priv_app_ctx, err);
-		avc_priv_app_sid = 0;
+			susfs_avc_su_ctx, err);
+		susfs_avc_su_sid = 0;
+	}
+	err = security_secctx_to_secid(susfs_avc_priv_app_ctx,
+				       strlen(susfs_avc_priv_app_ctx),
+				       &susfs_avc_priv_app_sid);
+	if (err) {
+		pr_warn("avc_spoof: secctx_to_secid(%s) failed %d\n",
+			susfs_avc_priv_app_ctx, err);
+		susfs_avc_priv_app_sid = 0;
 	}
 	SUSFS_LOGI("avc_spoof: su_sid=%u (%s), priv_app_sid=%u (%s)\n",
-		avc_su_sid, avc_su_ctx, avc_priv_app_sid, avc_priv_app_ctx);
+		susfs_avc_su_sid, susfs_avc_su_ctx,
+		susfs_avc_priv_app_sid, susfs_avc_priv_app_ctx);
 
-	/* Only the /proc node is optional: avc_register() installs the hook whenever the feature is switched
-	 * on, supercall included.  0777 so DAC passes and sus_path's LSM layer gets to answer ENOENT. */
+	/* Only the /proc node is optional: susfs_avc_register() installs the hook whenever the feature is
+	 * switched on, supercall included.  0777 so DAC passes and sus_path's LSM layer gets to answer ENOENT. */
 	if (susfs_control_node_allowed()) {
 		avc_proc_entry = proc_create("susfs_avc_spoof", 0777, NULL,
 					     &avc_proc_ops);
@@ -264,12 +145,9 @@ void susfs_avc_spoof_exit(void)
 {
 	/* One critical section for "no more registrations" and the disarm: a /proc write holds no
 	 * module reference and can be inside avc_proc_write() right now. */
-	mutex_lock(&avc_ctl_lock);
-	avc_exiting = true;
-	avc_unregister_locked();
-	mutex_unlock(&avc_ctl_lock);
+	susfs_avc_unregister_for_exit(&susfs_avc_hook);
 
-	avc_spoof_enabled = false;
+	susfs_avc_spoof_enabled = false;
 	if (avc_proc_entry) {
 		proc_remove(avc_proc_entry);
 		avc_proc_entry = NULL;
@@ -287,18 +165,18 @@ void susfs_avc_spoof_supercall(void __user **arg)
 	}
 
 	if (info.enabled) {
-		if (!avc_spoof_enabled) {
-			int rc = avc_register();
+		if (!susfs_avc_spoof_enabled) {
+			int rc = susfs_avc_register(&susfs_avc_hook);
 
 			if (rc) {
 				info.err = rc;
 				goto out;
 			}
-			avc_spoof_enabled = true;
+			susfs_avc_spoof_enabled = true;
 		}
 	} else {
-		avc_unregister();
-		avc_spoof_enabled = false;
+		susfs_avc_unregister(&susfs_avc_hook);
+		susfs_avc_spoof_enabled = false;
 	}
 	info.err = 0;
 	SUSFS_LOGI("avc_spoof: %s (supercall)\n", info.enabled ? "enabled" : "disabled");
