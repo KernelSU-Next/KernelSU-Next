@@ -12,7 +12,9 @@
 #include <linux/uaccess.h>
 #include "susfs_abi.h"
 #include "susfs_log.h"
-#include "susfs.h"	/* susfs_abi_path_ok */
+#include "spoof_cmdline.h"
+#include "susfs_core.h"
+#include "susfs_helpers.h"
 
 /* unexported static var; ksud insmod relocates it via kallsyms */
 extern char *saved_boot_config;

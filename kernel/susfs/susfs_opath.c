@@ -66,7 +66,8 @@
 
 #include "symbol_resolver.h"
 #include "susfs_log.h"
-#include "susfs.h"		/* susfs_control_node_allowed(), sus_path_inode_hidden_public() */
+#include "sus_path.h"
+#include "susfs_control.h"
 #include "susfs_opath.h"
 #include "susfs_fp_hook.h"
 #include "susfs_hooks.h"

@@ -25,7 +25,15 @@
 #include <linux/bitmap.h>
 #include "susfs_abi.h"
 #include "susfs_log.h"
-#include "susfs.h"
+#include "spoof_cmdline.h"
+#include "sus_map.h"
+#include "sus_mount.h"
+#include "sus_path.h"
+#include "susfs_avc_spoof.h"
+#include "susfs_kstat.h"
+#include "susfs_open_redirect.h"
+#include "susfs_supercall.h"
+#include "susfs_uname.h"
 #include "susfs_fp_hook.h"
 #include "susfs_hooks.h"
 

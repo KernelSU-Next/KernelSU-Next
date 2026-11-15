@@ -61,7 +61,7 @@
 #include <asm/fixmap.h>
 #include <asm/memory.h>
 #include <trace/events/syscalls.h>
-#include "susfs.h"
+#include "susfs_core.h"
 #include "susfs_log.h"
 #include "symbol_resolver.h"
 

@@ -10,7 +10,7 @@
 #include <linux/string.h>
 #include <linux/module.h>
 
-#include "susfs.h"
+#include "sus_path.h"
 #include "susfs_create_op.h"
 #include "susfs_create_policy.h"
 #include "susfs_create_view.h"

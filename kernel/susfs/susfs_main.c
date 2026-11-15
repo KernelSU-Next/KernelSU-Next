@@ -20,7 +20,20 @@
 #include "ksu_allow_gate.h"	/* KernelSU's allow predicate: the control-node gate */
 #include "btf_layout.h"		/* the SELinux inode_security_struct.sid offset, by BTF */
 #include "lsm_hook.h"
-#include "susfs.h"
+#include "spoof_cmdline.h"
+#include "sus_map.h"
+#include "sus_mount.h"
+#include "sus_path.h"
+#include "susfs_avc_spoof.h"
+#include "susfs_control.h"
+#include "susfs_core.h"
+#include "susfs_create_gate.h"
+#include "susfs_dirent.h"
+#include "susfs_hide_syms.h"
+#include "susfs_kstat.h"
+#include "susfs_open_redirect.h"
+#include "susfs_supercall.h"
+#include "susfs_uname.h"
 #include "susfs_opath.h"	/* SUSFS_OPATH_NODE + the layer's init/exit */
 #include "susfs_fp_hook.h"	/* susfs_fp_init: the sys_call_table cache every fp layer installs through */
 #include "susfs_hook_map.h"	/* the loader-patched inline capability map */
@@ -32,7 +45,7 @@
 struct susfs_hook_map susfs_hook_map
 	__section(SUSFS_HOOK_MAP_SECTION) __aligned(8) __used = { };
 
-/* The module's own name lives in susfs.h (SUSFS_LKM_MODULE_NAME / SUSFS_LKM_SYSFS_DIR):
+/* The module's own name lives in susfs_core.h (SUSFS_LKM_MODULE_NAME / SUSFS_LKM_SYSFS_DIR):
  * /sys/module's directory and the rules that hide it (susfs_hide_syms.c) must agree, and the
  * version lives there as well (SUSFS_LKM_VERSION) because the load-time guard can refuse the
  * module before this file's banner runs. */

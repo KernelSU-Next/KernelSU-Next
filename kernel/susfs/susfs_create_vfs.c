@@ -21,7 +21,6 @@
 #include <linux/user_namespace.h>
 #endif
 
-#include "susfs.h"
 #include "symbol_resolver.h"
 #include "susfs_log.h"
 #include "susfs_create_vfs.h"

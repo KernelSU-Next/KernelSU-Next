@@ -18,7 +18,9 @@
 #include <linux/version.h>	/* LINUX_VERSION_CODE: slow_avc_audit() lost its leading `state` in 6.4 */
 #include "susfs_abi.h"
 #include "susfs_log.h"
-#include "susfs.h"	/* susfs_expose_proc */
+#include "sus_path.h"
+#include "susfs_avc_spoof.h"
+#include "susfs_control.h"
 #include "susfs_kprobe.h"
 #include "susfs_hooks.h"
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
