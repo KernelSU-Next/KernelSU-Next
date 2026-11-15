@@ -9,58 +9,65 @@
 
 #include "susfs_avc_data.h"
 #include "susfs_avc_policy.h"
+#include "susfs_avc_view.h"
 #include "susfs_hooks.h"
 #include "susfs_log.h"
+
+void susfs_avc_policy_init(u32 su_sid, u32 priv_app_sid)
+{
+	susfs_avc_data_init(su_sid, priv_app_sid);
+}
+
+void susfs_avc_status_read(struct susfs_avc_status *status)
+{
+	mutex_lock(&susfs_avc_ctl_lock);
+	status->enabled = susfs_avc_registered;
+	status->su_sid = susfs_avc_su_sid;
+	status->priv_app_sid = susfs_avc_priv_app_sid;
+	status->enter = atomic_read(&susfs_avc_enter_count);
+	status->hits = atomic_read(&susfs_avc_hit_count);
+	mutex_unlock(&susfs_avc_ctl_lock);
+}
 
 int susfs_avc_pre_consumer(void *ctx)
 {
 	struct susfs_avc_ctx *c = ctx;
-	bool hit = false;
+	struct susfs_avc_view v = {
+		.ssid = c->ssid,
+		.tsid = c->tsid,
+		.su_sid = susfs_avc_su_sid,
+		.priv_app_sid = susfs_avc_priv_app_sid,
+	};
 
 	atomic_inc(&susfs_avc_enter_count);
-	if (!susfs_avc_su_sid || !susfs_avc_priv_app_sid)
-		return 0;
-	if (c->ssid == susfs_avc_su_sid) {
-		c->ssid = susfs_avc_priv_app_sid;
-		hit = true;
-	}
-	if (c->tsid == susfs_avc_su_sid) {
-		c->tsid = susfs_avc_priv_app_sid;
-		hit = true;
-	}
-	if (hit)
+	if (susfs_avc_decide_core(&v)) {
+		c->ssid = v.ssid;
+		c->tsid = v.tsid;
 		atomic_inc(&susfs_avc_hit_count);
+	}
 	return 0;
 }
 
-int susfs_avc_register(struct susfs_hook *hook)
+/* Caller holds susfs_avc_ctl_lock throughout the entire transition. */
+static int susfs_avc_register_locked(struct susfs_hook *hook)
 {
 	int rc;
 
-	mutex_lock(&susfs_avc_ctl_lock);
-	if (susfs_avc_exiting) {
-		mutex_unlock(&susfs_avc_ctl_lock);
+	if (susfs_avc_exiting)
 		return -ENODEV;
-	}
-	if (susfs_avc_registered) {
-		mutex_unlock(&susfs_avc_ctl_lock);
+	if (susfs_avc_registered)
 		return 0;
-	}
 	/* The handler would bail out on every call, so report it here instead of arming a
 	 * probe that can never spoof anything. */
 	if (!susfs_avc_su_sid || !susfs_avc_priv_app_sid) {
-		mutex_unlock(&susfs_avc_ctl_lock);
 		pr_warn("avc_spoof: su_sid=%u priv_app_sid=%u - both contexts must resolve against this device's policy (override with avc_su_ctx=/avc_priv_app_ctx=)\n",
 			susfs_avc_su_sid, susfs_avc_priv_app_sid);
 		return -EOPNOTSUPP;
 	}
 	rc = susfs_hook_register(hook);
-	if (rc < 0) {
-		mutex_unlock(&susfs_avc_ctl_lock);
+	if (rc < 0)
 		return rc;
-	}
 	susfs_avc_registered = true;
-	mutex_unlock(&susfs_avc_ctl_lock);
 	if (rc == SUSFS_HOOK_FALLBACK)
 		SUSFS_LOGI("susfs_avc_spoof: slow_avc_audit installed on fallback backend\n");
 	else
@@ -68,7 +75,7 @@ int susfs_avc_register(struct susfs_hook *hook)
 	return 0;
 }
 
-/* Caller must hold susfs_avc_ctl_lock.  Kept separate from susfs_avc_unregister()
+/* Caller must hold susfs_avc_ctl_lock.  Kept separate from susfs_avc_set_enabled()
  * because the exit path has to do the disarm and "refuse further registration" in
  * ONE critical section - something the /proc write path (which also disarms, but
  * must stay re-enablable) must not do. */
@@ -83,11 +90,17 @@ static void susfs_avc_unregister_locked(struct susfs_hook *hook)
 	SUSFS_LOGI("susfs_avc_spoof: hook removed\n");
 }
 
-void susfs_avc_unregister(struct susfs_hook *hook)
+int susfs_avc_set_enabled(struct susfs_hook *hook, bool enabled)
 {
+	int rc = 0;
+
 	mutex_lock(&susfs_avc_ctl_lock);
-	susfs_avc_unregister_locked(hook);
+	if (enabled)
+		rc = susfs_avc_register_locked(hook);
+	else
+		susfs_avc_unregister_locked(hook);
 	mutex_unlock(&susfs_avc_ctl_lock);
+	return rc;
 }
 
 void susfs_avc_unregister_for_exit(struct susfs_hook *hook)

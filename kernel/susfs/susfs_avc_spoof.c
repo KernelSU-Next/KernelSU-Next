@@ -18,17 +18,20 @@
 #include "susfs_log.h"
 #include "sus_path.h"
 #include "susfs_avc_spoof.h"
-#include "susfs_avc_data.h"
 #include "susfs_avc_policy.h"
 #include "susfs_control.h"
 #include "susfs_hooks.h"
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 
-module_param_string(avc_su_ctx, susfs_avc_su_ctx, sizeof(susfs_avc_su_ctx), 0644);
-module_param_string(avc_priv_app_ctx, susfs_avc_priv_app_ctx,
-		    sizeof(susfs_avc_priv_app_ctx), 0644);
+/* Input configuration belongs to the adapter. As before, changing a parameter
+ * after init changes its text only; resolved SIDs stay fixed for this load. */
+static char avc_su_ctx[128] = "u:r:ksu:s0";
+static char avc_priv_app_ctx[128] = "u:r:priv_app:s0:c512,c768";
+module_param_string(avc_su_ctx, avc_su_ctx, sizeof(avc_su_ctx), 0644);
+module_param_string(avc_priv_app_ctx, avc_priv_app_ctx,
+		    sizeof(avc_priv_app_ctx), 0644);
 
-struct susfs_hook susfs_avc_hook = {
+static struct susfs_hook susfs_avc_hook = {
 	.owner = "avc_spoof",
 	.name = "slow_avc_audit",
 	.target = SUSFS_HOOK_TARGET_AVC_AUDIT,
@@ -37,11 +40,12 @@ struct susfs_hook susfs_avc_hook = {
 
 static int avc_proc_show(struct seq_file *m, void *v)
 {
+	struct susfs_avc_status status;
+
+	susfs_avc_status_read(&status);
 	seq_printf(m, "%d (su_sid=%u priv_app_sid=%u enter=%d hits=%d)\n",
-		   susfs_avc_spoof_enabled ? 1 : 0, susfs_avc_su_sid,
-		   susfs_avc_priv_app_sid,
-		   atomic_read(&susfs_avc_enter_count),
-		   atomic_read(&susfs_avc_hit_count));
+		   status.enabled ? 1 : 0, status.su_sid,
+		   status.priv_app_sid, status.enter, status.hits);
 	return 0;
 }
 
@@ -66,19 +70,11 @@ static ssize_t avc_proc_write(struct file *file, const char __user *buf,
 	if (copy_from_user(&c, buf, 1))
 		return -EFAULT;
 
-	if (c == '1') {
-		if (!susfs_avc_spoof_enabled) {
-			rc = susfs_avc_register(&susfs_avc_hook);
-			if (!rc)
-				susfs_avc_spoof_enabled = true;
-		}
-	} else if (c == '0') {
-		susfs_avc_unregister(&susfs_avc_hook);
-		susfs_avc_spoof_enabled = false;
-	} else {
+	if (c != '1' && c != '0') {
 		/* Only '0' and '1' are the protocol. */
 		return -EINVAL;
 	}
+	rc = susfs_avc_set_enabled(&susfs_avc_hook, c == '1');
 
 	if (rc) {
 		pr_warn("avc_spoof: enable failed %d\n", rc);
@@ -103,29 +99,26 @@ static struct proc_dir_entry *avc_proc_entry;
 int susfs_avc_spoof_init(void)
 {
 	int err;
+	u32 su_sid = 0, priv_app_sid = 0;
 
-	susfs_avc_data_init();
-
-	err = security_secctx_to_secid(susfs_avc_su_ctx, strlen(susfs_avc_su_ctx),
-				       &susfs_avc_su_sid);
+	err = security_secctx_to_secid(avc_su_ctx, strlen(avc_su_ctx), &su_sid);
 	if (err) {
 		pr_warn("avc_spoof: secctx_to_secid(%s) failed %d\n",
-			susfs_avc_su_ctx, err);
-		susfs_avc_su_sid = 0;
+			avc_su_ctx, err);
+		su_sid = 0;
 	}
-	err = security_secctx_to_secid(susfs_avc_priv_app_ctx,
-				       strlen(susfs_avc_priv_app_ctx),
-				       &susfs_avc_priv_app_sid);
+	err = security_secctx_to_secid(avc_priv_app_ctx, strlen(avc_priv_app_ctx),
+				       &priv_app_sid);
 	if (err) {
 		pr_warn("avc_spoof: secctx_to_secid(%s) failed %d\n",
-			susfs_avc_priv_app_ctx, err);
-		susfs_avc_priv_app_sid = 0;
+			avc_priv_app_ctx, err);
+		priv_app_sid = 0;
 	}
 	SUSFS_LOGI("avc_spoof: su_sid=%u (%s), priv_app_sid=%u (%s)\n",
-		susfs_avc_su_sid, susfs_avc_su_ctx,
-		susfs_avc_priv_app_sid, susfs_avc_priv_app_ctx);
+		su_sid, avc_su_ctx, priv_app_sid, avc_priv_app_ctx);
+	susfs_avc_policy_init(su_sid, priv_app_sid);
 
-	/* Only the /proc node is optional: susfs_avc_register() installs the hook whenever the feature is
+	/* Only the /proc node is optional: susfs_avc_set_enabled() installs the hook whenever the feature is
 	 * switched on, supercall included.  0777 so DAC passes and sus_path's LSM layer gets to answer ENOENT. */
 	if (susfs_control_node_allowed()) {
 		avc_proc_entry = proc_create("susfs_avc_spoof", 0777, NULL,
@@ -147,7 +140,6 @@ void susfs_avc_spoof_exit(void)
 	 * module reference and can be inside avc_proc_write() right now. */
 	susfs_avc_unregister_for_exit(&susfs_avc_hook);
 
-	susfs_avc_spoof_enabled = false;
 	if (avc_proc_entry) {
 		proc_remove(avc_proc_entry);
 		avc_proc_entry = NULL;
@@ -164,21 +156,9 @@ void susfs_avc_spoof_supercall(void __user **arg)
 		goto out;
 	}
 
-	if (info.enabled) {
-		if (!susfs_avc_spoof_enabled) {
-			int rc = susfs_avc_register(&susfs_avc_hook);
-
-			if (rc) {
-				info.err = rc;
-				goto out;
-			}
-			susfs_avc_spoof_enabled = true;
-		}
-	} else {
-		susfs_avc_unregister(&susfs_avc_hook);
-		susfs_avc_spoof_enabled = false;
-	}
-	info.err = 0;
+	info.err = susfs_avc_set_enabled(&susfs_avc_hook, info.enabled);
+	if (info.err)
+		goto out;
 	SUSFS_LOGI("avc_spoof: %s (supercall)\n", info.enabled ? "enabled" : "disabled");
 out:
 	/* upstream writes back only ->err for input-type commands */
