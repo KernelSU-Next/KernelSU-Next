@@ -9,15 +9,8 @@
 
 #include "susfs_avc_data.h"
 
-/* module_param overrides for the two domains: the default su domain is the SukiSU
- * variant ("ksu"), stock KernelSU uses "su".  The sid is resolved at init time via
- * security_secctx_to_secid(). */
-char susfs_avc_su_ctx[SUSFS_AVC_CTX_LEN] = "u:r:ksu:s0";
-char susfs_avc_priv_app_ctx[SUSFS_AVC_CTX_LEN] = "u:r:priv_app:s0:c512,c768";
-
 u32 susfs_avc_su_sid;
 u32 susfs_avc_priv_app_sid;
-bool susfs_avc_spoof_enabled;
 bool susfs_avc_registered;
 bool susfs_avc_exiting;
 
@@ -33,7 +26,9 @@ struct mutex susfs_avc_ctl_lock;
 atomic_t susfs_avc_enter_count = ATOMIC_INIT(0);
 atomic_t susfs_avc_hit_count = ATOMIC_INIT(0);
 
-void susfs_avc_data_init(void)
+void susfs_avc_data_init(u32 su_sid, u32 priv_app_sid)
 {
 	mutex_init(&susfs_avc_ctl_lock);
+	susfs_avc_su_sid = su_sid;
+	susfs_avc_priv_app_sid = priv_app_sid;
 }
