@@ -12,7 +12,8 @@
 #include <linux/cred.h>	/* current_uid(), control-node gate */
 #include "susfs_abi.h"
 #include "susfs_log.h"
-#include "susfs.h"	/* susfs_expose_proc */
+#include "sus_path.h"
+#include "susfs_control.h"
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 
 static bool log_enabled = true;

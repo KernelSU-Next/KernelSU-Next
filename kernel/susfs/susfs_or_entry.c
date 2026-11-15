@@ -58,7 +58,8 @@
 #include <linux/err.h>
 #include <linux/atomic.h>
 #include <linux/limits.h>
-#include "susfs.h"
+#include "susfs_opath.h"
+#include "susfs_open_redirect.h"
 #include "susfs_log.h"
 #include "symbol_resolver.h"
 #include "susfs_or_entry.h"

@@ -19,7 +19,7 @@
 
 #include "ksu_allow_gate.h"
 #include "symbol_resolver.h"
-#include "susfs.h"		/* susfs_expose_proc: the warning below depends on it */
+#include "susfs_control.h"
 #include "susfs_log.h"
 
 static const char *const ksu_allow_symbols[] = {

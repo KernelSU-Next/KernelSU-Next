@@ -40,7 +40,7 @@
 #include <linux/limits.h>	/* NAME_MAX/PATH_MAX: the name a filldir callback hands over */
 #include <asm/ptrace.h>
 
-#include "susfs.h"
+#include "susfs_dirent.h"
 #include "susfs_log.h"
 #include "symbol_resolver.h"
 

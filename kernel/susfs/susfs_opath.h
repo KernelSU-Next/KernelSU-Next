@@ -3,12 +3,14 @@
  * susfs_opath.h - the O_PATH layer: its control entry points only.
  *
  * The hidden decision this layer post-checks with belongs to sus_path and is declared
- * there (susfs.h), next to sus_path_init()/sus_path_lsm_active(): a header for one layer
+ * there (sus_path.h), next to sus_path_init()/sus_path_lsm_active(): a header for one layer
  * must not pretend to own another layer's API.
  */
 
 #ifndef __SUSFS_OPATH_H
 #define __SUSFS_OPATH_H
+
+#include <linux/types.h>
 
 /* Both are read at INIT, like fail_layer in susfs_main.c, so they belong on the insmod
  * command line (`insmod susfs_guard_lkm.ko opath_test=2`); a later write to
@@ -31,5 +33,15 @@ void susfs_opath_exit(void);
  * matches nothing.  Registered in susfs_main.c's self-hide list like every other node of
  * this module (0777 plus sus_path's LSM layer answering ENOENT, see susfs_main.c). */
 #define SUSFS_OPATH_NODE "/proc/susfs_opath"
+
+/* The O_PATH layer's own state, for the name layer that borrows its five open entries: true only when
+ * at least one of those entries really carries its wrapper (opath_dump=1 and opath_test=N both leave
+ * entries unwrapped while reporting success - see susfs_opath.c). */
+bool susfs_opath_armed(void);
+
+/* The same layer's post-check, called by open_redirect's name layer with the fd it produced itself, so
+ * an O_PATH answer is judged by one implementation whichever of the two produced it.  A negative
+ * argument (an errno) passes straight through. */
+long susfs_opath_post_fd(long ret);
 
 #endif /* __SUSFS_OPATH_H */

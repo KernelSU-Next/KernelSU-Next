@@ -36,7 +36,7 @@
 #include <linux/fs.h>
 #include <asm/unistd.h>
 
-#include "susfs.h"
+#include "susfs_create_gate.h"
 #include "susfs_fp_hook.h"
 #include "susfs_hooks.h"
 #include "susfs_create_data.h"

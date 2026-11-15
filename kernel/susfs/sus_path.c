@@ -56,7 +56,10 @@
 #include "sus_path_data.h"
 #include "sus_path_view.h"
 #include "susfs_create_view.h"
-#include "susfs.h"	/* susfs_abi_path_ok */
+#include "sus_path.h"
+#include "susfs_control.h"
+#include "susfs_dirent.h"
+#include "susfs_helpers.h"
 #include "symbol_resolver.h"	/* find_kernel_symbol_exact, for optional compat probes */
 #include "ksu_umount_gate.h"	/* susfs_is_current_proc_umounted_app (issue #34) */
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
@@ -93,7 +96,7 @@
  * 195/196/197 shmctl/shmat/shmdt, while AArch32 gives 141/217 to the two getdents and
  * 195/196/197 to stat64/lstat64/fstat64.  Every match is therefore gated on the caller's ABI -
  * which table entry the call came through now, and the same way in susfs_kstat.c for the stat
- * family.  The two listing numbers themselves live in susfs.h: the table entries that drive this
+ * family.  The two listing numbers themselves live in susfs_dirent.h: the table entries that drive this
  * filter (susfs_kstat.c) have to name them too. */
 
 struct linux_dirent64 {

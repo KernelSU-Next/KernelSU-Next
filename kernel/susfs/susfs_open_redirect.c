@@ -57,7 +57,10 @@
 #include <linux/security.h>	/* security_secctx_to_secid */
 #include "susfs_abi.h"
 #include "susfs_log.h"
-#include "susfs.h"		/* susfs_expose_proc, sus_path_lsm_active */
+#include "sus_path.h"
+#include "susfs_control.h"
+#include "susfs_helpers.h"
+#include "susfs_open_redirect.h"
 #include "symbol_resolver.h"	/* find_kernel_symbol_exact */
 #include "ksu_umount_gate.h"	/* susfs_is_current_proc_umounted_app (issue #34) */
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
@@ -168,7 +171,7 @@ static unsigned int or_free[SUS_OR_MAX];
 static unsigned int or_free_n;
 /* How many rules are live right now, which is what the name-layer hook reads before it resolves anything: the hook runs
  * for every open() on the system, so a table that once had a rule must not keep costing a path lookup after that rule
- * was deleted.  Written under or_lock, read locklessly (susfs.h states the contract). */
+ * was deleted.  Written under or_lock, read locklessly (susfs_open_redirect.h states the contract). */
 unsigned int susfs_open_redirect_rules;
 static DEFINE_MUTEX(or_lock);
 

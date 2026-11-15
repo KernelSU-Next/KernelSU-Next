@@ -19,7 +19,10 @@
 #include <linux/slab.h>		/* kvmalloc()/kvfree() on 6.1+ */
 #include <linux/mm.h>		/* kvmalloc()/kvfree() on 5.10-5.15 */
 #include "susfs_log.h"
-#include "susfs.h"		/* sus_path_add_self_hidden / sus_path_del_path */
+#include "sus_path.h"
+#include "susfs_control.h"
+#include "susfs_core.h"
+#include "susfs_hide_syms.h"
 #include "symbol_resolver.h"	/* find_kernel_symbol_exact (kallsyms_op) */
 #include "susfs_kprobe.h"	/* susfs_kp_forget_addr: a probe struct must be usable twice */
 #include "hk.h"

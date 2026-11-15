@@ -16,7 +16,8 @@
 #include <linux/version.h>
 #include "susfs_abi.h"
 #include "susfs_log.h"
-#include "susfs.h"	/* susfs_abi_path_ok */
+#include "susfs_helpers.h"
+#include "susfs_uname.h"
 #include "susfs_kprobe.h"
 #include "susfs_hook_engine.h"
 #include "susfs_hooks.h"

@@ -146,7 +146,10 @@
 #include "symbol_resolver.h"
 #include "susfs_abi.h"
 #include "susfs_log.h"
-#include "susfs.h"	/* module-wide declarations */
+#include "sus_mount.h"
+#include "sus_path.h"
+#include "susfs_control.h"
+#include "susfs_helpers.h"
 #include "sus_mount_identity.h"
 #include "sus_mount_idmap.h"
 #include "sus_mount_policy.h"
