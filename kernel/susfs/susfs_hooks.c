@@ -560,10 +560,17 @@ static void uninstall_target(struct hook_target *t)
 	if (t->backend == BACKEND_INLINE)
 		hk_inline_unhook(&t->inline_hook);
 	else if (t->backend == BACKEND_KPROBE) {
-		if (t->hook && t->hook->probes && t->hook->nprobes)
+		if (t->hook && t->hook->probes && t->hook->nprobes) {
 			raw_probes_uninstall(t->hook);
-		else
+		} else {
 			unregister_kprobe(&t->kp);
+			/* register_kprobe() writes .addr on success and never clears
+			 * it; a second register with .addr non-NULL and .symbol_name
+			 * set is -EINVAL, so an enable/disable/enable cycle failed
+			 * with -225.  Put the target back to its named state. */
+			t->kp.addr = NULL;
+			t->kp.symbol_name = t->symbol;
+		}
 	} else if (t->backend == BACKEND_TABLE) {
 		struct susfs_hook *h = t->hook;
 
