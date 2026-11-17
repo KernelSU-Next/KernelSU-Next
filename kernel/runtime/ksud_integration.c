@@ -135,7 +135,11 @@ static void load_module_rc_once(void)
 		goto out_close_file;
 	}
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
+	r = ksu_kernel_read_compat(f, module_rc_buf, fsize, &pos);
+#else
 	r = kernel_read(f, module_rc_buf, fsize, &pos);
+#endif
 
 	if (r <= 0) {
 		pr_err("module rc: read failed: %zd\n", r);
