@@ -135,7 +135,7 @@ static void load_module_rc_once(void)
 		goto out_close_file;
 	}
 
-	r = kernel_read(f, module_rc_buf, fsize, &pos);
+	r = ksu_kernel_read_compat(f, module_rc_buf, fsize, &pos);
 
 	if (r <= 0) {
 		pr_err("module rc: read failed: %zd\n", r);
