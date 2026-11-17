@@ -371,9 +371,9 @@
   <string name="module_unknown">Modulo Sconosciuto</string>
   <string name="template_example_title">Esempio</string>
   <string name="template_example_description">Questo è un modello di esempio</string>
-  <string name="susfs_builtin_loaded">SUSFS is built into the kernel</string>
-  <string name="susfs_unload_button">Unload</string>
-  <string name="susfs_unload_in_progress">Unloading SUSFS LKM</string>
-  <string name="susfs_unload_success">SUSFS LKM unloaded</string>
-  <string name="susfs_unload_failed">Failed to unload SUSFS LKM</string>
+  <string name="susfs_builtin_loaded">SUSFS è integrato nel kernel</string>
+  <string name="susfs_unload_button">Rimuovi</string>
+  <string name="susfs_unload_in_progress">Rimuovendo SUSFS LKM</string>
+  <string name="susfs_unload_success">SUSFS LKM rimosso</string>
+  <string name="susfs_unload_failed">Impossibile rimuovere SUSFS LKM</string>
 </resources>
