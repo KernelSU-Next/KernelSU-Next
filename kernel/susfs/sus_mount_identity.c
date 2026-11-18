@@ -64,7 +64,7 @@ void sus_mount_ident_add(struct mount *r, int dbg)
     }
     if (slot < 0) {
         if (n_ident >= SUS_MOUNT_IDENT_MAX) {
-            if (atomic_inc_return(&n_ident_full) == 1)
+            if ((unsigned int)atomic_inc_return(&n_ident_full) == 1u)
                 pr_warn("sus_mount: identity table full (%d), %s is NOT recognised in other namespaces\n",
                         SUS_MOUNT_IDENT_MAX,
                         devname ? devname : "(no devname)");
