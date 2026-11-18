@@ -32,6 +32,26 @@ susfs_uname_wrap(const struct pt_regs *regs)
     return ret;
 }
 
+/* Called by susfs_uname_stub (susfs_lookup_stub.S) after the original
+ * __arm64_sys_newuname returned: saved[0] is the syscall's pt_regs argument,
+ * saved[20] the real return value.  Same rewrite the kretprobe path does; the
+ * stub exists because the entry has a PAC prologue, which the C wrapper form
+ * cannot hook. */
+long __nocfi susfs_uname_decide(unsigned long *saved)
+{
+    const struct pt_regs *regs = (const struct pt_regs *)saved[0];
+    long ret = (long)saved[20];
+    struct susfs_uname_values values;
+    void __user *name;
+
+    if (ret)
+        return ret;
+    name = regs ? (void __user *)regs->regs[0] : NULL;
+    if (susfs_uname_snapshot(ret, !!name, &values))
+        susfs_uname_write_user(name, &values, false);
+    return ret;
+}
+
 static struct susfs_hook uname_hook = {
     .owner = "uname",
     .name = "newuname",

@@ -390,10 +390,10 @@ static void remove_consumer(struct hook_target *t, struct susfs_hook *hook)
 	}
 }
 
-/* The uname layer keeps its wrapper and orig pointer here so this file does not
- * need the feature's internals: install_inline() hands the trampoline over. */
-extern long susfs_uname_wrap(const struct pt_regs *regs);
-extern long (*susfs_uname_orig)(const struct pt_regs *regs);
+/* __arm64_sys_newuname has a PAC prologue, so it uses the return-hook stub
+ * (susfs_lookup_stub.S) instead of the C wrapper form. */
+extern void susfs_uname_stub(void);
+extern unsigned long susfs_uname_tramp;
 
 static int install_inline(struct hook_target *t, struct susfs_hook *h)
 {
@@ -457,12 +457,20 @@ static int install_inline(struct hook_target *t, struct susfs_hook *h)
 		t->installed = true;
 		return SUSFS_HOOK_OK;
 	}
+	if (t->slot == SUSFS_HOOK_ARM64_SYS_NEWUNAME) {
+		rc = hk_inline_hook_stub(&t->inline_hook, t->symbol,
+					 (unsigned long)susfs_uname_stub,
+					 &susfs_uname_tramp);
+		if (rc)
+			return SUSFS_HOOK_INSTALL_FAILED;
+		t->backend = BACKEND_INLINE;
+		t->installed = true;
+		return SUSFS_HOOK_OK;
+	}
 	if (t->slot == SUSFS_HOOK_SLOW_AVC_AUDIT)
 		susfs_hook_override(t->wrapper, (unsigned long)avc_wrapper);
 	else if (t->slot == SUSFS_HOOK_INODE_PERMISSION)
 		susfs_hook_override(t->wrapper, (unsigned long)inode_perm_wrapper);
-	else if (t->slot == SUSFS_HOOK_ARM64_SYS_NEWUNAME)
-		susfs_hook_override(t->wrapper, (unsigned long)susfs_uname_wrap);
 	rc = hk_inline_hook(&t->inline_hook, t->symbol, t->wrapper);
 	if (rc)
 		return SUSFS_HOOK_INSTALL_FAILED;
@@ -470,8 +478,6 @@ static int install_inline(struct hook_target *t, struct susfs_hook *h)
 		avc_orig = (avc_fn_t)t->inline_hook.orig;
 	else if (t->slot == SUSFS_HOOK_INODE_PERMISSION)
 		inode_perm_orig = (inode_perm_fn_t)t->inline_hook.orig;
-	else if (t->slot == SUSFS_HOOK_ARM64_SYS_NEWUNAME)
-		susfs_uname_orig = (long (*)(const struct pt_regs *))t->inline_hook.orig;
 	t->backend = BACKEND_INLINE;
 	t->installed = true;
 	return SUSFS_HOOK_OK;
