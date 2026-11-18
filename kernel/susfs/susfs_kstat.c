@@ -607,10 +607,14 @@ static long kstat_unlisted_seen[KSTAT_UNLISTED_SEEN];
 
 static void kstat_note_unlisted(long nr)
 {
-	int slot;
+	unsigned int slot;
 
 	atomic_inc(&n_kstat_unlisted);
-	slot = atomic_inc_return(&kstat_unlisted_next) - 1;
+	/* atomic_t is int: after ~2^31 hits the counter wraps negative, and a
+	 * negative slot indexed kstat_unlisted_seen before the array - the UBSAN
+	 * panic at kstat_sys_exit+0x364 reported in issues #110 and #201.  The
+	 * counter may still wrap; the slot must not. */
+	slot = (unsigned int)atomic_inc_return(&kstat_unlisted_next) - 1;
 	kstat_unlisted_seen[slot % KSTAT_UNLISTED_SEEN] = nr;
 }
 

@@ -49,7 +49,7 @@ void sus_mount_idmap_add(int sus_id, int shown_id, dev_t s_dev)
 		goto out;
 	}
 	if (n_idmap >= SUS_MOUNT_IDMAP_MAX) {
-		if (atomic_inc_return(&n_idmap_full) == 1)
+		if ((unsigned int)atomic_inc_return(&n_idmap_full) == 1u)
 			pr_warn("sus_mount: id map full at %d entries - further marked mounts keep their KSU-range id in statx(STATX_MNT_ID) and fdinfo; raise SUS_MOUNT_IDMAP_MAX\n",
 				SUS_MOUNT_IDMAP_MAX);
 		goto out;

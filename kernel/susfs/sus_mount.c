@@ -1195,7 +1195,7 @@ static int sus_mount_show_pre(struct kprobe *kp, struct pt_regs *regs)
         sus_mount_idmap_drop((int)r->mnt_id);
         /* mount_dbg: say why - the id, s_dev, root dentry and source are exactly
          * what sus_mount_is_ours() compared. */
-        if (mount_dbg && atomic_inc_return(&n_dbg_logged) <= 40)
+        if (mount_dbg && (unsigned int)atomic_inc_return(&n_dbg_logged) <= 40u)
             SUSFS_LOGI("sus_mount: hook: NOT ours id=%d s_dev=%u root=%px devname=%s\n",
                     r->mnt_id, (unsigned int)r->mnt.mnt_sb->s_dev,
                     r->mnt.mnt_root, r->mnt_devname ? r->mnt_devname : "none");

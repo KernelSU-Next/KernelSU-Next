@@ -736,7 +736,7 @@ static void sus_path_pending_work(struct work_struct *w)
     if (resolved > 0)
         atomic_set(&sus_path_pending_tries, 0);     /* progress: keep trying */
 
-    if (atomic_inc_return(&sus_path_pending_tries) > SUS_PATH_PENDING_TRIES) {
+    if ((unsigned int)atomic_inc_return(&sus_path_pending_tries) > SUS_PATH_PENDING_TRIES) {
         SUSFS_LOGI("sus_path: %d rule(s) still pending after %d retries (last walk rc=%d) - retry timer stops; they hide nothing until they resolve, the next add tries again\n",
                 atomic_read(&sus_path_n_pending), SUS_PATH_PENDING_TRIES,
                 atomic_read(&sus_path_pend_last_rc));
@@ -2731,18 +2731,21 @@ static atomic_t n_vfs_open_hidden = ATOMIC_INIT(0);
 static int sus_path_vfs_open_pre(void *p)
 {
 	struct susfs_inode_ctx *ctx = p;
-	int n;
+	unsigned int n;
 
 	if (!READ_ONCE(sus_path_count))
 		return 0;
-	n = atomic_inc_return(&n_vfs_open_enter);
+	/* unsigned: an int counter wraps negative after ~2^31 calls and every
+	 * "n <= 8" would then log once per entry, forever.  Wrapping at 2^32 only
+	 * re-prints the first few lines. */
+	n = (unsigned int)atomic_inc_return(&n_vfs_open_enter);
 
-	if (n <= 8)
-		pr_info("sus_path: vfs open enter #%d ino=%lu dev=%u\n", n,
+	if (n <= 8u)
+		pr_info("sus_path: vfs open enter #%u ino=%lu dev=%u\n", n,
 			ctx->inode ? (unsigned long)ctx->inode->i_ino : 0UL,
 			ctx->inode ? (unsigned int)ctx->inode->i_sb->s_dev : 0U);
 	if (ctx->inode && sus_path_inode_hidden(ctx->inode)) {
-		if (atomic_inc_return(&n_vfs_open_hidden) <= 5)
+		if ((unsigned int)atomic_inc_return(&n_vfs_open_hidden) <= 5u)
 			pr_info("sus_path: vfs_open hidden ino=%lu dev=%u\n",
 				(unsigned long)ctx->inode->i_ino,
 				(unsigned int)ctx->inode->i_sb->s_dev);
@@ -2772,20 +2775,20 @@ static atomic_t n_lookup_hidden = ATOMIC_INIT(0);
 static int sus_path_lookup_pre(void *p)
 {
 	struct susfs_inode_ctx *ctx = p;
-	int n;
+	unsigned int n;
 
 	/* Sparse case: with no rule the inline face must cost almost nothing, so
 	 * the count is checked before any counter or hash work. */
 	if (!READ_ONCE(sus_path_count))
 		return 0;
-	n = atomic_inc_return(&n_lookup_enter);
+	n = (unsigned int)atomic_inc_return(&n_lookup_enter);
 
-	if (n <= 8)
-		pr_info("sus_path: path_lookupat enter #%d ino=%lu dev=%u\n", n,
+	if (n <= 8u)
+		pr_info("sus_path: path_lookupat enter #%u ino=%lu dev=%u\n", n,
 			ctx->inode ? (unsigned long)ctx->inode->i_ino : 0UL,
 			ctx->inode ? (unsigned int)ctx->inode->i_sb->s_dev : 0U);
 	if (ctx->inode && sus_path_inode_hidden(ctx->inode)) {
-		if (atomic_inc_return(&n_lookup_hidden) <= 5)
+		if ((unsigned int)atomic_inc_return(&n_lookup_hidden) <= 5u)
 			pr_info("sus_path: lookup hidden ino=%lu dev=%u\n",
 				(unsigned long)ctx->inode->i_ino,
 				(unsigned int)ctx->inode->i_sb->s_dev);

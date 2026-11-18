@@ -668,7 +668,7 @@ static int hide_syms_s_show_pre(struct kprobe *kp, struct pt_regs *regs)
 		/* A rejected caller proves neither state: on the by-name path it may be a shared s_show
 		 * body (hiding still on) or another s_show (hiding off); with the identity resolved it is
 		 * a real mirror drift.  Only the unload counters can settle it. */
-		if (atomic_inc_return(&hide_layout_bad) == 1) {
+		if ((unsigned int)atomic_inc_return(&hide_layout_bad) == 1u) {
 			if (kallsyms_op_target)
 				pr_err("susfs_hide_syms: kallsyms m->private is not a struct kallsym_iter - the mirror drifted; /proc/kallsyms is NOT being filtered\n");
 			else
