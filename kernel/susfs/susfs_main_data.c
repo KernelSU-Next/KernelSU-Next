@@ -7,6 +7,11 @@
 #include <linux/moduleparam.h>
 #include <linux/kernel.h>
 
+#include "susfs_control.h"
+#include "sus_path.h"
+#include "susfs_opath.h"
+#include "sus_map.h"
+#include "susfs_hide_syms.h"
 #include "susfs_core.h"
 #include "susfs_hook_map.h"
 #include "susfs_main_data.h"
