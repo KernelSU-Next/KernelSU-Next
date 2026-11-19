@@ -11,6 +11,7 @@
 #include "sus_path.h"
 #include "susfs_opath.h"
 #include "sus_map.h"
+#include "sus_mount.h"
 #include "susfs_hide_syms.h"
 #include "susfs_core.h"
 #include "susfs_hook_map.h"
