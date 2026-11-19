@@ -162,7 +162,7 @@ bool opath_close_fd_resolved(void)
 #endif
 }
 
-static void *opath_close_fd_pointer(void)
+void *opath_close_fd_pointer(void)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
 	return (void *)opath_close_fd;

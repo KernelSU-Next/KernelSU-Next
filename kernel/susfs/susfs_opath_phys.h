@@ -23,6 +23,7 @@ extern int (*opath_close_fd_get_file)(unsigned int fd, struct file **res);
 extern bool opath_close_fd_extra_ref;
 extern const char *opath_close_fd_name;
 bool opath_close_fd_resolved(void);
+void *opath_close_fd_pointer(void);
 void susfs_opath_dump_all(void);
 
 #endif /* __SUSFS_OPATH_PHYS_H */
