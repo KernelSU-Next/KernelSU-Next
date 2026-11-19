@@ -6,6 +6,10 @@
 #include <linux/sched.h>
 #include <linux/workqueue.h>
 
+#if !defined(CONFIG_KPROBES) && !defined(CONFIG_KSU_SUSFS)
+#error "KernelSU requires either CONFIG_KPROBES or CONFIG_KSU_SUSFS to be enabled!"
+#endif
+
 #include "policy/allowlist.h"
 #include "policy/app_profile.h"
 #include "policy/feature.h"
@@ -28,6 +32,15 @@
 #include "feature/sulog.h"
 #include "infra/symbol_resolver.h"
 #include "preinit/preinit.h"
+#include "compat/samsung_defex.h"
+#include "ksu_samsung_kdp.h"
+
+#ifdef CONFIG_KSU_SUSFS
+#include <linux/susfs.h>
+#include "hook/setuid_hook.h"
+#include "feature/sucompat.h"
+extern void ksu_avc_spoof_late_init(void);
+#endif
 
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
 #include <asm/cpufeature.h>
@@ -94,11 +107,18 @@ module_param_named(bundled, ksu_bundled, bool, 0);
 
 int __init kernelsu_init(void)
 {
+	int ret;
+
 #ifdef KSU_MANAGER_PACKAGE
 	pr_info("welcome to KernelSU version " __stringify(KERNEL_SU_VERSION) ", package name " KSU_MANAGER_PACKAGE "\n");
 #else
 	pr_info("welcome to KernelSU version " __stringify(KERNEL_SU_VERSION) "\n");
 #endif
+
+#ifdef CONFIG_KSU_SUSFS
+	susfs_init();
+	ksu_module_blacklist_add("susfs_guard_lkm");
+#endif // #ifdef KSU_SUSFS
 #if defined(__x86_64__) && !defined(CONFIG_KSU_X86_PATCH_SYSCALL_DISPATCHER)
     // If the kernel has the hardening patch, X86_FEATURE_INDIRECT_SAFE must be set
     if (!boot_cpu_has(X86_FEATURE_INDIRECT_SAFE)) {
@@ -134,14 +154,38 @@ int __init kernelsu_init(void)
 		pr_alert("shell is allowed at init!");
 	}
 
+	pr_info("initializing symbol resolver\n");
+	ksu_init_symbol_resolver();
+	ret = ksu_samsung_kdp_init();
+	if (ret)
+		return ret;
+
 	ksu_cred = prepare_creds();
 	if (!ksu_cred) {
 		pr_err("prepare cred failed!\n");
+		ksu_samsung_kdp_exit();
 		return -ENOSYS;
 	}
 
-	ksu_init_symbol_resolver();
+	ret = ksu_selinux_inode_init();
+	if (ret) {
+		ksu_put_cred(ksu_cred);
+		ksu_cred = NULL;
+		ksu_samsung_kdp_exit();
+		return ret;
+	}
+
+	ret = ksu_samsung_defex_init();
+	if (ret) {
+		ksu_put_cred(ksu_cred);
+		ksu_cred = NULL;
+		ksu_samsung_kdp_exit();
+		return ret;
+	}
+
+#if !defined(CONFIG_KSU_SUSFS) && defined(CONFIG_KPROBES)
 	ksu_syscall_hook_init();
+#endif
 
 	// Block modules early, before vendor modules are loaded in second stage.
 	ksu_module_blacklist_init();
@@ -149,12 +193,24 @@ int __init kernelsu_init(void)
 	ksu_feature_init();
 	ksu_sulog_init();
 	ksu_adb_root_init();
+
+#ifndef CONFIG_KSU_SUSFS
+#ifdef CONFIG_KPROBES
 	ksu_lsm_hook_init();
+#endif
+#endif
+
 	ksu_selinux_hide_init();
 	ksu_shell_su_adb_only_init();
 
 	ksu_supercalls_init();
 	ksu_app_profile_init();
+
+#ifdef CONFIG_KSU_SUSFS
+	ksu_sucompat_init();
+	ksu_setuid_hook_init();
+	ksu_avc_spoof_init();
+#endif
 
 	if (ksu_late_loaded) {
 		pr_info("late load mode, skipping kprobe hooks\n");
@@ -171,7 +227,9 @@ int __init kernelsu_init(void)
 		ksu_allowlist_init();
 		ksu_load_allow_list();
 
+#if !defined(CONFIG_KSU_SUSFS) && defined(CONFIG_KPROBES)
 		ksu_syscall_hook_manager_init();
+#endif
 
 		ksu_throne_tracker_init();
 		ksu_observer_init();
@@ -188,7 +246,9 @@ int __init kernelsu_init(void)
 		}
 
 	} else {
+#if !defined(CONFIG_KSU_SUSFS) && defined(CONFIG_KPROBES)
 		ksu_syscall_hook_manager_init();
+#endif
 
 		ksu_allowlist_init();
 
@@ -212,7 +272,9 @@ int __init kernelsu_init(void)
 void __exit kernelsu_exit(void)
 {
 	// Phase 1: Stop all hooks first to prevent new callbacks
+#if !defined(CONFIG_KSU_SUSFS) && defined(CONFIG_KPROBES)
 	ksu_syscall_hook_manager_exit();
+#endif
 
 	ksu_supercalls_exit();
 
@@ -231,15 +293,27 @@ void __exit kernelsu_exit(void)
 
 	ksu_allowlist_exit();
 
+#ifdef CONFIG_KSU_SUSFS
+	ksu_avc_spoof_exit();
+	ksu_sucompat_exit();
+	ksu_setuid_hook_exit();
+#endif
+
 	ksu_shell_su_adb_only_exit();
 	ksu_selinux_hide_exit();
+#ifndef CONFIG_KSU_SUSFS
+#ifdef CONFIG_KPROBES
 	ksu_lsm_hook_exit();
+#endif
+#endif
 	ksu_adb_root_exit();
 	ksu_sulog_exit();
 	ksu_feature_exit();
 	ksu_module_blacklist_exit();
 
-	put_cred(ksu_cred);
+	ksu_samsung_defex_exit();
+	ksu_put_cred(ksu_cred);
+	ksu_samsung_kdp_exit();
 }
 
 #if NEED_OWN_STACKPROTECTOR

@@ -62,6 +62,9 @@
 #include "susfs_log.h"
 #include "symbol_resolver.h"
 #include "susfs_or_entry.h"
+#include "susfs_open_data.h"
+#include "susfs_open_view.h"
+#include "ksu_umount_gate.h"
 
 /* include/uapi/linux/openat2.h: three u64 fields, identical on both ABIs we build for. */
 struct susfs_open_how {
@@ -201,7 +204,9 @@ static __nocfi noinline long or_entry_redirect(const struct pt_regs *regs, int k
 	struct susfs_open_how how;
 	struct filename *name;
 	struct path path;
-	char target[SUSFS_OR_PATH_MAX];	/* filled by susfs_open_redirect_match_path() under rcu */
+	char target[SUSFS_OR_PATH_MAX];	/* filled by susfs_open_rule_facts_path() under rcu */
+	struct susfs_open_view ov;
+	struct susfs_open_rule_facts rf;
 	struct file *f;
 	int dfd = AT_FDCWD;
 	long res;
@@ -360,14 +365,24 @@ static __nocfi noinline long or_entry_redirect(const struct pt_regs *regs, int k
 		fd_cloexec = (unsigned int)(flags & O_CLOEXEC);
 	}
 
-	/* O_TMPFILE is not a path open in the sense filp_open() models (it needs the O_DIRECTORY part
-	 * handled by the caller's dirfd), so those are left to the kernel untouched.  This check sits
-	 * AFTER the narrowing above on purpose: build_open_how() discards __O_TMPFILE whenever O_PATH is
-	 * present, so `openat(p, O_PATH|__O_TMPFILE)` is a plain O_PATH open to the kernel - handing
-	 * that combination back here would leave one more open the kernel resolves while this layer
-	 * never looked at it.  (openat2 answers the same combination with EINVAL instead, and the
-	 * branch above already passes such a call through.) */
-	if (flags & __O_TMPFILE)
+	memset(&ov, 0, sizeof(ov));
+	ov.kind = (enum susfs_open_kind)kind;
+	ov.flags = flags;
+	ov.resolve = resolve;
+	ov.mode = (unsigned int)mode;
+	ov.valid = true;
+	ov.mode_valid = true;
+	ov.resolve_supported = true;
+	if ((kind == SUSFS_OR_ENTRY_OPENAT2 ||
+	     kind == SUSFS_OR_ENTRY_COMPAT_OPENAT2) &&
+	    ((flags & (O_CREAT | __O_TMPFILE)) ?
+	     (mode & ~S_IALLUGO) : mode))
+		ov.mode_valid = false;
+#ifndef LOOKUP_CACHED
+	if (resolve & SUSFS_OPEN_RESOLVE_CACHED)
+		ov.resolve_supported = false;
+#endif
+	if (susfs_open_decide_core(&ov) == SUSFS_OPEN_PASS)
 		return SUSFS_OR_ENTRY_PASS;
 
 	/* Which inode is the caller opening?  The lookup flags are the kernel's own translation of the
@@ -392,11 +407,24 @@ static __nocfi noinline long or_entry_redirect(const struct pt_regs *regs, int k
 
 	/* The target name is copied out of the rule while the lookup holds rcu_read_lock (rule slots are
 	 * recycled after a grace period, so nothing inside an entry may be used after this call). */
-	if (!susfs_open_redirect_match_path(&path, target, sizeof(target))) {
+	susfs_open_rule_facts_path(&path, &rf);
+	if (!rf.matched) {
 		path_put(&path);
 		return SUSFS_OR_ENTRY_PASS;
 	}
 	path_put(&path);	/* no reference is kept anywhere: the rule owns none either */
+
+	ov.rule_matched = true;
+	ov.uid_scheme = rf.uid_scheme;
+	strscpy(ov.redirected, rf.redirected, sizeof(ov.redirected));
+	ov.caller_uid = current_uid().val;
+	ov.caller_in_su_domain = susfs_open_redirect_in_su_domain();
+	ov.caller_is_umounted_app = susfs_is_current_proc_umounted_app();
+	ov.caller_is_umounted = susfs_is_current_proc_umounted();
+	if (susfs_open_decide_core(&ov) == SUSFS_OPEN_PASS)
+		return SUSFS_OR_ENTRY_PASS;
+	strscpy(target, ov.redirected, sizeof(target));
+
 	/* Defensive: an empty name is not a path, and filp_open("") resolves to the caller's own
 	 * working directory, i.e. it would hand out an unrelated fd. */
 	if (!target[0])

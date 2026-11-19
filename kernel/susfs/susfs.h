@@ -212,6 +212,11 @@ bool sus_path_inode_hidden_public(struct inode *inode);
  * they resolve a path, so an empty table costs one load and nothing else. */
 bool sus_path_rules_present(void);
 
+/* Whether any ordinary (operator-supplied) sus_path rule is live.  Self-protect entries for the
+ * module's own /proc nodes are deliberately excluded: the create family must stay a fast pass
+ * when only those exist. */
+bool sus_path_user_rules_present(void);
+
 /* Whether a 0777 /proc/susfs_* control node may be created.  Two independent conditions, neither optional: susfs_expose_proc
  * (the operator opted in) and sus_path_lsm_active() (with 0777 DAC passes every caller, so only the LSM layer can still
  * answer ENOENT for an app).  This gates node CREATION ONLY, never hook registration: an earlier revision returned early from
@@ -237,6 +242,7 @@ bool susfs_open_redirect_spoof_ids(unsigned long ino, unsigned long *out_ino, un
  * recycled now (a deleted rule's slot is handed out again once a grace period has passed), so
  * nothing inside an entry may be read after the lookup returns. */
 bool susfs_open_redirect_match_path(const struct path *path, char *buf, size_t buflen);
+bool susfs_open_redirect_in_su_domain(void);
 
 /* How many rules are live right now.  The name-layer hook runs for every open() on the system, so it
  * tests this before it resolves anything - a table with no live rule costs one load instead of a path

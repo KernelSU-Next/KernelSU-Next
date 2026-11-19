@@ -57,6 +57,7 @@
 #include "ksu_umount_gate.h"	/* susfs_is_current_proc_umounted_app (issue #34) */
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 #include "susfs_kprobe.h"
+#include "susfs_kstat_view.h"
 
 /* KSTAT_SPOOF_* bits live in susfs_abi.h (upstream declares them in susfs.h next to struct
  * st_susfs_sus_kstat).  KSTAT_AUTO_SPOOF* below are /proc-interface masks, not supercall ABI. */
@@ -177,9 +178,16 @@ static_assert(offsetof(struct stat, st_ctime) == ST_CTIME_OFF, "stat.st_ctime");
  * every app uid, the manager and su-granted apps included.
  * Without any gate the spoofing would be visible to root too, wider than upstream.  Writers
  * (supercall, /proc) are configuration and stay ungated. */
+static bool susfs_kstat_table_empty(void);
+
 static bool susfs_kstat_gate_ok(void)
 {
-	return susfs_is_current_proc_umounted_app();
+	struct susfs_kstat_view v = {
+		.table_empty = susfs_kstat_table_empty(),
+		.caller_is_umounted_app = susfs_is_current_proc_umounted_app(),
+	};
+
+	return susfs_kstat_gate_allowed(&v);
 }
 
 /* ---- table access ----
@@ -220,6 +228,19 @@ static bool susfs_kstat_lookup(unsigned long ino, dev_t dev,
 	}
 	spin_unlock_irqrestore(&kstat_table_lock, flags);
 	return found;
+}
+
+static bool susfs_kstat_rule_allows(const struct sus_kstat_snapshot *s)
+{
+	struct susfs_kstat_view v = {
+		.table_empty = false,
+		.caller_is_umounted_app = true,
+		.rule_matched = true,
+		.buffer_ok = true,
+		.spoof_flags = s->flags,
+	};
+
+	return susfs_kstat_decide_core(&v) == SUSFS_KSTAT_LOOKUP;
 }
 
 /* Writer-side lookup by path: safe without the spinlock, since every caller holds kstat_lock. */
@@ -383,6 +404,8 @@ static int kstat_map_vma_ret(struct kretprobe_instance *ri, struct pt_regs *regs
 		return 0;
 	if (!susfs_kstat_lookup(inode->i_ino,
 				new_encode_dev(inode->i_sb->s_dev), &snap))
+		return 0;
+	if (!susfs_kstat_rule_allows(&snap))
 		return 0;
 	if (!(snap.flags & (KSTAT_SPOOF_INO | KSTAT_SPOOF_DEV)))
 		return 0;
@@ -619,6 +642,8 @@ static bool susfs_kstat_spoof_statbuf(struct kstat_call_state *st, unsigned long
 		atomic_inc(&st->cnt->miss_lookup);
 		return false;
 	}
+	if (!susfs_kstat_rule_allows(&snap))
+		return false;
 
 	if (e->flags & KSTAT_SPOOF_INO) {
 		v = e->spoofed_ino;
@@ -906,6 +931,8 @@ static bool susfs_kstat_spoof_compat_statbuf(struct kstat_call_state *st, unsign
 		atomic_inc(&st->cnt->miss_lookup);
 		return false;
 	}
+	if (!susfs_kstat_rule_allows(&snap))
+		return false;
 
 	if (e->flags & KSTAT_SPOOF_INO) {
 		v32 = (unsigned int)e->spoofed_ino;
@@ -1052,6 +1079,8 @@ static bool susfs_kstat_spoof_compat_stat(struct kstat_call_state *st, unsigned 
 		atomic_inc(&st->cnt->miss_lookup);
 		return false;
 	}
+	if (!susfs_kstat_rule_allows(&snap))
+		return false;
 
 	if (e->flags & KSTAT_SPOOF_INO) {
 		if (e->spoofed_ino > 0xffffffffUL) {
@@ -1312,6 +1341,8 @@ static bool susfs_kstat_spoof_statx(struct kstat_call_state *st, unsigned long s
 		atomic_inc(&st->cnt->miss_lookup);
 		return false;
 	}
+	if (!susfs_kstat_rule_allows(&snap))
+		return false;
 
 	eff = req_mask | buf_mask;
 

@@ -5,6 +5,7 @@
 // them into the kernel's native `module_blacklist`. Call once at init, after
 // the symbol resolver is up and before vendor modules are loaded.
 void ksu_module_blacklist_init(void);
+void ksu_module_blacklist_add(const char *name);
 
 // Teardown hook. Intentionally keeps the merged list installed; see the
 // implementation for why the pointer is not restored.

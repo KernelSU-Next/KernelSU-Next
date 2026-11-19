@@ -12,12 +12,18 @@
 #include <linux/uidgid.h>
 #include <linux/version.h>
 
+#ifdef CONFIG_KSU_SUSFS
+#include <linux/susfs_def.h>
+#endif
+
 #include "policy/allowlist.h"
 #include "policy/app_profile.h"
 #include "klog.h" // IWYU pragma: keep
 #include "selinux/selinux.h"
 #include "infra/su_mount_ns.h"
 #include "hook/tp_marker.h"
+#include "compat/samsung_defex.h"
+#include "ksu_samsung_kdp.h"
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 7, 0)
 static struct group_info root_groups = { .usage = REFCOUNT_INIT(2) };
@@ -77,7 +83,7 @@ void seccomp_filter_release(struct task_struct *tsk);
 static bool has_call_to_spin_lock = false;
 #endif
 
-static void disable_seccomp(void)
+void disable_seccomp(void)
 {
     struct task_struct *fake;
 
@@ -138,7 +144,11 @@ int escape_with_root_profile(void)
         return -ENOMEM;
     }
 
+#ifdef CONFIG_KSU_SUSFS
+    if (susfs_is_current_ksu_domain()) {
+#else
     if (cred->euid.val == 0) {
+#endif
         pr_warn("Already root, don't escape!\n");
         goto out_abort_creds;
     }
@@ -192,7 +202,11 @@ int escape_with_root_profile(void)
     }
 #endif
 
-    memcpy(&cred->cap_effective, &profile->capabilities.effective, sizeof(cred->cap_effective));
+    // setup capabilities
+    // we need CAP_DAC_READ_SEARCH becuase `/data/adb/ksud` is not accessible for non root process
+    // we add it here but don't add it to cap_inhertiable, it would be dropped automaticly after exec!
+    u64 cap_for_ksud = profile->capabilities.effective | CAP_DAC_READ_SEARCH;
+    memcpy(&cred->cap_effective, &cap_for_ksud, sizeof(cred->cap_effective));
     memcpy(&cred->cap_permitted, &profile->capabilities.effective, sizeof(cred->cap_permitted));
     memcpy(&cred->cap_bset, &profile->capabilities.effective, sizeof(cred->cap_bset));
     if (profile->uid != 0) {
@@ -203,17 +217,25 @@ int escape_with_root_profile(void)
     setup_groups(profile, cred);
     setup_selinux(profile->selinux_domain, cred);
 
-    commit_creds(cred);
+	ret = ksu_samsung_kdp_commit_creds(cred);
+	if (ret) {
+		pr_err("Samsung KDP credential install failed: %d\n", ret);
+		goto out_abort_creds;
+	}
+	ksu_samsung_defex_sync_current();
 
-    disable_seccomp();
+    if (likely(test_thread_flag(TIF_SECCOMP)))
+        disable_seccomp();
 
     if (profile->flags & FLAG_KSU_NO_NEW_PRIVS) {
         set_thread_flag(TIF_KSU_DISABLE_ESCAPE_WITH_ROOT);
     }
 
+#ifndef CONFIG_KSU_SUSFS
     for_each_thread (p, t) {
         ksu_set_task_tracepoint_flag(t);
     }
+#endif
 
     setup_mount_ns(profile->namespaces);
     ksu_put_root_profile(profile);
@@ -226,16 +248,19 @@ out_abort_creds:
     return ret;
 }
 
-void escape_to_root_for_init(void)
+int escape_to_root_for_init(void)
 {
     struct cred *cred = prepare_creds();
     if (!cred) {
         pr_err("Failed to prepare init's creds!\n");
-        return;
+        return -EINVAL;
     }
 
     setup_selinux(KERNEL_SU_CONTEXT, cred);
     commit_creds(cred);
+    ksu_samsung_defex_sync_current();
+
+    return 0;
 }
 
 void __init ksu_app_profile_init(void)

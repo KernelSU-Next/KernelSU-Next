@@ -2,8 +2,8 @@
 set -eu
 
 GKI_ROOT=$(pwd)
-OWNER="KernelSU-Next"
-REPO="$OWNER"
+OWNER="pershoot"
+REPO="KernelSU-Next"
 
 display_usage() {
     echo "Usage: $0 [--cleanup | <commit-or-tag>]"
@@ -16,6 +16,8 @@ display_usage() {
 initialize_variables() {
     if test -d "$GKI_ROOT/common/drivers"; then
          DRIVER_DIR="$GKI_ROOT/common/drivers"
+    elif test -d "$GKI_ROOT/aosp/drivers"; then
+         DRIVER_DIR="$GKI_ROOT/aosp/drivers"
     elif test -d "$GKI_ROOT/drivers"; then
          DRIVER_DIR="$GKI_ROOT/drivers"
     else

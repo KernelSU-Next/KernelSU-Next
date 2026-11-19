@@ -13,6 +13,10 @@ extern syscall_fn_t *ksu_syscall_table;
 // Dispatcher slot number in syscall table
 extern int ksu_dispatcher_nr;
 
+#if defined(__aarch64__)
+extern bool ksu_syscall_hook_fallback_required;
+#endif
+
 // Syscall hook handler type.
 // orig_nr: the original syscall number before redirection
 // regs: the original pt_regs from userspace
@@ -39,7 +43,7 @@ bool ksu_has_syscall_hook(int nr);
 // Saves the original handler to *@old (if non-NULL) and records the entry
 // for restoration at module exit. Use this for boot-time hooks that replace
 // a real syscall entry (e.g. ksud hooking __NR_execve/__NR_read/__NR_fstat).
-void ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old);
+int ksu_syscall_table_hook(int nr, syscall_fn_t fn, syscall_fn_t *old);
 
 // Restore syscall_table[@nr] to its original value recorded by
 // ksu_syscall_table_hook(), and remove the entry from the tracking list.

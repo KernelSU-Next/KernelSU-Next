@@ -13,8 +13,27 @@ susfs_guard_lkm-objs := susfs_main.o patch_memory.o symbol_resolver.o lsm_hook.o
               spoof_cmdline.o susfs_open_redirect.o susfs_enable_log.o \
               susfs_avc_spoof.o susfs_supercall.o susfs_hide_syms.o imports_guard.o \
               ksu_umount_gate.o ksu_allow_gate.o susfs_fp_hook.o susfs_opath.o susfs_or_entry.o \
-              susfs_create_gate.o \
+              susfs_create_gate.o susfs_create_vfs.o susfs_create_data.o susfs_create_policy.o \
+              sus_mount_identity.o sus_mount_idmap.o sus_mount_prefix.o sus_mount_policy.o sus_mount_view.o sus_mount_ns_iter.o \
               fsnotify_lifetime.o btf_layout.o sus_dirent.o
+
+susfs_guard_lkm-objs += kallrecon/lib/core.o kallrecon/lib/access.o kallrecon/lib/discover.o \
+              kallrecon/lib/symbol.o kallrecon/lib/slide.o kallrecon/lib/fastboot.o \
+              kallrecon/lib/hint.o kallrecon/lib/variant.o kallrecon/lib/anchor.o
+
+susfs_guard_lkm-objs += HooKern/hk.o HooKern/hk_ksym.o HooKern/hk_patch.o HooKern/hk_flush.o \
+              HooKern/hk_inline.o
+
+# HooKern hook engine (patch + inline for the s_show/m_show experiment).
+ccflags-y += -I$(src)/HooKern
+ccflags-y += -DHK_NO_KPROBE -DHK_NO_KRETPROBE -DHK_NO_PTR -DHK_NO_SIGHOOK -DHK_NO_REDIR
+# HooKern resolves and calls its own function pointers at run time; KCFI cannot
+# type-check those intentionally raw calls.  Keep the module-local wrappers
+# __nocfi and build only the third-party engine objects without KCFI.
+CFLAGS_hk.o := -fno-sanitize=cfi
+CFLAGS_hk_ksym.o := -fno-sanitize=cfi
+CFLAGS_hk_patch.o := -fno-sanitize=cfi
+CFLAGS_hk_inline.o := -fno-sanitize=cfi
 
 # The dcache/icache flush helper is NOT picked at build time any more: which spelling a kernel
 # carries is not decided by its version number (a vendor kernel can keep the pre-5.14 name, measured

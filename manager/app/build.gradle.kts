@@ -27,6 +27,8 @@ android {
 
     defaultConfig {
         applicationId = "com.xboom.rootx"
+        versionCode = rootProject.extra["managerVersionCode"] as Int
+        versionName = rootProject.extra["managerVersionName"] as String
     }
 
     buildTypes {

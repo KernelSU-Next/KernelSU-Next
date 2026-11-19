@@ -15,6 +15,11 @@
 #include "klog.h" // IWYU pragma: keep
 #include "ss/symtab.h"
 
+#ifdef CONFIG_KSU_SUSFS
+extern int susfs_add_sus_avd_allowed_by_type(u32 s_type, u32 t_type, u16 type, u32 orig_avd_allowed);
+extern int susfs_add_sus_type(const char *secctx, u32 type_value);
+#endif // #ifdef CONFIG_KSU_SUSFS
+
 #define KSU_SUPPORT_ADD_TYPE
 
 //////////////////////////////////////////////////////
@@ -63,6 +68,10 @@ static void add_typeattribute_raw(struct policydb *db, struct type_datum *type,
 
 static bool add_typeattribute(struct policydb *db, const char *type,
                               const char *attr);
+
+static const struct policydb *ksu_original_types_policy;
+static u32 ksu_original_types_limit;
+static u32 ksu_original_types_generation;
 
 //////////////////////////////////////////////////////
 // Implementation
@@ -320,6 +329,10 @@ static bool add_rule_raw(struct policydb *db, struct type_datum *src, struct typ
             if (!node)
                 return false;
         }
+
+#ifdef CONFIG_KSU_SUSFS
+        susfs_add_sus_avd_allowed_by_type(src->value, tgt->value, cls->value, node->datum.u.data);
+#endif // #ifdef CONFIG_KSU_SUSFS
 
         if (invert) {
             if (perm)
@@ -692,7 +705,7 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
         return true;
     }
 
-    u32 value = ++db->p_types.nprim;
+    u32 value = db->p_types.nprim + 1;
     type = (struct type_datum *)kzalloc(sizeof(struct type_datum), GFP_KERNEL);
     if (!type) {
         pr_err("add_type: alloc type_datum failed.\n");
@@ -706,49 +719,55 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
     char *key = kstrdup(type_name, GFP_KERNEL);
     if (!key) {
         pr_err("add_type: alloc key failed.\n");
-        return false;
+        goto out_free_type;
     }
 
-    if (symtab_insert(&db->p_types, key, type)) {
-        pr_err("add_type: insert symtab failed.\n");
-        return false;
-    }
-
+    /*
+     * Grow the arrays before touching the symtab or nprim. kvrealloc() frees
+     * the old block when it moves it, so store each pointer in db right away:
+     * a later failure then never leaves db pointing at freed memory, and the
+     * (harmlessly larger) arrays still match an unchanged nprim.
+     */
     struct ebitmap *new_type_attr_map_array =
         ksu_kvrealloc(db->type_attr_map_array, value * sizeof(struct ebitmap),
                       (value - 1) * sizeof(struct ebitmap));
-
     if (!new_type_attr_map_array) {
         pr_err("add_type: alloc type_attr_map_array failed\n");
-        return false;
+        goto out_free;
     }
+    db->type_attr_map_array = new_type_attr_map_array;
 
     struct type_datum **new_type_val_to_struct =
         ksu_kvrealloc(db->type_val_to_struct,
                       sizeof(*db->type_val_to_struct) * value,
                       sizeof(*db->type_val_to_struct) * (value - 1));
-
     if (!new_type_val_to_struct) {
         pr_err("add_type: alloc type_val_to_struct failed\n");
-        return false;
+        goto out_free;
     }
+    db->type_val_to_struct = new_type_val_to_struct;
 
     char **new_val_to_name_types =
         ksu_kvrealloc(db->sym_val_to_name[SYM_TYPES], sizeof(char *) * value,
                       sizeof(char *) * (value - 1));
     if (!new_val_to_name_types) {
         pr_err("add_type: alloc val_to_name failed\n");
-        return false;
+        goto out_free;
+    }
+    db->sym_val_to_name[SYM_TYPES] = new_val_to_name_types;
+
+    if (symtab_insert(&db->p_types, key, type)) {
+        pr_err("add_type: insert symtab failed.\n");
+        goto out_free;
     }
 
-    db->type_attr_map_array = new_type_attr_map_array;
+    db->p_types.nprim = value;
+
     ebitmap_init(&db->type_attr_map_array[value - 1]);
     ebitmap_set_bit(&db->type_attr_map_array[value - 1], value - 1, 1);
 
-    db->type_val_to_struct = new_type_val_to_struct;
     db->type_val_to_struct[value - 1] = type;
 
-    db->sym_val_to_name[SYM_TYPES] = new_val_to_name_types;
     db->sym_val_to_name[SYM_TYPES][value - 1] = key;
 
     int i;
@@ -756,7 +775,16 @@ static bool add_type(struct policydb *db, const char *type_name, bool attr)
         ebitmap_set_bit(&db->role_val_to_struct[i]->types, value - 1, 1);
     }
 
+#ifdef CONFIG_KSU_SUSFS
+    susfs_add_sus_type(type_name, type->value);
+#endif // #ifdef CONFIG_KSU_SUSFS
     return true;
+
+out_free:
+    kfree(key);
+out_free_type:
+    kfree(type);
+    return false;
 }
 
 static bool set_type_state(struct policydb *db, const char *type_name,
@@ -864,6 +892,54 @@ bool ksu_typeattribute(struct policydb *db, const char *type, const char *attr)
 bool ksu_exists(struct policydb *db, const char *type)
 {
     return symtab_search(&db->p_types, type) != NULL;
+}
+
+bool ksu_set_original_types(struct policydb *db, struct policydb *orig_db, u32 policy_generation)
+{
+    if (!db || !orig_db || !policy_generation || orig_db->p_types.nprim > db->p_types.nprim) {
+        WRITE_ONCE(ksu_original_types_generation, 0);
+        WRITE_ONCE(ksu_original_types_policy, NULL);
+        WRITE_ONCE(ksu_original_types_limit, 0);
+        return false;
+    }
+
+    WRITE_ONCE(ksu_original_types_limit, orig_db->p_types.nprim);
+    WRITE_ONCE(ksu_original_types_generation, policy_generation);
+    WRITE_ONCE(ksu_original_types_policy, db);
+    return true;
+}
+
+bool ksu_advance_original_types(struct policydb *db, struct policydb *old_db, u32 old_policy_generation,
+                                u32 policy_generation)
+{
+    u32 original_types_limit = READ_ONCE(ksu_original_types_limit);
+    u32 original_types_generation = READ_ONCE(ksu_original_types_generation);
+
+    if (!db || !old_db || !old_policy_generation || !policy_generation || !original_types_limit ||
+        !original_types_generation || old_policy_generation != original_types_generation ||
+        READ_ONCE(ksu_original_types_policy) != old_db || db->p_types.nprim < original_types_limit) {
+        WRITE_ONCE(ksu_original_types_generation, 0);
+        WRITE_ONCE(ksu_original_types_policy, NULL);
+        WRITE_ONCE(ksu_original_types_limit, 0);
+        return false;
+    }
+
+    WRITE_ONCE(ksu_original_types_generation, policy_generation);
+    WRITE_ONCE(ksu_original_types_policy, db);
+    return true;
+}
+
+int ksu_type_is_original(struct policydb *db, u32 policy_generation, u32 type_value)
+{
+    const struct policydb *original_types_policy = READ_ONCE(ksu_original_types_policy);
+    u32 original_types_limit = READ_ONCE(ksu_original_types_limit);
+    u32 original_types_generation = READ_ONCE(ksu_original_types_generation);
+
+    if (!db || !policy_generation || original_types_policy != db || original_types_generation != policy_generation ||
+        !original_types_limit || type_value > db->p_types.nprim)
+        return -1;
+
+    return type_value && type_value <= original_types_limit ? 1 : 0;
 }
 
 // Access vector rules

@@ -16,7 +16,7 @@
  * Matching mirrors upstream: exact inode identity (not name substrings), any number
  * of registered paths, hidden wherever that inode is reached ('..', '//', relative
  * paths, symlinks, hard links, /proc/self/root/...), and the upstream gate - app
- * processes only and never a file owned by the caller (sus_path_gate_ok;
+ * processes only and never a file owned by the caller (sus_path_entry_gate(),
  * hide_from_apps=0 disables the gate for a root shell).  A path registered before it
  * exists is kept and hidden once it appears, upstream's CMD_SUSFS_ADD_SUS_PATH_LOOP /
  * LH_SUS_PATH_LOOP behaviour (sus_path_resolve_pending()).
@@ -52,6 +52,10 @@
 #include <linux/version.h>	/* LINUX_VERSION_CODE: the setxattr hook's first argument */
 #include "susfs_abi.h"
 #include "susfs_log.h"
+#include "sus_path_match.h"
+#include "sus_path_data.h"
+#include "sus_path_view.h"
+#include "susfs_create_view.h"
 #include "susfs.h"	/* susfs_abi_path_ok */
 #include "symbol_resolver.h"	/* find_kernel_symbol_exact, for optional compat probes */
 #include "ksu_umount_gate.h"	/* susfs_is_current_proc_umounted_app (issue #34) */
@@ -126,7 +130,7 @@ struct sus_path_entry {
      * retrying the same rule, without holding a pointer across kern_path(). */
     unsigned int pass;
     /* One of the module's own control nodes (/proc/susfs_*): hidden from every
-     * non-root caller, not only apps - see sus_path_entry_gate_any(). */
+     * non-root caller, not only apps - see sus_path_entry_gate(e, NULL). */
     bool self_protect;
     /* Pre-relax mode, 0 = this rule did not touch it (sus_path_relax_mode()). */
     umode_t orig_mode;
@@ -179,6 +183,9 @@ static DEFINE_SPINLOCK(sus_path_lock);
 static DEFINE_MUTEX(sus_path_lifecycle_lock);
 static DECLARE_WAIT_QUEUE_HEAD(sus_path_release_wait);
 static unsigned int sus_path_count;
+/* Ordinary rules only (self_protect == false).  The create-family fast path must not treat the
+ * module's own hidden /proc nodes as operator policy. */
+static unsigned int sus_path_user_count;
 static bool sus_path_stopping;
 /* BTF-backed filesystem lifetime cleanup is optional on older GKI kernels. */
 static bool sus_path_lifetime_watch;
@@ -199,6 +206,8 @@ static void sus_path_retire_entry(struct sus_path_entry *e, struct list_head *do
 {
     list_move_tail(&e->list, doomed);
     sus_path_count--;
+    if (!e->self_protect && sus_path_user_count)
+        sus_path_user_count--;
     if (e->inode)
         list_add_tail(&e->retiring_list, &sus_path_retiring);
     else
@@ -273,8 +282,9 @@ static char hide_name[NAME_MAX + 1];
 module_param_string(hide_name, hide_name, sizeof(hide_name), 0644);
 
 static char *dirent_tmp;
-/* Isolation test: with no_extra=1 the LSM replacement and the dirent filter are
- * not registered at all. */
+/* no_extra=1 only suppresses the /proc/susfs_path control node.  The LSM
+ * replacement and the dirent filter stay active: this is the "no proc, but
+ * the layer still works" switch. */
 static int no_extra;
 module_param(no_extra, int, 0644);
 
@@ -431,90 +441,59 @@ static atomic_t sus_path_pend_logged_rc = ATOMIC_INIT(1);   /* rc already report
 static int hide_from_apps = 1;
 module_param(hide_from_apps, int, 0644);
 
-/* UID half of the upstream gate: a PENDING rule has no inode to ask about ownership
- * (sus_path_entry_gate_any()). */
-static inline bool sus_path_gate_uid_ok(void)
-{
-    if (!hide_from_apps)
-        return true;
-    return susfs_is_current_proc_umounted_app();
-}
-
-/* Full upstream gate for the LSM layer: app process, and the file is not owned by the caller
- * (upstream is_i_uid_not_allowed()).  hide_from_apps=0 must bypass the WHOLE gate, ownership check
- * included - otherwise a root-owned file would still be skipped for root (0 != 0 is false) and
- * disabling the gate would silently do nothing for exactly the case it is meant for. */
-static inline bool sus_path_gate_ok(struct inode *inode)
+/* One identity gate for every layer.  `inode` is the object whose ownership the
+ * rule is asking about; NULL means a pending rule has no inode yet and only the
+ * app half can be answered. */
+static inline bool sus_path_gate(struct inode *inode)
 {
     if (!hide_from_apps)
         return true;
     if (!susfs_is_current_proc_umounted_app())
         return false;
-    return current_uid().val != inode->i_uid.val;
+    return !inode || current_uid().val != inode->i_uid.val;
 }
 
-/* Per-rule gate.  A self_protect rule is one of this module's own control nodes, which must be
- * invisible to EVERY non-root caller: the ordinary gate needs an app uid, so a probe running as
- * system (1000) or shell (2000) would read /proc/susfs_kstat straight out of the listing - exactly
- * the trace this module exists to avoid.  Root keeps access to manage the module; ordinary rules
- * keep the upstream semantics untouched. */
-static inline bool sus_path_entry_gate_inode(const struct sus_path_entry *e,
-                                             struct inode *inode)
+/* The only per-rule gate.  A self_protect rule is one of the module's own control
+ * nodes, which must be invisible to EVERY non-root caller: the ordinary gate needs
+ * an app uid, so a probe running as system (1000) or shell (2000) would read
+ * /proc/susfs_kstat straight out of the listing - exactly the trace this module
+ * exists to avoid.  Root keeps access to manage the module; ordinary rules keep
+ * the upstream semantics untouched. */
+static inline bool sus_path_entry_gate(const struct sus_path_entry *e,
+                                       struct inode *inode)
 {
     if (e->self_protect)
         return !susfs_control_visible();
-    return sus_path_gate_ok(inode);
+    if (!inode)
+        inode = e->inode;
+    return sus_path_gate(inode);
 }
 
-/* Gate for the layers that match by (ino, name) or by path string rather than by the inode being
- * accessed: the dirent filter and the path matcher.  Applying the uid half alone made them answer
- * differently from the LSM layer for the case upstream's gate is really about - a file owned by the
- * calling app disappeared from the listing while stat()/open() still succeeded, and a listing that
- * omits a file the caller can open is a far louder signal than either behaviour alone.  The rule
- * keeps its inode ihold'ed, so the ownership question is asked of that very inode: no cached uid,
- * and a chown() moves both layers together.  A rule not resolved yet falls back to the uid half. */
-static inline bool sus_path_entry_gate_any(const struct sus_path_entry *e)
-{
-    if (e->self_protect)
-        return !susfs_control_visible();
-    if (!e->inode)
-        return sus_path_gate_uid_ok();
-    return sus_path_gate_ok(e->inode);
-}
+static void sus_path_view_fill(struct sus_path_view *v, enum sus_path_face face,
+                               u64 ino, u64 dev, uid_t uid, u32 magic,
+                               const char *name,
+                               const struct sus_path_rule_facts *f);
+int sus_path_rule_facts_dirent(u64 ino, const char *name,
+                               struct sus_path_rule_facts *facts);
 
 static bool sus_path_is_hidden(u64 ino, const char *name)
 {
-    struct sus_path_entry *e;
+    struct sus_path_rule_facts f;
+    struct sus_path_view v;
     bool hidden = false;
 
     /* The one resolving task is never answered "hidden": its own walk would be
      * refused by this very table (see the block above sus_path_resolver). */
-    if (sus_path_is_resolver())
+    if (sus_path_is_resolver() || !name)
         return false;
 
-    /* A dirent is identified by (d_ino, name) and nothing else here - the filter never sees the fd
-     * or the superblock, so unlike the LSM layer (the ihold'ed inode pointer, then (dev, i_ino)) it
-     * cannot tell one filesystem from another.  The two layers therefore disagree about one object
-     * in a narrow case: a same-named entry that reuses the same d_ino on ANOTHER filesystem is
-     * dropped from the listing - the rule's dev is not consulted - while its stat/open still work,
-     * because the LSM layer rejects that (dev, i_ino) pair.  The collision is not exotic - most
-     * filesystems number inodes from low values, so a common basename is enough - but the direction
-     * is the safe one: a listing that hides more than the file layer does never leaks a registered
-     * name.  The alternative is not free either: matching the name alone would hide unrelated
-     * entries, which is exactly why the only name-only mode in this file is the explicit opt-in
-     * debug parameter hide_name.  A rule whose inode reports 0 has no identity to match, and
-     * d_ino 0 is what some filesystems use for "unknown", so such a rule is hidden by the
-     * by-inode layers only (sus_path_supercall()). */
     if (ino) {
-        spin_lock(&sus_path_lock);
-        list_for_each_entry(e, &sus_path_list, list) {
-            if (e->ino && e->ino == ino && !strcmp(e->name, name) &&
-                sus_path_entry_gate_any(e)) {
-                hidden = true;
-                break;
-            }
+        sus_path_rule_facts_dirent(ino, name, &f);
+        if (f.matched) {
+            sus_path_view_fill(&v, SUS_PATH_FACE_DIRENT, ino, 0, 0, 0,
+                               name, &f);
+            hidden = sus_path_decide_core(&v) == SUS_PATH_HIDE;
         }
-        spin_unlock(&sus_path_lock);
     }
 
     if (!hidden && hide_name[0])
@@ -523,18 +502,10 @@ static bool sus_path_is_hidden(u64 ino, const char *name)
     return hidden;
 }
 
-/* The same question sus_path_is_hidden() answers, for the pre-emission filter in sus_dirent.c:
- * that layer decides whether to EMIT a record, so it needs the verdict before any byte is
- * written, not after.  Same predicate - and the same isolation switch as
- * sus_path_dirent_filter(): with no_extra=1 this layer is not registered at all (sus_path_init()
- * says so in the log), so a rule a supercall registers afterwards must not start filtering
- * listings while stat/open keep succeeding.  That mismatch is the one the two-layer design exists
- * to avoid, and the switch belongs here rather than at the call site so that both entries into the
- * predicate answer the same way. */
+/* The same predicate as sus_path_is_hidden(), for the pre-emission layer in
+ * sus_dirent.c.  no_extra does not gate it: it only suppresses the control node. */
 bool sus_path_dirent_hidden(u64 ino, const char *name)
 {
-    if (READ_ONCE(no_extra))
-        return false;
 
     /* The "no rule, no work" short circuit sus_path_dirent_filter() opens with, for the same
      * reason: without it every record of every listing takes this file's spinlock, even on a
@@ -1161,11 +1132,106 @@ static void sus_path_entry_set_path(struct sus_path_entry *e, const char *path)
  * type the same number can stand for two different files. */
 static atomic_t n_identity_hits = ATOMIC_INIT(0);
 
-static bool sus_path_inode_hidden(struct inode *inode)
+static void sus_path_view_fill(struct sus_path_view *v, enum sus_path_face face,
+                               u64 ino, u64 dev, uid_t uid, u32 magic,
+                               const char *name,
+                               const struct sus_path_rule_facts *f)
+{
+    memset(v, 0, sizeof(*v));
+    v->face = face;
+    v->ino = ino;
+    v->s_dev = dev;
+    v->i_uid = uid;
+    v->sb_magic = magic;
+    if (name)
+        strscpy(v->name, name, sizeof(v->name));
+    v->pending = f->pending;
+    v->user_rules_present = READ_ONCE(sus_path_user_count) > 0;
+    v->rule_matched = f->matched;
+    v->self_protect = f->self_protect;
+    v->user_rule = f->user_rule;
+    v->caller_uid = current_uid().val;
+    v->caller_is_app = susfs_is_current_proc_umounted_app();
+    v->caller_is_su = susfs_control_visible();
+    v->hide_from_apps = sus_path_hide_from_apps();
+    v->control_visible = susfs_control_visible();
+}
+
+int sus_path_rule_facts_inode(struct inode *inode,
+                              struct sus_path_rule_facts *facts)
 {
     struct sus_path_entry *e;
-    bool hidden = false, by_identity = false;
     u64 dev;
+
+    if (!facts)
+        return -EINVAL;
+    memset(facts, 0, sizeof(*facts));
+    if (!inode || !READ_ONCE(sus_path_count))
+        return 0;
+    dev = (u64)inode->i_sb->s_dev;
+
+    spin_lock(&sus_path_lock);
+    list_for_each_entry(e, &sus_path_list, list) {
+        bool hit = false, identity = false;
+
+        if (e->inode == inode) {
+            hit = true;
+        } else if (e->ino && e->ino == (u64)inode->i_ino) {
+            if (e->dev == dev) {
+                hit = true;
+                identity = true;
+            } else if (e->self_protect && e->inode &&
+                       e->inode->i_sb->s_type == inode->i_sb->s_type) {
+                hit = true;
+                identity = true;
+            }
+        }
+        if (!hit)
+            continue;
+        facts->matched = true;
+        facts->by_identity |= identity;
+        if (e->self_protect)
+            facts->self_protect = true;
+        else
+            facts->user_rule = true;
+        if (!e->inode)
+            facts->pending = true;
+    }
+    spin_unlock(&sus_path_lock);
+    return 0;
+}
+
+int sus_path_rule_facts_dirent(u64 ino, const char *name,
+                               struct sus_path_rule_facts *facts)
+{
+    struct sus_path_entry *e;
+
+    if (!facts)
+        return -EINVAL;
+    memset(facts, 0, sizeof(*facts));
+    if (!ino || !name || !READ_ONCE(sus_path_count))
+        return 0;
+
+    spin_lock(&sus_path_lock);
+    list_for_each_entry(e, &sus_path_list, list) {
+        if (!e->ino || e->ino != ino || strcmp(e->name, name))
+            continue;
+        facts->matched = true;
+        if (e->self_protect)
+            facts->self_protect = true;
+        else
+            facts->user_rule = true;
+        if (!e->inode)
+            facts->pending = true;
+    }
+    spin_unlock(&sus_path_lock);
+    return 0;
+}
+
+static bool sus_path_inode_hidden(struct inode *inode)
+{
+    struct sus_path_rule_facts f;
+    struct sus_path_view v;
 
     if (!inode || !READ_ONCE(sus_path_count))
         return false;
@@ -1175,46 +1241,16 @@ static bool sus_path_inode_hidden(struct inode *inode)
     if (sus_path_is_resolver())
         return false;
 
-    dev = (u64)inode->i_sb->s_dev;
-
-    spin_lock(&sus_path_lock);
-    list_for_each_entry(e, &sus_path_list, list) {
-        /* Fast path: the exact object the rule resolved. */
-        if (e->inode == inode) {
-            if (sus_path_entry_gate_inode(e, inode)) {
-                hidden = true;
-                break;
-            }
-            continue;
-        }
-        /* Pending rules have no identity yet (ino == 0) and are the LSM layer's blind
-         * spot by construction: nothing exists at their path to be accessed. */
-        if (!e->ino || e->ino != (u64)inode->i_ino)
-            continue;
-        if (e->dev == dev) {
-            by_identity = true;
-            if (sus_path_entry_gate_inode(e, inode)) {
-                hidden = true;
-                break;
-            }
-            continue;
-        }
-        /* Another instance of the same filesystem: control nodes only, see above. */
-        if (e->self_protect && e->inode &&
-            e->inode->i_sb->s_type == inode->i_sb->s_type) {
-            by_identity = true;
-            if (sus_path_entry_gate_inode(e, inode)) {
-                hidden = true;
-                break;
-            }
-        }
-    }
-    spin_unlock(&sus_path_lock);
-
-    if (by_identity)
+    sus_path_rule_facts_inode(inode, &f);
+    if (!f.matched)
+        return false;
+    if (f.by_identity)
         atomic_inc(&n_identity_hits);
 
-    return hidden;
+    sus_path_view_fill(&v, SUS_PATH_FACE_INODE, (u64)inode->i_ino,
+                       (u64)inode->i_sb->s_dev, inode->i_uid.val,
+                       inode->i_sb->s_magic, NULL, &f);
+    return sus_path_decide_core(&v) == SUS_PATH_HIDE;
 }
 
 /* The same decision, published for the layers that hold the inode the kernel resolved instead
@@ -1231,6 +1267,63 @@ bool sus_path_inode_hidden_public(struct inode *inode)
     return sus_path_inode_hidden(inode);
 }
 
+bool sus_path_hide_from_apps(void)
+{
+    return hide_from_apps != 0;
+}
+
+/* D-side facts for the create gate.  The view has already resolved the target, so
+ * the identity is (dev, ino) - the same key sus_path_inode_hidden() uses.  The
+ * caller/self-protect gate is deliberately not applied here: that is the L layer's
+ * job, and D must not read creds. */
+int sus_path_rule_match(const struct susfs_create_view *v,
+                        struct sus_path_match *out)
+{
+    struct sus_path_entry *e;
+
+    if (!v || !out)
+        return -EINVAL;
+    memset(out, 0, sizeof(*out));
+    if (!READ_ONCE(sus_path_count))
+        return 0;
+
+    spin_lock(&sus_path_lock);
+    if (!v->ino || !v->s_dev) {
+        /* An absent target has no inode; only pending path rules can answer.
+         * Match the full path so a same-named file in another directory cannot
+         * inherit the rule. */
+        if (!v->path[0]) {
+            spin_unlock(&sus_path_lock);
+            return 0;
+        }
+        list_for_each_entry(e, &sus_path_list, list) {
+            if (e->inode || !e->path[0] || strcmp(e->path, v->path))
+                continue;
+            out->rule_matched = true;
+            out->pending = true;
+            if (e->self_protect)
+                out->self_protect = true;
+            else
+                out->ordinary_rule = true;
+        }
+        spin_unlock(&sus_path_lock);
+        return 0;
+    }
+    list_for_each_entry(e, &sus_path_list, list) {
+        if (!e->inode || !e->ino)
+            continue;
+        if (e->dev != v->s_dev || e->ino != v->ino)
+            continue;
+        out->rule_matched = true;
+        if (e->self_protect)
+            out->self_protect = true;
+        else
+            out->ordinary_rule = true;
+    }
+    spin_unlock(&sus_path_lock);
+    return 0;
+}
+
 /* Whether any rule is live right now.  The create-family entries run for every
  * mkdirat/symlinkat/mknodat/linkat on the system, so they test this before they resolve a
  * path: an empty table costs one load instead of a lookup, and deleting the last rule takes
@@ -1238,6 +1331,15 @@ bool sus_path_inode_hidden_public(struct inode *inode)
 bool sus_path_rules_present(void)
 {
     return READ_ONCE(sus_path_count) > 0;
+}
+
+/* The create-family fast path only cares about operator rules.  Self-protect entries keep the
+ * module's own /proc nodes invisible, but they must not turn every create syscall into a path
+ * lookup. */
+bool sus_path_user_rules_present(void)
+{
+    return READ_ONCE(sus_path_user_count) > 0 ||
+           atomic_read(&sus_path_n_pending) > 0;
 }
 
 static int sus_path_inode_getattr(const struct path *path)
@@ -1580,8 +1682,8 @@ static int sus_path_path_notify(const struct path *path, u64 mask, unsigned int 
  * a patched call site, but through the kernel's own register/unregister paths instead of hand-written
  * text patching.  The LSM hooks are exempt: pointer swaps, already cost-free.
  * Nothing is left to arm that way: the listing filter rides the stat family's tracepoint, and its
- * callback bails out on an empty rule table (and on no_extra) by itself, so this flag now only makes
- * the "hooks armed" line - and the no_extra warning beside it - one-shot (sus_path_hooks_arm()). */
+ * callback bails out on an empty rule table by itself, so this flag now only makes
+ * the "hooks armed" line - one-shot (sus_path_hooks_arm()). */
 static bool hooks_armed;
 /* Secondary LSM hooks that could not be registered: the core two are fatal, these only mean one
  * class of operation is uncovered - reported through hide_list as well as the log. */
@@ -1676,8 +1778,8 @@ static atomic_t n_dirent_calls[SUS_DIRENT_N];
 
 /* Nothing is armed any more, and the first rule no longer has a flag to set: the tracepoint is
  * registered unconditionally with the stat family, and what keeps its callback cheap is the
- * callback's own first checks - no_extra (a real gate, see sus_path_dirent_filter()), ret <= 0,
- * and "no rule and no hide_name" - which all run before the first uaccess.  The per-ABI split of
+ * callback's own first checks - ret <= 0, and "no rule and no hide_name" - which all run before
+ * the first uaccess.  The per-ABI split of
  * the counters below is what then tells a listing call that never arrived from one that was
  * answered "nothing to filter" and from one that really was filtered. */
 static atomic_t n_dirent_no_filter[SUS_DIRENT_N];   /* sus_path_filter() found no buffer/knows the layout not */
@@ -1714,17 +1816,6 @@ int sus_path_dirent_layout_id(long syscall_nr, bool compat)
  * what tells a working path from one that never fires. */
 long sus_path_dirent_filter(int lay_id, unsigned long buf, long ret)
 {
-    /* no_extra is the isolation switch, and it is a real gate here rather than the log line
-     * sus_path_hooks_arm() prints.  With the switch on, nothing else of this layer is registered
-     * (sus_path_init() returns before the LSM hooks go in), so a rule added later through the
-     * supercall - which still bumps sus_path_count - would otherwise start filtering listings while
-     * stat/open keep succeeding: a listing that omits a name a caller can open is the one mismatch
-     * the two-layer design exists to avoid, and it is not what "the LSM layer and the dirent filter
-     * are OFF" claims.  This is also where the switch is cheapest: one READ_ONCE on a listing
-     * syscall, before any argument is read, so with no_extra=1 the per-ABI counters stay at zero
-     * and /proc/susfs_kstat says the filter really did nothing. */
-    if (READ_ONCE(no_extra))
-        return ret;
 
     /* The counters are indexed by this id, so an id that did not come from the classifier is
      * answered with "nothing filtered" instead of being used as an index. */
@@ -1778,14 +1869,12 @@ static void sus_path_hooks_arm(void)
      * Nothing else is needed: entry-layer hooks matched the caller's path STRING, which the LSM
      * match already covers more thoroughly, and a hook that cannot fire reads as coverage - so
      * those layers are DELETED, not disabled (see the note above sus_path_init()).
-     * no_extra is the isolation switch: no LSM, no dirent filter.
+     * no_extra only suppresses the /proc/susfs_path node; it does not gate these layers.
      *
      * The listing filter rides a tracepoint it does not own (the stat family registers it), so a
      * failed registration there would leave this layer silently dead: that is not checked from here
      * any more, and the per-ABI call counters in /proc/susfs_kstat are what answers the same
      * question from the other side - a listing call that never arrives keeps them at zero. */
-    if (no_extra)
-        pr_warn("sus_path: no_extra - dirent filter off\n");
 
     SUSFS_LOGI("sus_path: hooks armed (LSM + dirent rewrite on the stat layer's table entries)\n");
     mutex_unlock(&sus_path_arm_lock);
@@ -2437,8 +2526,8 @@ static int sus_path_probe_apply(const char *val)
         i = scnprintf(sus_path_probe_report + n, room,
                   "  rule: inode=%px name=%s self_protect=%d ptr_equal=%d gate_inode=%d gate_any=%d\n",
                   e->inode, e->name, (int)e->self_protect,
-                  (int)(e->inode == inode), (int)sus_path_entry_gate_inode(e, inode),
-                  (int)sus_path_entry_gate_any(e));
+                  (int)(e->inode == inode), (int)sus_path_entry_gate(e, inode),
+                  (int)sus_path_entry_gate(e, NULL));
         if (i >= room)
             break;
         n += i;
@@ -2529,6 +2618,8 @@ static int sus_path_publish_entry(struct sus_path_entry *e, bool merge_pending)
     }
     list_add_tail(&e->list, &sus_path_list);
     sus_path_count++;
+    if (!e->self_protect)
+        sus_path_user_count++;
     if (e->inode)
         sus_path_relax_mode(e);
     else
@@ -2584,7 +2675,7 @@ static int sus_path_add_hidden_ex(const char *path, bool self_protect)
 }
 
 /* Register one of the module's own control nodes: same table, flagged so the gate hides it from
- * every non-root caller rather than only from apps (sus_path_entry_gate_any()). */
+ * every non-root caller rather than only from apps (sus_path_entry_gate(e, NULL)). */
 int sus_path_add_self_hidden(const char *path)
 {
 	return sus_path_add_hidden_ex(path, true);
@@ -2631,19 +2722,10 @@ int sus_path_init(void)
     /* The dirent rewrite rides the stat layer's table entries (registered with the stat family),
      * not a probe of its own, and nothing has to be armed for it on the first rule: what keeps that
      * callback cheap while there is nothing to filter is the rule-count check inside
-     * sus_path_filter() (and the no_extra gate in sus_path_dirent_filter()).  The scratch buffer
-     * above is what the rewrite itself needs, so it is allocated here rather than at first use. */
+     * sus_path_filter().  The scratch buffer above is what the rewrite itself needs, so it is
+     * allocated here rather than at first use. */
     SUSFS_LOGI("sus_path: dirent rewrite rides the stat layer's table entries (no probe of its own)\n");
 
-    if (no_extra) {
-        mutex_lock(&sus_path_param_lock);
-        if (hide_list_given || sus_path_probe_given)
-            pr_warn("sus_path: no_extra=1 - the hide_list/sus_path_probe value given at insmod is dropped (the LSM layer is off)\n");
-        sus_path_ready = true;	/* later writes behave exactly as before this change */
-        mutex_unlock(&sus_path_param_lock);
-        SUSFS_LOGI("sus_path: no_extra=1 - the LSM layer and the dirent filter are OFF (isolation test)\n");
-        return 0;
-    }
 
     /* LSM hooks: reject path-based access to registered inodes outright.  These two ARE the
      * mechanism - a registered path is hidden only because this layer answers ENOENT.  A failure
@@ -2719,10 +2801,12 @@ int sus_path_init(void)
      * ENOENT for it must not exist.  It has to be created before susfs_self_hide_nodes() runs,
      * which is why it is here and not in susfs_main.c - that list is registered after every
      * layer's own init, so paths resolve. */
-    if (susfs_control_node_allowed()) {
+    if (susfs_control_node_allowed() && !READ_ONCE(no_extra)) {
         sus_path_node_entry = proc_create("susfs_path", 0777, NULL, &sus_path_proc_ops);
         if (!sus_path_node_entry)
             pr_warn("sus_path: proc_create(susfs_path) failed - the listing stays reachable through the hide_list parameter\n");
+    } else if (READ_ONCE(no_extra)) {
+        SUSFS_LOGI("sus_path: /proc/susfs_path not created (no_extra=1); LSM/dirent stay active\n");
     } else {
         SUSFS_LOGI("sus_path: /proc/susfs_path not created (expose_proc=%d lsm=%d)\n",
                 (int)susfs_expose_proc, (int)sus_path_lsm_active());

@@ -12,6 +12,7 @@
 
 #include "klog.h" // IWYU pragma: keep
 #include "util.h"
+#include "runtime/ksud.h"
 #include "hook/syscall_hook.h"
 #include "preinit/preinit.h"
 
@@ -30,6 +31,10 @@ static struct file *ksu_preinit_file;
 
 void __init ksu_preinit_init(void)
 {
+#if !defined(CONFIG_KPROBES) && !defined(CONFIG_KSU_SUSFS)
+    pr_info("preinit: unsupported under current hook provider\n");
+    return;
+#else
     size_t size = ksu_preinit_runner_end - ksu_preinit_runner_start;
     struct file *file;
     loff_t pos = 0;
@@ -58,6 +63,7 @@ void __init ksu_preinit_init(void)
 
     ksu_preinit_file = file;
     pr_info("preinit: runner staged (%zu bytes)\n", size);
+#endif
 }
 
 bool ksu_preinit_enabled_param(void)
@@ -80,6 +86,98 @@ void ksu_preinit_exit(void)
     ksu_preinit_release();
 }
 
+#ifdef CONFIG_KSU_SUSFS
+static bool is_selinux_setup_susfs(struct user_arg_ptr *argv_user)
+{
+    static const char expected[] = "selinux_setup";
+    char buf[sizeof(expected) + 1] = {0};
+    const char __user *argv_user_ptr;
+
+    if (!argv_user)
+        return false;
+
+    argv_user_ptr = get_user_arg_ptr(*argv_user, 1);
+    if (!argv_user_ptr || IS_ERR(argv_user_ptr)) {
+        pr_err("!argv_user_ptr || IS_ERR(argv_user_ptr)\n");
+        return false;
+    }
+
+    if (strncpy_from_user(buf, argv_user_ptr, sizeof(buf) - 1) < 0)
+        return false;
+
+    return !strcmp(buf, expected);
+}
+
+int ksu_setup_preinit_file(struct filename **filename_ptr, struct user_arg_ptr *argv_user)
+{
+    char fd_path[32] = {0};
+    struct file *file;
+    struct path path;
+    int fd, len;
+
+    if (likely(!READ_ONCE(ksu_preinit_file)))
+        return -EINVAL;
+
+    if (!filename_ptr || !*filename_ptr || IS_ERR(*filename_ptr) || !argv_user)
+        return -EINVAL;
+
+    if (strcmp((*filename_ptr)->name, INIT_PATH) || !is_selinux_setup_susfs(argv_user))
+        return -EINVAL;
+
+    file = xchg(&ksu_preinit_file, NULL);
+    if (!file)
+        return -EINVAL;
+
+    fd = get_unused_fd_flags(O_CLOEXEC);
+    if (fd < 0) {
+        pr_err("preinit: get fd failed: %d\n", fd);
+        fput(file);
+        return -EINVAL;
+    }
+    // The fd owns the file from here on; close-on-exec frees it once the
+    // runner has been loaded.
+    fd_install(fd, file);
+
+    len = snprintf(fd_path, sizeof(fd_path), "/proc/self/fd/%d", fd);
+    if (kern_path(fd_path, LOOKUP_FOLLOW, &path)) {
+        pr_err("preinit: %s not reachable, booting without preinit\n", fd_path);
+        ksu_close_fd(fd);
+        return -EINVAL;
+    }
+    path_put(&path);
+
+    memset((void*)(*filename_ptr)->name, 0, strlen((*filename_ptr)->name));
+    memcpy((void*)(*filename_ptr)->name, (void*)fd_path, strlen(fd_path));
+
+    pr_info("preinit: exec runner via %s\n", fd_path);
+    return fd;
+}
+
+int ksu_preinit_handle_post_execveat(int *fd, struct filename **filename_ptr,
+                 void *argv_user, void *envp_user,
+                 int *flags, int *retval, int *preinit_fd)
+{
+    if (!retval || !preinit_fd)
+        return 0;
+
+    if (*retval && *preinit_fd > 0) {
+        ksu_close_fd(*preinit_fd);
+        if (filename_ptr && *filename_ptr && !IS_ERR(*filename_ptr)) {
+            memset((void*)(*filename_ptr)->name, 0, strlen((*filename_ptr)->name));
+            memcpy((void*)(*filename_ptr)->name, INIT_PATH, strlen(INIT_PATH));
+        }
+        return -EINVAL;
+    }
+    return 0;
+}
+
+bool ksu_preinit_handle_execve(const char __user **filename_user, const char __user *const __user *argv_user,
+                               int orig_nr, struct pt_regs *regs, long *ret)
+{
+    return false;
+}
+#else
+#if defined(CONFIG_KPROBES)
 static bool is_selinux_setup(const char __user *const __user *argv_user)
 {
     static const char expected[] = "selinux_setup";
@@ -161,3 +259,11 @@ bool ksu_preinit_handle_execve(const char __user **filename_user, const char __u
     }
     return true;
 }
+#else
+bool ksu_preinit_handle_execve(const char __user **filename_user, const char __user *const __user *argv_user,
+                               int orig_nr, struct pt_regs *regs, long *ret)
+{
+    return false;
+}
+#endif
+#endif

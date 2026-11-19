@@ -27,17 +27,17 @@ extern int avc_ss_reset(u32 seqno);
 extern int avc_ss_reset(struct selinux_avc *avc, u32 seqno);
 #endif
 // reset avc cache table, otherwise the new rules will not take effect if already denied
-static void reset_avc_cache()
+static void reset_avc_cache(u32 seqno)
 {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 4, 0))
-    avc_ss_reset(0);
-    selnl_notify_policyload(0);
-    selinux_status_update_policyload(0);
+    avc_ss_reset(seqno);
+    selnl_notify_policyload(seqno);
+    selinux_status_update_policyload(seqno);
 #else
     struct selinux_avc *avc = selinux_state.avc;
-    avc_ss_reset(avc, 0);
-    selnl_notify_policyload(0);
-    selinux_status_update_policyload(&selinux_state, 0);
+    avc_ss_reset(avc, seqno);
+    selnl_notify_policyload(seqno);
+    selinux_status_update_policyload(&selinux_state, seqno);
 #endif
     selinux_xfrm_notify_policyload();
 }
@@ -90,6 +90,12 @@ void apply_kernelsu_rules()
 
     db = &pol->policydb;
 
+#ifndef CONFIG_KSU_SUSFS
+    pol->latest_granting = old_pol->latest_granting + 1;
+#endif
+    if (!ksu_set_original_types(db, &old_pol->policydb, pol->latest_granting))
+        pr_warn("failed to save original type metadata, use backup lookups\n");
+
     ksu_type(db, KERNEL_SU_DOMAIN, "domain");
     ksu_permissive(db, KERNEL_SU_DOMAIN);
     ksu_typeattribute(db, KERNEL_SU_DOMAIN, "mlstrustedsubject");
@@ -103,6 +109,12 @@ void apply_kernelsu_rules()
 
     // allow all!
     ksu_allow(db, KERNEL_SU_DOMAIN, ALL, ALL, ALL);
+
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "unix_stream_socket", "read");
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "unix_stream_socket", "write");
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "unix_stream_socket", "connectto");
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "unix_stream_socket", "getopt");
+    ksu_allow(db, "domain", KERNEL_SU_DOMAIN, "unix_stream_socket", "getattr");
 
     // allow us do any ioctl
     if (db->policyvers >= POLICYDB_VERSION_XPERMS_IOCTL) {
@@ -162,13 +174,29 @@ void apply_kernelsu_rules()
     ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "getpgid");
     ksu_allow(db, "system_server", KERNEL_SU_DOMAIN, "process", "sigkill");
 
+    // throne_tracker kthread; /data | /data/app traversal; apk / packages.list access
+    ksu_allow(db, "kernel", "kernel", "capability", "dac_read_search");
+    ksu_allow(db, "kernel", "system_data_file", "dir", "search");
+    ksu_allow(db, "kernel", "packages_list_file", "file", "read");
+    ksu_allow(db, "kernel", "packages_list_file", "file", "open");
+    ksu_allow(db, "kernel", "apk_data_file", "dir", "read");
+    ksu_allow(db, "kernel", "apk_data_file", "dir", "open");
+    ksu_allow(db, "kernel", "apk_data_file", "dir", "search");
+    ksu_allow(db, "kernel", "apk_data_file", "file", "read");
+    ksu_allow(db, "kernel", "apk_data_file", "file", "open");
+
     // Return value ignored: the policy is published either way.
     ksu_policydb_fixup_len(db, "apply_kernelsu_rules");
     rcu_assign_pointer(selinux_state.policy, pol);
     synchronize_rcu();
     ksu_destroy_sepolicy(old_pol);
 
-    reset_avc_cache();
+#ifndef CONFIG_KSU_SUSFS
+    reset_avc_cache(pol->latest_granting);
+#else
+    reset_avc_cache(0);
+    susfs_set_batch_sid();
+#endif
 out_unlock:
     mutex_unlock(&selinux_state.policy_mutex);
 }
@@ -540,11 +568,21 @@ int handle_sepolicy(void __user *user_data, u64 data_len)
 
     // Return value ignored: the policy is published either way.
     ksu_policydb_fixup_len(db, "handle_sepolicy");
+#ifndef CONFIG_KSU_SUSFS
+    pol->latest_granting = old_pol->latest_granting + 1;
+#endif
+    if (!ksu_advance_original_types(db, &old_pol->policydb, old_pol->latest_granting, pol->latest_granting))
+        pr_warn("failed to carry original type metadata, use backup lookups\n");
+
     rcu_assign_pointer(selinux_state.policy, pol);
     synchronize_rcu();
     ksu_destroy_sepolicy(old_pol);
 
-    reset_avc_cache();
+#ifndef CONFIG_KSU_SUSFS
+    reset_avc_cache(pol->latest_granting);
+#else
+    reset_avc_cache(0);
+#endif
     ret = success_cmd_count;
     goto out_unlock;
 

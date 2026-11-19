@@ -428,8 +428,14 @@ static void __init susfs_abi_layout_check(void)
 	BUILD_BUG_ON(sizeof(struct st_susfs_sus_path) != 260);
 	BUILD_BUG_ON(offsetof(struct st_susfs_sus_path, err) != 256);
 
+	BUILD_BUG_ON(sizeof(struct st_susfs_sus_path_uid_filter) != 65540);
+	BUILD_BUG_ON(offsetof(struct st_susfs_sus_path_uid_filter, err) != 65536);
+
 	BUILD_BUG_ON(sizeof(struct st_susfs_sus_map) != 260);
 	BUILD_BUG_ON(offsetof(struct st_susfs_sus_map, err) != 256);
+
+	BUILD_BUG_ON(sizeof(struct st_susfs_priority_uid_filter) != 65540);
+	BUILD_BUG_ON(offsetof(struct st_susfs_priority_uid_filter, err) != 65536);
 
 	BUILD_BUG_ON(sizeof(struct st_susfs_sus_kstat) != 376);
 	BUILD_BUG_ON(offsetof(struct st_susfs_sus_kstat, err) != 372);

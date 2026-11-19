@@ -1,0 +1,56 @@
+name: Build x86_64
+on:
+  push:
+    paths:
+      - 'lib/**'
+      - 'src/**'
+      - 'test/**'
+      - 'Makefile'
+      - 'deps.mk'
+      - '.github/workflows/build-x86_64-lkm.yml'
+  workflow_dispatch:
+
+jobs:
+  build-x86_64:
+    # three vanilla x86_64 kernels x {main, test} x {native, explicit ARCH},
+    # covering both kbuild entry points on the lowest supported kernel, the
+    # current LTS and current mainline (7.2, v3 selfrel layout)
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - kver: "5.10"
+            tarball: https://cdn.kernel.org/pub/linux/kernel/v5.x/linux-5.10.231.tar.xz
+            srcdir: linux-5.10.231
+          - kver: "6.6"
+            tarball: https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.6.tar.xz
+            srcdir: linux-6.6
+          - kver: "7.2"
+            tarball: https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-7.2.tar.xz
+            srcdir: linux-7.2
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare vanilla x86_64 kernel tree (${{ matrix.kver }})
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends flex bison libelf-dev libssl-dev
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/linux.tar.xz" "${{ matrix.tarball }}"
+          tar -xf "$RUNNER_TEMP/linux.tar.xz" -C "$RUNNER_TEMP"
+          make -C "$RUNNER_TEMP/${{ matrix.srcdir }}" defconfig
+          make -C "$RUNNER_TEMP/${{ matrix.srcdir }}" olddefconfig
+          make -C "$RUNNER_TEMP/${{ matrix.srcdir }}" modules_prepare
+      - name: Build (native, ARCH unset)
+        run: |
+          make KDIR="$RUNNER_TEMP/${{ matrix.srcdir }}" VER=${{ matrix.kver }}-native KBUILD_MODPOST_WARN=1
+          make KDIR="$RUNNER_TEMP/${{ matrix.srcdir }}" TARGET=test VER=${{ matrix.kver }}-test-native KBUILD_MODPOST_WARN=1
+      - name: Build (explicit ARCH=x86_64)
+        run: |
+          make KDIR="$RUNNER_TEMP/${{ matrix.srcdir }}" ARCH=x86_64 VER=${{ matrix.kver }}-arch KBUILD_MODPOST_WARN=1
+          make KDIR="$RUNNER_TEMP/${{ matrix.srcdir }}" TARGET=test ARCH=x86_64 VER=${{ matrix.kver }}-test-arch KBUILD_MODPOST_WARN=1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kallrecon-x86_64-${{ matrix.kver }}
+          path: |
+            out/${{ matrix.kver }}-*/kallrecon.ko
+            out/${{ matrix.kver }}-test-*/test_probe.ko

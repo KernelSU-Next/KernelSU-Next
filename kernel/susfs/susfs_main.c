@@ -422,7 +422,9 @@ static int __init susfs_init(void)
         return -EINVAL;
 
     SUSFS_LOGI("init v%s\n", SUSFS_LKM_VERSION);
-    ksu_init_symbol_resolver();
+
+    if (ksu_init_symbol_resolver())
+        return -ENODATA;
 
     /* Dead man's switch: refuse loading if in-built SuSFS is present */
     if (find_kernel_symbol_exact("susfs_is_inode_sus_path") ||

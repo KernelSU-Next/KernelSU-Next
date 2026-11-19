@@ -34,6 +34,10 @@ struct susfs_fp_hook {
 	const char *name;			/* our wrapper, for logs */
 	const char *sym;			/* the kernel's wrapper symbol, for logs */
 	susfs_syscall_fn_t wrapper;		/* what we put into the table */
+	/* Optional 32-bit wrapper.  The compat table takes the same number of arguments but
+	 * the syscall entry and its original differ; a native wrapper must not be used there
+	 * when a compat one exists.  NULL means the native wrapper is also valid for compat. */
+	susfs_syscall_fn_t wrapper_compat;
 	susfs_syscall_fn_t *orig_slot;		/* where the wrapper reads the original */
 	susfs_syscall_fn_t orig;		/* the entry we replaced */
 	bool installed;

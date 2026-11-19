@@ -197,6 +197,37 @@ static bool fp_has_landing_pad(const void *fn)
 	}
 }
 
+/*
+ * Whether our wrapper must start with a landing pad, decided by what the table holds now.
+ *
+ * invoke_syscall() reaches the entry with an indirect call, and that call faults only when the
+ * kernel enforces BTI for its own text (CONFIG_ARM64_BTI_KERNEL on a core with BTI).  In that case
+ * every entry the kernel put in the table starts with a landing pad.  When the current entry does
+ * not, the same call site already lands on a target without one, so a wrapper without one is
+ * equally safe.  Measured on a Pixel 6a (GS101, android14-6.1): ARM64_BTI_KERNEL is not set, the
+ * cores report no bti, and the wrappers start with the shadow call stack push
+ * (0xf800865e, str x30, [x18], #8).  Before this check every table entry (kstat, the getdents64
+ * listing filter, opath, create) was refused there.
+ *
+ * Every entry the hook would replace is checked; if any of them has a landing pad, ours needs one.
+ */
+static bool fp_pad_required(const struct susfs_fp_hook *h, int cnr)
+{
+	susfs_syscall_fn_t cur;
+
+	if (h->nr >= 0 && sys_call_table_ptr) {
+		cur = READ_ONCE(sys_call_table_ptr[h->nr]);
+		if (!cur || fp_has_landing_pad((const void *)cur))
+			return true;
+	}
+	if (cnr >= 0 && compat_sys_call_table_ptr) {
+		cur = READ_ONCE(compat_sys_call_table_ptr[cnr]);
+		if (!cur || fp_has_landing_pad((const void *)cur))
+			return true;
+	}
+	return false;
+}
+
 int susfs_fp_install(struct susfs_fp_hook *h)
 {
 	susfs_syscall_fn_t old;
@@ -227,9 +258,19 @@ int susfs_fp_install(struct susfs_fp_hook *h)
 		pr_warn("susfs_fp: %s: no native entry and no compat entry\n", h->name);
 		return -EINVAL;
 	}
-	if (!h->wrapper || !fp_has_landing_pad((const void *)h->wrapper)) {
+	if (!h->wrapper) {
+		pr_warn("susfs_fp: %s has no wrapper - not installed\n", h->name);
+		return -EINVAL;
+	}
+	if (fp_pad_required(h, cnr) && !fp_has_landing_pad((const void *)h->wrapper)) {
 		pr_warn("susfs_fp: %s has no valid call landing pad (0x%08x) - not installed\n",
-			h->name, h->wrapper ? READ_ONCE(*(const u32 *)h->wrapper) : 0);
+			h->name, READ_ONCE(*(const u32 *)h->wrapper));
+		return -EINVAL;
+	}
+	if (h->wrapper_compat && fp_pad_required(h, cnr) &&
+	    !fp_has_landing_pad((const void *)h->wrapper_compat)) {
+		pr_warn("susfs_fp: %s compat wrapper has no valid call landing pad (0x%08x) - not installed\n",
+			h->name, READ_ONCE(*(const u32 *)h->wrapper_compat));
 		return -EINVAL;
 	}
 
@@ -238,6 +279,11 @@ int susfs_fp_install(struct susfs_fp_hook *h)
 		if (!old) {
 			pr_warn("susfs_fp: %s: table entry is NULL\n", h->name);
 			return -ENOENT;
+		}
+		if (old == h->wrapper) {
+			pr_warn("susfs_fp: %s: native entry already points at our wrapper - stale from a previous load, refusing to recurse\n",
+				h->name);
+			return -EINVAL;
 		}
 
 		/* Publish the original BEFORE the table points at us: the wrapper reads this
@@ -264,17 +310,25 @@ int susfs_fp_install(struct susfs_fp_hook *h)
 				h->name);
 		} else {
 			susfs_syscall_fn_t cold = READ_ONCE(compat_sys_call_table_ptr[cnr]);
+			susfs_syscall_fn_t compat_wrapper = h->wrapper_compat ? h->wrapper_compat : h->wrapper;
 
 			if (!cold) {
 				pr_warn("susfs_fp: %s: compat entry %d is NULL\n",
 					h->name, cnr);
+			} else if (cold == compat_wrapper) {
+				pr_warn("susfs_fp: %s: compat entry %d already points at our wrapper - stale from a previous load, refusing to recurse\n",
+					h->name, cnr);
+				if (native_done)
+					ksu_patch_text(&sys_call_table_ptr[h->nr], &h->orig,
+						       sizeof(h->orig), KSU_PATCH_TEXT_FLUSH_DCACHE);
+				return -EINVAL;
 			} else {
 				h->orig_compat = cold;
 				if (h->orig_slot_compat)
 					WRITE_ONCE(*h->orig_slot_compat, cold);
 				smp_wmb();
 				err = fp_patch_entry(compat_sys_call_table_ptr, cnr, h->name,
-						     h->wrapper, cold);
+						     compat_wrapper, cold);
 				if (err) {
 					/* Keep the two tables consistent rather than half-armed. */
 					if (native_done)
@@ -306,21 +360,24 @@ int susfs_fp_install(struct susfs_fp_hook *h)
 
 void susfs_fp_remove(struct susfs_fp_hook *h)
 {
+	susfs_syscall_fn_t compat_wrapper;
+	bool native_ours = true;
 	int cnr, err;
 
 	if (!h->installed || !sys_call_table_ptr)
 		return;
 
 	cnr = fp_compat_nr(h);
+	compat_wrapper = h->wrapper_compat ? h->wrapper_compat : h->wrapper;
 
 	if (h->nr >= 0 && READ_ONCE(sys_call_table_ptr[h->nr]) != h->wrapper) {
-		pr_warn("susfs_fp: nr %d is not ours any more, leaving it alone\n", h->nr);
-		h->installed = false;
-		return;
+		pr_warn("susfs_fp: nr %d is not ours any more, leaving the native entry alone\n",
+			h->nr);
+		native_ours = false;
 	}
 
 	if (cnr >= 0 && compat_sys_call_table_ptr && h->orig_compat &&
-	    READ_ONCE(compat_sys_call_table_ptr[cnr]) == h->wrapper) {
+	    READ_ONCE(compat_sys_call_table_ptr[cnr]) == compat_wrapper) {
 		err = ksu_patch_text(&compat_sys_call_table_ptr[cnr], &h->orig_compat,
 				     sizeof(h->orig_compat), KSU_PATCH_TEXT_FLUSH_DCACHE);
 		if (err)
@@ -331,7 +388,7 @@ void susfs_fp_remove(struct susfs_fp_hook *h)
 	}
 
 	/* nr < 0 means there is no native entry: only the compat one above was ours. */
-	if (h->nr >= 0) {
+	if (h->nr >= 0 && native_ours) {
 		err = ksu_patch_text(&sys_call_table_ptr[h->nr], &h->orig,
 				     sizeof(h->orig), KSU_PATCH_TEXT_FLUSH_DCACHE);
 		if (err)

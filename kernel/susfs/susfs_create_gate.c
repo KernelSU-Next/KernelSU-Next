@@ -34,125 +34,62 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/fs.h>
-#include <linux/namei.h>
-#include <linux/dcache.h>
-#include <linux/path.h>
-#include <linux/err.h>
-#include <linux/uaccess.h>
-#include <linux/version.h>
 #include <asm/unistd.h>
 
 #include "susfs.h"
 #include "susfs_fp_hook.h"
-#include "symbol_resolver.h"
+#include "susfs_create_data.h"
+#include "susfs_create_policy.h"
+#include "susfs_create_vfs.h"
 #include "susfs_log.h"
 
 /* The AArch32 table numbers (arch/arm/tools/syscall.tbl); the native ones come
  * from __NR_*.  Kept spelled out for the same reason susfs_fp_hook.h spells the
  * compat indexes out: the two tables do not share a numbering. */
-#define COMPAT_MKNODAT_NR	33
-#define COMPAT_MKDIRAT_NR	34
-#define COMPAT_SYMLINKAT_NR	36
-#define COMPAT_LINKAT_NR	37
+#define COMPAT_MKNODAT_NR	324
+#define COMPAT_MKDIRAT_NR	323
+#define COMPAT_SYMLINKAT_NR	331
+#define COMPAT_LINKAT_NR	330
 
-/* inode_permission() grew a mount-namespace argument in 5.12 and an idmap in 6.3.
- * The call below exists only to match the work an absent name does (may_create's
- * permission check), so the argument that changed is the one the caller cannot
- * observe here: the check is discarded either way. */
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 3, 0)
-#include <linux/mnt_idmapping.h>
-#define susfs_create_inode_permission(inode, mask) \
-	inode_permission(&nop_mnt_idmap, (inode), (mask))
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(5, 12, 0)
-#include <linux/user_namespace.h>
-#define susfs_create_inode_permission(inode, mask) \
-	inode_permission(&init_user_ns, (inode), (mask))
-#else
-#define susfs_create_inode_permission(inode, mask) \
-	inode_permission((inode), (mask))
-#endif
-
-static struct filename *(*create_getname_fn)(const char __user *name, int flags, int *empty);
-static int (*create_filename_lookup_fn)(int dfd, struct filename *name, unsigned flags,
-					struct path *path, struct path *root);
-static void (*create_putname_fn)(struct filename *name);
-
-static susfs_syscall_fn_t create_orig_mknodat;
-static susfs_syscall_fn_t create_orig_mkdirat;
-static susfs_syscall_fn_t create_orig_symlinkat;
-static susfs_syscall_fn_t create_orig_linkat;
-static susfs_syscall_fn_t create_orig_compat_mknodat;
-static susfs_syscall_fn_t create_orig_compat_mkdirat;
-static susfs_syscall_fn_t create_orig_compat_symlinkat;
-static susfs_syscall_fn_t create_orig_compat_linkat;
-
-/* Is this (dfd, path) a name sus_path hides from the current caller?  No
- * LOOKUP_FOLLOW: the last component is what the create would make, so a hidden
- * symlink must answer for the link itself, not for its target.
- *
- * __nocfi noinline: the calls through the resolved pointers are indirect calls
- * into the kernel, and the CFI call-site gate the build enforces
- * (tools/cfi_sites.py) refuses an instrumented call site. */
-static __nocfi noinline bool create_name_hidden(int dfd, const char __user *path)
+static susfs_syscall_fn_t create_orig(enum susfs_create_syscall id)
 {
-	struct filename *name;
-	struct path p;
-	bool hidden;
-	int rc;
+	return READ_ONCE(*susfs_create_orig_slot(id));
+}
 
-	if (!sus_path_rules_present())
-		return false;
-	if (!create_getname_fn || !create_filename_lookup_fn || !create_putname_fn)
-		return false;
-
-	name = create_getname_fn(path, 0, NULL);
-	if (IS_ERR(name))
-		return false;
-
-	rc = create_filename_lookup_fn(dfd, name, 0, &p, NULL);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 15, 0)
-	/* filename_lookup() consumed `name` through 5.14; 5.15 removed that putname() and
-	 * made the caller own it.  Do not put it twice on 5.10/5.14: the second putname()
-	 * is the double free that panics init (create_name_hidden -> putname). */
-#else
-	create_putname_fn(name);
-#endif
-	if (rc)
-		return false;		/* absent: the kernel's own answer */
-
-	hidden = sus_path_inode_hidden_public(d_inode(p.dentry));
-	if (hidden) {
-		/* Match the work an absent name would have done: the kernel runs
-		 * may_create() against the parent before answering, so run the same
-		 * permission check and throw the answer away.  This is the time/cache
-		 * side of the differential, not the errno. */
-		struct inode *dir = d_inode(p.dentry->d_parent);
-
-		if (dir)
-			(void)susfs_create_inode_permission(dir, MAY_WRITE | MAY_EXEC);
-	}
-	path_put(&p);
-	return hidden;
+static susfs_syscall_fn_t create_orig_compat(enum susfs_create_syscall id)
+{
+	return READ_ONCE(*susfs_create_orig_compat_slot(id));
 }
 
 static __nocfi noinline long create_wrap_mkdirat(const struct pt_regs *regs)
 {
-	susfs_syscall_fn_t orig = READ_ONCE(create_orig_mkdirat);
+	susfs_syscall_fn_t orig = create_orig(SUSFS_CREATE_MKDIRAT);
+	long ret;
+	int handled;
 
 	if (!orig)
 		return -ENOSYS;
-	if (create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1]))
+	if (susfs_create_name_hidden((int)regs->regs[0],
+				     (const char __user *)regs->regs[1],
+				     SUSFS_CREATE_VIEW_MKDIRAT, false))
 		return -EACCES;
+	if (susfs_create_commit_enabled()) {
+		ret = susfs_create_mkdirat_commit((int)regs->regs[0],
+						  (const char __user *)regs->regs[1],
+						  (umode_t)regs->regs[2], &handled);
+		if (handled)
+			return ret;
+	}
 	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_mknodat(const struct pt_regs *regs)
 {
-	susfs_syscall_fn_t orig = READ_ONCE(create_orig_mknodat);
+	susfs_syscall_fn_t orig = create_orig(SUSFS_CREATE_MKNODAT);
 
 	if (!orig)
 		return -ENOSYS;
-	if (create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1]))
+	if (susfs_create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1], SUSFS_CREATE_VIEW_MKNODAT, false))
 		return -EACCES;
 	return orig(regs);
 }
@@ -160,11 +97,11 @@ static __nocfi noinline long create_wrap_mknodat(const struct pt_regs *regs)
 static __nocfi noinline long create_wrap_symlinkat(const struct pt_regs *regs)
 {
 	/* symlinkat(oldname, newdfd, newname): the path created is regs[2]. */
-	susfs_syscall_fn_t orig = READ_ONCE(create_orig_symlinkat);
+	susfs_syscall_fn_t orig = create_orig(SUSFS_CREATE_SYMLINKAT);
 
 	if (!orig)
 		return -ENOSYS;
-	if (create_name_hidden((int)regs->regs[1], (const char __user *)regs->regs[2]))
+	if (susfs_create_name_hidden((int)regs->regs[1], (const char __user *)regs->regs[2], SUSFS_CREATE_VIEW_SYMLINKAT, false))
 		return -EACCES;
 	return orig(regs);
 }
@@ -174,59 +111,70 @@ static __nocfi noinline long create_wrap_linkat(const struct pt_regs *regs)
 	/* linkat(olddfd, oldname, newdfd, newname, flags): both ends matter.  An
 	 * absent old name answers ENOENT; a hidden old name must not let a caller
 	 * link the hidden inode out under a visible name. */
-	susfs_syscall_fn_t orig = READ_ONCE(create_orig_linkat);
+	susfs_syscall_fn_t orig = create_orig(SUSFS_CREATE_LINKAT);
 
 	if (!orig)
 		return -ENOSYS;
-	if (create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1]))
+	if (susfs_create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1], SUSFS_CREATE_VIEW_LINKAT, true))
 		return -ENOENT;
-	if (create_name_hidden((int)regs->regs[2], (const char __user *)regs->regs[3]))
+	if (susfs_create_name_hidden((int)regs->regs[2], (const char __user *)regs->regs[3], SUSFS_CREATE_VIEW_LINKAT, false))
 		return -EACCES;
 	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_compat_mkdirat(const struct pt_regs *regs)
 {
-	susfs_syscall_fn_t orig = READ_ONCE(create_orig_compat_mkdirat);
+	susfs_syscall_fn_t orig = create_orig_compat(SUSFS_CREATE_MKDIRAT);
+	long ret;
+	int handled;
 
 	if (!orig)
 		return -ENOSYS;
-	if (create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1]))
+	if (susfs_create_name_hidden((int)regs->regs[0],
+				     (const char __user *)regs->regs[1],
+				     SUSFS_CREATE_VIEW_MKDIRAT, false))
 		return -EACCES;
+	if (susfs_create_commit_enabled()) {
+		ret = susfs_create_mkdirat_commit((int)regs->regs[0],
+						  (const char __user *)regs->regs[1],
+						  (umode_t)regs->regs[2], &handled);
+		if (handled)
+			return ret;
+	}
 	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_compat_mknodat(const struct pt_regs *regs)
 {
-	susfs_syscall_fn_t orig = READ_ONCE(create_orig_compat_mknodat);
+	susfs_syscall_fn_t orig = create_orig_compat(SUSFS_CREATE_MKNODAT);
 
 	if (!orig)
 		return -ENOSYS;
-	if (create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1]))
+	if (susfs_create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1], SUSFS_CREATE_VIEW_MKNODAT, false))
 		return -EACCES;
 	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_compat_symlinkat(const struct pt_regs *regs)
 {
-	susfs_syscall_fn_t orig = READ_ONCE(create_orig_compat_symlinkat);
+	susfs_syscall_fn_t orig = create_orig_compat(SUSFS_CREATE_SYMLINKAT);
 
 	if (!orig)
 		return -ENOSYS;
-	if (create_name_hidden((int)regs->regs[1], (const char __user *)regs->regs[2]))
+	if (susfs_create_name_hidden((int)regs->regs[1], (const char __user *)regs->regs[2], SUSFS_CREATE_VIEW_SYMLINKAT, false))
 		return -EACCES;
 	return orig(regs);
 }
 
 static __nocfi noinline long create_wrap_compat_linkat(const struct pt_regs *regs)
 {
-	susfs_syscall_fn_t orig = READ_ONCE(create_orig_compat_linkat);
+	susfs_syscall_fn_t orig = create_orig_compat(SUSFS_CREATE_LINKAT);
 
 	if (!orig)
 		return -ENOSYS;
-	if (create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1]))
+	if (susfs_create_name_hidden((int)regs->regs[0], (const char __user *)regs->regs[1], SUSFS_CREATE_VIEW_LINKAT, true))
 		return -ENOENT;
-	if (create_name_hidden((int)regs->regs[2], (const char __user *)regs->regs[3]))
+	if (susfs_create_name_hidden((int)regs->regs[2], (const char __user *)regs->regs[3], SUSFS_CREATE_VIEW_LINKAT, false))
 		return -EACCES;
 	return orig(regs);
 }
@@ -234,20 +182,16 @@ static __nocfi noinline long create_wrap_compat_linkat(const struct pt_regs *reg
 static struct susfs_fp_hook create_hooks[] = {
 	{ .nr = __NR_mkdirat, .nr_compat = COMPAT_MKDIRAT_NR,
 	  .name = "create/mkdirat", .sym = "__arm64_sys_mkdirat",
-	  .wrapper = create_wrap_mkdirat, .orig_slot = &create_orig_mkdirat,
-	  .orig_slot_compat = &create_orig_compat_mkdirat },
+	  .wrapper = create_wrap_mkdirat, .wrapper_compat = create_wrap_compat_mkdirat },
 	{ .nr = __NR_mknodat, .nr_compat = COMPAT_MKNODAT_NR,
 	  .name = "create/mknodat", .sym = "__arm64_sys_mknodat",
-	  .wrapper = create_wrap_mknodat, .orig_slot = &create_orig_mknodat,
-	  .orig_slot_compat = &create_orig_compat_mknodat },
+	  .wrapper = create_wrap_mknodat, .wrapper_compat = create_wrap_compat_mknodat },
 	{ .nr = __NR_symlinkat, .nr_compat = COMPAT_SYMLINKAT_NR,
 	  .name = "create/symlinkat", .sym = "__arm64_sys_symlinkat",
-	  .wrapper = create_wrap_symlinkat, .orig_slot = &create_orig_symlinkat,
-	  .orig_slot_compat = &create_orig_compat_symlinkat },
+	  .wrapper = create_wrap_symlinkat, .wrapper_compat = create_wrap_compat_symlinkat },
 	{ .nr = __NR_linkat, .nr_compat = COMPAT_LINKAT_NR,
 	  .name = "create/linkat", .sym = "__arm64_sys_linkat",
-	  .wrapper = create_wrap_linkat, .orig_slot = &create_orig_linkat,
-	  .orig_slot_compat = &create_orig_compat_linkat },
+	  .wrapper = create_wrap_linkat, .wrapper_compat = create_wrap_compat_linkat },
 };
 
 int susfs_create_gate_init(void)
@@ -256,12 +200,16 @@ int susfs_create_gate_init(void)
 	int rc;
 	int i;
 
-	create_getname_fn = (void *)find_kernel_symbol_exact("getname_flags");
-	create_filename_lookup_fn = (void *)find_kernel_symbol_exact("filename_lookup");
-	create_putname_fn = (void *)find_kernel_symbol_exact("putname");
-	if (!create_getname_fn || !create_filename_lookup_fn || !create_putname_fn) {
-		pr_warn("create_gate: missing getname_flags/filename_lookup/putname - the create family keeps answering the kernel's own way\n");
-		return -ENOENT;
+	rc = susfs_create_vfs_init();
+	if (rc)
+		return rc;
+
+	BUILD_BUG_ON(ARRAY_SIZE(create_hooks) != SUSFS_CREATE_COUNT);
+	for (i = 0; i < (int)ARRAY_SIZE(create_hooks); i++) {
+		create_hooks[i].orig_slot =
+			susfs_create_orig_slot((enum susfs_create_syscall)i);
+		create_hooks[i].orig_slot_compat =
+			susfs_create_orig_compat_slot((enum susfs_create_syscall)i);
 	}
 
 	/* Unconditional: a supercall can add a rule before/after this layer, so the
