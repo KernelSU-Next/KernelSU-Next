@@ -43,6 +43,6 @@ bool susfs_dirent_should_hide(const char *name, int namlen, u64 ino)
 
 bool susfs_dirent_prefilter_enabled(void)
 {
-	return READ_ONCE(susfs_dirent_prefilter) && READ_ONCE(susfs_dirent_armed) &&
+	return READ_ONCE(susfs_dirent_prefilter_on) && READ_ONCE(susfs_dirent_armed) &&
 	       READ_ONCE(susfs_dirent_iterate_dir) && READ_ONCE(susfs_dirent_fget);
 }
