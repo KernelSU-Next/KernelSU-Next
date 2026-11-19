@@ -110,7 +110,7 @@ static inline bool opath_has_landing_pad(const void *fn)
  * generation, so each is called through its matching pointer and every caller carries __nocfi.
  * susfs_opath_init() installs no table entry while either required capability is unresolved: a
  * wrapper that cannot finish its post-check would deny nothing and only add a fault path. */
-static struct file *(*opath_fget_raw)(unsigned int fd);
+struct file *(*opath_fget_raw)(unsigned int fd);
 /* THREE shapes, not one function under three names - and the first two share a NAME, which is
  * exactly what a by-name resolver cannot see:
  *
@@ -141,19 +141,19 @@ static struct file *(*opath_fget_raw)(unsigned int fd);
  * The reference count is a run-time fact in turn: opath_close_fd_extra_ref records whether the
  * helper that answered owes the caller a second fput(). */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
-static struct file *(*opath_close_fd)(unsigned int fd);
+struct file *(*opath_close_fd)(unsigned int fd);
 #else
-static int (*opath_close_fd_get_file)(unsigned int fd, struct file **res);
+int (*opath_close_fd_get_file)(unsigned int fd, struct file **res);
 #endif
 /* Set when the resolved helper took a reference of its own (the pre-6.1 close_fd_get_file()):
  * the deny path then owes the file two fput()s, and one of them would leak it for good. */
-static bool opath_close_fd_extra_ref;
+bool opath_close_fd_extra_ref;
 /* Which name the kernel above answered to (see susfs_opath_init): only the log needs it, and a log
  * that prints a pointer without the name it came from cannot tell close_fd_get_file from
  * file_close_fd on a kernel where one of them is missing. */
-static const char *opath_close_fd_name = "close_fd_get_file";
+const char *opath_close_fd_name = "close_fd_get_file";
 
-static bool opath_close_fd_resolved(void)
+bool opath_close_fd_resolved(void)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 1, 0)
 	return opath_close_fd != NULL;
@@ -528,7 +528,7 @@ static void opath_dump_entry(const char *table_name, unsigned long table, int nr
 		(entry == (susfs_syscall_fn_t)plain ? "plain match" : "neither"));
 }
 
-static void susfs_opath_dump_all(void)
+void susfs_opath_dump_all(void)
 {
 	int i;
 
