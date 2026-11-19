@@ -12,7 +12,7 @@ susfs_guard_lkm-objs := susfs_main.o patch_memory.o symbol_resolver.o lsm_hook.o
               susfs_uname.o susfs_uname_data.o susfs_uname_policy.o susfs_uname_phys.o \
               susfs_kstat.o sus_map.o sus_path.o sus_mount.o \
               spoof_cmdline.o spoof_cmdline_data.o spoof_cmdline_policy.o spoof_cmdline_phys.o susfs_open_redirect.o susfs_enable_log.o \
-              susfs_avc_spoof.o susfs_avc_data.o susfs_avc_policy.o susfs_supercall.o susfs_hide_syms.o imports_guard.o \
+              susfs_avc_spoof.o susfs_avc_data.o susfs_avc_policy.o susfs_supercall.o susfs_supercall_data.o susfs_supercall_policy.o susfs_supercall_phys.o susfs_hide_syms.o imports_guard.o \
               ksu_umount_gate.o ksu_allow_gate.o susfs_fp_hook.o susfs_opath.o susfs_or_entry.o \
               susfs_create_gate.o susfs_create_vfs.o susfs_create_data.o susfs_create_policy.o \
               sus_mount_identity.o sus_mount_idmap.o sus_mount_prefix.o sus_mount_policy.o sus_mount_view.o sus_mount_ns_iter.o \
