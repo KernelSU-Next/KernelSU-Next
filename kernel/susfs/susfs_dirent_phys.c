@@ -133,8 +133,8 @@ static SD_RET sd_filldir(struct dir_context *ctx, const char *name, int namlen,
 	return SD_GO;
 }
 
-long susfs_dirent_run(struct file *f, void __user *dirp, unsigned int count,
-		      bool compat)
+__nocfi long susfs_dirent_run(struct file *f, void __user *dirp,
+			      unsigned int count, bool compat)
 {
 	struct sd_buf buf = {};
 	bool pos_locked = false;
