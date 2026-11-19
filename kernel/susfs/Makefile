@@ -8,7 +8,7 @@
 
 obj-m += susfs_guard_lkm.o
 
-susfs_guard_lkm-objs := susfs_main.o patch_memory.o symbol_resolver.o lsm_hook.o susfs_hook_engine.o susfs_hooks.o \
+susfs_guard_lkm-objs := susfs_main.o susfs_main_data.o susfs_main_phys.o patch_memory.o symbol_resolver.o lsm_hook.o susfs_hook_engine.o susfs_hooks.o \
               susfs_uname.o susfs_uname_data.o susfs_uname_policy.o susfs_uname_phys.o \
               susfs_kstat.o sus_map.o sus_path.o sus_mount.o \
               spoof_cmdline.o spoof_cmdline_data.o spoof_cmdline_policy.o spoof_cmdline_phys.o susfs_open_redirect.o susfs_enable_log.o \
