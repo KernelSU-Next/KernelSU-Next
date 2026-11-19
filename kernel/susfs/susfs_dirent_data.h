@@ -13,7 +13,7 @@
 extern int (*susfs_dirent_iterate_dir)(struct file *, struct dir_context *);
 extern struct file *(*susfs_dirent_fget)(unsigned int);
 extern bool susfs_dirent_armed;
-extern bool susfs_dirent_prefilter;
+extern bool susfs_dirent_prefilter_on;
 extern atomic_t susfs_dirent_calls;
 extern atomic_t susfs_dirent_hidden;
 

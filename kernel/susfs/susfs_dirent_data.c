@@ -13,8 +13,8 @@ int (*susfs_dirent_iterate_dir)(struct file *, struct dir_context *);
 struct file *(*susfs_dirent_fget)(unsigned int);
 bool susfs_dirent_armed;
 
-bool susfs_dirent_prefilter = true;
-module_param_named(prefilter, susfs_dirent_prefilter, bool, 0644);
+bool susfs_dirent_prefilter_on = true;
+module_param_named(prefilter, susfs_dirent_prefilter_on, bool, 0644);
 
 atomic_t susfs_dirent_calls = ATOMIC_INIT(0);
 atomic_t susfs_dirent_hidden = ATOMIC_INIT(0);
