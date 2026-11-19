@@ -764,8 +764,11 @@ int susfs_hook_register(struct susfs_hook *hook)
 	mutex_lock(&susfs_hooks_lock);
 	if (t->installed) {
 		rc = add_consumer(t, hook);
-		if (!rc)
+		if (!rc) {
+			if (t->backend == BACKEND_INLINE)
+				hook->backend = SUSFS_HOOK_BACKEND_INLINE;
 			rc = t->backend == BACKEND_KPROBE ? SUSFS_HOOK_FALLBACK : SUSFS_HOOK_OK;
+		}
 		mutex_unlock(&susfs_hooks_lock);
 		return rc;
 	}
@@ -776,6 +779,9 @@ int susfs_hook_register(struct susfs_hook *hook)
 	}
 	rc = install_inline(t, hook);
 	if (rc == SUSFS_HOOK_OK) {
+		/* Report where it landed: the feature reads this to log the
+		 * backend and to pick its own path (uname inline vs kretprobe). */
+		hook->backend = SUSFS_HOOK_BACKEND_INLINE;
 		mutex_unlock(&susfs_hooks_lock);
 		return rc;
 	}
@@ -836,6 +842,8 @@ int susfs_hook_register_assign(struct susfs_hook *hook,
 			   (backend == SUSFS_HOOK_BACKEND_KPROBE && t->backend == BACKEND_KPROBE) ||
 			   (backend == SUSFS_HOOK_BACKEND_TABLE && t->backend == BACKEND_TABLE);
 		rc = same ? add_consumer(t, hook) : SUSFS_HOOK_INSTALL_FAILED;
+		if (!rc && backend == SUSFS_HOOK_BACKEND_INLINE)
+			hook->backend = SUSFS_HOOK_BACKEND_INLINE;
 		mutex_unlock(&susfs_hooks_lock);
 		return rc;
 	}
@@ -855,6 +863,8 @@ int susfs_hook_register_assign(struct susfs_hook *hook,
 	mutex_unlock(&susfs_hooks_lock);
 	if (rc != SUSFS_HOOK_OK)
 		remove_consumer(t, hook);
+	else if (backend == SUSFS_HOOK_BACKEND_INLINE && t->backend == BACKEND_INLINE)
+		hook->backend = SUSFS_HOOK_BACKEND_INLINE;
 	return rc == SUSFS_HOOK_OK ? SUSFS_HOOK_OK : SUSFS_HOOK_INSTALL_FAILED;
 }
 
@@ -913,7 +923,7 @@ static const struct target_desc target_desc[SUSFS_HOOK_TARGET_COUNT] = {
 	[SUSFS_HOOK_TARGET_GENERIC_SHUTDOWN_SUPER]	= { "generic_shutdown_super", 19, NULL },
 	[SUSFS_HOOK_TARGET_COPY_MNT_NS]			= { "copy_mnt_ns", 20, NULL },
 	[SUSFS_HOOK_TARGET_ATTACH_RECURSIVE_MNT]	= { "attach_recursive_mnt", 21, NULL },
-	[SUSFS_HOOK_TARGET_ARM64_SYS_NEWUNAME]		= { "__arm64_sys_newuname", 3, "susfs_uname_wrap" },
+	[SUSFS_HOOK_TARGET_ARM64_SYS_NEWUNAME]		= { "__arm64_sys_newuname", 3, NULL },
 	[SUSFS_HOOK_TARGET_VFS_OPEN]			= { "vfs_open", 0, NULL },
 	[SUSFS_HOOK_TARGET_PATH_OPENAT]			= { "path_openat", 1, NULL },
 	[SUSFS_HOOK_TARGET_ARM64_SYS_REBOOT]		= { "__arm64_sys_reboot", -1, NULL },
