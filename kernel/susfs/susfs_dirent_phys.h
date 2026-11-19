@@ -10,8 +10,9 @@
 #include <linux/fs.h>
 
 /* Fill the caller's buffer through iterate_dir() with the filtering filldir.
+ * __nocfi: the call to the resolved iterate_dir pointer is indirect.
  * Returns the byte count or a negative errno. */
-long susfs_dirent_run(struct file *f, void __user *dirp, unsigned int count,
-		      bool compat);
+__nocfi long susfs_dirent_run(struct file *f, void __user *dirp,
+			      unsigned int count, bool compat);
 
 #endif /* __SUSFS_DIRENT_PHYS_H */
