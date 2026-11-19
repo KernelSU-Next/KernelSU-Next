@@ -7,8 +7,17 @@
  */
 
 #include <linux/kernel.h>
+#include <linux/version.h>
 #include <linux/module.h>
 #include <linux/fs.h>
+#include <linux/types.h>
+
+/* include/uapi/linux/openat2.h: three u64 fields, identical on both ABIs we build for. */
+struct susfs_open_how {
+	__u64 flags;
+	__u64 mode;
+	__u64 resolve;
+};
 
 #include "susfs_log.h"
 #include "symbol_resolver.h"
