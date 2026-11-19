@@ -17,6 +17,7 @@
 #include <linux/syscalls.h>
 
 #include "susfs_abi.h"
+#include "susfs_log.h"
 #include "susfs_supercall_data.h"
 #include "susfs_supercall_phys.h"
 #include "susfs_supercall_policy.h"
