@@ -15,7 +15,6 @@
 #include <linux/mm.h>
 #include <linux/module.h>
 #include <linux/mutex.h>
-#include <linux/delay.h>
 #include <linux/kernel.h>
 #include <linux/printk.h>
 #include <linux/rcupdate_trace.h>
@@ -612,30 +611,6 @@ static const struct hk_nx_ops hk_exec_nx_ops = {
 	.flush = hk_exec_flush_tables,
 };
 
-static void hk_exec_on_eio(struct hk_nx_request *req, void *entry,
-			   hk_nx_desc old, hk_nx_desc want)
-{
-	hk_nx_desc v = READ_ONCE(*(unsigned long *)entry);
-	unsigned int i;
-
-	/* Runs inside stop_machine() (atomic), so this must not sleep.  Sample
-	 * the entry for 10 ms before the rollback restores it: a value that
-	 * snaps back to @old means a monitor (Samsung RKP) accepted the store and
-	 * then rewrote the entry, while a value that never becomes @want means
-	 * the store itself did not land. */
-	pr_err("[lkmhook] NX EIO entry %px old=%#llx want=%#llx first=%#llx\n",
-	       entry, old, want, v);
-	for (i = 0; i < 10; i++) {
-		hk_nx_desc prev = v;
-
-		udelay(1000);
-		v = READ_ONCE(*(unsigned long *)entry);
-		if (v != prev)
-			pr_err("[lkmhook] NX EIO sample %u: %#llx\n", i, v);
-	}
-	pr_err("[lkmhook] NX EIO last=%#llx\n", v);
-}
-
 static int hk_exec_clear_stopped(void *data)
 {
 	return hk_nx_clear_page(data);
@@ -689,7 +664,6 @@ static __nocfi noinline int hk_exec_clear_nx(void *mem)
 	 */
 	req.root = (void *)((unsigned long *)mm->pgd +
 			    (((unsigned long)mem >> req.root_shift) & 0x1ff));
-	req.on_eio = hk_exec_on_eio;
 	ret = stop_fn(hk_exec_clear_stopped, &req, NULL);
 	if (ret)
 		pr_err("[lkmhook] trampoline NX check/clear %px failed %d rollback=%d\n",
