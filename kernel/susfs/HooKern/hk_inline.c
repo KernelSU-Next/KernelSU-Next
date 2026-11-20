@@ -563,6 +563,8 @@ typedef void *(*hk_vmalloc_node_range_fn)(unsigned long size,
 static __nocfi noinline void *hk_exec_alloc(unsigned long size)
 {
 	hk_vmalloc_node_range_fn fn;
+	int (*set_memory_x_fn)(unsigned long addr, int numpages);
+	void *mem;
 	const char *name = "__vmalloc_node_range";
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
@@ -571,10 +573,28 @@ static __nocfi noinline void *hk_exec_alloc(unsigned long size)
 	fn = (hk_vmalloc_node_range_fn)hk_resolve(name);
 	if (!fn || !hk_ker_addr_ok((unsigned long)fn))
 		return NULL;
-	return fn(size, 1, VMALLOC_START, VMALLOC_END,
+	mem = fn(size, 1, VMALLOC_START, VMALLOC_END,
 		  GFP_KERNEL | __GFP_NOWARN, PAGE_KERNEL_EXEC,
 		  VM_FLUSH_RESET_PERMS, NUMA_NO_NODE,
 		  __builtin_return_address(0));
+	if (!mem)
+		return NULL;
+
+	/* PAGE_KERNEL_EXEC only clears the LEAF's PXN.  On kernels that mark a
+	 * whole 2 MB range not-executable at the table level (Samsung 5.15 sets
+	 * PMD.PXNTable on this vmalloc area: measured as an IABT, FSC level 3
+	 * permission fault, at the trampoline address while the leaf PTE had
+	 * PXN=0), an EL1 fetch stays forbidden until set_memory_x() walks up and
+	 * clears the table bit.  Not fatal when the symbol is unavailable: the
+	 * range then keeps whatever the allocator gave it, which is what every
+	 * kernel without the table-level bit needs anyway. */
+	set_memory_x_fn = (void *)hk_resolve("set_memory_x");
+	if (set_memory_x_fn && hk_ker_addr_ok((unsigned long)set_memory_x_fn))
+		set_memory_x_fn((unsigned long)mem, (int)(size >> PAGE_SHIFT));
+	else
+		pr_warn("[lkmhook] set_memory_x unavailable - a table-level NX stays in place\n");
+
+	return mem;
 }
 
 static __nocfi noinline void hk_exec_free(void *mem)
