@@ -666,8 +666,8 @@ static __nocfi noinline int hk_exec_clear_nx(void *mem)
 			    (((unsigned long)mem >> req.root_shift) & 0x1ff));
 	ret = stop_fn(hk_exec_clear_stopped, &req, NULL);
 	if (ret)
-		pr_err("[lkmhook] trampoline NX check/clear %px failed %d rollback=%d\n",
-		       mem, ret, req.rollback_error);
+		pr_err("[lkmhook] trampoline NX check/clear %px failed %d stage=%d rollback=%d\n",
+		       mem, ret, req.eio_stage, req.rollback_error);
 	else
 		pr_info("[lkmhook] trampoline %px stage-1 NX verified, cleared=%u tables=%u\n",
 			mem, req.cleared, req.tables_cleared);
