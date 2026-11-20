@@ -9,6 +9,7 @@
 #include <linux/seq_file.h>
 #include <linux/uaccess.h>
 
+#include "ksu_allow_gate.h"	/* susfs_control_visible() */
 #include "sus_path.h"
 #include "susfs_control.h"
 #include "susfs_enable_log_data.h"
