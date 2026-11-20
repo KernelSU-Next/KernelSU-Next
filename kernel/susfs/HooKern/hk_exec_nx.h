@@ -43,6 +43,12 @@ struct hk_nx_request {
 	unsigned int cleared;
 	unsigned int tables_cleared;
 	int rollback_error;
+	/* Optional: called on the first EIO, before the rollback restores the
+	 * entry, so the kernel adapter can sample what the store actually left
+	 * behind (a silent restore by a page-table monitor versus a store that
+	 * never landed).  Host tests leave it NULL. */
+	void (*on_eio)(struct hk_nx_request *req, void *entry,
+		       hk_nx_desc old, hk_nx_desc want);
 };
 
 /* Ignore the parent's PXN: every other currently valid mapping must still
@@ -154,8 +160,11 @@ static inline int hk_nx_clear_page(struct hk_nx_request *req)
 		ret = ops->write(path[i].entry, want);
 		if (!ret && ops->read(path[i].entry) != want)
 			ret = -EIO;
-		if (ret)
+		if (ret) {
+			if (req->on_eio)
+				req->on_eio(req, path[i].entry, path[i].old, want);
 			goto rollback;
+		}
 		req->cleared++;
 		if (i + 1 < depth)
 			req->tables_cleared++;
@@ -164,6 +173,9 @@ static inline int hk_nx_clear_page(struct hk_nx_request *req)
 		ops->flush();
 	for (i = 0; i < depth; i++) {
 		if (ops->read(path[i].entry) != (path[i].old & ~path[i].mask)) {
+			if (req->on_eio)
+				req->on_eio(req, path[i].entry, path[i].old,
+					    path[i].old & ~path[i].mask);
 			ret = -EIO;
 			goto rollback;
 		}
