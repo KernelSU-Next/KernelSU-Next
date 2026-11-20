@@ -659,8 +659,8 @@ static __nocfi int hk_exec_clear_nx(void *mem)
 		pr_err("[lkmhook] trampoline NX check/clear %px failed %d rollback=%d\n",
 		       mem, ret, req.rollback_error);
 	else
-		pr_info("[lkmhook] trampoline %px stage-1 NX verified, cleared=%u\n",
-			mem, req.cleared);
+		pr_info("[lkmhook] trampoline %px stage-1 NX verified, cleared=%u tables=%u\n",
+			mem, req.cleared, req.tables_cleared);
 	return ret;
 }
 
@@ -680,8 +680,11 @@ static __nocfi noinline void *hk_exec_alloc(unsigned long size)
 	fn = (hk_vmalloc_node_range_fn)hk_resolve(name);
 	if (!fn || !hk_ker_addr_ok((unsigned long)fn))
 		return NULL;
+	/* Start NX so even kernels without table PXN exercise and verify the
+	 * leaf transition instead of trusting an allocation-time request.
+	 */
 	mem = fn(PAGE_SIZE, PAGE_SIZE, VMALLOC_START, VMALLOC_END,
-		  GFP_KERNEL | __GFP_NOWARN, PAGE_KERNEL_EXEC,
+		  GFP_KERNEL | __GFP_NOWARN, PAGE_KERNEL,
 		  VM_FLUSH_RESET_PERMS, NUMA_NO_NODE,
 		  __builtin_return_address(0));
 	if (!mem)

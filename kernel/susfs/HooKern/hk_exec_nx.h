@@ -41,6 +41,7 @@ struct hk_nx_request {
 	unsigned int root_shift;
 	unsigned int page_shift;
 	unsigned int cleared;
+	unsigned int tables_cleared;
 	int rollback_error;
 };
 
@@ -98,6 +99,7 @@ static inline int hk_nx_clear_page(struct hk_nx_request *req)
 	int ret = 0;
 
 	req->cleared = 0;
+	req->tables_cleared = 0;
 	req->rollback_error = 0;
 	if (req->page_shift < 12 || req->page_shift > 16 ||
 	    shift < req->page_shift || shift >= 64)
@@ -155,6 +157,8 @@ static inline int hk_nx_clear_page(struct hk_nx_request *req)
 		if (ret)
 			goto rollback;
 		req->cleared++;
+		if (i + 1 < depth)
+			req->tables_cleared++;
 	}
 	if (changed)
 		ops->flush();
