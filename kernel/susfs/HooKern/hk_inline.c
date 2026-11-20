@@ -19,6 +19,7 @@
 #include <linux/printk.h>
 #include <linux/rcupdate_trace.h>
 #include <linux/slab.h>
+#include <linux/stop_machine.h>
 #include <linux/string.h>
 #include <linux/types.h>
 #include <linux/uaccess.h>
@@ -28,6 +29,7 @@
 #include "hk.h"
 #include "hk_patch.h"
 #include "hk_inline.h"
+#include "hk_exec_nx.h"
 
 #define HK_TRAMP_SIZE 4096
 #define HK_INS_LDR_X17 0x58000051
@@ -560,12 +562,117 @@ typedef void *(*hk_vmalloc_node_range_fn)(unsigned long size,
 					  int node,
 					  const void *caller);
 
+typedef int (*hk_exec_nofault_fn)(void *dst, const void *src, size_t size);
+static hk_exec_nofault_fn g_exec_nofault;
+
+static hk_nx_desc hk_exec_read_entry(void *entry)
+{
+	return READ_ONCE(*(unsigned long *)entry);
+}
+
+static void *hk_exec_child(hk_nx_desc desc)
+{
+	unsigned long pfn = pte_pfn(__pte((pteval_t)desc));
+
+	if (!pfn_valid(pfn))
+		return NULL;
+	return __va((phys_addr_t)pfn << PAGE_SHIFT);
+}
+
+static void *hk_exec_entry_at(void *table, unsigned int index)
+{
+	return (unsigned long *)table + index;
+}
+
+static __nocfi int hk_exec_write_entry(void *entry, hk_nx_desc desc)
+{
+	unsigned long value = desc;
+	hk_exec_nofault_fn fn = READ_ONCE(g_exec_nofault);
+
+	/* Ordinary table write faults use the kernel's exception-table recovery. */
+	if (!fn)
+		return -EOPNOTSUPP;
+	return fn(entry, &value, sizeof(value));
+}
+
+static void hk_exec_flush_tables(void)
+{
+	/* Table permission changes cover more than the trampoline VA. Invalidate
+	 * all stage-1 EL1 translations and walk caches, including other CPUs.
+	 */
+	flush_tlb_all();
+}
+
+static const struct hk_nx_ops hk_exec_nx_ops = {
+	.read = hk_exec_read_entry,
+	.child = hk_exec_child,
+	.entry = hk_exec_entry_at,
+	.write = hk_exec_write_entry,
+	.flush = hk_exec_flush_tables,
+};
+
+static int hk_exec_clear_stopped(void *data)
+{
+	return hk_nx_clear_page(data);
+}
+
+static __nocfi int hk_exec_clear_nx(void *mem)
+{
+	int (*stop_fn)(cpu_stop_fn_t, void *, const struct cpumask *);
+	struct hk_nx_request req = {
+		.ops = &hk_exec_nx_ops,
+		.addr = (unsigned long)mem,
+		.root_shift = PGDIR_SHIFT,
+		.page_shift = PAGE_SHIFT,
+	};
+	struct mm_struct *mm;
+	unsigned long symbol;
+	u64 tcr = read_sysreg(tcr_el1);
+	unsigned int tg1 = (tcr >> 30) & 3;
+	unsigned int page_shift = tg1 == 2 ? 12 : tg1 == 1 ? 14 : 16;
+	unsigned int va_bits = 64 - ((tcr >> 16) & 63);
+	int ret;
+
+	/* Do not interpret live tables using an incompatible build's geometry. */
+	if (!tg1 || page_shift != PAGE_SHIFT || va_bits <= page_shift ||
+	    DIV_ROUND_UP(va_bits - page_shift, page_shift - 3) !=
+		CONFIG_PGTABLE_LEVELS) {
+		pr_err("[lkmhook] trampoline NX: incompatible TCR=%#llx\n", tcr);
+		return -EINVAL;
+	}
+	mm = (struct mm_struct *)hk_resolve("init_mm");
+	if (!mm || !hk_ker_addr_ok((unsigned long)mm))
+		return -ENOENT;
+	symbol = hk_resolve("stop_machine");
+	if (!symbol || !hk_ker_addr_ok(symbol))
+		return -ENOENT;
+	stop_fn = (void *)symbol;
+	symbol = hk_resolve("copy_to_kernel_nofault");
+	if (symbol && hk_ker_addr_ok(symbol))
+		WRITE_ONCE(g_exec_nofault, (hk_exec_nofault_fn)symbol);
+	/* mem stays allocated, and the PGD lives with init_mm. All descendant
+	 * reads, neighbour checks, writes and rollback run with CPUs stopped.
+	 */
+	req.root = pgd_offset(mm, (unsigned long)mem);
+	ret = stop_fn(hk_exec_clear_stopped, &req, NULL);
+	if (ret)
+		pr_err("[lkmhook] trampoline NX check/clear %px failed %d rollback=%d\n",
+		       mem, ret, req.rollback_error);
+	else
+		pr_info("[lkmhook] trampoline %px stage-1 NX verified, cleared=%u\n",
+			mem, req.cleared);
+	return ret;
+}
+
 static __nocfi noinline void *hk_exec_alloc(unsigned long size)
 {
 	hk_vmalloc_node_range_fn fn;
-	int (*set_memory_x_fn)(unsigned long addr, int numpages);
 	void *mem;
 	const char *name = "__vmalloc_node_range";
+
+	/* The relocation buffer fits one page, including 16K/64K page builds. */
+	if (!size || size > PAGE_SIZE)
+		return NULL;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 12, 0)
 	name = "__vmalloc_node_range_noprof";
@@ -573,26 +680,21 @@ static __nocfi noinline void *hk_exec_alloc(unsigned long size)
 	fn = (hk_vmalloc_node_range_fn)hk_resolve(name);
 	if (!fn || !hk_ker_addr_ok((unsigned long)fn))
 		return NULL;
-	mem = fn(size, 1, VMALLOC_START, VMALLOC_END,
+	mem = fn(PAGE_SIZE, PAGE_SIZE, VMALLOC_START, VMALLOC_END,
 		  GFP_KERNEL | __GFP_NOWARN, PAGE_KERNEL_EXEC,
 		  VM_FLUSH_RESET_PERMS, NUMA_NO_NODE,
 		  __builtin_return_address(0));
 	if (!mem)
 		return NULL;
 
-	/* PAGE_KERNEL_EXEC only clears the LEAF's PXN.  On kernels that mark a
-	 * whole 2 MB range not-executable at the table level (Samsung 5.15 sets
-	 * PMD.PXNTable on this vmalloc area: measured as an IABT, FSC level 3
-	 * permission fault, at the trampoline address while the leaf PTE had
-	 * PXN=0), an EL1 fetch stays forbidden until set_memory_x() walks up and
-	 * clears the table bit.  Not fatal when the symbol is unavailable: the
-	 * range then keeps whatever the allocator gave it, which is what every
-	 * kernel without the table-level bit needs anyway. */
-	set_memory_x_fn = (void *)hk_resolve("set_memory_x");
-	if (set_memory_x_fn && hk_ker_addr_ok((unsigned long)set_memory_x_fn))
-		set_memory_x_fn((unsigned long)mem, (int)(size >> PAGE_SHIFT));
-	else
-		pr_warn("[lkmhook] set_memory_x unavailable - a table-level NX stays in place\n");
+	/* set_memory_x only updates a leaf on upstream ARM64. Inspect the whole
+	 * path, clear table PXN where it does not unprotect neighbours, and fail
+	 * before publishing any hook if the effective stage-1 permission fails.
+	 */
+	if (hk_exec_clear_nx(mem)) {
+		vfree(mem);
+		return NULL;
+	}
 
 	return mem;
 }
