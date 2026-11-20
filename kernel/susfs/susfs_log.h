@@ -24,9 +24,4 @@ bool susfs_log_enabled(void);
 			pr_info(fmt, ##__VA_ARGS__);			\
 	} while (0)
 
-int susfs_enable_log_init(void);
-void susfs_enable_log_exit(void);
-
-void susfs_enable_log_supercall(void __user **arg);
-
 #endif
