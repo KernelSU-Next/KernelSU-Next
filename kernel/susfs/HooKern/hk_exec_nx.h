@@ -43,6 +43,13 @@ struct hk_nx_request {
 	unsigned int cleared;
 	unsigned int tables_cleared;
 	int rollback_error;
+	/* Optional: called for each store, "pre" with the descriptor just before
+	 * it and "post" with the one just after, so the kernel adapter can log
+	 * the rw -> rwx -> rw curve (store landed and was restored), rw -> rwx
+	 * (store stayed) or rw -> rw (store never landed).  Host tests leave it
+	 * NULL; on_eio below is only the final failure report. */
+	void (*on_sample)(struct hk_nx_request *req, void *entry,
+			  const char *tag, hk_nx_desc desc);
 	/* Optional: called on the first EIO, before the rollback restores the
 	 * entry, so the kernel adapter can sample what the store actually left
 	 * behind (a silent restore by a page-table monitor versus a store that
@@ -157,7 +164,13 @@ static inline int hk_nx_clear_page(struct hk_nx_request *req)
 			continue;
 		/* Include the failing write in rollback: nofault may partially store. */
 		changed |= 1U << i;
+		if (req->on_sample)
+			req->on_sample(req, path[i].entry, "pre",
+				       ops->read(path[i].entry));
 		ret = ops->write(path[i].entry, want);
+		if (req->on_sample)
+			req->on_sample(req, path[i].entry, "post",
+				       ops->read(path[i].entry));
 		if (!ret && ops->read(path[i].entry) != want)
 			ret = -EIO;
 		if (ret) {
