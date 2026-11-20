@@ -13,6 +13,7 @@
 #include "symbol_resolver.h"
 #include "ksu_allow_gate.h"	/* susfs_ksu_allow_kind: whether ksu_file applies at all */
 #include "patch_memory.h"	/* ksu_patch_memory_init(): the flush helper's name differs per kernel */
+#include "susfs_enable_log.h"
 #include "susfs_log.h"
 #include "ksu_umount_gate.h"
 #include "ksu_allow_gate.h"	/* KernelSU's allow predicate: the control-node gate */

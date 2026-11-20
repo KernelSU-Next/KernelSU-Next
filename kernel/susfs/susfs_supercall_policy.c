@@ -10,6 +10,7 @@
 #include <linux/string.h>
 
 #include "susfs_abi.h"
+#include "susfs_enable_log.h"
 #include "susfs_log.h"
 #include "spoof_cmdline.h"
 #include "sus_map.h"
