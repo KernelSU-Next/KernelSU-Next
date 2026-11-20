@@ -18,6 +18,7 @@
 #include <linux/types.h>
 
 #include "ksu_allow_gate.h"
+#include "ksu_allow_gate_data.h"
 #include "symbol_resolver.h"
 #include "susfs_control.h"
 #include "susfs_log.h"
@@ -31,14 +32,6 @@ static const char *const ksu_allow_symbols[] = {
  * while susfs_ksu_allow_kind == 1, which is what lets the inline above test the kind instead of the
  * pointer on every call. */
 static bool (*ksu_allow_fn)(uid_t uid);
-
-/* 0 = no source resolved (strict fallback), 1 = KernelSU's predicate.  See the header. */
-int susfs_ksu_allow_kind;
-
-/* Whether the control nodes actually carry the ksu_file label, i.e. whether the KernelSU set may
- * be let through the gate at all.  Written once by susfs_relabel_control_nodes(), read by every
- * caller; see ksu_allow_gate.h for why an unrelabelled node has to stay root-only. */
-bool susfs_control_relabelled;
 
 /* noinline __nocfi: an indirect call through a resolved address.  CFI checks indirect call sites,
  * and LTO would otherwise inline a small static helper back into a caller that is not marked.

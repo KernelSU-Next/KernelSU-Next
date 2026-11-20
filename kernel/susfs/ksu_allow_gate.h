@@ -39,8 +39,9 @@
  * 1 = KernelSU's __ksu_is_allow_uid_for_current.  This is the extension point: a second source -
  * another root solution's predicate, or an extra local rule - becomes case 2 in
  * susfs_ksu_allow_ask() without touching a single caller, because callers only ever see
- * susfs_ksu_allow_uid()/susfs_ksu_allow_current().  Set once by the init, read by everybody. */
-extern int susfs_ksu_allow_kind;
+ * susfs_ksu_allow_uid()/susfs_ksu_allow_current().  Set once by the init, read by everybody.
+ * The definition lives in ksu_allow_gate_data.c (D). */
+#include "ksu_allow_gate_data.h"
 
 /* The one indirect call, through the address resolved at load. */
 bool susfs_ksu_allow_ask(uid_t uid);
