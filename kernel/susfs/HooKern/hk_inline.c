@@ -584,7 +584,7 @@ static void *hk_exec_entry_at(void *table, unsigned int index)
 	return (unsigned long *)table + index;
 }
 
-static __nocfi int hk_exec_write_entry(void *entry, hk_nx_desc desc)
+static __nocfi noinline int hk_exec_write_entry(void *entry, hk_nx_desc desc)
 {
 	unsigned long value = desc;
 	hk_exec_nofault_fn fn = READ_ONCE(g_exec_nofault);
@@ -616,7 +616,7 @@ static int hk_exec_clear_stopped(void *data)
 	return hk_nx_clear_page(data);
 }
 
-static __nocfi int hk_exec_clear_nx(void *mem)
+static __nocfi noinline int hk_exec_clear_nx(void *mem)
 {
 	int (*stop_fn)(cpu_stop_fn_t, void *, const struct cpumask *);
 	struct hk_nx_request req = {
