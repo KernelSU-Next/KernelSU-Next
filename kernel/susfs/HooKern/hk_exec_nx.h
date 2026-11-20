@@ -43,6 +43,11 @@ struct hk_nx_request {
 	unsigned int cleared;
 	unsigned int tables_cleared;
 	int rollback_error;
+	/* Why the last run ended in -EIO: 1 = the read-back right after one
+	 * store disagreed (the store did not land), 2 = the read-back of the
+	 * whole path disagreed (a store landed and was restored).  Both are
+	 * -EIO; this field is the only difference visible in the log. */
+	int eio_stage;
 };
 
 /* Ignore the parent's PXN: every other currently valid mapping must still
@@ -154,8 +159,10 @@ static inline int hk_nx_clear_page(struct hk_nx_request *req)
 		ret = ops->write(path[i].entry, want);
 		if (!ret && ops->read(path[i].entry) != want)
 			ret = -EIO;
-		if (ret)
+		if (ret) {
+			req->eio_stage = 1;
 			goto rollback;
+		}
 		req->cleared++;
 		if (i + 1 < depth)
 			req->tables_cleared++;
@@ -164,6 +171,7 @@ static inline int hk_nx_clear_page(struct hk_nx_request *req)
 		ops->flush();
 	for (i = 0; i < depth; i++) {
 		if (ops->read(path[i].entry) != (path[i].old & ~path[i].mask)) {
+			req->eio_stage = 2;
 			ret = -EIO;
 			goto rollback;
 		}
