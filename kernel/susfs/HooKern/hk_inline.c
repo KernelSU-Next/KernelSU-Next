@@ -612,40 +612,28 @@ static const struct hk_nx_ops hk_exec_nx_ops = {
 	.flush = hk_exec_flush_tables,
 };
 
-static void hk_exec_on_sample(struct hk_nx_request *req, void *entry,
-			      const char *tag, hk_nx_desc desc)
-{
-	hk_nx_desc v = desc;
-	unsigned int i;
-
-	/* Runs inside stop_machine() (atomic), so this must not sleep.  "pre" is
-	 * the descriptor just before the store, "post" the one just after; the
-	 * curve printed for the 10 ms after the store tells the three cases
-	 * apart: rw -> rwx -> rw (stored, then a monitor put it back),
-	 * rw -> rwx (stored and kept), rw -> rw (store never landed). */
-	pr_err("[lkmhook] NX %s %px: %#llx\n", tag, entry, desc);
-	if (strcmp(tag, "post"))
-		return;
-	for (i = 0; i < 10; i++) {
-		hk_nx_desc n;
-
-		udelay(1000);
-		n = READ_ONCE(*(unsigned long *)entry);
-		if (n != v) {
-			pr_err("[lkmhook] NX post %px +%ums: %#llx\n",
-			       entry, i + 1, n);
-			v = n;
-		}
-	}
-}
-
 static void hk_exec_on_eio(struct hk_nx_request *req, void *entry,
 			   hk_nx_desc old, hk_nx_desc want)
 {
-	/* The final report, before the rollback restores the entry. */
-	pr_err("[lkmhook] NX EIO entry %px old=%#llx want=%#llx read=%#llx\n",
-	       entry, old, want,
-	       (hk_nx_desc)READ_ONCE(*(unsigned long *)entry));
+	hk_nx_desc v = READ_ONCE(*(unsigned long *)entry);
+	unsigned int i;
+
+	/* Runs inside stop_machine() (atomic), so this must not sleep.  Sample
+	 * the entry for 10 ms before the rollback restores it: a value that
+	 * snaps back to @old means a monitor (Samsung RKP) accepted the store and
+	 * then rewrote the entry, while a value that never becomes @want means
+	 * the store itself did not land. */
+	pr_err("[lkmhook] NX EIO entry %px old=%#llx want=%#llx first=%#llx\n",
+	       entry, old, want, v);
+	for (i = 0; i < 10; i++) {
+		hk_nx_desc prev = v;
+
+		udelay(1000);
+		v = READ_ONCE(*(unsigned long *)entry);
+		if (v != prev)
+			pr_err("[lkmhook] NX EIO sample %u: %#llx\n", i, v);
+	}
+	pr_err("[lkmhook] NX EIO last=%#llx\n", v);
 }
 
 static int hk_exec_clear_stopped(void *data)
@@ -702,7 +690,6 @@ static __nocfi noinline int hk_exec_clear_nx(void *mem)
 	req.root = (void *)((unsigned long *)mm->pgd +
 			    (((unsigned long)mem >> req.root_shift) & 0x1ff));
 	req.on_eio = hk_exec_on_eio;
-	req.on_sample = hk_exec_on_sample;
 	ret = stop_fn(hk_exec_clear_stopped, &req, NULL);
 	if (ret)
 		pr_err("[lkmhook] trampoline NX check/clear %px failed %d rollback=%d\n",
