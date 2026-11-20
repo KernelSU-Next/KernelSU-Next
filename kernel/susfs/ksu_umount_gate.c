@@ -26,21 +26,16 @@
 #include <linux/types.h>
 
 #include "ksu_umount_gate.h"
+#include "ksu_umount_gate_data.h"
 #include "symbol_resolver.h"
 #include "susfs_log.h"
 
 #define KSU_UMOUNT_GATE_SYMBOL	"ksu_uid_should_umount"
 
-/* Fail-safe default: the pre-#34 answer, until the init below proves that KernelSU's symbol exists.
- * A path that skips that init entirely - the fail_layer=2 diagnostic in susfs_main.c is one, and this
- * layer is deliberately not fatal - therefore leaves the gates on the safe branch instead of calling
- * through a NULL pointer.  Only a successful resolve turns it off. */
-bool susfs_ksu_umount_gate_off = true;
-
 /* Written once in init, read by every gate through susfs_ksu_umount_ask().  Non-NULL exactly while
  * the gate is off == false, which is the invariant the helper relies on instead of testing the
- * pointer on every call; the default above is what makes that invariant hold even when init is
- * skipped. */
+ * pointer on every call; the default in the data layer is what makes that invariant hold even when
+ * init is skipped. */
 static bool (*ksu_uid_should_umount_fn)(uid_t uid);
 
 /* noinline __nocfi: an indirect call through a resolved address.  CFI checks indirect call sites, and

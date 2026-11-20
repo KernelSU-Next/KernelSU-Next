@@ -9,8 +9,9 @@
 /* Set once, by ksu_umount_gate.c's init, from whether KernelSU's symbol was found: false = the gates
  * ask KernelSU, true = answer the pre-#34 way (uid >= 10000) without calling anything.  Read by the
  * gates, never recomputed, and never a loader parameter: the only thing that matters is one fact
- * about the device, and it is established where the module can still see the whole picture. */
-extern bool susfs_ksu_umount_gate_off;
+ * about the device, and it is established where the module can still see the whole picture.
+ * The definition lives in ksu_umount_gate_data.c (D). */
+#include "ksu_umount_gate_data.h"
 
 /* Defined in ksu_umount_gate.c: the one indirect call, through the address resolved at load. */
 bool susfs_ksu_umount_ask(uid_t uid);
