@@ -622,8 +622,6 @@ static __nocfi noinline int hk_exec_clear_nx(void *mem)
 	struct hk_nx_request req = {
 		.ops = &hk_exec_nx_ops,
 		.addr = (unsigned long)mem,
-		.root_shift = PGDIR_SHIFT,
-		.page_shift = PAGE_SHIFT,
 	};
 	struct mm_struct *mm;
 	unsigned long symbol;
@@ -631,15 +629,23 @@ static __nocfi noinline int hk_exec_clear_nx(void *mem)
 	unsigned int tg1 = (tcr >> 30) & 3;
 	unsigned int page_shift = tg1 == 2 ? 12 : tg1 == 1 ? 14 : 16;
 	unsigned int va_bits = 64 - ((tcr >> 16) & 63);
+	unsigned int levels;
 	int ret;
 
-	/* Do not interpret live tables using an incompatible build's geometry. */
+	/* Interpret the live tables with THIS kernel's geometry: the module is
+	 * built against a GKI tree (48-bit, 4 levels), but a vendor kernel may
+	 * run 39-bit/3 levels.  Comparing against the build-time
+	 * CONFIG_PGTABLE_LEVELS rejected such kernels outright (-EINVAL), which
+	 * surfaced as SUSFS_HOOK_INSTALL_FAILED (-225) on a Samsung 5.15. */
 	if (!tg1 || page_shift != PAGE_SHIFT || va_bits <= page_shift ||
-	    DIV_ROUND_UP(va_bits - page_shift, page_shift - 3) !=
-		CONFIG_PGTABLE_LEVELS) {
-		pr_err("[lkmhook] trampoline NX: incompatible TCR=%#llx\n", tcr);
-		return -EINVAL;
-	}
+	    (va_bits - page_shift) % 9)
+		goto bad_tcr;
+	levels = DIV_ROUND_UP(va_bits - page_shift, 9);
+	if (levels < 2 || levels > 5)
+		goto bad_tcr;
+	req.root_shift = va_bits - 9;
+	req.page_shift = page_shift;
+
 	mm = (struct mm_struct *)hk_resolve("init_mm");
 	if (!mm || !hk_ker_addr_ok((unsigned long)mm))
 		return -ENOENT;
@@ -652,8 +658,12 @@ static __nocfi noinline int hk_exec_clear_nx(void *mem)
 		WRITE_ONCE(g_exec_nofault, (hk_exec_nofault_fn)symbol);
 	/* mem stays allocated, and the PGD lives with init_mm. All descendant
 	 * reads, neighbour checks, writes and rollback run with CPUs stopped.
+	 * The root entry is indexed with the run-time root_shift; pgd_offset()
+	 * would use the build-time PGDIR_SHIFT (39 for 48-bit versus 30 for
+	 * 39-bit) and walk the wrong entry.
 	 */
-	req.root = pgd_offset(mm, (unsigned long)mem);
+	req.root = (void *)((unsigned long *)mm->pgd +
+			    (((unsigned long)mem >> req.root_shift) & 0x1ff));
 	ret = stop_fn(hk_exec_clear_stopped, &req, NULL);
 	if (ret)
 		pr_err("[lkmhook] trampoline NX check/clear %px failed %d rollback=%d\n",
@@ -662,6 +672,10 @@ static __nocfi noinline int hk_exec_clear_nx(void *mem)
 		pr_info("[lkmhook] trampoline %px stage-1 NX verified, cleared=%u tables=%u\n",
 			mem, req.cleared, req.tables_cleared);
 	return ret;
+
+bad_tcr:
+	pr_err("[lkmhook] trampoline NX: incompatible TCR=%#llx\n", tcr);
+	return -EINVAL;
 }
 
 static __nocfi noinline void *hk_exec_alloc(unsigned long size)
