@@ -36,6 +36,7 @@
 #include <linux/version.h>		/* LINUX_VERSION_CODE for the gates below (do not rely on a transitive include) */
 
 #include "symbol_resolver.h"
+#include "btf_layout.h"
 #include "lsm_hook.h"
 #include "patch_memory.h"
 #include "susfs_log.h"
@@ -263,31 +264,45 @@ static int ksu_lsm_hook_head_at(unsigned long heads_addr, struct ksu_lsm_hook *h
         return 0;
     }
 
-    pr_warn("lsm_hook: %s: no list in security_hook_heads could be identified for it - falling back to the offsetof() slot, which is what this module always used and which does not check the list's identity\n",
+    {
+        size_t btf_off = 0, btf_size = 0;
+
+        if (hook->head_name &&
+            !susfs_btf_layout_init() &&
+            !susfs_btf_struct_size("security_hook_heads", &btf_size) &&
+            !susfs_btf_member_offset("security_hook_heads", hook->head_name,
+                                     "hlist_head", &btf_off) &&
+            btf_off + sizeof(struct hlist_head) <= btf_size) {
+            head = (struct hlist_head *)(heads_addr + btf_off);
+            first = hlist_entry_safe(READ_ONCE(head->first),
+                                     struct security_hook_list, list);
+            if (!first) {
+                pr_err("lsm_hook: %s: BTF head (%px, offset %#lx) is empty: refusing\n",
+                        hook->head_name, head, (unsigned long)btf_off);
+                return -ENOENT;
+            }
+            if (first->head != head) {
+                pr_err("lsm_hook: %s: BTF head %px reports first->head %px: refusing\n",
+                        hook->head_name, head, first->head);
+                return -EINVAL;
+            }
+            if (btf_off != hook->head_offset) {
+                pr_warn("lsm_hook: %s: resolved via vmlinux BTF at offset %#lx (build offsetof() was %#lx)\n",
+                        hook->head_name, (unsigned long)btf_off,
+                        (unsigned long)hook->head_offset);
+            } else {
+                SUSFS_LOGI("lsm_hook: %s: list head resolved via vmlinux BTF at offset %#lx\n",
+                        hook->head_name, (unsigned long)btf_off);
+            }
+            *out = head;
+            return 0;
+        }
+    }
+
+    // using compile time offset causes crash
+    pr_err("lsm_hook: %s: identity scan and vmlinux BTF lookup both failed: refusing offsetof() fallback\n",
             hook->head_name ?: "unknown");
-
-    if (hook->head_offset + sizeof(struct hlist_head) > sizeof(struct security_hook_heads)) {
-        pr_err("lsm_hook: %s: head offset %#lx is outside security_hook_heads\n",
-                hook->head_name ?: "unknown", (unsigned long)hook->head_offset);
-        return -EINVAL;
-    }
-
-    head = (struct hlist_head *)(heads_addr + hook->head_offset);
-    first = hlist_entry_safe(READ_ONCE(head->first), struct security_hook_list, list);
-
-    if (!first) {
-        pr_err("lsm_hook: %s: hook list is empty - refusing to insert (nothing to cross-check the head offset against)\n",
-                hook->head_name ?: "unknown");
-        return -ENOENT;
-    }
-    if (first->head != head) {
-        pr_err("lsm_hook: %s: entry at %px reports head %px, computed %px - struct security_hook_heads layout mismatch, refusing to patch\n",
-                hook->head_name ?: "unknown", first, first->head, head);
-        return -EINVAL;
-    }
-
-    *out = head;
-    return 0;
+    return -ENOENT;
 }
 
 /* Insert our node at the head of the list; lock held, head already validated. */
