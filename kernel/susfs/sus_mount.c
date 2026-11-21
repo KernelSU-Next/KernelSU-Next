@@ -151,6 +151,7 @@
 #include "susfs_control.h"
 #include "susfs_helpers.h"
 #include "sus_mount_identity.h"
+#include "sus_mount_identity_data.h"
 #include "sus_mount_idmap.h"
 #include "sus_mount_policy.h"
 #include "sus_mount_view.h"
