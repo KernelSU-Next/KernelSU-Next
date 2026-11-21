@@ -16,7 +16,7 @@ susfs_guard_lkm-objs := susfs_main.o susfs_main_data.o susfs_main_phys.o patch_m
               susfs_hide_data.o susfs_hide_policy.o susfs_hide_phys.o imports_guard.o \
               ksu_umount_gate.o ksu_umount_gate_data.o ksu_allow_gate.o ksu_allow_gate_data.o susfs_fp_hook.o susfs_opath.o susfs_opath_data.o susfs_opath_phys.o susfs_or_entry.o susfs_or_entry_data.o susfs_or_entry_phys.o \
               susfs_create_gate.o susfs_create_vfs.o susfs_create_data.o susfs_create_policy.o \
-              sus_mount_identity.o sus_mount_idmap.o sus_mount_prefix.o sus_mount_policy.o sus_mount_view.o sus_mount_ns_iter.o \
+              sus_mount_identity.o sus_mount_identity_data.o sus_mount_identity_logic.o sus_mount_idmap.o sus_mount_prefix.o sus_mount_policy.o sus_mount_view.o sus_mount_ns_iter.o \
               fsnotify_lifetime.o btf_layout.o sus_dirent.o susfs_dirent_data.o susfs_dirent_policy.o susfs_dirent_phys.o susfs_vfs_stub.o susfs_hide_stub.o susfs_lookup_stub.o
 
 susfs_guard_lkm-objs += kallrecon/lib/core.o kallrecon/lib/access.o kallrecon/lib/discover.o \

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only */
 /*
- * sus_mount_policy.h - sus_mount hide decisions
+ * sus_mount_policy.h - P mount adapters (historical public function names)
  */
 
 #ifndef __SUS_MOUNT_POLICY_H
