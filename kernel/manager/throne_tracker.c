@@ -15,7 +15,6 @@
 #include "klog.h" // IWYU pragma: keep
 #include "manager/manager_identity.h"
 #include "manager/throne_tracker.h"
-#include "compat/kernel_compat.h"
 
 static DEFINE_MUTEX(throne_tracker_mutex);
 
@@ -297,21 +296,13 @@ void track_throne(bool prune_only)
 	loff_t line_start = 0;
 	char buf[KSU_MAX_PACKAGE_NAME];
 	for (;;) {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-		ssize_t count = ksu_kernel_read_compat(fp, &chr, sizeof(chr), &pos);
-#else
 		ssize_t count = kernel_read(fp, &chr, sizeof(chr), &pos);
-#endif
 		if (count != sizeof(chr))
 			break;
 		if (chr != '\n')
 			continue;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-		count = ksu_kernel_read_compat(fp, buf, sizeof(buf) - 1, &line_start);
-#else
 		count = kernel_read(fp, buf, sizeof(buf) - 1, &line_start);
-#endif
 		if (count <= 0) {
 			break;
 		}

@@ -81,11 +81,7 @@ static bool read_exact(struct file *fp, void *buffer, size_t size, loff_t *pos, 
 	if (*pos < 0 || *pos > end || size > (size_t)(end - *pos))
 		return false;
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-	return ksu_kernel_read_compat(fp, buffer, size, pos) == (ssize_t)size;
-#else
 	return kernel_read(fp, buffer, size, pos) == (ssize_t)size;
-#endif
 }
 
 static bool read_length_prefixed_end(struct file *fp, loff_t *pos, loff_t container_end, loff_t *value_end)
@@ -196,11 +192,7 @@ static __always_inline bool check_v2_signature(char *path,
 		memset(eocd_buffer, 0, search_size);
 
 		pos = file_size - search_size;
-#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0)
-		if (ksu_kernel_read_compat(fp, eocd_buffer, search_size, &pos) != search_size) {
-#else
 		if (kernel_read(fp, eocd_buffer, search_size, &pos) != search_size) {
-#endif
 			kvfree(eocd_buffer);
 			goto clean;
 		}
