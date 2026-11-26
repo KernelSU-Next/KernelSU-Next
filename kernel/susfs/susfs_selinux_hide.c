@@ -192,15 +192,19 @@ int susfs_selinux_hide_init(void)
 	}
 	ret = ksu_lsm_hook(&sh_setprocattr);
 	if (ret) {
-		/* On 5.15 the registered selinux_setprocattr address can differ from
-		 * the kallsyms symbol (LTO copy), so the slot is not always
-		 * identifiable by symbol.  Keep the two setxattr slots armed and let
-		 * KernelSU's own selinux_hide cover attr/current writes. */
+		/* Keep the two setxattr slots armed; attr/current writes stay with
+		 * KernelSU's own selinux_hide. */
 		SUSFS_LOGI("selinux_hide: setprocattr hook unavailable %d; "
 			   "setxattr slots stay armed\n", ret);
 		susfs_selinux_hide_setprocattr_ok = false;
 	} else {
 		susfs_selinux_hide_setprocattr_ok = true;
+		/* The first entry of this head is usually KernelSU's my_setprocattr;
+		 * we take the slot anyway and call that function on the pass-through,
+		 * so KernelSU's logic stays in place.  Say which symbol was displaced
+		 * so the log makes the layering visible. */
+		SUSFS_LOGI("selinux_hide: setprocattr slot taken; displaced %pSb "
+			   "(pass-through calls it)\n", sh_setprocattr.original);
 	}
 	SUSFS_LOGI("selinux_hide: armed (uid >= %d, force=%d, ksu flag=%s, "
 		   "setprocattr=%s)\n",
