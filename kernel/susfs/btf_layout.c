@@ -284,6 +284,39 @@ int susfs_btf_member_offset(const char *name, const char *member,
     return 0;
 }
 
+/* Same as susfs_btf_member_offset() but without the type-name check: usable
+ * when the member type is a pointer to an internal struct whose BTF name is
+ * not stable enough to match. */
+int susfs_btf_member_offset_any(const char *name, const char *member,
+                                size_t *offset)
+{
+    u32 id;
+    bool found = false;
+    size_t actual = 0;
+
+    for (id = 1; id < susfs_btf_count; id++) {
+        const struct btf_type *t = susfs_btf_type(id);
+        const struct btf_member *m;
+        u32 bits;
+
+        if (!susfs_btf_named(t, name, BTF_KIND_STRUCT))
+            continue;
+        m = susfs_btf_member(t, member);
+        if (!m)
+            return -ENOENT;
+        bits = susfs_btf_member_bits(t, m);
+        if (bits % 8 || bits / 8 > t->size ||
+            (found && actual != bits / 8))
+            return -EINVAL;
+        actual = bits / 8;
+        found = true;
+    }
+    if (!found)
+        return -ENOENT;
+    *offset = actual;
+    return 0;
+}
+
 int susfs_btf_enum_value(const char *name, const char *member, int *value)
 {
     u32 id;

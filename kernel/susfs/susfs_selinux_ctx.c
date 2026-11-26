@@ -62,28 +62,28 @@ static int susfs_selinux_ctx_resolve(void)
 		SUSFS_LOGI("selinux_ctx: BTF unavailable\n");
 		return -ENOENT;
 	}
-	if (susfs_btf_member_offset("selinux_state", "policy",
-				    "selinux_policy *", &off_state_policy)) {
+	if (susfs_btf_member_offset_any("selinux_state", "policy",
+					&off_state_policy)) {
 		SUSFS_LOGI("selinux_ctx: no selinux_state.policy offset\n");
 		rc = -EINVAL;
 	}
-	if (!rc && susfs_btf_member_offset("selinux_policy", "sidtab",
-					   "sidtab *", &off_policy_sidtab)) {
+	if (!rc && susfs_btf_member_offset_any("selinux_policy", "sidtab",
+						   &off_policy_sidtab)) {
 		SUSFS_LOGI("selinux_ctx: no selinux_policy.sidtab offset\n");
 		rc = -EINVAL;
 	}
-	if (!rc && susfs_btf_member_offset("selinux_policy", "policydb",
-					   "policydb", &off_policy_policydb)) {
+	if (!rc && susfs_btf_member_offset_any("selinux_policy", "policydb",
+						   &off_policy_policydb)) {
 		SUSFS_LOGI("selinux_ctx: no selinux_policy.policydb offset\n");
 		rc = -EINVAL;
 	}
-	if (!rc && susfs_btf_member_offset("context", "len", "unsigned int",
-					   &off_ctx_len)) {
+	if (!rc && susfs_btf_member_offset_any("context", "len",
+						   &off_ctx_len)) {
 		SUSFS_LOGI("selinux_ctx: no context.len offset\n");
 		rc = -EINVAL;
 	}
-	if (!rc && susfs_btf_member_offset("context", "str", "char *",
-					   &off_ctx_str)) {
+	if (!rc && susfs_btf_member_offset_any("context", "str",
+						   &off_ctx_str)) {
 		SUSFS_LOGI("selinux_ctx: no context.str offset\n");
 		rc = -EINVAL;
 	}
