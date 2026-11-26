@@ -22,6 +22,7 @@
 
 #include "lsm_hook.h"
 #include "symbol_resolver.h"
+#include "susfs_selinux_ctx.h"
 #include "susfs_selinux_hide.h"
 #include "susfs_log.h"
 
@@ -211,6 +212,8 @@ int susfs_selinux_hide_init(void)
 		   SUSFS_SELINUX_HIDE_MIN_UID, (int)susfs_selinux_hide_force,
 		   pfn_ksu_selinux_hide_running ? "found" : "missing",
 		   susfs_selinux_hide_setprocattr_ok ? "on" : "off");
+	/* Prototype only: selinux_ctx_test=1 logs a forced context->sid parse. */
+	susfs_selinux_ctx_probe();
 	return 0;
 }
 
