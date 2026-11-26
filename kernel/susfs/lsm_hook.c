@@ -1109,6 +1109,8 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
         }
         SUSFS_LOGI("lsm_hook: fallback %s first entry orig %pSb\n",
                 hook->head_name ?: "unknown", selected_origin);
+        pr_warn("lsm_hook: WARNING: %s slot being taken by %s; displaced function %pSb (continuing install)\n",
+                hook->head_name ?: "unknown", "the first entry", selected_origin);
         goto fallback_found;
     }
 
