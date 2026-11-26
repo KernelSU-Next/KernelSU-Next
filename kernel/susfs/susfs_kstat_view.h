@@ -24,7 +24,7 @@ enum susfs_kstat_action {
 
 struct susfs_kstat_view {
 	bool table_empty;
-	bool caller_is_umounted_app;
+	bool caller_is_app;
 	bool rule_matched;
 	bool buffer_ok;
 	u32 spoof_flags;
@@ -33,7 +33,7 @@ struct susfs_kstat_view {
 static inline bool
 susfs_kstat_gate_allowed(const struct susfs_kstat_view *v)
 {
-	return v && !v->table_empty && v->caller_is_umounted_app;
+	return v && !v->table_empty && v->caller_is_app;
 }
 
 static inline enum susfs_kstat_action
