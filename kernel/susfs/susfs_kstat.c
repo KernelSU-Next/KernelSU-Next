@@ -58,7 +58,6 @@
 #include "susfs_helpers.h"
 #include "susfs_kstat.h"
 #include "susfs_fp_hook.h"	/* struct susfs_fp_hook + install/remove/drain: the table entries */
-#include "ksu_umount_gate.h"	/* susfs_is_current_proc_umounted_app (issue #34) */
 #include "ksu_allow_gate.h"	/* the control-node gate is su's own */
 #include "susfs_kprobe.h"
 #include "susfs_hooks.h"
@@ -175,21 +174,24 @@ static_assert(offsetof(struct stat, st_ctime) == ST_CTIME_OFF, "stat.st_ctime");
 
 /* ---- the read gate ----
  *
- * Upstream gates every sus_kstat read on susfs_is_current_proc_umounted_app(), exactly
- * (TIF_PROC_UMOUNTED && current_uid().val >= 10000).  KernelSU's setuid_hook sets that flag only
- * with the SUSFS integration compiled into the kernel, which this kernel has none of, so the flag
- * is asked of KernelSU itself instead: susfs_is_current_proc_umounted_app() answers it with
- * ksu_uid_should_umount() (ksu_umount_gate.h, issue #34).  The old `uid >= 10000` proxy spoofed for
- * every app uid, the manager and su-granted apps included.
- * Without any gate the spoofing would be visible to root too, wider than upstream.  Writers
+ * 2.4.0 behavior: SUS_KSTAT is always effective for app uids,
+ * ((uid % 100000) >= 10000), and does not depend on TIF_PROC_UMOUNTED or KernelSU's
+ * umount gate any more.  The flag-based gate below the old comment was the pre-2.4.0
+ * behavior; keep the umount gate only for the other features that need it.  Root,
+ * shell and the manager's non-app contexts still get the real values.  Writers
  * (supercall, /proc) are configuration and stay ungated. */
 static bool susfs_kstat_table_empty(void);
+
+static bool susfs_kstat_caller_is_app(void)
+{
+	return ((u32)current_uid().val % 100000) >= 10000;
+}
 
 static bool susfs_kstat_gate_ok(void)
 {
 	struct susfs_kstat_view v = {
 		.table_empty = susfs_kstat_table_empty(),
-		.caller_is_umounted_app = susfs_is_current_proc_umounted_app(),
+		.caller_is_app = susfs_kstat_caller_is_app(),
 	};
 
 	return susfs_kstat_gate_allowed(&v);
@@ -239,7 +241,7 @@ static bool susfs_kstat_rule_allows(const struct sus_kstat_snapshot *s)
 {
 	struct susfs_kstat_view v = {
 		.table_empty = false,
-		.caller_is_umounted_app = true,
+		.caller_is_app = true,
 		.rule_matched = true,
 		.buffer_ok = true,
 		.spoof_flags = s->flags,
