@@ -22,15 +22,22 @@
 #include <linux/slab.h>
 #include <linux/string.h>
 #include <linux/types.h>
+#include <linux/cred.h>
+#include <linux/dcache.h>
+#include <linux/fs.h>
 
 #include "btf_layout.h"
-#include "symbol_resolver.h"
+#include "hk.h"		/* hk_resolve: the HooKern symbol lookup */
 #include "susfs_selinux_ctx.h"
 #include "susfs_log.h"
 
 /* struct context { u32 user, role, type, len; struct mls_range range; char *str; } */
 static size_t off_ctx_len, off_ctx_str, ctx_size;
 static size_t off_state_policy, off_policy_sidtab, off_policy_policydb;
+/* The sid-bearing fields the entry layer updates, all from BTF as well. */
+static size_t off_isec_sid;		/* inode_security_struct.sid */
+static size_t off_cred_security;	/* cred.security (the SELinux blob) */
+static size_t off_tsec_sid;		/* task_security_struct.sid */
 static unsigned long selinux_state_addr;
 static void *pfn_string_to_context_struct;
 static void *pfn_sidtab_context_to_sid;
@@ -43,12 +50,12 @@ static int susfs_selinux_ctx_resolve(void)
 	int rc = 0;
 
 	if (!selinux_state_addr)
-		selinux_state_addr = find_kernel_symbol_exact("selinux_state");
+		selinux_state_addr = hk_resolve("selinux_state");
 	if (!pfn_string_to_context_struct)
-		pfn_string_to_context_struct = (void *)find_kernel_symbol_exact(
+		pfn_string_to_context_struct = (void *)hk_resolve(
 			"string_to_context_struct");
 	if (!pfn_sidtab_context_to_sid)
-		pfn_sidtab_context_to_sid = (void *)find_kernel_symbol_exact(
+		pfn_sidtab_context_to_sid = (void *)hk_resolve(
 			"sidtab_context_to_sid");
 	if (!selinux_state_addr || !pfn_string_to_context_struct ||
 	    !pfn_sidtab_context_to_sid) {
@@ -91,11 +98,28 @@ static int susfs_selinux_ctx_resolve(void)
 		SUSFS_LOGI("selinux_ctx: no context size\n");
 		rc = -EINVAL;
 	}
+	if (!rc && susfs_btf_member_offset_any("inode_security_struct", "sid",
+					       &off_isec_sid)) {
+		SUSFS_LOGI("selinux_ctx: no inode_security_struct.sid offset\n");
+		rc = -EINVAL;
+	}
+	if (!rc && susfs_btf_member_offset_any("cred", "security",
+					       &off_cred_security)) {
+		SUSFS_LOGI("selinux_ctx: no cred.security offset\n");
+		rc = -EINVAL;
+	}
+	if (!rc && susfs_btf_member_offset_any("task_security_struct", "sid",
+					       &off_tsec_sid)) {
+		SUSFS_LOGI("selinux_ctx: no task_security_struct.sid offset\n");
+		rc = -EINVAL;
+	}
 	if (!rc)
 		SUSFS_LOGI("selinux_ctx: offsets state.policy=%zu po.sidtab=%zu "
-			   "po.policydb=%zu ctx.len=%zu ctx.str=%zu size=%zu\n",
+			   "po.policydb=%zu ctx.len=%zu ctx.str=%zu size=%zu "
+			   "isec.sid=%zu cred.security=%zu tsec.sid=%zu\n",
 			   off_state_policy, off_policy_sidtab, off_policy_policydb,
-			   off_ctx_len, off_ctx_str, ctx_size);
+			   off_ctx_len, off_ctx_str, ctx_size,
+			   off_isec_sid, off_cred_security, off_tsec_sid);
 	return rc;
 }
 
@@ -187,4 +211,56 @@ void susfs_selinux_ctx_probe(void)
 						 sizeof(probe_ctx) - 1, 0, &sid);
 	SUSFS_LOGI("selinux_ctx: force parse '%s' rc=%d sid=%u\n",
 		   probe_ctx, rc, sid);
+}
+
+/* setxattr entry: the force sid replaces the inode's SELinux sid, so the
+ * relabel the built-in helper writes (isec->sid = newsid) happens here too.
+ * 5.15 single-LSM blob: inode->i_security is the inode_security_struct. */
+int __nocfi susfs_selinux_ctx_set_inode_sid(struct dentry *dentry,
+					    const void *value, size_t size)
+{
+	struct inode *inode;
+	void *isec;
+	u32 sid = 0;
+	int rc;
+
+	if (!dentry || !value || !size)
+		return -EINVAL;
+	rc = susfs_security_context_to_sid_force(value, size, 0, &sid);
+	if (rc)
+		return rc;
+	inode = d_backing_inode(dentry);
+	if (!inode || !inode->i_security)
+		return -ENOENT;
+	isec = inode->i_security;
+	*(u32 *)((char *)isec + off_isec_sid) = sid;
+	return 0;
+}
+
+/* setprocattr entry: the force sid replaces the current task's SELinux sid in
+ * a private cred copy, then commit_creds publishes it (the built-in helper's
+ * tsec->sid = sid; commit_creds(new)). */
+int __nocfi susfs_selinux_ctx_set_current_sid(const void *value, size_t size)
+{
+	struct cred *cred;
+	void *tsec;
+	u32 sid = 0;
+	int rc;
+
+	if (!value || !size)
+		return -EINVAL;
+	rc = susfs_security_context_to_sid_force(value, size, 0, &sid);
+	if (rc)
+		return rc;
+	cred = prepare_creds();
+	if (!cred)
+		return -ENOMEM;
+	tsec = READ_ONCE(*(void **)((char *)cred + off_cred_security));
+	if (!tsec) {
+		put_cred(cred);
+		return -ENOENT;
+	}
+	*(u32 *)((char *)tsec + off_tsec_sid) = sid;
+	commit_creds(cred);
+	return 0;
 }
