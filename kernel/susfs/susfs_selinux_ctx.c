@@ -40,6 +40,8 @@ module_param_named(selinux_ctx_test, selinux_ctx_test, bool, 0644);
 
 static int susfs_selinux_ctx_resolve(void)
 {
+	int rc = 0;
+
 	if (!selinux_state_addr)
 		selinux_state_addr = find_kernel_symbol_exact("selinux_state");
 	if (!pfn_string_to_context_struct)
@@ -49,24 +51,52 @@ static int susfs_selinux_ctx_resolve(void)
 		pfn_sidtab_context_to_sid = (void *)find_kernel_symbol_exact(
 			"sidtab_context_to_sid");
 	if (!selinux_state_addr || !pfn_string_to_context_struct ||
-	    !pfn_sidtab_context_to_sid)
+	    !pfn_sidtab_context_to_sid) {
+		SUSFS_LOGI("selinux_ctx: symbols state=%px s2c=%px s2sid=%px\n",
+			   (void *)selinux_state_addr, pfn_string_to_context_struct,
+			   pfn_sidtab_context_to_sid);
 		return -ENOENT;
+	}
 
-	if (susfs_btf_layout_init())
+	if (susfs_btf_layout_init()) {
+		SUSFS_LOGI("selinux_ctx: BTF unavailable\n");
 		return -ENOENT;
+	}
 	if (susfs_btf_member_offset("selinux_state", "policy",
-				    "selinux_policy *", &off_state_policy) ||
-	    susfs_btf_member_offset("selinux_policy", "sidtab", "sidtab *",
-				    &off_policy_sidtab) ||
-	    susfs_btf_member_offset("selinux_policy", "policydb", "policydb",
-				    &off_policy_policydb) ||
-	    susfs_btf_member_offset("context", "len", "unsigned int",
-				    &off_ctx_len) ||
-	    susfs_btf_member_offset("context", "str", "char *",
-				    &off_ctx_str) ||
-	    susfs_btf_struct_size("context", &ctx_size))
-		return -EINVAL;
-	return 0;
+				    "selinux_policy *", &off_state_policy)) {
+		SUSFS_LOGI("selinux_ctx: no selinux_state.policy offset\n");
+		rc = -EINVAL;
+	}
+	if (!rc && susfs_btf_member_offset("selinux_policy", "sidtab",
+					   "sidtab *", &off_policy_sidtab)) {
+		SUSFS_LOGI("selinux_ctx: no selinux_policy.sidtab offset\n");
+		rc = -EINVAL;
+	}
+	if (!rc && susfs_btf_member_offset("selinux_policy", "policydb",
+					   "policydb", &off_policy_policydb)) {
+		SUSFS_LOGI("selinux_ctx: no selinux_policy.policydb offset\n");
+		rc = -EINVAL;
+	}
+	if (!rc && susfs_btf_member_offset("context", "len", "unsigned int",
+					   &off_ctx_len)) {
+		SUSFS_LOGI("selinux_ctx: no context.len offset\n");
+		rc = -EINVAL;
+	}
+	if (!rc && susfs_btf_member_offset("context", "str", "char *",
+					   &off_ctx_str)) {
+		SUSFS_LOGI("selinux_ctx: no context.str offset\n");
+		rc = -EINVAL;
+	}
+	if (!rc && susfs_btf_struct_size("context", &ctx_size)) {
+		SUSFS_LOGI("selinux_ctx: no context size\n");
+		rc = -EINVAL;
+	}
+	if (!rc)
+		SUSFS_LOGI("selinux_ctx: offsets state.policy=%zu po.sidtab=%zu "
+			   "po.policydb=%zu ctx.len=%zu ctx.str=%zu size=%zu\n",
+			   off_state_policy, off_policy_sidtab, off_policy_policydb,
+			   off_ctx_len, off_ctx_str, ctx_size);
+	return rc;
 }
 
 typedef int (*susfs_string_to_context_fn)(void *policydb, void *sidtab,
