@@ -74,8 +74,8 @@ typedef int (*susfs_string_to_context_fn)(void *policydb, void *sidtab,
 					  u32 def_sid);
 typedef int (*susfs_sidtab_to_sid_fn)(void *sidtab, void *ctx, u32 *sid);
 
-int susfs_security_context_to_sid_force(const char *scontext, u32 len,
-					u32 def_sid, u32 *sid)
+int __nocfi susfs_security_context_to_sid_force(const char *scontext, u32 len,
+						u32 def_sid, u32 *sid)
 {
 	susfs_string_to_context_fn string_to_context;
 	susfs_sidtab_to_sid_fn sidtab_to_sid;
