@@ -140,8 +140,11 @@ susfs_selinux_hide_inode_setxattr(susfs_lsm_idmap_t *idmap, struct dentry *dentr
 	susfs_lsm_inode_setxattr_fn orig =
 		(susfs_lsm_inode_setxattr_fn)sh_setxattr.original;
 
-	if (susfs_selinux_should_spoof(name, value, size))
-		return 0;	/* upstream force parse: the write succeeds */
+	if (susfs_selinux_should_spoof(name, value, size)) {
+		/* force parse + isec->sid = sid (the built-in helper's
+		 * security_context_to_sid_force + isec update). */
+		return susfs_selinux_ctx_set_inode_sid(dentry, value, size);
+	}
 	return orig ? orig(idmap, dentry, name, value, size, flags) : 0;
 }
 
@@ -165,8 +168,15 @@ susfs_selinux_hide_setprocattr(const char *name, void *value, size_t size)
 		(susfs_lsm_setprocattr_fn)sh_setprocattr.original;
 
 	if (name && !strcmp(name, "current") &&
-	    susfs_selinux_should_spoof("current", value, size))
-		return (int)size;	/* upstream: commit_creds + return size */
+	    susfs_selinux_should_spoof("current", value, size)) {
+		/* force parse + tsec->sid = sid + commit_creds (the built-in
+		 * helper's tsec update), then report the byte count. */
+		int rc = susfs_selinux_ctx_set_current_sid(value, size);
+
+		if (rc)
+			return rc;
+		return (int)size;
+	}
 	return orig ? orig(name, value, size) : -EINVAL;
 }
 
