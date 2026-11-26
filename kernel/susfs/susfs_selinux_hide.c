@@ -40,6 +40,7 @@ static bool susfs_selinux_hide_force;
 module_param_named(selinux_hide_force, susfs_selinux_hide_force, bool, 0644);
 
 static bool *pfn_ksu_selinux_hide_running;
+static bool susfs_selinux_hide_setprocattr_ok;
 
 static bool susfs_selinux_hide_enabled(void)
 {
@@ -184,20 +185,28 @@ int susfs_selinux_hide_init(void)
 	}
 	ret = ksu_lsm_hook(&sh_setprocattr);
 	if (ret) {
-		SUSFS_LOGI("selinux_hide: setprocattr hook failed %d\n", ret);
-		ksu_lsm_unhook(&sh_post_setxattr);
-		ksu_lsm_unhook(&sh_setxattr);
-		return ret;
+		/* On 5.15 the registered selinux_setprocattr address can differ from
+		 * the kallsyms symbol (LTO copy), so the slot is not always
+		 * identifiable by symbol.  Keep the two setxattr slots armed and let
+		 * KernelSU's own selinux_hide cover attr/current writes. */
+		SUSFS_LOGI("selinux_hide: setprocattr hook unavailable %d; "
+			   "setxattr slots stay armed\n", ret);
+		susfs_selinux_hide_setprocattr_ok = false;
+	} else {
+		susfs_selinux_hide_setprocattr_ok = true;
 	}
-	SUSFS_LOGI("selinux_hide: armed (uid >= %d, force=%d, ksu flag=%s)\n",
+	SUSFS_LOGI("selinux_hide: armed (uid >= %d, force=%d, ksu flag=%s, "
+		   "setprocattr=%s)\n",
 		   SUSFS_SELINUX_HIDE_MIN_UID, (int)susfs_selinux_hide_force,
-		   pfn_ksu_selinux_hide_running ? "found" : "missing");
+		   pfn_ksu_selinux_hide_running ? "found" : "missing",
+		   susfs_selinux_hide_setprocattr_ok ? "on" : "off");
 	return 0;
 }
 
 void susfs_selinux_hide_exit(void)
 {
-	ksu_lsm_unhook(&sh_setprocattr);
+	if (susfs_selinux_hide_setprocattr_ok)
+		ksu_lsm_unhook(&sh_setprocattr);
 	ksu_lsm_unhook(&sh_post_setxattr);
 	ksu_lsm_unhook(&sh_setxattr);
 }
