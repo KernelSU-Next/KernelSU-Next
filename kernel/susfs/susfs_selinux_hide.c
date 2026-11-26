@@ -120,9 +120,16 @@ static struct ksu_lsm_hook sh_setxattr =
 static struct ksu_lsm_hook sh_post_setxattr =
 	KSU_LSM_HOOK_INIT(inode_post_setxattr, "selinux_inode_post_setxattr",
 			  susfs_selinux_hide_inode_post_setxattr, 0);
-static struct ksu_lsm_hook sh_setprocattr =
-	KSU_LSM_HOOK_INIT(setprocattr, "selinux_setprocattr",
-			  susfs_selinux_hide_setprocattr, 0);
+/* setprocattr: no target_name on purpose.  The registered selinux_setprocattr
+ * address can differ from its kallsyms symbol (LTO copy), and the slot is the
+ * first entry of this head, so ksu_lsm_hook() takes it directly and stores the
+ * displaced function as original. */
+static struct ksu_lsm_hook sh_setprocattr = {
+	.head_name = "setprocattr",
+	.head_offset = offsetof(KSU_LSM_HOOK_HEADS_TYPE, setprocattr),
+	.hook_offset = offsetof(struct security_hook_list, hook.setprocattr),
+	.replacement = (void *)susfs_selinux_hide_setprocattr,
+};
 
 static int __nocfi
 susfs_selinux_hide_inode_setxattr(susfs_lsm_idmap_t *idmap, struct dentry *dentry,
