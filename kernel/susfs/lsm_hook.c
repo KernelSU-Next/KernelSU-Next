@@ -911,14 +911,8 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
 
     /* ---- replace path: find the entry whose function slot holds the resolved symbol. ---- */
     target_name = hook->target_name;
-    if (!target_name) {
-        pr_err("lsm_hook: hook %s: target_name is required\n", hook->head_name ?: "unknown");
-        ret = -EINVAL;
-        goto out_unlock;
-    }
-
     target = hook->original;
-    if (!target)
+    if (!target && target_name)
         target = ksu_resolve_symbol_for_functable_hook(target_name);
     if (!target) {
         /* An LTO copy can have a different address than the kallsyms symbol (the
@@ -926,9 +920,10 @@ int ksu_lsm_hook(struct ksu_lsm_hook *hook)
          * the head, so fall back to its first entry: original becomes whatever
          * function is installed there, and the wrapper still calls it for the
          * pass-through.  Android runs SELinux as the only provider in these
-         * lists, so the first entry is the SELinux one. */
+         * lists, so the first entry is the SELinux one.  target_name may also be
+         * NULL on purpose: the consumer wants the first entry, not a symbol. */
         SUSFS_LOGI("lsm_hook: target %s not resolvable; falling back to the first entry of head %s\n",
-                target_name, hook->head_name ?: "unknown");
+                target_name ?: "(none)", hook->head_name ?: "unknown");
     } else {
         SUSFS_LOGI("target: 0x%lx %pSb\n", (unsigned long)target, target);
     }
