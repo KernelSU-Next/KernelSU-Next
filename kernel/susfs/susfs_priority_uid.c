@@ -204,10 +204,17 @@ int susfs_priority_uid_set(const char *apps)
 	return priority_rebuild(apps);
 }
 
-/* KernelSU observer hit (entry stub, fsnotify context): only defer.  The
- * rebuild reads /data/system/packages.list, which may sleep. */
-void susfs_priority_observer_hit(void)
+/* KernelSU observer hit (entry stub on ksu_handle_inode_event, fsnotify
+ * context): only defer, and only for packages.list like KernelSU itself.
+ * The rebuild reads /data/system/packages.list, which may sleep. */
+void susfs_priority_observer_hit(const void *qstr)
 {
+	const u32 *q = (const u32 *)qstr;
+
+	/* struct qstr in 5.15: hash @0, len @4, name @8. */
+	if (!q || q[1] != 13 || memcmp(*(const void *const *)(q + 2),
+				       "packages.list", 13))
+		return;
 	if (priority_work_inited && priority_apps)
 		schedule_work(&priority_rebuild_work);
 }
@@ -333,12 +340,12 @@ int susfs_priority_uid_init(void)
 	 * table (found with the any-symbol lookup). */
 	{
 		unsigned long obs_addr = find_kernel_symbol_exact_any(
-			"ksu_defer_track_throne");
+			"ksu_handle_inode_event");
 
 		if (obs_addr)
-			susfs_hook_override("ksu_defer_track_throne", obs_addr);
+			susfs_hook_override("ksu_handle_inode_event", obs_addr);
 	}
-	err = hk_inline_hook_stub(&ksu_observer_hook, "ksu_defer_track_throne",
+	err = hk_inline_hook_stub(&ksu_observer_hook, "ksu_handle_inode_event",
 				  (unsigned long)susfs_ksu_observer_stub,
 				  &susfs_ksu_observer_tramp);
 	if (!err) {
