@@ -74,7 +74,7 @@
 #define KSTAT_AUTO_SPOOF_FULL_CLONE (KSTAT_AUTO_SPOOF | \
 	KSTAT_SPOOF_NLINK | KSTAT_SPOOF_SIZE)
 
-#define SUS_KSTAT_MAX 32
+#define SUS_KSTAT_MAX 256
 /* Upstream's target_pathname is char[256]: a shorter buffer truncates a legal long path into a wrong rule. */
 #define KSTAT_PATH_MAX 256
 
