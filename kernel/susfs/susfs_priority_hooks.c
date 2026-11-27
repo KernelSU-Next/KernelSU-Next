@@ -41,12 +41,7 @@ enum priority_syscall {
 	PRIORITY_SYSCALL_COUNT,
 };
 
-static susfs_syscall_fn_t *priority_orig_slot(enum priority_syscall id)
-{
-	static susfs_syscall_fn_t slots[PRIORITY_SYSCALL_COUNT];
-
-	return &slots[id];
-}
+static susfs_syscall_fn_t priority_slots[PRIORITY_SYSCALL_COUNT];
 
 static bool priority_target_filtered(int which, unsigned long who, int user_which)
 {
@@ -56,7 +51,7 @@ static bool priority_target_filtered(int which, unsigned long who, int user_whic
 
 static __nocfi noinline long priority_wrap_setpriority(const struct pt_regs *regs)
 {
-	susfs_syscall_fn_t orig = READ_ONCE(*priority_orig_slot(PRIORITY_SETPRIORITY));
+	susfs_syscall_fn_t orig = READ_ONCE(priority_slots[PRIORITY_SETPRIORITY]);
 
 	if (!orig)
 		return -ENOSYS;
@@ -67,7 +62,7 @@ static __nocfi noinline long priority_wrap_setpriority(const struct pt_regs *reg
 
 static __nocfi noinline long priority_wrap_getpriority(const struct pt_regs *regs)
 {
-	susfs_syscall_fn_t orig = READ_ONCE(*priority_orig_slot(PRIORITY_GETPRIORITY));
+	susfs_syscall_fn_t orig = READ_ONCE(priority_slots[PRIORITY_GETPRIORITY]);
 
 	if (!orig)
 		return -ENOSYS;
@@ -78,7 +73,7 @@ static __nocfi noinline long priority_wrap_getpriority(const struct pt_regs *reg
 
 static __nocfi noinline long priority_wrap_ioprio_set(const struct pt_regs *regs)
 {
-	susfs_syscall_fn_t orig = READ_ONCE(*priority_orig_slot(PRIORITY_IOPRIO_SET));
+	susfs_syscall_fn_t orig = READ_ONCE(priority_slots[PRIORITY_IOPRIO_SET]);
 
 	if (!orig)
 		return -ENOSYS;
@@ -89,7 +84,7 @@ static __nocfi noinline long priority_wrap_ioprio_set(const struct pt_regs *regs
 
 static __nocfi noinline long priority_wrap_ioprio_get(const struct pt_regs *regs)
 {
-	susfs_syscall_fn_t orig = READ_ONCE(*priority_orig_slot(PRIORITY_IOPRIO_GET));
+	susfs_syscall_fn_t orig = READ_ONCE(priority_slots[PRIORITY_IOPRIO_GET]);
 
 	if (!orig)
 		return -ENOSYS;
@@ -101,16 +96,16 @@ static __nocfi noinline long priority_wrap_ioprio_get(const struct pt_regs *regs
 static struct susfs_fp_hook priority_hooks[] = {
 	{ .nr = __NR_setpriority, .name = "priority/setpriority",
 	  .sym = "__arm64_sys_setpriority", .wrapper = priority_wrap_setpriority,
-	  .orig_slot = &priority_orig_slot(PRIORITY_SETPRIORITY)[0] },
+	  .orig_slot = &priority_slots[PRIORITY_SETPRIORITY] },
 	{ .nr = __NR_getpriority, .name = "priority/getpriority",
 	  .sym = "__arm64_sys_getpriority", .wrapper = priority_wrap_getpriority,
-	  .orig_slot = &priority_orig_slot(PRIORITY_GETPRIORITY)[0] },
+	  .orig_slot = &priority_slots[PRIORITY_GETPRIORITY] },
 	{ .nr = __NR_ioprio_set, .name = "priority/ioprio_set",
 	  .sym = "__arm64_sys_ioprio_set", .wrapper = priority_wrap_ioprio_set,
-	  .orig_slot = &priority_orig_slot(PRIORITY_IOPRIO_SET)[0] },
+	  .orig_slot = &priority_slots[PRIORITY_IOPRIO_SET] },
 	{ .nr = __NR_ioprio_get, .name = "priority/ioprio_get",
 	  .sym = "__arm64_sys_ioprio_get", .wrapper = priority_wrap_ioprio_get,
-	  .orig_slot = &priority_orig_slot(PRIORITY_IOPRIO_GET)[0] },
+	  .orig_slot = &priority_slots[PRIORITY_IOPRIO_GET] },
 };
 
 static struct susfs_hook priority_reg[ARRAY_SIZE(priority_hooks)];
