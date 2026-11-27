@@ -51,6 +51,7 @@ static int priority_mark_package(unsigned long *bits, const char *packages,
 				 const char *token, size_t token_len)
 {
 	const char *p = packages;
+	int lines = 0;
 
 	while (*p) {
 		const char *name, *uid_start;
@@ -71,6 +72,11 @@ static int priority_mark_package(unsigned long *bits, const char *packages,
 		uid_start = p;
 		while (*p >= '0' && *p <= '9')
 			p++;
+		if (lines < 3)
+			SUSFS_LOGI("priority_uid: line name_len=%zu name='%.*s' uid='%.*s'\n",
+				   name_len, (int)name_len, name,
+				   (int)(p - uid_start), uid_start);
+		lines++;
 		if (uid_start == p || name_len == 0 || name_len >= sizeof(namebuf))
 			continue;
 		if (name_len != token_len || strncmp(name, token, token_len))
