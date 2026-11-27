@@ -13,6 +13,10 @@
 
 /* unexported static var; ksud insmod relocates it via kallsyms */
 extern char *saved_boot_config;
+/* /proc/cmdline's source (init/main.c, global).  Upstream's
+ * CMD_SUSFS_SET_CMDLINE_OR_BOOTCONFIG covers both files with the same fake
+ * string; leaving this one alone kept the real bootloader cmdline visible. */
+extern char *saved_command_line;
 
 /* Free what nobody can still be reading.  Retiring without ever freeing leaked
  * up to 8 KB per set() for the module's lifetime, unbounded over repeated
@@ -54,13 +58,16 @@ static void spoof_retire(char *s)
 void spoof_cmdline_publish(char *dup)
 {
 	mutex_lock(&spoof_cmdline_lock);
-	if (!spoof_cmdline_active)
+	if (!spoof_cmdline_active) {
 		spoof_cmdline_orig = saved_boot_config;
-	else
+		spoof_cmdline_cmdline_orig = saved_command_line;
+	} else {
 		spoof_retire(spoof_cmdline_live);
+	}
 
 	spoof_cmdline_live = dup;
 	saved_boot_config = dup;
+	saved_command_line = dup;
 	spoof_cmdline_active = true;
 	mutex_unlock(&spoof_cmdline_lock);
 
@@ -75,8 +82,10 @@ void spoof_cmdline_restore(void)
 	mutex_lock(&spoof_cmdline_lock);
 	if (spoof_cmdline_active) {
 		saved_boot_config = spoof_cmdline_orig;
+		saved_command_line = spoof_cmdline_cmdline_orig;
 		spoof_cmdline_active = false;
 		spoof_cmdline_orig = NULL;
+		spoof_cmdline_cmdline_orig = NULL;
 		live = spoof_cmdline_live;
 	}
 	spoof_cmdline_live = NULL;

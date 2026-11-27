@@ -22,6 +22,7 @@ struct retired_str {
 
 extern char spoof_cmdline_param[SPOOF_CMDLINE_PARAM_LEN];
 extern char *spoof_cmdline_orig;
+extern char *spoof_cmdline_cmdline_orig;
 extern char *spoof_cmdline_live;
 extern bool spoof_cmdline_active;
 extern struct mutex spoof_cmdline_lock;
