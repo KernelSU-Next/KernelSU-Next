@@ -288,17 +288,10 @@ out:
 /* ---- module parameter: same list, easier to drive from a shell during tests ---- */
 static int priority_filter_param_set(const char *val, const struct kernel_param *kp)
 {
-	char *apps;
-	int err;
-
-	if (!val)
-		return -EINVAL;
-	apps = kstrdup(val, GFP_KERNEL);
-	if (!apps)
-		return -ENOMEM;
-	err = priority_rebuild(apps);
-	kfree(apps);
-	return err;
+	/* susfs_priority_uid_set() also records the list for the observer
+	 * rebuild; rebuilding directly left priority_apps NULL, so observer
+	 * events could never trigger a re-read (measured). */
+	return susfs_priority_uid_set(val);
 }
 
 static const struct kernel_param_ops priority_filter_ops = {
