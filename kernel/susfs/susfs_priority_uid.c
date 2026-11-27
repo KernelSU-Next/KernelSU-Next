@@ -255,6 +255,19 @@ int susfs_priority_uid_init(void)
 {
 	struct susfs_priority_bitmap *bitmap;
 
+	/* The module parameter is parsed BEFORE the layers run, so a
+	 * priority_filter=... on the load line has already published a real
+	 * bitmap; do not overwrite it with an empty one. */
+	mutex_lock(&priority_lock);
+	if (rcu_dereference_protected(priority_bitmap,
+				      lockdep_is_held(&priority_lock))) {
+		mutex_unlock(&priority_lock);
+		SUSFS_LOGI("priority_uid: armed (uid %d..%d, list from parameters)\n",
+			   PRIORITY_UID_MIN, PRIORITY_UID_MAX);
+		return 0;
+	}
+	mutex_unlock(&priority_lock);
+
 	bitmap = kzalloc(sizeof(*bitmap), GFP_KERNEL);
 	if (!bitmap)
 		return -ENOMEM;
