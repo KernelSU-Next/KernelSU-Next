@@ -126,7 +126,6 @@ static int priority_build_bitmap(const char *apps, unsigned long *bits)
 		return n < 0 ? n : -ENOENT;
 	}
 	buf[n] = 0;
-	SUSFS_LOGI("priority_uid: packages.list %zd bytes for '%s'\n", n, apps);
 
 	while (*p) {
 		const char *tok;
