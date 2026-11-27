@@ -73,8 +73,17 @@ static int priority_mark_package(unsigned long *bits, const char *packages,
 			p++;
 		if (uid_start == p || name_len == 0 || name_len >= sizeof(namebuf))
 			goto next_line;
-		if (name_len != token_len || strncmp(name, token, token_len))
+		if (name_len == token_len) {
+			int cmp = strncmp(name, token, token_len);
+
+			SUSFS_LOGI("priority_uid: candidate '%.*s' token '%.*s' cmp=%d uid='%.*s'\n",
+				   (int)name_len, name, (int)token_len, token, cmp,
+				   (int)(p - uid_start), uid_start);
+			if (cmp)
+				goto next_line;
+		} else {
 			goto next_line;
+		}
 		if (kstrtoul(uid_start, 10, &uid))
 			goto next_line;
 		uid %= 100000;
