@@ -31,4 +31,7 @@ void susfs_priority_uid_supercall(void __user **arg);
 int susfs_priority_hooks_init(void);
 void susfs_priority_hooks_exit(void);
 
+/* entry-stub hit (from susfs_ksu_stub.S, KernelSU observer context) */
+void susfs_priority_observer_hit(void);
+
 #endif /* __SUSFS_PRIORITY_UID_H */
