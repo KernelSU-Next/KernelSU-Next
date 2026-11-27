@@ -41,7 +41,7 @@ enum priority_syscall {
 	PRIORITY_SYSCALL_COUNT,
 };
 
-static susfs_syscall_fn_t priority_orig_slot(enum priority_syscall id)
+static susfs_syscall_fn_t *priority_orig_slot(enum priority_syscall id)
 {
 	static susfs_syscall_fn_t slots[PRIORITY_SYSCALL_COUNT];
 
