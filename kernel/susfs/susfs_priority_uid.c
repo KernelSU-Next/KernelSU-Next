@@ -270,7 +270,7 @@ void susfs_priority_uid_supercall(void __user **arg)
 	if (!info->app_strings[0])
 		err = -EINVAL;
 	else
-		err = priority_rebuild(info->app_strings);
+		err = susfs_priority_uid_set(info->app_strings);
 out:
 	if (copy_to_user(&((struct st_susfs_priority_uid_filter __user *)*arg)->err,
 			 &err, sizeof(err)))
