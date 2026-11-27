@@ -26,6 +26,7 @@ const struct feature_entry susfs_feature_table[] = {
 	{ "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG\n",	SUSFS_FEAT_SPOOF_CMDLINE },
 	{ "CONFIG_KSU_SUSFS_OPEN_REDIRECT\n",	SUSFS_FEAT_OPEN_REDIRECT },
 	{ "CONFIG_KSU_SUSFS_SUS_MAP\n",		SUSFS_FEAT_SUS_MAP },
+	{ "CONFIG_KSU_SUSFS_PRIORITY_UID_FILTER\n",	SUSFS_FEAT_PRIORITY_UID_FILTER },
 	/* hide_modules is not upstream's, so it is not listed here - the feature itself is unchanged. */
 };
 const unsigned int susfs_feature_table_count = ARRAY_SIZE(susfs_feature_table);
