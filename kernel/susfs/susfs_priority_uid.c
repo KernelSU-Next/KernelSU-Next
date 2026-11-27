@@ -99,8 +99,7 @@ static int priority_build_bitmap(const char *apps, unsigned long *bits)
 
 	f = filp_open("/data/system/packages.list", O_RDONLY, 0);
 	if (IS_ERR(f)) {
-		SUSFS_LOGI("priority_uid: open packages.list failed %ld
-",
+		SUSFS_LOGI("priority_uid: open packages.list failed %ld\n",
 			   PTR_ERR(f));
 		return PTR_ERR(f);
 	}
@@ -112,14 +111,12 @@ static int priority_build_bitmap(const char *apps, unsigned long *bits)
 	n = kernel_read(f, buf, 1024 * 1024 - 1, &pos);
 	filp_close(f, NULL);
 	if (n <= 0) {
-		SUSFS_LOGI("priority_uid: read packages.list n=%zd
-", n);
+		SUSFS_LOGI("priority_uid: read packages.list n=%zd\n", n);
 		kvfree(buf);
 		return n < 0 ? n : -ENOENT;
 	}
 	buf[n] = 0;
-	SUSFS_LOGI("priority_uid: packages.list %zd bytes for '%s'
-", n, apps);
+	SUSFS_LOGI("priority_uid: packages.list %zd bytes for '%s'\n", n, apps);
 
 	while (*p) {
 		const char *tok;
