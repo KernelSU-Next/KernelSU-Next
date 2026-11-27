@@ -50,6 +50,7 @@
 #include <linux/string.h>
 #include <linux/cred.h>
 #include <linux/version.h>	/* LINUX_VERSION_CODE: the inode ctime accessor */
+#include <linux/statfs.h>	/* struct kstatfs / vfs_statfs: the statfs face */
 #include "susfs_abi.h"
 #include "susfs_log.h"
 #include "sus_path.h"
@@ -95,6 +96,9 @@ struct sus_kstat_entry {
 	long long spoofed_blocks;
 	long spoofed_blksize;
 	unsigned int flags;
+	/* statfs() answer for this target, snapshotted at add time (upstream
+	 * susfs_sus_kstat_spoof_vfs_statfs copies the same struct back). */
+	struct kstatfs spoofed_kstatfs;
 };
 
 static struct sus_kstat_entry kstat_entries[SUS_KSTAT_MAX];
@@ -1908,6 +1912,13 @@ static int susfs_kstat_fill_from_path(struct sus_kstat_entry *e, const char *pat
 	e->spoofed_blocks = inode->i_blocks;
 	e->spoofed_blksize = 1 << inode->i_blkbits;
 
+	/* statfs snapshot: the vfs_statfs() answer of the target path, so a
+	 * statfs()/fstatfs() lookup of the hidden inode can return the same
+	 * numbers the visible target would (upstream susfs.c stores the same
+	 * struct in st_susfs_sus_kstat_hlist).  A failure leaves the zero
+	 * snapshot, which the statfs face treats as "nothing to spoof". */
+	vfs_statfs(&p, &e->spoofed_kstatfs);
+
 	path_put(&p);
 	return 0;
 }
@@ -2159,6 +2170,75 @@ static int kstat_hooks_armed;
 /* One centre registration per table entry; the table itself stays here. */
 static struct susfs_hook kstat_reg[ARRAY_SIZE(kstat_hooks)];
 
+/* ---- statfs face: vfs_statfs(path, buf) ----
+ * Same shape as susfs_open_redirect.c's reverse statfs: the entry probe copies the registered
+ * snapshot out of the table (under kstat_table_lock, like every other read path) and remembers
+ * the caller's buffer; the return probe writes it over the kernel's answer when statfs
+ * succeeded.  A rule without a snapshot (vfs_statfs failed at add time) keeps the kernel answer. */
+struct kstat_statfs_args {
+	struct kstatfs *buf;
+	struct kstatfs snapshot;
+	bool hit;
+};
+
+static int kstat_statfs_entry(struct kretprobe_instance *ri, struct pt_regs *regs)
+{
+	const struct path *path = (const struct path *)regs->regs[0];
+	struct kstat_statfs_args *a = (struct kstat_statfs_args *)ri->data;
+	struct inode *inode;
+	unsigned long ino;
+	dev_t dev;
+	unsigned long flags;
+	int i;
+
+	a->hit = false;
+	a->buf = NULL;
+	if (!READ_ONCE(nkstat) || IS_ERR_OR_NULL(path) || !path->dentry)
+		return 0;
+	inode = d_backing_inode(path->dentry);
+	if (!inode || !susfs_kstat_gate_ok())
+		return 0;
+	ino = inode->i_ino;
+	dev = new_encode_dev(inode->i_sb->s_dev);
+
+	a->buf = (struct kstatfs *)regs->regs[1];
+	if (!a->buf)
+		return 0;
+
+	spin_lock_irqsave(&kstat_table_lock, flags);
+	for (i = 0; i < nkstat; i++) {
+		if (kstat_entries[i].target_ino == ino &&
+		    kstat_entries[i].target_dev == dev &&
+		    kstat_entries[i].spoofed_kstatfs.f_type) {
+			a->snapshot = kstat_entries[i].spoofed_kstatfs;
+			a->hit = true;
+			break;
+		}
+	}
+	spin_unlock_irqrestore(&kstat_table_lock, flags);
+	return 0;
+}
+
+static int kstat_statfs_ret(struct kretprobe_instance *ri, struct pt_regs *regs)
+{
+	const struct kstat_statfs_args *a = (const struct kstat_statfs_args *)ri->data;
+
+	if (!a->hit || !a->buf || (long)regs->regs[0] != 0)
+		return 0;
+	*a->buf = a->snapshot;
+	return 0;
+}
+
+static struct kretprobe kr_kstat_statfs = {
+	.kp.symbol_name = "vfs_statfs",
+	.entry_handler = kstat_statfs_entry,
+	.handler = kstat_statfs_ret,
+	.data_size = sizeof(struct kstat_statfs_args),
+	.maxactive = 64,
+};
+
+static bool kstat_statfs_registered;
+
 int susfs_kstat_init(void)
 {
 	int rc;
@@ -2217,6 +2297,15 @@ int susfs_kstat_init(void)
 	SUSFS_LOGI("kstat armed: %d rules (%d/%u table entries installed, proc=%d); stat rewrite + sus_path dirent rewrite ride those entries\n",
 		nkstat, kstat_hooks_armed, (unsigned int)ARRAY_SIZE(kstat_hooks),
 		kstat_proc_entry != NULL);
+
+	/* statfs face: not fatal when it cannot arm (the stat rewrite above is
+	 * the feature; statfs() then answers with the kernel's own numbers). */
+	if (!register_kretprobe(&kr_kstat_statfs)) {
+		kstat_statfs_registered = true;
+		SUSFS_LOGI("kstat statfs: vfs_statfs kretprobe armed\n");
+	} else {
+		pr_warn("kstat statfs: register_kretprobe(vfs_statfs) failed - statfs spoofing stays off\n");
+	}
 	return 0;
 }
 
@@ -2243,6 +2332,10 @@ void susfs_kstat_exit(void)
 	if (kstat_proc_entry) {
 		proc_remove(kstat_proc_entry);
 		kstat_proc_entry = NULL;
+	}
+	if (kstat_statfs_registered) {
+		unregister_kretprobe(&kr_kstat_statfs);
+		kstat_statfs_registered = false;
 	}
 	kstat_table_clear();
 }
