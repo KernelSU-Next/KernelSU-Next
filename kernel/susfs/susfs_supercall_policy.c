@@ -18,6 +18,7 @@
 #include "sus_path.h"
 #include "susfs_avc_spoof.h"
 #include "susfs_kstat.h"
+#include "susfs_priority_uid.h"
 #include "susfs_open_redirect.h"
 #include "susfs_supercall_data.h"
 #include "susfs_supercall_policy.h"
@@ -114,6 +115,8 @@ int susfs_supercall_cmd_feature(unsigned int cmd)
 		return SUSFS_FEAT_OPEN_REDIRECT;
 	case CMD_SUSFS_HIDE_SUS_MNTS_FOR_NON_SU_PROCS:
 		return SUSFS_FEAT_SUS_MOUNT;
+	case CMD_SUSFS_SET_PRIORITY_UID_FILTER:
+		return SUSFS_FEAT_PRIORITY_UID_FILTER;
 	default:
 		return -1;
 	}
@@ -172,6 +175,9 @@ void susfs_supercall_dispatch(unsigned int cmd, void __user **arg)
 		break;
 	case CMD_SUSFS_SET_CMDLINE_OR_BOOTCONFIG:
 		susfs_spoof_cmdline_supercall(arg);
+		break;
+	case CMD_SUSFS_SET_PRIORITY_UID_FILTER:
+		susfs_priority_uid_supercall(arg);
 		break;
 	case CMD_SUSFS_ADD_OPEN_REDIRECT:
 		susfs_open_redirect_supercall(arg);

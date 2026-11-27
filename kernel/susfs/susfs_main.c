@@ -31,6 +31,7 @@
 #include "susfs_dirent.h"
 #include "susfs_hide_syms.h"
 #include "susfs_kstat.h"
+#include "susfs_priority_uid.h"
 #include "susfs_open_redirect.h"
 #include "susfs_supercall.h"
 #include "susfs_uname.h"
@@ -112,6 +113,7 @@ enum susfs_layer_id {
     SUSFS_L_OPEN_REDIRECT,
     SUSFS_L_ENABLE_LOG,
     SUSFS_L_AVC_SPOOF,
+    SUSFS_L_PRIORITY,
     SUSFS_L_SUPERCALL,
     SUSFS_L_HIDE_SYMS,
     SUSFS_L_COUNT,
@@ -171,6 +173,9 @@ static struct susfs_layer {
     { "open_redirect",	susfs_open_redirect_init,	susfs_open_redirect_exit, false, SUSFS_FEAT_OPEN_REDIRECT },
     { "enable_log",	susfs_enable_log_init,		susfs_enable_log_exit,	false, SUSFS_FEAT_ENABLE_LOG },
     { "avc_spoof",	susfs_avc_spoof_init,		susfs_avc_spoof_exit,	false, SUSFS_FEAT_AVC_SPOOF },
+    /* Independent of the mount/kstat layers: four syscall wrappers + one RCU
+     * bitmap.  NOT fatal: without it those syscalls answer the kernel's way. */
+    { "priority",	susfs_priority_init,		susfs_priority_exit,	false, SUSFS_FEAT_PRIORITY_UID_FILTER },
     { "supercall",	susfs_supercall_init,		susfs_supercall_exit,	false, -1 },
     { "hide_syms",	susfs_hide_syms_init,		susfs_hide_syms_exit,	false, SUSFS_FEAT_HIDE_SYMS },
 };
@@ -185,7 +190,7 @@ static struct susfs_layer {
  *   1 fp_hook   2 ksu_umount_gate  3 ksu_allow_gate  4 lsm_hook  5 selinux_hide
  *   6 sus_path  7 create_gate  8 opath  9 dirent  10 uname  11 kstat  12 sus_map
  *   13 sus_mount  14 cmdline  15 open_redirect  16 enable_log  17 avc_spoof
- *   18 supercall  19 hide_syms
+ *   18 priority  19 supercall  20 hide_syms
  */
 static int fail_layer;
 module_param_named(fail_layer, fail_layer, int, 0644);
@@ -231,6 +236,7 @@ static const struct {
     { SUSFS_L_OPEN_REDIRECT, false },
     { SUSFS_L_ENABLE_LOG, false },
     { SUSFS_L_AVC_SPOOF, false },
+    { SUSFS_L_PRIORITY, false },
     { SUSFS_L_SUPERCALL, true },
     { SUSFS_L_HIDE_SYMS, false },
 };
