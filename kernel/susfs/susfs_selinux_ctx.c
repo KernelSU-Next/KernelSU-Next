@@ -36,6 +36,7 @@ static size_t off_ctx_len, off_ctx_str, ctx_size;
 static size_t off_state_policy, off_policy_sidtab, off_policy_policydb;
 /* The sid-bearing fields the entry layer updates, all from BTF as well. */
 static size_t off_isec_sid;		/* inode_security_struct.sid */
+static size_t off_isec_base;		/* SELinux slot inside inode->i_security (per-LSM blob) */
 static size_t off_cred_security;	/* cred.security (the SELinux blob) */
 static size_t off_tsec_sid;		/* task_security_struct.sid */
 static unsigned long selinux_state_addr;
@@ -98,27 +99,55 @@ static int susfs_selinux_ctx_resolve(void)
 		SUSFS_LOGI("selinux_ctx: no context size\n");
 		rc = -EINVAL;
 	}
-	if (!rc && susfs_btf_member_offset_any("inode_security_struct", "sid",
-					       &off_isec_sid)) {
+	if (!rc && susfs_btf_member_offset("inode_security_struct", "sid",
+					   "uint", &off_isec_sid)) {
 		SUSFS_LOGI("selinux_ctx: no inode_security_struct.sid offset\n");
 		rc = -EINVAL;
 	}
-	if (!rc && susfs_btf_member_offset_any("cred", "security",
-					       &off_cred_security)) {
+	if (!rc) {
+		/* Android 5.15 allocates inode->i_security as a per-LSM blob; the
+		 * SELinux slot starts at selinux_blob_sizes.lbs_inode.  A kernel
+		 * without that symbol keeps base 0 (the older single-struct shape).
+		 * Not doing this wrote the sid over list.next and panicked. */
+		unsigned long blob_sizes = hk_resolve("selinux_blob_sizes");
+
+		off_isec_base = 0;
+		if (blob_sizes) {
+			size_t lbs_inode_off;
+
+			if (susfs_btf_member_offset("lsm_blob_sizes", "lbs_inode",
+						    "int", &lbs_inode_off)) {
+				SUSFS_LOGI("selinux_ctx: no lsm_blob_sizes.lbs_inode offset\n");
+				rc = -EINVAL;
+			} else {
+				int val = READ_ONCE(*(int *)((char *)blob_sizes +
+							     lbs_inode_off));
+
+				if (val < 0 || val > 4096) {
+					SUSFS_LOGI("selinux_ctx: bad lbs_inode %d\n", val);
+					rc = -EINVAL;
+				} else {
+					off_isec_base = (size_t)val;
+				}
+			}
+		}
+	}
+	if (!rc && susfs_btf_member_offset("cred", "security",
+					   "void *", &off_cred_security)) {
 		SUSFS_LOGI("selinux_ctx: no cred.security offset\n");
 		rc = -EINVAL;
 	}
-	if (!rc && susfs_btf_member_offset_any("task_security_struct", "sid",
-					       &off_tsec_sid)) {
+	if (!rc && susfs_btf_member_offset("task_security_struct", "sid",
+					   "uint", &off_tsec_sid)) {
 		SUSFS_LOGI("selinux_ctx: no task_security_struct.sid offset\n");
 		rc = -EINVAL;
 	}
 	if (!rc)
 		SUSFS_LOGI("selinux_ctx: offsets state.policy=%zu po.sidtab=%zu "
 			   "po.policydb=%zu ctx.len=%zu ctx.str=%zu size=%zu "
-			   "isec.sid=%zu cred.security=%zu tsec.sid=%zu\n",
+			   "isec.base=%zu isec.sid=%zu cred.security=%zu tsec.sid=%zu\n",
 			   off_state_policy, off_policy_sidtab, off_policy_policydb,
-			   off_ctx_len, off_ctx_str, ctx_size,
+			   off_ctx_len, off_ctx_str, ctx_size, off_isec_base,
 			   off_isec_sid, off_cred_security, off_tsec_sid);
 	return rc;
 }
@@ -232,7 +261,7 @@ int __nocfi susfs_selinux_ctx_set_inode_sid(struct dentry *dentry,
 	inode = d_backing_inode(dentry);
 	if (!inode || !inode->i_security)
 		return -ENOENT;
-	isec = inode->i_security;
+	isec = (char *)inode->i_security + off_isec_base;
 	*(u32 *)((char *)isec + off_isec_sid) = sid;
 	return 0;
 }
