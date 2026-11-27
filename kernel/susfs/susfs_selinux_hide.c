@@ -184,7 +184,11 @@ int susfs_selinux_hide_init(void)
 {
 	int ret;
 
-	pfn_ksu_selinux_hide_running = (bool *)find_kernel_symbol_exact(
+	/* _any: ksu_selinux_hide_running lives in the kernelsu module, and the
+	 * plain lookup deliberately ignores module symbols.  Reading it lets the
+	 * layer follow KernelSU's own switch instead of requiring the force
+	 * parameter. */
+	pfn_ksu_selinux_hide_running = (bool *)find_kernel_symbol_exact_any(
 		"ksu_selinux_hide_running");
 	if (!pfn_ksu_selinux_hide_running)
 		SUSFS_LOGI("selinux_hide: ksu_selinux_hide_running not found; "
