@@ -27,10 +27,28 @@
 #include <linux/uaccess.h>
 #include <linux/string.h>
 #include <linux/uidgid.h>
+#include <linux/workqueue.h>
 
 #include "susfs_abi.h"
 #include "susfs_priority_uid.h"
 #include "susfs_log.h"
+#include "hk_inline.h"		/* entry-stub inline hook for KernelSU's observer */
+
+/* KernelSU's package observer callback (kernel/manager/pkg_observer.c,
+ * "ksu_defer_track_throne"): called from /data/system's fsnotify event, i.e. on
+ * every package install/uninstall/update.  It starts with paciasp, so it is
+ * hooked through the entry stub (susfs_ksu_stub.S). */
+extern void susfs_ksu_observer_stub(void);
+extern unsigned long susfs_ksu_observer_tramp;
+static struct hk_inline ksu_observer_hook;
+static bool ksu_observer_armed;
+
+/* Last package list the manager sent.  Re-reads use it, because the fsnotify
+ * event only says "something under /data/system changed", not which packages
+ * are wanted. */
+static char *priority_apps;
+static struct work_struct priority_rebuild_work;
+static bool priority_work_inited;
 
 #define PRIORITY_UID_MIN 10000
 #define PRIORITY_UID_MAX 19999
@@ -170,9 +188,40 @@ static int priority_rebuild(const char *apps)
 
 int susfs_priority_uid_set(const char *apps)
 {
+	char *copy;
+
 	if (!apps)
 		return -EINVAL;
+	copy = kstrdup(apps, GFP_KERNEL);
+	if (!copy)
+		return -ENOMEM;
+	mutex_lock(&priority_lock);
+	kfree(priority_apps);
+	priority_apps = copy;
+	mutex_unlock(&priority_lock);
 	return priority_rebuild(apps);
+}
+
+/* KernelSU observer hit (entry stub, fsnotify context): only defer.  The
+ * rebuild reads /data/system/packages.list, which may sleep. */
+void susfs_priority_observer_hit(void)
+{
+	if (priority_work_inited && priority_apps)
+		schedule_work(&priority_rebuild_work);
+}
+
+static void priority_rebuild_work_fn(struct work_struct *w)
+{
+	char *apps;
+
+	mutex_lock(&priority_lock);
+	apps = priority_apps ? kstrdup(priority_apps, GFP_KERNEL) : NULL;
+	mutex_unlock(&priority_lock);
+	if (!apps)
+		return;
+	SUSFS_LOGI("priority_uid: observer event, re-reading packages.list\n");
+	priority_rebuild(apps);
+	kfree(apps);
 }
 
 bool susfs_priority_uid_filtered(uid_t uid)
@@ -268,6 +317,24 @@ void susfs_priority_exit(void)
 int susfs_priority_uid_init(void)
 {
 	struct susfs_priority_bitmap *bitmap;
+	int err;
+
+	INIT_WORK(&priority_rebuild_work, priority_rebuild_work_fn);
+	priority_work_inited = true;
+
+	/* Follow KernelSU's own package observer: the entry-stub form is PAC-safe
+	 * (the callback starts with paciasp).  Not fatal: without it the list is
+	 * rebuilt only when the manager sends the command again. */
+	err = hk_inline_hook_stub(&ksu_observer_hook, "ksu_defer_track_throne",
+				  (unsigned long)susfs_ksu_observer_stub,
+				  &susfs_ksu_observer_tramp);
+	if (!err) {
+		ksu_observer_armed = true;
+		SUSFS_LOGI("priority_uid: KernelSU observer hook armed\n");
+	} else {
+		SUSFS_LOGI("priority_uid: KernelSU observer hook unavailable %d; "
+			   "manual re-set only\n", err);
+	}
 
 	/* The module parameter is parsed BEFORE the layers run, so a
 	 * priority_filter=... on the load line has already published a real
@@ -289,6 +356,29 @@ int susfs_priority_uid_init(void)
 	SUSFS_LOGI("priority_uid: armed (uid %d..%d)\n",
 		   PRIORITY_UID_MIN, PRIORITY_UID_MAX);
 	return 0;
+}
+
+void susfs_priority_uid_exit(void)
+{
+	struct susfs_priority_bitmap *bitmap;
+
+	if (priority_work_inited) {
+		cancel_work_sync(&priority_rebuild_work);
+		priority_work_inited = false;
+	}
+	if (ksu_observer_armed) {
+		hk_inline_unhook(&ksu_observer_hook);
+		ksu_observer_armed = false;
+	}
+	mutex_lock(&priority_lock);
+	bitmap = rcu_dereference_protected(priority_bitmap,
+					   lockdep_is_held(&priority_lock));
+	rcu_assign_pointer(priority_bitmap, NULL);
+	kfree(priority_apps);
+	priority_apps = NULL;
+	mutex_unlock(&priority_lock);
+	if (bitmap)
+		kfree_rcu(bitmap, rcu);
 }
 
 void susfs_priority_uid_exit(void)

@@ -12,7 +12,7 @@ susfs_guard_lkm-objs := susfs_main.o susfs_main_data.o susfs_main_phys.o patch_m
               susfs_uname.o susfs_uname_data.o susfs_uname_policy.o susfs_uname_phys.o \
               susfs_kstat.o sus_map.o sus_path.o sus_mount.o \
               spoof_cmdline.o spoof_cmdline_data.o spoof_cmdline_policy.o spoof_cmdline_phys.o susfs_open_redirect.o susfs_enable_log.o susfs_enable_log_data.o susfs_enable_log_policy.o susfs_enable_log_phys.o \
-              susfs_avc_spoof.o susfs_avc_data.o susfs_selinux_hide.o susfs_selinux_ctx.o susfs_priority_uid.o susfs_priority_hooks.o susfs_avc_policy.o susfs_supercall.o susfs_supercall_data.o susfs_supercall_policy.o susfs_supercall_phys.o susfs_hide_syms.o \
+              susfs_avc_spoof.o susfs_avc_data.o susfs_selinux_hide.o susfs_selinux_ctx.o susfs_priority_uid.o susfs_priority_hooks.o susfs_ksu_stub.o susfs_avc_policy.o susfs_supercall.o susfs_supercall_data.o susfs_supercall_policy.o susfs_supercall_phys.o susfs_hide_syms.o \
               susfs_hide_data.o susfs_hide_policy.o susfs_hide_phys.o imports_guard.o \
               ksu_umount_gate.o ksu_umount_gate_data.o ksu_allow_gate.o ksu_allow_gate_data.o susfs_fp_hook.o susfs_opath.o susfs_opath_data.o susfs_opath_phys.o susfs_or_entry.o susfs_or_entry_data.o susfs_or_entry_phys.o \
               susfs_create_gate.o susfs_create_vfs.o susfs_create_data.o susfs_create_policy.o \
