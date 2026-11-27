@@ -251,7 +251,6 @@ int __nocfi susfs_selinux_ctx_set_inode_sid(struct dentry *dentry,
 	struct inode *inode;
 	void *isec;
 	u32 sid = 0;
-	u32 old_sid = 0;
 	int rc;
 
 	if (!dentry || !value || !size)
@@ -263,10 +262,7 @@ int __nocfi susfs_selinux_ctx_set_inode_sid(struct dentry *dentry,
 	if (!inode || !inode->i_security)
 		return -ENOENT;
 	isec = (char *)inode->i_security + off_isec_base;
-	old_sid = *(u32 *)((char *)isec + off_isec_sid);
 	*(u32 *)((char *)isec + off_isec_sid) = sid;
-	SUSFS_LOGI("selinux_ctx: set_inode_sid ino=%lu old=%u new=%u base=%zu off=%zu\n",
-		   inode->i_ino, old_sid, sid, off_isec_base, off_isec_sid);
 	return 0;
 }
 
@@ -278,7 +274,6 @@ int __nocfi susfs_selinux_ctx_set_current_sid(const void *value, size_t size)
 	struct cred *cred;
 	void *tsec;
 	u32 sid = 0;
-	u32 old_sid = 0;
 	int rc;
 
 	if (!value || !size)
@@ -294,10 +289,7 @@ int __nocfi susfs_selinux_ctx_set_current_sid(const void *value, size_t size)
 		put_cred(cred);
 		return -ENOENT;
 	}
-	old_sid = READ_ONCE(*(u32 *)((char *)tsec + off_tsec_sid));
 	*(u32 *)((char *)tsec + off_tsec_sid) = sid;
 	commit_creds(cred);
-	SUSFS_LOGI("selinux_ctx: set_current_sid old=%u new=%u sec_off=%zu sid_off=%zu\n",
-		   old_sid, sid, off_cred_security, off_tsec_sid);
 	return 0;
 }
