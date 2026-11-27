@@ -32,6 +32,8 @@
 #include "susfs_abi.h"
 #include "susfs_priority_uid.h"
 #include "susfs_log.h"
+#include "symbol_resolver.h"	/* find_kernel_symbol_exact_any: module symbol */
+#include "susfs_hook_engine.h"	/* susfs_hook_override: the hook resolver's table */
 #include "hk_inline.h"		/* entry-stub inline hook for KernelSU's observer */
 
 /* KernelSU's package observer callback (kernel/manager/pkg_observer.c,
@@ -324,7 +326,18 @@ int susfs_priority_uid_init(void)
 
 	/* Follow KernelSU's own package observer: the entry-stub form is PAC-safe
 	 * (the callback starts with paciasp).  Not fatal: without it the list is
-	 * rebuilt only when the manager sends the command again. */
+	 * rebuilt only when the manager sends the command again.
+	 *
+	 * The hook resolver ignores module symbols by design, and this one lives
+	 * in the kernelsu module, so hand its address over through the override
+	 * table (found with the any-symbol lookup). */
+	{
+		unsigned long obs_addr = find_kernel_symbol_exact_any(
+			"ksu_defer_track_throne");
+
+		if (obs_addr)
+			susfs_hook_override("ksu_defer_track_throne", obs_addr);
+	}
 	err = hk_inline_hook_stub(&ksu_observer_hook, "ksu_defer_track_throne",
 				  (unsigned long)susfs_ksu_observer_stub,
 				  &susfs_ksu_observer_tramp);
