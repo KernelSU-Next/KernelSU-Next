@@ -20,7 +20,8 @@
 #include <linux/fs.h>
 #include <linux/err.h>
 #include <linux/slab.h>
-#include <linux/vmalloc.h>	/* kvmalloc/kvfree for the 64 KB supercall payload */
+#include <linux/mm.h>		/* kvmalloc/kvfree (5.10 declares them here) */
+#include <linux/vmalloc.h>
 #include <linux/rcupdate.h>
 #include <linux/bitops.h>
 #include <linux/uaccess.h>
