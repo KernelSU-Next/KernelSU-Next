@@ -84,8 +84,13 @@ static int priority_mark_package(unsigned long *bits, const char *packages,
 		} else {
 			goto next_line;
 		}
-		if (kstrtoul(uid_start, 10, &uid))
+		if (kstrtoul(uid_start, 10, &uid)) {
+			SUSFS_LOGI("priority_uid: kstrtoul failed on '%.*s'\n",
+				   (int)(p - uid_start), uid_start);
 			goto next_line;
+		}
+		SUSFS_LOGI("priority_uid: parsed %.*s uid=%lu app=%lu\n",
+			   (int)name_len, name, uid, uid % 100000);
 		uid %= 100000;
 		if (uid < PRIORITY_UID_MIN || uid > PRIORITY_UID_MAX)
 			goto next_line;
