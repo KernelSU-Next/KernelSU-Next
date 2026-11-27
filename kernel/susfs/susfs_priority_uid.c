@@ -380,16 +380,3 @@ void susfs_priority_uid_exit(void)
 	if (bitmap)
 		kfree_rcu(bitmap, rcu);
 }
-
-void susfs_priority_uid_exit(void)
-{
-	struct susfs_priority_bitmap *bitmap;
-
-	mutex_lock(&priority_lock);
-	bitmap = rcu_dereference_protected(priority_bitmap,
-					   lockdep_is_held(&priority_lock));
-	rcu_assign_pointer(priority_bitmap, NULL);
-	mutex_unlock(&priority_lock);
-	if (bitmap)
-		kfree_rcu(bitmap, rcu);
-}
