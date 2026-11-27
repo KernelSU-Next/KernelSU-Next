@@ -212,8 +212,13 @@ void susfs_priority_observer_hit(const void *qstr)
 	const u32 *q = (const u32 *)qstr;
 
 	/* struct qstr in 5.15: hash @0, len @4, name @8. */
-	if (!q || q[1] != 13 || memcmp(*(const void *const *)(q + 2),
-				       "packages.list", 13))
+	if (!q)
+		return;
+	SUSFS_LOGI("priority_uid: observer hit len=%u name='%.*s'\n",
+		   q[1], (int)(q[1] < 16 ? q[1] : 16),
+		   (const char *)*(const void *const *)(q + 2));
+	if (q[1] != 13 || memcmp(*(const void *const *)(q + 2),
+				 "packages.list", 13))
 		return;
 	if (priority_work_inited && priority_apps)
 		schedule_work(&priority_rebuild_work);
