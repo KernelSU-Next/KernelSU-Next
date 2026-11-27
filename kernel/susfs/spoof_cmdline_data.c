@@ -13,6 +13,7 @@
 char spoof_cmdline_param[SPOOF_CMDLINE_PARAM_LEN];
 
 char *spoof_cmdline_orig;
+char *spoof_cmdline_cmdline_orig;
 char *spoof_cmdline_live;	/* heap-allocated, currently published */
 bool spoof_cmdline_active;
 
