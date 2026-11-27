@@ -132,8 +132,8 @@ static int susfs_selinux_ctx_resolve(void)
 			}
 		}
 	}
-	if (!rc && susfs_btf_member_offset("cred", "security",
-					   "void *", &off_cred_security)) {
+	if (!rc && susfs_btf_member_offset_any("cred", "security",
+					       &off_cred_security)) {
 		SUSFS_LOGI("selinux_ctx: no cred.security offset\n");
 		rc = -EINVAL;
 	}
