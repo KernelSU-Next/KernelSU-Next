@@ -69,28 +69,18 @@ static int priority_mark_package(unsigned long *bits, const char *packages,
 		while (*p == ' ' || *p == '\t')
 			p++;
 		uid_start = p;
-		while (*p >= '0' && *p <= '9')
+		/* Parse the uid in place: kstrtoul()/kstrtoull() reject a string
+		 * that does not end right after the number (measured: it failed on
+		 * "10055" followed by the next column). */
+		uid = 0;
+		while (*p >= '0' && *p <= '9') {
+			uid = uid * 10 + (*p - '0');
 			p++;
+		}
 		if (uid_start == p || name_len == 0 || name_len >= sizeof(namebuf))
 			goto next_line;
-		if (name_len == token_len) {
-			int cmp = strncmp(name, token, token_len);
-
-			SUSFS_LOGI("priority_uid: candidate '%.*s' token '%.*s' cmp=%d uid='%.*s'\n",
-				   (int)name_len, name, (int)token_len, token, cmp,
-				   (int)(p - uid_start), uid_start);
-			if (cmp)
-				goto next_line;
-		} else {
+		if (name_len != token_len || strncmp(name, token, token_len))
 			goto next_line;
-		}
-		if (kstrtoul(uid_start, 10, &uid)) {
-			SUSFS_LOGI("priority_uid: kstrtoul failed on '%.*s'\n",
-				   (int)(p - uid_start), uid_start);
-			goto next_line;
-		}
-		SUSFS_LOGI("priority_uid: parsed %.*s uid=%lu app=%lu\n",
-			   (int)name_len, name, uid, uid % 100000);
 		uid %= 100000;
 		if (uid < PRIORITY_UID_MIN || uid > PRIORITY_UID_MAX)
 			goto next_line;
