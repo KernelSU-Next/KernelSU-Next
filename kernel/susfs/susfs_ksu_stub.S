@@ -42,6 +42,10 @@
 	.type	susfs_ksu_observer_stub, %function
 susfs_ksu_observer_stub:
 	SUSFS_SAVE_REGS()
+	/* ksu_handle_inode_event(mark, mask, inode, dir, file_name, cookie):
+	 * pass file_name (x4) to the C hit function so it can filter for
+	 * packages.list exactly like KernelSU does. */
+	mov	x0, x4
 	bl	susfs_priority_observer_hit
 	SUSFS_RESTORE_REGS()
 	ldr	x16, =susfs_ksu_observer_tramp
