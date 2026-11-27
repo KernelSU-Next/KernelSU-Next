@@ -130,6 +130,8 @@ static int priority_build_bitmap(const char *apps, unsigned long *bits)
 			p++;
 		if (priority_mark_package(bits, buf, tok, p - tok) > 0)
 			found++;
+		SUSFS_LOGI("priority_uid: token '%.*s' len %zu -> found %d\n",
+			   (int)(p - tok), tok, (size_t)(p - tok), found);
 	}
 	kvfree(buf);
 	return found;
