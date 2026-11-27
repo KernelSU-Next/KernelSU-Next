@@ -51,7 +51,6 @@ static int priority_mark_package(unsigned long *bits, const char *packages,
 				 const char *token, size_t token_len)
 {
 	const char *p = packages;
-	int lines = 0;
 
 	while (*p) {
 		const char *name, *uid_start;
@@ -72,22 +71,23 @@ static int priority_mark_package(unsigned long *bits, const char *packages,
 		uid_start = p;
 		while (*p >= '0' && *p <= '9')
 			p++;
-		if (lines < 3)
-			SUSFS_LOGI("priority_uid: line name_len=%zu name='%.*s' uid='%.*s'\n",
-				   name_len, (int)name_len, name,
-				   (int)(p - uid_start), uid_start);
-		lines++;
 		if (uid_start == p || name_len == 0 || name_len >= sizeof(namebuf))
-			continue;
+			goto next_line;
 		if (name_len != token_len || strncmp(name, token, token_len))
-			continue;
+			goto next_line;
 		if (kstrtoul(uid_start, 10, &uid))
-			continue;
+			goto next_line;
 		uid %= 100000;
 		if (uid < PRIORITY_UID_MIN || uid > PRIORITY_UID_MAX)
-			continue;
+			goto next_line;
 		set_bit(uid - PRIORITY_UID_MIN, bits);
 		return 1;
+next_line:
+		/* The remaining columns (data dir, permissions, ...) are not
+		 * package entries; without this the loop would read the next
+		 * column of the same line as a name (measured). */
+		while (*p && *p != '\n')
+			p++;
 	}
 	return 0;
 }
@@ -136,8 +136,6 @@ static int priority_build_bitmap(const char *apps, unsigned long *bits)
 			p++;
 		if (priority_mark_package(bits, buf, tok, p - tok) > 0)
 			found++;
-		SUSFS_LOGI("priority_uid: token '%.*s' len %zu -> found %d\n",
-			   (int)(p - tok), tok, (size_t)(p - tok), found);
 	}
 	kvfree(buf);
 	return found;
