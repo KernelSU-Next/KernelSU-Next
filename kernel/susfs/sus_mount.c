@@ -2310,7 +2310,7 @@ bool sus_mount_path_hidden(const struct path *path)
 
     if (!path || !path->mnt || !mount_registered)
         return false;
-    if (!sus_mount_uid_app(current_uid()))
+    if (!sus_mount_uid_app(__kuid_val(current_uid())))
         return false;
     r = real_mount(path->mnt);
     if (sus_mount_ident_match(r))
