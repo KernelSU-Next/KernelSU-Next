@@ -263,6 +263,11 @@ static bool sus_mount_ida_ready(void)
  * list is not guaranteed to carry it for modules, so it is resolved from kallsyms like
  * the other optional symbols this LKM uses. */
 static void (*pfn_security_cred_getsecid)(const struct cred *cred, u32 *secid);
+/* KernelSU's own predicate: true = this uid's process is an app whose view
+ * should be umounted/hidden.  It is the module-symbol source of upstream's
+ * TIF_PROC_UMOUNTED, so using it keeps the app set identical to KernelSU's
+ * instead of a uid-range approximation. */
+static bool (*pfn_ksu_uid_should_umount)(uid_t uid);
 static char *(*pfn_d_path)(const struct path *path, char *buf, int buflen);
 
 /* __nocfi on every function that reaches a resolved kernel symbol through a function
@@ -429,6 +434,13 @@ static int sus_mount_shown_id(struct mount *mnt)
  * s_dev is going away. */
 /* Defined with the scan helpers further down; the identity test needs it here. */
 static bool sus_mount_path_is_ours(const char *s);
+
+static __nocfi bool sus_mount_uid_app(uid_t uid)
+{
+    if (pfn_ksu_uid_should_umount)
+        return pfn_ksu_uid_should_umount(uid);
+    return uid % 100000 >= 10000;
+}
 
 static atomic_t n_ident_hits = ATOMIC_INIT(0);		/* hidden by identity, not by id */
 static atomic_t n_ident_learned = ATOMIC_INIT(0);	/* ids learned while hiding */
@@ -2027,6 +2039,11 @@ int susfs_sus_mount_init(void)
 
     pfn_security_cred_getsecid =
         (void *)find_kernel_symbol_exact("security_cred_getsecid");
+    pfn_ksu_uid_should_umount = (void *)find_kernel_symbol_exact_any(
+        "ksu_uid_should_umount");
+    if (!pfn_ksu_uid_should_umount)
+        pr_warn("sus_mount: ksu_uid_should_umount not found - falling back to uid % 100000 >= 10000
+");
     pfn_d_path = (void *)find_kernel_symbol_exact("d_path");
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 18, 0)
     void *loader_xa = (void *)&mnt_id_xa;
@@ -2294,7 +2311,7 @@ bool sus_mount_path_hidden(const struct path *path)
 
     if (!path || !path->mnt || !mount_registered)
         return false;
-    if (current_uid().val % 100000 < 10000)
+    if (!sus_mount_uid_app(current_uid()))
         return false;
     r = real_mount(path->mnt);
     if (sus_mount_ident_match(r))
