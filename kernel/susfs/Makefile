@@ -27,7 +27,7 @@ susfs_guard_lkm-objs += HooKern/hk.o HooKern/hk_ksym.o HooKern/hk_patch.o HooKer
               HooKern/hk_inline.o
 
 # HooKern hook engine (patch + inline for the s_show/m_show experiment).
-ccflags-y += -I$(src)/HooKern
+ccflags-y += -I$(src)/HooKern -I$(srctree)/$(src)/HooKern
 ccflags-y += -DHK_NO_KPROBE -DHK_NO_KRETPROBE -DHK_NO_PTR -DHK_NO_SIGHOOK -DHK_NO_REDIR
 # HooKern resolves and calls its own function pointers at run time; KCFI cannot
 # type-check those intentionally raw calls.  Keep the module-local wrappers
