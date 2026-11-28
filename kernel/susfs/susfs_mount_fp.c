@@ -33,6 +33,7 @@
 #include "susfs_hooks.h"
 #include "susfs_log.h"
 #include "susfs_mount_fp.h"
+#include "sus_mount.h"
 #include "sus_mount_prefix.h"
 
 #define MOUNT_FP_PATH_MAX 256
@@ -78,6 +79,10 @@ static bool mount_fp_path_hidden(const char __user *path)
 	long n;
 
 	if (!path)
+		return false;
+	/* Upstream's SUS_MOUNT is off by default (zygisk in post-fs-data needs to
+	 * see the mounts); only an explicit enable turns the path answers on. */
+	if (!sus_mount_hide_active())
 		return false;
 	if (!mount_fp_app())
 		return false;
