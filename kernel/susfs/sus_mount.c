@@ -456,7 +456,6 @@ module_param_named(mount_dbg, mount_dbg, int, 0644);
 /* Diagnostic: name the fields the identity test compares, for the first few mounts the
  * hook sees, so "why did identity not match" is answerable from dmesg instead of guessed. */
 static atomic_t n_dbg_logged = ATOMIC_INIT(0);
-static atomic_t n_path_hidden_dbg = ATOMIC_INIT(0);
 
 /* generic_shutdown_super(struct super_block *sb) - fs/super.c, EXPORT_SYMBOL, so
  * it is a real function in kallsyms and not an inlined call site.  Runs before the
