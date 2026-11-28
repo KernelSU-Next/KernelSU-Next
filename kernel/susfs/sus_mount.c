@@ -2269,6 +2269,11 @@ static void sus_mount_unregister(void)
     mutex_unlock(&sus_mount_ctl_lock);
 }
 
+bool sus_mount_hide_active(void)
+{
+    return mount_registered;
+}
+
 void susfs_sus_mount_exit(void)
 {
     susfs_mount_fp_exit();
