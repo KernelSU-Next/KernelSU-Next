@@ -114,20 +114,12 @@ static __nocfi noinline long mm_check_or_orig(const struct pt_regs *regs,
 	}
 	buf[PATH_MAX - 1] = '\0';
 	rc = 0;
-	{
-		int kp = kern_path(buf, 0, &path);
-		static atomic_t mm_dbg = ATOMIC_INIT(0);
-
-		if (atomic_inc_return(&mm_dbg) <= 8u)
-			pr_info("mount_mnt: fallback path=%s kern_path=%d\n",
-				buf, kp);
-		if (!kp) {
+	if (!kern_path(buf, 0, &path)) {
 		bool hidden = sus_mount_path_hidden(&path);
 
 		path_put(&path);
 		if (hidden)
 			rc = -ENOENT;
-	}
 	}
 	kfree(buf);
 	if (rc)

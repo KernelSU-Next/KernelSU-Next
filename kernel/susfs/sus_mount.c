@@ -2340,10 +2340,6 @@ bool sus_mount_path_hidden(const struct path *path)
         p = sus_mount_d_path(&root, buf, PATH_MAX);
     }
     hidden = !IS_ERR(p) && p && sus_mount_prefix_match(p);
-    if ((hidden || (p && !IS_ERR(p) && !strncmp(p, "/data/adb", 9))) &&
-        atomic_inc_return(&n_path_hidden_dbg) <= 40u)
-        pr_info("sus_mount: path_hidden mnt_id=%d src=%s hit=%d\n",
-                (int)r->mnt_id, IS_ERR(p) ? "(err)" : p, (int)hidden);
     if (hidden)
         sus_mount_ident_add(r, 0);
     kfree(buf);
