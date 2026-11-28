@@ -27,6 +27,7 @@
 #include <linux/module.h>
 #include <linux/sched.h>
 #include <linux/cred.h>
+#include <linux/slab.h>	/* kmalloc()/kfree() */
 #include <linux/namei.h>
 #include <linux/path.h>
 
