@@ -2274,6 +2274,24 @@ bool sus_mount_hide_active(void)
     return mount_registered;
 }
 
+/* Path layer (sus_path lookup consumer): is this inode's mount one of ours,
+ * and is the caller an app?  Same gates as upstream's __lookup_mnt spoof -
+ * only an enabled SUS_MOUNT and only non-su processes.  The decision is made
+ * after the real lookup returned, so the cost is the original lookup's. */
+bool sus_mount_path_hidden(const struct path *path)
+{
+    struct mount *r;
+
+    if (!path || !path->mnt || !mount_registered)
+        return false;
+    if (current_uid().val % 100000 < 10000)
+        return false;
+    r = real_mount(path->mnt);
+    if (sus_mount_ident_match(r))
+        return true;
+    return (unsigned int)r->mnt_id >= SUS_MOUNT_KSU_ID_MIN;
+}
+
 void susfs_sus_mount_exit(void)
 {
     susfs_mount_fp_exit();

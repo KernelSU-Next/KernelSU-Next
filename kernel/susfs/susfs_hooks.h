@@ -12,6 +12,8 @@
 #include <linux/types.h>
 #include <linux/version.h>
 
+struct path;
+
 /* Installation failures are negative, so `if (ret < 0) fail` is the shape.
  * FALLBACK is a POSITIVE result and NOT an installation failure: the hook is
  * installed, but on the non-preferred backend (map bit cleared -> kprobe
@@ -101,6 +103,7 @@ struct susfs_show_map_ctx {
  * LSM chain runs.  ret is what the wrapper returns when pre() asked to skip. */
 struct susfs_inode_ctx {
 	struct inode *inode;
+	const struct path *path;	/* lookup faces: the path the decision is about */
 	int mask;
 	long ret;
 };
