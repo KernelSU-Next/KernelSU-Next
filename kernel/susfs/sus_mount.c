@@ -2277,10 +2277,18 @@ bool sus_mount_hide_active(void)
 /* Path layer (sus_path lookup consumer): is this inode's mount one of ours,
  * and is the caller an app?  Same gates as upstream's __lookup_mnt spoof -
  * only an enabled SUS_MOUNT and only non-su processes.  The decision is made
- * after the real lookup returned, so the cost is the original lookup's. */
+ * after the real lookup returned, so the cost is the original lookup's.
+ *
+ * Learning: a mount that is not marked yet is still hidden when the accessed
+ * path lies under a hidden prefix, and its identity is remembered on the spot
+ * (the same identity table the namespace scans fill), so later lookups of that
+ * mount are hidden without the id allocator having touched it. */
 bool sus_mount_path_hidden(const struct path *path)
 {
     struct mount *r;
+    char *buf;
+    const char *p;
+    bool hidden;
 
     if (!path || !path->mnt || !mount_registered)
         return false;
@@ -2289,7 +2297,19 @@ bool sus_mount_path_hidden(const struct path *path)
     r = real_mount(path->mnt);
     if (sus_mount_ident_match(r))
         return true;
-    return (unsigned int)r->mnt_id >= SUS_MOUNT_KSU_ID_MIN;
+    if ((unsigned int)r->mnt_id >= SUS_MOUNT_KSU_ID_MIN)
+        return true;
+    if (!sus_mount_prefix_count())
+        return false;
+    buf = kmalloc(PATH_MAX, GFP_KERNEL);
+    if (!buf)
+        return false;
+    p = sus_mount_d_path(path, buf, PATH_MAX);
+    hidden = !IS_ERR(p) && p && sus_mount_prefix_match(p);
+    if (hidden)
+        sus_mount_ident_add(r, 0);
+    kfree(buf);
+    return hidden;
 }
 
 void susfs_sus_mount_exit(void)
