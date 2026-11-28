@@ -278,6 +278,7 @@ susfs_lookup_decide(struct path *path, long ret,
 	if (ret || !path || !path->dentry || !n)
 		return ret;
 	ctx.inode = d_inode(path->dentry);
+	ctx.path = path;
 	for (i = 0; i < n; i++) {
 		struct susfs_hook *c = READ_ONCE(targets[target].consumers[i]);
 

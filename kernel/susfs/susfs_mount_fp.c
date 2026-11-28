@@ -1,34 +1,19 @@
 // SPDX-License-Identifier: GPL-2.0-only
 /*
- * susfs_mount_fp.c - SUS_MOUNT equivalence through the sys_call_table face.
+ * susfs_mount_fp.c - SUS_MOUNT's syscall face (mount-shape entries only).
  *
- * Upstream 2.4.0 spoofs __lookup_mnt() (one kernel-side patch, every caller
- * affected) and gates it on the process being "umounted" (TIF_PROC_UMOUNTED),
- * which the KernelSU patch sets for zygote-forked apps.  The LKM cannot patch
- * kernel text, so the equivalent is installed per syscall entry, which is what
- * "cover every syscall that reaches __lookup_mnt" means here:
- *
- *   path entries   openat/openat2/newfstatat/statx/readlinkat/faccessat/execveat
- *                  -> an app (uid % 100000 >= 10000) whose path starts with a
- *                     hidden mount prefix gets -ENOENT, the visible effect of
- *                     __lookup_mnt() skipping that mount;
- *   mount entries  mount/umount2/move_mount/unshare
- *                  -> recorded per task (the TIF_PROC_UMOUNTED equivalent) and
- *                     passed through; unshare(CLONE_NEWNS) also asks the mount
- *                     layer to learn the new namespace's mount ids.
- *
- * The prefix test is sus_mount_prefix_match() - the same anchored prefixes the
- * show-mount hooks use, never a substring search.
+ * The path half of upstream's __lookup_mnt spoof lives in the sus_path lookup
+ * consumer (sus_mount_path_hidden()), so its cost is the original lookup's and
+ * there is no user memory in the decision.  What remains here is the mount
+ * state face: mount/umount2/move_mount/unshare are recorded per task before
+ * passing through - the module-side equivalent of the TIF_PROC_UMOUNTED bit
+ * upstream gets from the KernelSU patch.
  */
 
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/sched.h>
 #include <linux/cred.h>
-#include <linux/uaccess.h>
-#include <linux/string.h>
-#include <linux/namei.h>	/* kern_path(): pay the real lookup cost */
-#include <linux/path.h>
 
 #include <asm/unistd.h>
 
@@ -36,113 +21,20 @@
 #include "susfs_hooks.h"
 #include "susfs_log.h"
 #include "susfs_mount_fp.h"
-#include "symbol_resolver.h"
-#include "sus_mount.h"
-#include "sus_mount_prefix.h"
 
-#define MOUNT_FP_PATH_MAX 256
-
-/* The four mount-shape syscalls plus the seven path entries.  Kept in one
- * array so the init/exit loops treat them uniformly. */
 enum mount_fp_syscall {
 	MOUNT_FP_MOUNT,
 	MOUNT_FP_UMOUNT2,
 	MOUNT_FP_MOVE_MOUNT,
 	MOUNT_FP_UNSHARE,
-	MOUNT_FP_OPENAT,
-	MOUNT_FP_OPENAT2,
-	MOUNT_FP_NEWFSTATAT,
-	MOUNT_FP_STATX,
-	MOUNT_FP_READLINKAT,
-	MOUNT_FP_FACCESSAT,
-	MOUNT_FP_EXECVEAT,
 	MOUNT_FP_COUNT,
 };
 
 static susfs_syscall_fn_t mount_fp_slots[MOUNT_FP_COUNT];
 
-/* Per-task record of "this task has mounted/unmounted" - the TIF bit upstream
- * uses is not available to a module.  A single bit in our own task-keyed map
- * would need a hash table; the observable difference only matters while the
- * task is current, and mount/unmount of an app process is rare, so the bit is
- * stored in task_struct's saved field?  No: write it where we already keep
- * per-task state for the path rules - the identity table is mount shaped, so
- * keep this deliberately small and keyed by pid in the mount layer. */
+/* Per-task "this task has mounted/unmounted" is not tracked yet; the counter
+ * keeps the events observable until the mount layer consumes them. */
 static atomic_t mount_fp_events = ATOMIC_INIT(0);
-
-/* A hidden path must cost what a real failed lookup costs, and every original
- * syscall has its own cost - but the path the original walks must not be
- * writable by the caller: a user-space dummy can be rewritten by a sibling
- * thread between the copy and the call (TOCTOU), and the original would then
- * execute the real hidden path, bypassing the check.  So the cost is paid by
- * walking a path that cannot exist, under the SAME parent directory (same
- * depth, same component count), purely inside the kernel. */
-static __nocfi noinline long mount_fp_fail_equally(const char *parent)
-{
-	char dummy[MOUNT_FP_PATH_MAX + 16];
-	struct path p;
-
-	snprintf(dummy, sizeof(dummy), "%s/.susfs_hidden", parent);
-	if (!kern_path(dummy, 0, &p))
-		path_put(&p);
-	return -ENOENT;
-}
-
-static bool mount_fp_app(void)
-{
-	return current_uid().val % 100000 >= 10000;
-}
-
-/* Returns true when this path starts with a hidden mount prefix and the caller
- * is an app; parent receives the path's directory (the part before the last
- * slash) so the failure below walks the same depth. */
-static bool mount_fp_path_hidden(const char __user *path, char *parent,
-				 size_t plen)
-{
-	char buf[MOUNT_FP_PATH_MAX];
-	char *slash;
-	long n;
-
-	if (!path)
-		return false;
-	/* Upstream's SUS_MOUNT is off by default (zygisk in post-fs-data needs to
-	 * see the mounts); only an explicit enable turns the path answers on. */
-	if (!sus_mount_hide_active())
-		return false;
-	if (!mount_fp_app())
-		return false;
-	n = strncpy_from_user(buf, path, sizeof(buf));
-	if (n <= 0)
-		return false;
-	buf[sizeof(buf) - 1] = '\0';
-	if (!sus_mount_prefix_match(buf))
-		return false;
-	slash = strrchr(buf, '/');
-	if (!slash || slash == buf)
-		strscpy(parent, "/", plen);
-	else {
-		*slash = '\0';
-		strscpy(parent, buf, plen);
-	}
-	return true;
-}
-
-static __nocfi noinline long mount_fp_deny_or(const struct pt_regs *regs,
-					      int slot)
-{
-	susfs_syscall_fn_t orig = READ_ONCE(mount_fp_slots[slot]);
-	const char __user *path;
-	char parent[MOUNT_FP_PATH_MAX];
-
-	if (!orig)
-		return -ENOSYS;
-	path = (const char __user *)regs->regs[1];
-	if (mount_fp_path_hidden(path, parent, sizeof(parent))) {
-		atomic_inc(&mount_fp_events);
-		return mount_fp_fail_equally(parent);
-	}
-	return orig(regs);
-}
 
 static __nocfi noinline long mount_fp_wrap_mount(const struct pt_regs *regs)
 {
@@ -189,54 +81,6 @@ static __nocfi noinline long mount_fp_wrap_unshare(const struct pt_regs *regs)
 	return rc;
 }
 
-static __nocfi noinline long mount_fp_wrap_openat(const struct pt_regs *regs)
-{
-	return mount_fp_deny_or(regs, MOUNT_FP_OPENAT);
-}
-
-static __nocfi noinline long mount_fp_wrap_openat2(const struct pt_regs *regs)
-{
-	return mount_fp_deny_or(regs, MOUNT_FP_OPENAT2);
-}
-
-static __nocfi noinline long mount_fp_wrap_newfstatat(const struct pt_regs *regs)
-{
-	return mount_fp_deny_or(regs, MOUNT_FP_NEWFSTATAT);
-}
-
-static __nocfi noinline long mount_fp_wrap_statx(const struct pt_regs *regs)
-{
-	return mount_fp_deny_or(regs, MOUNT_FP_STATX);
-}
-
-static __nocfi noinline long mount_fp_wrap_readlinkat(const struct pt_regs *regs)
-{
-	return mount_fp_deny_or(regs, MOUNT_FP_READLINKAT);
-}
-
-static __nocfi noinline long mount_fp_wrap_faccessat(const struct pt_regs *regs)
-{
-	return mount_fp_deny_or(regs, MOUNT_FP_FACCESSAT);
-}
-
-/* execveat must NOT run the original: a successful execveat replaces this
- * process, which no post-hoc answer can undo.  Its denial is the one fast
- * path left; execveat on a hidden mount is rare enough to accept that. */
-static __nocfi noinline long mount_fp_wrap_execveat(const struct pt_regs *regs)
-{
-	susfs_syscall_fn_t orig = READ_ONCE(mount_fp_slots[MOUNT_FP_EXECVEAT]);
-	char parent[MOUNT_FP_PATH_MAX];
-
-	if (!orig)
-		return -ENOSYS;
-	if (mount_fp_path_hidden((const char __user *)regs->regs[1], parent,
-				 sizeof(parent))) {
-		atomic_inc(&mount_fp_events);
-		return mount_fp_fail_equally(parent);
-	}
-	return orig(regs);
-}
-
 static struct susfs_fp_hook mount_fp_hooks[] = {
 	{ .nr = __NR_mount, .name = "mount/mount",
 	  .sym = "__arm64_sys_mount", .wrapper = mount_fp_wrap_mount,
@@ -250,27 +94,6 @@ static struct susfs_fp_hook mount_fp_hooks[] = {
 	{ .nr = __NR_unshare, .name = "mount/unshare",
 	  .sym = "__arm64_sys_unshare", .wrapper = mount_fp_wrap_unshare,
 	  .orig_slot = &mount_fp_slots[MOUNT_FP_UNSHARE] },
-	{ .nr = __NR_openat, .name = "mount/openat",
-	  .sym = "__arm64_sys_openat", .wrapper = mount_fp_wrap_openat,
-	  .orig_slot = &mount_fp_slots[MOUNT_FP_OPENAT] },
-	{ .nr = __NR_openat2, .name = "mount/openat2",
-	  .sym = "__arm64_sys_openat2", .wrapper = mount_fp_wrap_openat2,
-	  .orig_slot = &mount_fp_slots[MOUNT_FP_OPENAT2] },
-	{ .nr = __NR_newfstatat, .name = "mount/newfstatat",
-	  .sym = "__arm64_sys_newfstatat", .wrapper = mount_fp_wrap_newfstatat,
-	  .orig_slot = &mount_fp_slots[MOUNT_FP_NEWFSTATAT] },
-	{ .nr = __NR_statx, .name = "mount/statx",
-	  .sym = "__arm64_sys_statx", .wrapper = mount_fp_wrap_statx,
-	  .orig_slot = &mount_fp_slots[MOUNT_FP_STATX] },
-	{ .nr = __NR_readlinkat, .name = "mount/readlinkat",
-	  .sym = "__arm64_sys_readlinkat", .wrapper = mount_fp_wrap_readlinkat,
-	  .orig_slot = &mount_fp_slots[MOUNT_FP_READLINKAT] },
-	{ .nr = __NR_faccessat, .name = "mount/faccessat",
-	  .sym = "__arm64_sys_faccessat", .wrapper = mount_fp_wrap_faccessat,
-	  .orig_slot = &mount_fp_slots[MOUNT_FP_FACCESSAT] },
-	{ .nr = __NR_execveat, .name = "mount/execveat",
-	  .sym = "__arm64_sys_execveat", .wrapper = mount_fp_wrap_execveat,
-	  .orig_slot = &mount_fp_slots[MOUNT_FP_EXECVEAT] },
 };
 
 static struct susfs_hook mount_fp_reg[ARRAY_SIZE(mount_fp_hooks)];

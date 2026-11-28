@@ -9,6 +9,7 @@
 #define SUSFS_HIDE_MOUNTS_NODE "/proc/susfs_hide_mounts"
 
 bool sus_mount_hide_active(void);
+bool sus_mount_path_hidden(const struct path *path);
 int susfs_sus_mount_init(void);
 void susfs_sus_mount_exit(void);
 
