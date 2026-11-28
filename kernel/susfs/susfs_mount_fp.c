@@ -33,6 +33,7 @@
 #include "susfs_hooks.h"
 #include "susfs_log.h"
 #include "susfs_mount_fp.h"
+#include "symbol_resolver.h"
 #include "sus_mount.h"
 #include "sus_mount_prefix.h"
 
@@ -66,6 +67,12 @@ static susfs_syscall_fn_t mount_fp_slots[MOUNT_FP_COUNT];
  * keep this deliberately small and keyed by pid in the mount layer. */
 static atomic_t mount_fp_events = ATOMIC_INIT(0);
 
+/* The original answer runs before the hidden-path ENOENT, so a hidden path
+ * costs what a real lookup costs - an instantly-fast denial is the timing
+ * side channel that separates "hidden" from "not there".  A successful open
+ * is undone through the kernel's own close_fd before the ENOENT is returned. */
+static int (*pfn_close_fd)(unsigned int fd);
+
 static bool mount_fp_app(void)
 {
 	return current_uid().val % 100000 >= 10000;
@@ -94,19 +101,22 @@ static bool mount_fp_path_hidden(const char __user *path)
 }
 
 static __nocfi noinline long mount_fp_deny_or(const struct pt_regs *regs,
-					      int slot, bool check_path)
+					      int slot, bool is_open)
 {
 	susfs_syscall_fn_t orig = READ_ONCE(mount_fp_slots[slot]);
 	const char __user *path;
+	long rc;
 
 	if (!orig)
 		return -ENOSYS;
-	if (check_path) {
-		path = (const char __user *)regs->regs[1];
-		if (mount_fp_path_hidden(path)) {
-			atomic_inc(&mount_fp_events);
-			return -ENOENT;
-		}
+	path = (const char __user *)regs->regs[1];
+	if (mount_fp_path_hidden(path)) {
+		atomic_inc(&mount_fp_events);
+		/* Pay the real lookup cost first (see pfn_close_fd above). */
+		rc = orig(regs);
+		if (is_open && rc >= 0 && pfn_close_fd)
+			pfn_close_fd((unsigned int)rc);
+		return -ENOENT;
 	}
 	return orig(regs);
 }
@@ -168,27 +178,38 @@ static __nocfi noinline long mount_fp_wrap_openat2(const struct pt_regs *regs)
 
 static __nocfi noinline long mount_fp_wrap_newfstatat(const struct pt_regs *regs)
 {
-	return mount_fp_deny_or(regs, MOUNT_FP_NEWFSTATAT, true);
+	return mount_fp_deny_or(regs, MOUNT_FP_NEWFSTATAT, false);
 }
 
 static __nocfi noinline long mount_fp_wrap_statx(const struct pt_regs *regs)
 {
-	return mount_fp_deny_or(regs, MOUNT_FP_STATX, true);
+	return mount_fp_deny_or(regs, MOUNT_FP_STATX, false);
 }
 
 static __nocfi noinline long mount_fp_wrap_readlinkat(const struct pt_regs *regs)
 {
-	return mount_fp_deny_or(regs, MOUNT_FP_READLINKAT, true);
+	return mount_fp_deny_or(regs, MOUNT_FP_READLINKAT, false);
 }
 
 static __nocfi noinline long mount_fp_wrap_faccessat(const struct pt_regs *regs)
 {
-	return mount_fp_deny_or(regs, MOUNT_FP_FACCESSAT, true);
+	return mount_fp_deny_or(regs, MOUNT_FP_FACCESSAT, false);
 }
 
+/* execveat must NOT run the original: a successful execveat replaces this
+ * process, which no post-hoc answer can undo.  Its denial is the one fast
+ * path left; execveat on a hidden mount is rare enough to accept that. */
 static __nocfi noinline long mount_fp_wrap_execveat(const struct pt_regs *regs)
 {
-	return mount_fp_deny_or(regs, MOUNT_FP_EXECVEAT, true);
+	susfs_syscall_fn_t orig = READ_ONCE(mount_fp_slots[MOUNT_FP_EXECVEAT]);
+
+	if (!orig)
+		return -ENOSYS;
+	if (mount_fp_path_hidden((const char __user *)regs->regs[1])) {
+		atomic_inc(&mount_fp_events);
+		return -ENOENT;
+	}
+	return orig(regs);
 }
 
 static struct susfs_fp_hook mount_fp_hooks[] = {
@@ -236,6 +257,9 @@ int susfs_mount_fp_init(void)
 	/* The FP layer needs sys_call_table before the first install. */
 	if (susfs_fp_init())
 		return -ENOENT;
+	pfn_close_fd = (void *)find_kernel_symbol_exact("close_fd");
+	if (!pfn_close_fd)
+		pr_warn("mount_fp: close_fd not found - a hidden open that succeeds leaks its fd\n");
 	for (i = 0; i < (int)ARRAY_SIZE(mount_fp_hooks); i++) {
 		mount_fp_reg[i].owner = "mount_fp";
 		mount_fp_reg[i].name = mount_fp_hooks[i].name;
