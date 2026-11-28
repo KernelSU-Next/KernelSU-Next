@@ -82,25 +82,16 @@ static void (*security_dump_masked_av_fn)(struct policydb *policydb, struct cont
 static void (*context_struct_compute_av_fn)(struct policydb *policydb, struct context *scontext,
                                             struct context *tcontext, u16 tclass, struct av_decision *avd,
                                             struct extended_perms *xperms) = NULL;
-static int (*cap_capable_fn)(const struct cred *cred, struct user_namespace *targ_ns, int cap,
-                             unsigned int opts) = NULL;
-static void (*audit_log_n_untrustedstring_fn)(struct audit_buffer *ab, const char *string, size_t len) = NULL;
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
-static int (*security_validate_transition_fn)(u32 oldsid, u32 newsid, u32 tasksid, u16 tclass) = NULL;
-#else
-static int (*security_validate_transition_fn)(struct selinux_state *state, u32 oldsid, u32 newsid, u32 tasksid,
-                                              u16 tclass) = NULL;
-#endif
 
 static write_op_fn *context_write, *access_write;
 static write_op_fn orig_context_write, orig_access_write;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0)
 #define ksu_security_bounded_transition_compat(...) security_bounded_transition(__VA_ARGS__)
-#define ksu_security_validate_transition_compat(...) security_validate_transition_fn(__VA_ARGS__)
+#define ksu_security_validate_transition_compat(...) security_validate_transition(__VA_ARGS__)
 #else
 #define ksu_security_bounded_transition_compat(...) security_bounded_transition(&selinux_state, __VA_ARGS__)
-#define ksu_security_validate_transition_compat(...) security_validate_transition_fn(&selinux_state, __VA_ARGS__)
+#define ksu_security_validate_transition_compat(...) security_validate_transition(&selinux_state, __VA_ARGS__)
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(6, 18, 0)
@@ -252,7 +243,7 @@ static int __nocfi my_setprocattr(const char *name, void *value, size_t size)
         goto call_orig;
     }
 
-    if (strcmp(name, "current")) {
+    if (name[0] != 'c' || strcmp(name, "current")) {
         goto call_orig;
     }
 
@@ -357,7 +348,7 @@ static int __nocfi my_inode_setxattr(struct dentry *dentry, const char *name, co
         goto call_orig;
 
     // Keep native force parsing for callers with CAP_MAC_ADMIN
-    if (!cap_capable_fn || !cap_capable_fn(current_cred(), &init_user_ns, CAP_MAC_ADMIN, CAP_OPT_NOAUDIT))
+    if (!cap_capable(current_cred(), &init_user_ns, CAP_MAC_ADMIN, CAP_OPT_NOAUDIT))
         goto call_orig;
 
     sbsec = ksu_selinux_superblock(inode->i_sb);
@@ -398,16 +389,13 @@ static int __nocfi my_inode_setxattr(struct dentry *dentry, const char *name, co
         struct audit_buffer *ab;
         size_t audit_size = value ? size : 0;
 
-        if (!audit_log_n_untrustedstring_fn)
-            goto call_orig;
-
         // Strip only final NUL so embedded NUL bytes remain in audit log
         if (audit_size && ((const char *)value)[audit_size - 1] == '\0')
             audit_size--;
         ab = audit_log_start(audit_context(), GFP_ATOMIC, AUDIT_SELINUX_ERR);
         if (ab) {
             audit_log_format(ab, "op=setxattr invalid_context=");
-            audit_log_n_untrustedstring_fn(ab, value, audit_size);
+            audit_log_n_untrustedstring(ab, value, audit_size);
             audit_log_end(ab);
         }
     }
@@ -417,8 +405,6 @@ static int __nocfi my_inode_setxattr(struct dentry *dentry, const char *name, co
     rc = ksu_avc_has_perm_compat(sid, newsid, isec->sclass, FILE__RELABELTO, &ad);
     if (rc)
         return rc;
-    if (!security_validate_transition_fn)
-        goto call_orig;
     rc = ksu_security_validate_transition_compat(isec->sid, newsid, sid, isec->sclass);
     if (rc)
         return rc;
@@ -553,19 +539,6 @@ static int ksu_selinux_hide_enable()
     context_struct_compute_av_fn = find_kernel_symbol_exact("context_struct_compute_av");
     if (!context_struct_compute_av_fn) {
         pr_warn("context_struct_compute_av not found!\n");
-    }
-
-    cap_capable_fn = find_kernel_symbol_exact("cap_capable");
-    if (!cap_capable_fn) {
-        pr_warn("cap_capable not found!\n");
-    }
-    audit_log_n_untrustedstring_fn = find_kernel_symbol_exact("audit_log_n_untrustedstring");
-    if (!audit_log_n_untrustedstring_fn) {
-        pr_warn("audit_log_n_untrustedstring not found!\n");
-    }
-    security_validate_transition_fn = find_kernel_symbol_exact("security_validate_transition");
-    if (!security_validate_transition_fn) {
-        pr_warn("security_validate_transition not found!\n");
     }
 
     context_write = &selinux_write_op[SEL_CONTEXT];
@@ -899,19 +872,20 @@ static int security_context_to_sid_with_policy(struct selinux_policy *policy, co
     struct selinux_policy *orig_policy;
     struct policydb *policydb, *orig_policydb;
     struct sidtab *sidtab, *orig_sidtab;
-    char *scontext2;
+    char scontext2[256];
     struct context context, orig_context;
     int rc = 0, orig_rc = -EINVAL;
     u32 orig_sid;
 
-    /* An empty security context is never valid. */
-    if (!scontext_len)
+    (void)gfp_flags;
+
+    /* An empty or oversized security context is never valid. */
+    if (!scontext_len || scontext_len >= sizeof(scontext2))
         return -EINVAL;
 
     /* Copy the string to allow changes and ensure a NUL terminator */
-    scontext2 = kmemdup_nul(scontext, scontext_len, gfp_flags);
-    if (!scontext2)
-        return -ENOMEM;
+    memcpy(scontext2, scontext, scontext_len);
+    scontext2[scontext_len] = '\0';
 
     // removed: if (!selinux_initialized())
     *sid = SECSID_NULL;
@@ -965,7 +939,6 @@ out_unlock:
     rcu_read_unlock();
     if (orig_rc_p)
         *orig_rc_p = orig_rc;
-    kfree(scontext2);
     return rc;
 }
 
@@ -1060,18 +1033,17 @@ static int security_context_to_sid_live(const char *scontext, u32 scontext_len, 
 {
     struct selinux_policy *policy;
     struct context context;
-    char *scontext2;
+    char scontext2[256];
     u32 backup_sid;
     int rc;
 
-    /* An empty security context is never valid. */
-    if (!scontext_len)
+    /* An empty or oversized security context is never valid. */
+    if (!scontext_len || scontext_len >= sizeof(scontext2))
         return -EINVAL;
 
     /* Copy the string to allow changes and ensure a NUL terminator */
-    scontext2 = kmemdup_nul(scontext, scontext_len, GFP_KERNEL);
-    if (!scontext2)
-        return -ENOMEM;
+    memcpy(scontext2, scontext, scontext_len);
+    scontext2[scontext_len] = '\0';
 
     *sid = SECSID_NULL;
 retry:
@@ -1096,7 +1068,6 @@ retry:
     }
 out_unlock:
     rcu_read_unlock();
-    kfree(scontext2);
     return rc;
 }
 
