@@ -2315,9 +2315,9 @@ bool sus_mount_path_hidden(const struct path *path)
         p = sus_mount_d_path(&root, buf, PATH_MAX);
     }
     hidden = !IS_ERR(p) && p && sus_mount_prefix_match(p);
-    if (atomic_inc_return(&n_path_hidden_dbg) <= 3u)
-        pr_info("sus_mount: path_hidden probe mnt_id=%d dpath=%s hit=%d\n",
-                (int)r->mnt_id, IS_ERR(p) ? "(err)" : p, (int)hidden);
+    if (hidden && atomic_inc_return(&n_path_hidden_dbg) <= 5u)
+        pr_info("sus_mount: learned hidden mount mnt_id=%d src=%s\n",
+                (int)r->mnt_id, p);
     if (hidden)
         sus_mount_ident_add(r, 0);
     kfree(buf);
