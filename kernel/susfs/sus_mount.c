@@ -157,6 +157,7 @@
 #include "sus_mount_policy.h"
 #include "sus_mount_view.h"
 #include "sus_mount_prefix.h"
+#include "susfs_priority_uid.h"
 
 /* F keeps the rescan counter and the sysfs truncation reserve; the records are in D. */
 #define SUS_MOUNT_KEEP_TRUNC_RESERVE (SUS_MOUNT_KEEP_LEN + 64)
