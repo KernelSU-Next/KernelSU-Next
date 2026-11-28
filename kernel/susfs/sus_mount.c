@@ -2170,8 +2170,7 @@ int susfs_sus_mount_init(void)
     /* Syscall face: the __lookup_mnt equivalent (path entries + mount entries).
      * Not fatal - the show hooks above already hide the mount lines. */
     if (susfs_mount_fp_init())
-        pr_warn("sus_mount: syscall face not armed (show hooks still hide the lines)
-");
+        pr_warn("sus_mount: syscall face not armed (show hooks still hide the lines)\n");
     return 0;
 }
 
