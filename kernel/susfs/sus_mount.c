@@ -2042,8 +2042,7 @@ int susfs_sus_mount_init(void)
     pfn_ksu_uid_should_umount = (void *)find_kernel_symbol_exact_any(
         "ksu_uid_should_umount");
     if (!pfn_ksu_uid_should_umount)
-        pr_warn("sus_mount: ksu_uid_should_umount not found - falling back to uid % 100000 >= 10000
-");
+        pr_warn("sus_mount: ksu_uid_should_umount not found - falling back to uid % 100000 >= 10000\n");
     pfn_d_path = (void *)find_kernel_symbol_exact("d_path");
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(6, 18, 0)
     void *loader_xa = (void *)&mnt_id_xa;
