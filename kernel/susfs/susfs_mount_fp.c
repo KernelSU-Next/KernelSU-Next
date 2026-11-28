@@ -26,6 +26,7 @@
 #include <linux/sched.h>
 #include <linux/cred.h>
 #include <linux/uaccess.h>
+#include <linux/string.h>
 #include <linux/namei.h>	/* kern_path(): pay the real lookup cost */
 #include <linux/path.h>
 
@@ -74,12 +75,15 @@ static atomic_t mount_fp_events = ATOMIC_INIT(0);
  * The original syscall must not run on the real path - it may succeed (fd,
  * execveat) or answer EACCES, neither of which can be undone safely - so the
  * cost is paid by walking a path that certainly does not exist, through the
- * kernel's own parser. */
-static void mount_fp_pay_lookup_cost(void)
+ * kernel's own parser, under the SAME parent directory (same depth, same
+ * component count, so the walk costs what a real ENOENT costs). */
+static void mount_fp_pay_lookup_cost(const char *parent)
 {
+	char dummy[MOUNT_FP_PATH_MAX + 16];
 	struct path p;
 
-	if (!kern_path("/.susfs_hidden", 0, &p))
+	snprintf(dummy, sizeof(dummy), "%s/.susfs_hidden", parent);
+	if (!kern_path(dummy, 0, &p))
 		path_put(&p);
 }
 
@@ -89,10 +93,13 @@ static bool mount_fp_app(void)
 }
 
 /* Returns true when this path starts with a hidden mount prefix and the caller
- * is an app; the caller then answers -ENOENT without entering path lookup. */
-static bool mount_fp_path_hidden(const char __user *path)
+ * is an app; parent receives the path's directory (the part before the last
+ * slash) so the failure below walks the same depth. */
+static bool mount_fp_path_hidden(const char __user *path, char *parent,
+				 size_t plen)
 {
 	char buf[MOUNT_FP_PATH_MAX];
+	char *slash;
 	long n;
 
 	if (!path)
@@ -107,7 +114,16 @@ static bool mount_fp_path_hidden(const char __user *path)
 	if (n <= 0)
 		return false;
 	buf[sizeof(buf) - 1] = '\0';
-	return sus_mount_prefix_match(buf);
+	if (!sus_mount_prefix_match(buf))
+		return false;
+	slash = strrchr(buf, '/');
+	if (!slash || slash == buf)
+		strscpy(parent, "/", plen);
+	else {
+		*slash = '\0';
+		strscpy(parent, buf, plen);
+	}
+	return true;
 }
 
 static __nocfi noinline long mount_fp_deny_or(const struct pt_regs *regs,
@@ -115,14 +131,15 @@ static __nocfi noinline long mount_fp_deny_or(const struct pt_regs *regs,
 {
 	susfs_syscall_fn_t orig = READ_ONCE(mount_fp_slots[slot]);
 	const char __user *path;
+	char parent[MOUNT_FP_PATH_MAX];
 
 	if (!orig)
 		return -ENOSYS;
 	path = (const char __user *)regs->regs[1];
-	if (mount_fp_path_hidden(path)) {
+	if (mount_fp_path_hidden(path, parent, sizeof(parent))) {
 		atomic_inc(&mount_fp_events);
 		/* Same cost as a real failed lookup, no side effect. */
-		mount_fp_pay_lookup_cost();
+		mount_fp_pay_lookup_cost(parent);
 		return -ENOENT;
 	}
 	return orig(regs);
@@ -209,12 +226,14 @@ static __nocfi noinline long mount_fp_wrap_faccessat(const struct pt_regs *regs)
 static __nocfi noinline long mount_fp_wrap_execveat(const struct pt_regs *regs)
 {
 	susfs_syscall_fn_t orig = READ_ONCE(mount_fp_slots[MOUNT_FP_EXECVEAT]);
+	char parent[MOUNT_FP_PATH_MAX];
 
 	if (!orig)
 		return -ENOSYS;
-	if (mount_fp_path_hidden((const char __user *)regs->regs[1])) {
+	if (mount_fp_path_hidden((const char __user *)regs->regs[1], parent,
+				 sizeof(parent))) {
 		atomic_inc(&mount_fp_events);
-		mount_fp_pay_lookup_cost();
+		mount_fp_pay_lookup_cost(parent);
 		return -ENOENT;
 	}
 	return orig(regs);
