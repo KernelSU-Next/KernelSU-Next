@@ -103,9 +103,11 @@ static __nocfi noinline long mount_fp_fail_via_dummy(const struct pt_regs *regs,
 	tmp = *regs;
 	tmp.regs[1] = uaddr;
 	rc = orig(&tmp);
-	/* The dummy never exists, so rc is -ENOENT; keep it if some other
-	 * failure (EACCES on the parent, ...) comes back instead. */
-	return rc < 0 ? rc : -ENOENT;
+	/* The dummy never exists, but the walk may fail earlier (EACCES on the
+	 * parent for an app); the answer must stay ENOENT - that is the hidden
+	 * file's answer, not the parent's permission error. */
+	(void)rc;
+	return -ENOENT;
 }
 
 static bool mount_fp_app(void)
