@@ -438,6 +438,7 @@ module_param_named(mount_dbg, mount_dbg, int, 0644);
 /* Diagnostic: name the fields the identity test compares, for the first few mounts the
  * hook sees, so "why did identity not match" is answerable from dmesg instead of guessed. */
 static atomic_t n_dbg_logged = ATOMIC_INIT(0);
+static atomic_t n_path_hidden_dbg = ATOMIC_INIT(0);
 
 /* generic_shutdown_super(struct super_block *sb) - fs/super.c, EXPORT_SYMBOL, so
  * it is a real function in kallsyms and not an inlined call site.  Runs before the
@@ -2306,6 +2307,10 @@ bool sus_mount_path_hidden(const struct path *path)
         return false;
     p = sus_mount_d_path(path, buf, PATH_MAX);
     hidden = !IS_ERR(p) && p && sus_mount_prefix_match(p);
+    if (atomic_inc_return(&n_path_hidden_dbg) <= 3u)
+        pr_info("sus_mount: path_hidden probe mnt_id=%d dpath=%s hit=%d
+",
+                (int)r->mnt_id, IS_ERR(p) ? "(err)" : p, (int)hidden);
     if (hidden)
         sus_mount_ident_add(r, 0);
     kfree(buf);
