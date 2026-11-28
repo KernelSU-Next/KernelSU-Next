@@ -147,6 +147,7 @@
 #include "susfs_abi.h"
 #include "susfs_log.h"
 #include "sus_mount.h"
+#include "susfs_mount_fp.h"
 #include "sus_path.h"
 #include "susfs_control.h"
 #include "susfs_helpers.h"
@@ -2165,6 +2166,12 @@ int susfs_sus_mount_init(void)
                     mount_keep_pending, rc);
     }
     mutex_unlock(&sus_mount_keep_param_lock);
+
+    /* Syscall face: the __lookup_mnt equivalent (path entries + mount entries).
+     * Not fatal - the show hooks above already hide the mount lines. */
+    if (susfs_mount_fp_init())
+        pr_warn("sus_mount: syscall face not armed (show hooks still hide the lines)
+");
     return 0;
 }
 
@@ -2265,6 +2272,7 @@ static void sus_mount_unregister(void)
 
 void susfs_sus_mount_exit(void)
 {
+    susfs_mount_fp_exit();
     if (sus_mount_keep_entry) {
         proc_remove(sus_mount_keep_entry);
         sus_mount_keep_entry = NULL;
