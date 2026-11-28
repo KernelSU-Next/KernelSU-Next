@@ -2305,7 +2305,15 @@ bool sus_mount_path_hidden(const struct path *path)
     buf = kmalloc(PATH_MAX, GFP_KERNEL);
     if (!buf)
         return false;
-    p = sus_mount_d_path(path, buf, PATH_MAX);
+    /* Match the mount's SOURCE path, not the accessed path: a bind mount of
+     * /data/adb/modules/... onto /aped/<...> (zygisk's dex2oat binds are the
+     * live example) has its root dentry in /data/adb, while the accessed path
+     * is nowhere near it.  The root dentry's d_path is exactly that source. */
+    {
+        struct path root = { .mnt = path->mnt, .dentry = path->mnt->mnt_root };
+
+        p = sus_mount_d_path(&root, buf, PATH_MAX);
+    }
     hidden = !IS_ERR(p) && p && sus_mount_prefix_match(p);
     if (atomic_inc_return(&n_path_hidden_dbg) <= 3u)
         pr_info("sus_mount: path_hidden probe mnt_id=%d dpath=%s hit=%d\n",
