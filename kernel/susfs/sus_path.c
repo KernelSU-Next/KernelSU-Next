@@ -2724,7 +2724,11 @@ SUS_PATH_REG(readlink_hook, "inode_readlink");
 static bool sus_path_open_hooked;
 static bool sus_path_lookup_file_hooked;
 static bool sus_path_openat_hooked;
-static int vfs_inline = 1;
+/* Off by default: the inline faces answer only the FINAL path, so a child of a
+ * hidden directory stayed reachable (measured).  The LSM faces check every
+ * walk component (inode_permission), which is the behaviour upstream's
+ * fs/namei.c has; set vfs_inline=1 to re-enable the inline fast path on top. */
+static int vfs_inline = 0;
 module_param(vfs_inline, int, 0644);
 static atomic_t n_vfs_open_enter = ATOMIC_INIT(0);
 static atomic_t n_vfs_open_hidden = ATOMIC_INIT(0);
