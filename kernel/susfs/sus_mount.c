@@ -148,6 +148,7 @@
 #include "susfs_log.h"
 #include "sus_mount.h"
 #include "susfs_mount_fp.h"
+#include "susfs_mount_mnt.h"
 #include "sus_path.h"
 #include "susfs_control.h"
 #include "susfs_helpers.h"
@@ -2189,6 +2190,9 @@ int susfs_sus_mount_init(void)
      * Not fatal - the show hooks above already hide the mount lines. */
     if (susfs_mount_fp_init())
         pr_warn("sus_mount: syscall face not armed (show hooks still hide the lines)\n");
+    /* Path-resolution face (lookup inline, FP fallback), independent of sus_path. */
+    if (susfs_mount_mnt_init())
+        pr_warn("sus_mount: path-resolution face not armed\n");
     return 0;
 }
 
@@ -2344,6 +2348,7 @@ bool sus_mount_path_hidden(const struct path *path)
 
 void susfs_sus_mount_exit(void)
 {
+    susfs_mount_mnt_exit();
     susfs_mount_fp_exit();
     if (sus_mount_keep_entry) {
         proc_remove(sus_mount_keep_entry);

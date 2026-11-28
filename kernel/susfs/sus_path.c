@@ -55,8 +55,7 @@
 #include "sus_path_match.h"
 #include "sus_path_data.h"
 #include "sus_path_view.h"
-#include "sus_mount.h"
-#include "susfs_priority_uid.h"
+
 #include "susfs_create_view.h"
 #include "sus_path.h"
 #include "susfs_control.h"
@@ -2778,20 +2777,6 @@ static int sus_path_lookup_pre(void *p)
 {
 	struct susfs_inode_ctx *ctx = p;
 	unsigned int n;
-
-	/* The mount face first: SUS_MOUNT hides every path whose mount is KSU's,
-	 * and the decision is made after the real lookup, so it costs what the
-	 * lookup cost.  upstream's __lookup_mnt spoof has the same position in
-	 * the walk. */
-	/* The mount face: an app (uid % 100000 >= 10000, same set upstream's
-	 * zygote-marked apps cover) must not resolve into a hidden mount.
-	 * sus_mount_path_hidden() runs the identity/id/d_path-learning decision,
-	 * so the cost here is the lookup's own. */
-	if (ctx->path && sus_mount_path_hidden(ctx->path)) {
-		atomic_inc(&n_enoent_perm);
-		ctx->ret = -ENOENT;
-		return 1;
-	}
 
 	/* Sparse case: with no rule the inline face must cost almost nothing, so
 	 * the count is checked before any counter or hash work. */
