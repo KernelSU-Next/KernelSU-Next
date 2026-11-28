@@ -438,9 +438,13 @@ static bool sus_mount_path_is_ours(const char *s);
 
 static __nocfi bool sus_mount_uid_app(uid_t uid)
 {
+    /* root/system uids are never in upstream's zygote-marked app set; the
+     * KernelSU predicate alone would flag uid 0 (not in the allowlist). */
+    if (uid % 100000 < 10000)
+        return false;
     if (pfn_ksu_uid_should_umount)
         return pfn_ksu_uid_should_umount(uid);
-    return uid % 100000 >= 10000;
+    return true;
 }
 
 static atomic_t n_ident_hits = ATOMIC_INIT(0);		/* hidden by identity, not by id */
