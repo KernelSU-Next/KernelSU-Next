@@ -70,43 +70,21 @@ static susfs_syscall_fn_t mount_fp_slots[MOUNT_FP_COUNT];
  * keep this deliberately small and keyed by pid in the mount layer. */
 static atomic_t mount_fp_events = ATOMIC_INIT(0);
 
-/* A hidden path must cost what a real failed lookup costs, and each original
- * syscall has its own cost - so the original is called, just with a pointer to
- * a path that certainly does not exist.  That path is staged on the caller's
- * own user stack below its SP (the unused side; the stack grows down), which is
- * why no user memory has to be allocated for it: <parent>/.susfs_hidden keeps
- * the depth of the path being denied, so the walk is the same shape.
- *
- * If the stack window cannot be written (tiny stack / guard page) the equal
- * cost is paid by walking the same path through kern_path() and ENOENT is
- * returned directly - never a fast denial. */
-static __nocfi noinline long mount_fp_fail_via_dummy(const struct pt_regs *regs,
-						     susfs_syscall_fn_t orig,
-						     const char *parent)
+/* A hidden path must cost what a real failed lookup costs, and every original
+ * syscall has its own cost - but the path the original walks must not be
+ * writable by the caller: a user-space dummy can be rewritten by a sibling
+ * thread between the copy and the call (TOCTOU), and the original would then
+ * execute the real hidden path, bypassing the check.  So the cost is paid by
+ * walking a path that cannot exist, under the SAME parent directory (same
+ * depth, same component count), purely inside the kernel. */
+static __nocfi noinline long mount_fp_fail_equally(const char *parent)
 {
 	char dummy[MOUNT_FP_PATH_MAX + 16];
-	struct pt_regs tmp;
-	unsigned long uaddr;
-	size_t n;
-	long rc;
+	struct path p;
 
 	snprintf(dummy, sizeof(dummy), "%s/.susfs_hidden", parent);
-	n = strlen(dummy) + 1;
-	uaddr = (regs->sp - 256) & ~15UL;
-	if (copy_to_user((void __user *)uaddr, dummy, n)) {
-		struct path p;
-
-		if (!kern_path(dummy, 0, &p))
-			path_put(&p);
-		return -ENOENT;
-	}
-	tmp = *regs;
-	tmp.regs[1] = uaddr;
-	rc = orig(&tmp);
-	/* The dummy never exists, but the walk may fail earlier (EACCES on the
-	 * parent for an app); the answer must stay ENOENT - that is the hidden
-	 * file's answer, not the parent's permission error. */
-	(void)rc;
+	if (!kern_path(dummy, 0, &p))
+		path_put(&p);
 	return -ENOENT;
 }
 
@@ -161,7 +139,7 @@ static __nocfi noinline long mount_fp_deny_or(const struct pt_regs *regs,
 	path = (const char __user *)regs->regs[1];
 	if (mount_fp_path_hidden(path, parent, sizeof(parent))) {
 		atomic_inc(&mount_fp_events);
-		return mount_fp_fail_via_dummy(regs, orig, parent);
+		return mount_fp_fail_equally(parent);
 	}
 	return orig(regs);
 }
@@ -254,7 +232,7 @@ static __nocfi noinline long mount_fp_wrap_execveat(const struct pt_regs *regs)
 	if (mount_fp_path_hidden((const char __user *)regs->regs[1], parent,
 				 sizeof(parent))) {
 		atomic_inc(&mount_fp_events);
-		return mount_fp_fail_via_dummy(regs, orig, parent);
+		return mount_fp_fail_equally(parent);
 	}
 	return orig(regs);
 }
